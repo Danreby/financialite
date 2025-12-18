@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class FaturasController extends Controller
+class FaturaController extends Controller
 {
     public function index()
     {
