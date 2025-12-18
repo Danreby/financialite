@@ -10,7 +10,6 @@ class Banks extends Model
 
     protected $fillable = [
         'name',
-        'branch',
     ];
 
     public function users()
