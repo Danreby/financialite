@@ -25,5 +25,9 @@ class BanksSeeder extends Seeder
             "PicPay",
             "Mercado Pago",
         ];
+
+        foreach ($banks as $bankName) {
+            Banks::create(['name' => $bankName]);
+        }
     }
 }
