@@ -1,18 +1,19 @@
 import { useState } from "react";
+import { router } from "@inertiajs/react";
 import { toast } from "react-toastify";
 import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 
-export default function FaturaForm({ isOpen, onClose }) {
+export default function FaturaForm({ isOpen, onClose, onSuccess }) {
   const [isRecurring, setIsRecurring] = useState(false);
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(e.currentTarget);
     const title = formData.get("title")?.toString().trim();
     const amount = formData.get("amount")?.toString().trim();
     const type = formData.get("type")?.toString().trim();
-    const formElement = event.currentTarget;
+    const formElement = e.currentTarget;
 
     toast.dismiss();
 
@@ -34,9 +35,46 @@ export default function FaturaForm({ isOpen, onClose }) {
       debitRadio?.focus();
       return;
     }
+    const payload = {
+      title,
+      description: formData.get("description")?.toString().trim() || "",
+      amount,
+      type,
+      total_installments:
+        formData.get("total_installments")?.toString().trim() || 1,
+      is_recurring: isRecurring ? 1 : 0,
+    };
 
-    toast.success("Transação validada com sucesso (exemplo).");
+    router.post(route("faturas.store"), payload, {
+      onSuccess: () => {
+        toast.success("Transação criada com sucesso.");
+        e.currentTarget.reset();
+        setIsRecurring(false);
+        if (onSuccess) onSuccess();
+        if (onClose) onClose();
+      },
+      onError: (errors) => {
+        if (errors.title) {
+          toast.error(errors.title);
+          formElement.elements.namedItem("title")?.focus();
+          return;
+        }
+        if (errors.amount) {
+          toast.error(errors.amount);
+          formElement.elements.namedItem("amount")?.focus();
+          return;
+        }
+        if (errors.type) {
+          toast.error(errors.type);
+          const debitRadio = formElement.querySelector(
+            'input[name="type"][value="debit"]'
+          );
+          debitRadio?.focus();
+        }
+      },
+    });
   };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="2xl" title="Nova transação">
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
