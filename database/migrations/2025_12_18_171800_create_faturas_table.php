@@ -25,9 +25,9 @@ return new class extends Migration
             $table->boolean('is_recurring')->default(false);
 
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            // sem ->after('user_id') para evitar erro de sintaxe em MariaDB
             $table->foreignId('bank_user_id')
                 ->nullable()
-                ->after('user_id')
                 ->constrained('bank_user')
                 ->nullOnDelete();
 
