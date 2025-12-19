@@ -1,12 +1,33 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 
 export default function FaturaForm({ isOpen, onClose }) {
   const [isRecurring, setIsRecurring] = useState(false);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const title = formData.get("title")?.toString().trim();
+    const amount = formData.get("amount")?.toString().trim();
+    const type = formData.get("type")?.toString().trim();
+
+    const errors = [];
+    if (!title) errors.push("Informe o título da transação.");
+    if (!amount) errors.push("Informe o valor da transação.");
+    if (!type) errors.push("Selecione o tipo: débito ou crédito.");
+
+    if (errors.length) {
+      errors.forEach((message) => toast.error(message));
+      return;
+    }
+
+    toast.success("Transação validada com sucesso (exemplo).");
+  };
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="2xl" title="Nova transação">
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
