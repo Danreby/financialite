@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import FaturaForm from '@/Components/system/FaturaForm';
 
-export default function QuickActions() {
+export default function QuickActions({ bankAccounts = [] }) {
   const [showFaturaForm, setShowFaturaForm] = useState(false);
 
   return (
@@ -22,6 +22,7 @@ export default function QuickActions() {
       <FaturaForm
         isOpen={showFaturaForm}
         onClose={() => setShowFaturaForm(false)}
+        bankAccounts={bankAccounts}
       />
     </>
   );

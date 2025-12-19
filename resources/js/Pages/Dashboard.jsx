@@ -14,7 +14,7 @@ function formatCurrency(value) {
   }).format(value || 0)
 }
 
-export default function Dashboard() {
+export default function Dashboard({ bankAccounts = [] }) {
   const [currentFilters, setCurrentFilters] = useState({})
   const [page, setPage] = useState(1)
   const [reloadKey, setReloadKey] = useState(0)
@@ -132,7 +132,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <QuickActions />
+          <QuickActions bankAccounts={bankAccounts} />
         </div>
       </motion.div>
     </AuthenticatedLayout>

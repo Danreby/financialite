@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 
-export default function FaturaForm({ isOpen, onClose, onSuccess }) {
+export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = [] }) {
   const [isRecurring, setIsRecurring] = useState(false);
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -13,6 +13,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess }) {
     const title = formData.get("title")?.toString().trim();
     const amount = formData.get("amount")?.toString().trim();
     const type = formData.get("type")?.toString().trim();
+    const dueDate = formData.get("due_date")?.toString().trim();
+    const bankUserId = formData.get("bank_user_id")?.toString().trim();
     const formElement = e.currentTarget;
 
     toast.dismiss();
@@ -29,6 +31,12 @@ export default function FaturaForm({ isOpen, onClose, onSuccess }) {
       return;
     }
 
+    if (!dueDate) {
+      toast.error("Informe a data de vencimento.");
+      formElement.elements.namedItem("due_date")?.focus();
+      return;
+    }
+
     if (!type) {
       toast.error("Selecione o tipo: débito ou crédito.");
       const debitRadio = formElement.querySelector('input[name="type"][value="debit"]');
@@ -39,10 +47,12 @@ export default function FaturaForm({ isOpen, onClose, onSuccess }) {
       title,
       description: formData.get("description")?.toString().trim() || "",
       amount,
+      due_date: dueDate,
       type,
       total_installments:
         formData.get("total_installments")?.toString().trim() || 1,
       is_recurring: isRecurring ? 1 : 0,
+      bank_user_id: bankUserId || null,
     };
 
     router.post(route("faturas.store"), payload, {
@@ -182,6 +192,23 @@ export default function FaturaForm({ isOpen, onClose, onSuccess }) {
               name="is_recurring"
               value={isRecurring ? 1 : 0}
             />
+          </div>
+          <div className="flex flex-col gap-1 md:col-span-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              Conta / Banco
+            </label>
+            <select
+              name="bank_user_id"
+              className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              defaultValue=""
+            >
+              <option value="">Selecione uma conta</option>
+              {bankAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

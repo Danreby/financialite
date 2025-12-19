@@ -47,7 +47,6 @@ class FaturaController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'amount' => 'required|numeric',
-            'due_date' => 'required|date',
             'type' => ['required', Rule::in(['credit','debit'])],
             'status' => ['nullable', Rule::in(['paid','unpaid','overdue'])],
             'paid_date' => 'nullable|date',
@@ -65,6 +64,10 @@ class FaturaController extends Controller
         }
 
         $data['user_id'] = $user->id;
+        $data['total_installments'] = $data['total_installments'] ?? 1;
+        $data['current_installment'] = $data['current_installment'] ?? 1;
+        $data['status'] = $data['status'] ?? 'unpaid';
+        $data['is_recurring'] = $data['is_recurring'] ?? false;
 
         DB::beginTransaction();
         try {

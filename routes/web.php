@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\BankUser;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -10,7 +11,21 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $user = request()->user();
+
+    $bankAccounts = BankUser::with('bank')
+        ->where('user_id', $user->id)
+        ->get()
+        ->map(function ($bankUser) {
+            return [
+                'id' => $bankUser->id,
+                'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
+            ];
+        });
+
+    return Inertia::render('Dashboard', [
+        'bankAccounts' => $bankAccounts,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 

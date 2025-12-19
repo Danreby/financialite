@@ -16,7 +16,6 @@ class Fatura extends Model
         'title',
         'description',
         'amount',
-        'due_date',
         'type',
         'status',
         'paid_date',
@@ -29,7 +28,6 @@ class Fatura extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'due_date' => 'date',
         'paid_date' => 'date',
         'is_recurring' => 'boolean',
     ];
@@ -53,7 +51,6 @@ class Fatura extends Model
         $title = null, 
         $description = null, 
         $amount = null, 
-        $due_date = null, 
         $type = null, 
         $status = null,
         $paid_date = null, 
@@ -74,9 +71,6 @@ class Fatura extends Model
         }
         if ($amount !== null) {
             $query->where('amount', $amount);
-        }
-        if ($due_date !== null) {
-            $query->where('due_date', $due_date);
         }
         if ($type !== null) {
             $query->where('type', $type);
