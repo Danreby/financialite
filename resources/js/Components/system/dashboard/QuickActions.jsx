@@ -1,5 +1,5 @@
 import React from 'react'
-import PrimaryButton from '@/Components/PrimaryButton'
+import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 
 export default function QuickActions() {
   return (

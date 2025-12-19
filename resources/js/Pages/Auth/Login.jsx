@@ -6,7 +6,7 @@ import GuestLayout from '@/Layouts/GuestLayout'
 import AuthCard from '@/Components/auth/AuthCard'
 import AuthHeader from '@/Components/auth/AuthHeader'
 import FormField from '@/Components/auth/FormField'
-import PrimaryButton from '@/Components/PrimaryButton'
+import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 
 export default function Login({ status, canResetPassword }) {
   const { data, setData, post, processing, errors, reset } = useForm({

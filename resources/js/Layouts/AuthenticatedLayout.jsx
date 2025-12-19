@@ -1,8 +1,8 @@
 // FILE: src/Layouts/AuthenticatedLayout.jsx
 import { useState } from 'react'
 import { usePage } from '@inertiajs/react'
-import Sidebar from '@/Components/navigation/Sidebar'
-import Topbar from '@/Components/navigation/Topbar'
+import Sidebar from '@/Components/system/navigation/Sidebar'
+import Topbar from '@/Components/system/navigation/Topbar'
 
 export default function AuthenticatedLayout({ children }) {
   const user = usePage().props.auth.user

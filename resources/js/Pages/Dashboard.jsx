@@ -2,8 +2,8 @@ import React from 'react'
 import { Head } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
-import StatCard from '@/Components/dashboard/StatCard'
-import QuickActions from '@/Components/dashboard/QuickActions'
+import StatCard from '@/Components/system/dashboard/StatCard'
+import QuickActions from '@/Components/system/dashboard/QuickActions'
 
 export default function Dashboard() {
   const stats = [

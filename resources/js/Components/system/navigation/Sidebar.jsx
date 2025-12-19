@@ -1,4 +1,3 @@
-// FILE: src/Components/navigation/Sidebar.jsx
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Link } from '@inertiajs/react'
@@ -9,7 +8,7 @@ export default function Sidebar({ open = true, setOpen = () => {} }) {
       initial={false}
       animate={{ width: open ? 260 : 64 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="flex-shrink-0 h-full bg-gradient-to-b from-[#070707] to-[#0b0b0b] border-r border-gray-800 mt-2 shadow-md ring-1 ring-black/30 overflow-hidden"
+      className="flex-shrink-0 h-100 bg-gradient-to-b from-[#070707] to-[#0b0b0b] border-r border-gray-800 mt-2 shadow-md ring-1 ring-black/30 overflow-hidden"
       style={{ minWidth: open ? 260 : 64 }}
     >
       <div className="h-full flex flex-col">
@@ -37,9 +36,13 @@ export default function Sidebar({ open = true, setOpen = () => {} }) {
 
         <nav className="mt-3 flex-1 px-2 space-y-1">
           <NavItem open={open} href={route('dashboard')} label="Resumo" />
+          <NavItem open={open} href={route('faturas.index')} label="Fatura" />
           <NavItem open={open} href={route('accounts.index')} label="Contas" />
           <NavItem open={open} href={route('transactions.index')} label="Transações" />
           <NavItem open={open} href={route('reports.index')} label="Relatórios" />
+        </nav>
+
+        <nav className='justify-end'>
           <NavItem open={open} href={route('settings')} label="Configurações" />
         </nav>
 

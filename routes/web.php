@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FaturaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/accounts', function () {
         return Inertia::render('Accounts/Index');
     })->name('accounts.index');
+
+    Route::get('/faturas', [FaturaController::class, 'index'])->name('faturas.index');
 
     Route::get('/transactions', function () {
         return Inertia::render('Transactions/Index');
