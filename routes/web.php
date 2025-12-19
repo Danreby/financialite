@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BankController;
 use App\Models\BankUser;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/settings', function () {
         return Inertia::render('Settings/Index');
     })->name('settings');
+
+    Route::get('/banks/list', [BankController::class, 'list'])->name('banks.list');
+    Route::post('/banks/attach', [BankController::class, 'attachToUser'])->name('banks.attach');
 });
 
 require __DIR__.'/Fatura.php';
