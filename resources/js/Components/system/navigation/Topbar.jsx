@@ -5,7 +5,7 @@ export default function Topbar({ sidebarOpen, setSidebarOpen }) {
   return (
     <div className="flex items-center justify-between mt-2 p-4 bg-[#0b0b0b] shadow-md ring-1 ring-black/30">
       <div className="flex items-center gap-3">
-        <button
+        {/* <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 rounded-md hover:bg-gray-900/30 focus:outline-none"
           aria-label="Toggle sidebar"
@@ -16,7 +16,7 @@ export default function Topbar({ sidebarOpen, setSidebarOpen }) {
           </svg>
         </button>
 
-        <h1 className="text-lg font-semibold text-gray-100">Resumo</h1>
+        <h1 className="text-lg font-semibold text-gray-100">Dashboard</h1> */}
       </div>
 
       <div className="flex items-center gap-3">
