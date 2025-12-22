@@ -7,11 +7,15 @@ import FaturaMonthSection from '@/Components/system/fatura/FaturaMonthSection';
 import FaturaMonthCarousel from '@/Components/system/fatura/FaturaMonthCarousel';
 import Modal from '@/Components/common/Modal';
 
-export default function Fatura({ monthlyGroups = [], bankAccounts = [], filters = {} }) {
+export default function Fatura({ monthlyGroups = [], bankAccounts = [], filters = {}, currentMonthKey = null }) {
 	const selectedBankId = filters?.bank_user_id ?? '';
-	const [selectedMonthKey, setSelectedMonthKey] = useState(
-		monthlyGroups && monthlyGroups.length > 0 ? monthlyGroups[0].month_key : null,
-	);
+	const [selectedMonthKey, setSelectedMonthKey] = useState(() => {
+		if (currentMonthKey && monthlyGroups && monthlyGroups.length > 0) {
+			const hasCurrent = monthlyGroups.some((g) => g.month_key === currentMonthKey);
+			if (hasCurrent) return currentMonthKey;
+		}
+		return monthlyGroups && monthlyGroups.length > 0 ? monthlyGroups[0].month_key : null;
+	});
 	const [isDueDayModalOpen, setIsDueDayModalOpen] = useState(false);
 	const [dueDayInput, setDueDayInput] = useState('');
 	const [isUpdatingDueDay, setIsUpdatingDueDay] = useState(false);
@@ -22,12 +26,20 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], filters 
 			return;
 		}
 
-		// Se o mês selecionado atual não existir mais (por filtro), cai para o primeiro mês disponível
+		// Se o mês selecionado atual não existir mais (por filtro ou pagamento),
+		// tenta usar o mês de fatura atual vindo do backend; se não houver, cai para o primeiro.
 		const exists = monthlyGroups.some((g) => g.month_key === selectedMonthKey);
 		if (!exists) {
+			if (currentMonthKey) {
+				const hasCurrent = monthlyGroups.some((g) => g.month_key === currentMonthKey);
+				if (hasCurrent) {
+					setSelectedMonthKey(currentMonthKey);
+					return;
+				}
+			}
 			setSelectedMonthKey(monthlyGroups[0].month_key);
 		}
-	}, [monthlyGroups, selectedMonthKey]);
+	}, [monthlyGroups, selectedMonthKey, currentMonthKey]);
 
 	const handleBankChange = (event) => {
 		const value = event.target.value || undefined;

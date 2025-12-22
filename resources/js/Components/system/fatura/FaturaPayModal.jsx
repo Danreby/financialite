@@ -92,11 +92,16 @@ export default function FaturaPayModal({
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                 {pendingItems.map((item) => {
                   const totalInstallments = item.total_installments || 1;
-                  const currentInstallment = item.current_installment || 1;
+                  const currentInstallment = item.current_installment || 0;
                   const installmentAmount = (item.amount || 0) / totalInstallments;
+                  const logicalInstallment =
+                    totalInstallments > 1
+                      ? item.display_installment || Math.min(currentInstallment + 1, totalInstallments)
+                      : 1;
+
                   const remainingInstallments = Math.max(
-                    totalInstallments - currentInstallment + 1,
-                    1
+                    totalInstallments - (logicalInstallment - 1),
+                    0
                   );
 
                   return (
@@ -109,7 +114,7 @@ export default function FaturaPayModal({
                           {item.title}
                         </p>
                         <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-                          Parcela atual: {currentInstallment}/{totalInstallments} •
+                          Parcela atual: {logicalInstallment}/{totalInstallments} •
                           Valor da parcela: {formatCurrency(installmentAmount)}
                         </p>
                       </div>

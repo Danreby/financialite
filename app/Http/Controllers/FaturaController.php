@@ -22,9 +22,11 @@ class FaturaController extends Controller
     {
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
+        $selectedBankUser = null;
 
         if ($request->filled('bank_user_id')) {
             $bankUser = BankUser::findOrFail($bankUserId);
+            $selectedBankUser = $bankUser;
 
             if ($bankUser->user_id !== $user->id) {
                 if ($request->wantsJson()) {
@@ -66,6 +68,10 @@ class FaturaController extends Controller
 
         $monthlyGroups = $this->groupFaturasByMonth($allFaturas, $paidByMonth);
 
+        // Define o mês de fatura "atual" considerando a data de hoje,
+        // o due_day do cartão (se houver) e pula meses já marcados como pagos.
+        $currentMonthKey = $this->resolveCurrentBillingMonthKey($selectedBankUser, $paidByMonth);
+
         $bankAccounts = BankUser::with('bank')
             ->where('user_id', $user->id)
             ->get()
@@ -80,6 +86,7 @@ class FaturaController extends Controller
         return Inertia::render('Fatura', [
             'monthlyGroups' => $monthlyGroups,
             'bankAccounts' => $bankAccounts,
+            'currentMonthKey' => $currentMonthKey,
             'filters' => [
                 'bank_user_id' => $request->input('bank_user_id'),
             ],
@@ -88,16 +95,41 @@ class FaturaController extends Controller
 
     protected function groupFaturasByMonth($faturas, $paidByMonth = null)
     {
-        $grouped = $faturas->groupBy(function ($fatura) {
-            $date = $fatura->created_at;
-            return Carbon::parse($date)->format('Y-m');
-        });
+        // Expande cada fatura em "instâncias" mensais, uma por parcela
+        // (ou uma única vez quando não é parcelada), com base no ciclo do cartão.
+        $entries = collect();
+
+        foreach ($faturas as $fatura) {
+            $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
+
+            $firstBillingMonthKey = $this->resolveBillingMonthKey($fatura);
+            $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+
+            for ($i = 0; $i < $totalInstallments; $i++) {
+                $month = (clone $first)->addMonths($i);
+                $monthKey = $month->format('Y-m');
+
+                $entries->push([
+                    'fatura' => $fatura,
+                    'month_key' => $monthKey,
+                    'installment_index' => $i + 1,
+                ]);
+            }
+        }
+
+        $grouped = $entries->groupBy('month_key');
 
         $result = $grouped->map(function ($items, $yearMonth) use ($paidByMonth) {
             $carbon = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
             $label = ucfirst($carbon->translatedFormat('F Y'));
 
-            $totalSpent = $items->sum('amount');
+            // Total do mês: soma o valor da parcela (valor total / total de parcelas)
+            $totalSpent = $items->sum(function ($entry) {
+                /** @var \App\Models\Fatura $fatura */
+                $fatura = $entry['fatura'];
+                $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
+                return (float) $fatura->amount / $totalInstallments;
+            });
             $isPaid = $paidByMonth ? $paidByMonth->has($yearMonth) : false;
 
             return [
@@ -105,18 +137,14 @@ class FaturaController extends Controller
                 'month_label' => $label,
                 'total_spent' => (float) $totalSpent,
                 'is_paid' => $isPaid,
-                'items' => $items->map(function ($fatura) use ($yearMonth) {
-                    $displayInstallment = null;
-                    if ($fatura->total_installments && $fatura->total_installments > 1) {
-                        $firstMonthKey = Carbon::parse($fatura->created_at)->format('Y-m');
-                        $first = Carbon::createFromFormat('Y-m', $firstMonthKey)->startOfMonth();
-                        $current = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
-                        $offset = $first->diffInMonths($current);
-                        $displayInstallment = min($offset + 1, (int) $fatura->total_installments);
-                    }
+                'items' => $items->map(function ($entry) {
+                    /** @var \App\Models\Fatura $fatura */
+                    $fatura = $entry['fatura'];
+                    $installmentIndex = $entry['installment_index'];
 
                     return [
-                        'id' => $fatura->id,
+                        'id' => $fatura->id . '-' . $installmentIndex,
+                        'fatura_id' => $fatura->id,
                         'title' => $fatura->title,
                         'description' => $fatura->description,
                         'amount' => (float) $fatura->amount,
@@ -126,7 +154,7 @@ class FaturaController extends Controller
                         'paid_date' => $fatura->paid_date,
                         'total_installments' => $fatura->total_installments,
                         'current_installment' => $fatura->current_installment,
-                        'display_installment' => $displayInstallment,
+                        'display_installment' => $this->resolveInstallmentNumberForMonth($fatura, $entry['month_key']),
                         'is_recurring' => (bool) $fatura->is_recurring,
                         'bank_name' => optional($fatura->bankUser->bank ?? null)->name ?? null,
                     ];
@@ -135,6 +163,103 @@ class FaturaController extends Controller
         });
 
         return $result->sortByDesc('month_key')->values()->all();
+    }
+
+    /**
+     * Resolve the billing month (YYYY-mm) a purchase refers to,
+     * based on its creation date and the card due_day.
+     */
+    protected function resolveBillingMonthKey(Fatura $fatura): string
+    {
+        $createdAt = $fatura->created_at instanceof Carbon
+            ? $fatura->created_at->copy()
+            : Carbon::parse($fatura->created_at);
+
+        $dueDay = $fatura->bankUser->due_day ?? null;
+
+        if (!$dueDay) {
+            return $createdAt->format('Y-m');
+        }
+
+        $cutoffDay = min((int) $dueDay, 28);
+        $dayOfPurchase = (int) $createdAt->format('d');
+
+        if ($dayOfPurchase <= $cutoffDay) {
+            // Purchases up to the cutoff belong to that month's bill
+            return $createdAt->format('Y-m');
+        }
+
+        // After cutoff, purchase goes to next month's bill
+        return $createdAt->copy()->addMonth()->format('Y-m');
+    }
+
+    /**
+     * Resolve the current billing month key (YYYY-mm) for "today",
+     * optionally taking into account the selected card due_day.
+     */
+    protected function resolveCurrentBillingMonthKey(?BankUser $bankUser = null, $paidByMonth = null): string
+    {
+        $today = Carbon::today();
+
+        // Primeiro, determina o mês-alvo baseando-se apenas na data atual
+        // e, opcionalmente, no due_day do cartão.
+        if (!$bankUser || !$bankUser->due_day) {
+            $candidate = $today->copy();
+        } else {
+            $cutoffDay = min((int) $bankUser->due_day, 28);
+            $day = (int) $today->format('d');
+
+            $candidate = $day <= $cutoffDay
+                ? $today->copy()
+                : $today->copy()->addMonth();
+        }
+
+        $candidateKey = $candidate->format('Y-m');
+
+        // Em seguida, se tivermos informação de meses pagos, avançamos
+        // até encontrar um mês ainda não pago (fatura pendente).
+        if ($paidByMonth) {
+            // Evita loops infinitos em cenários extremos
+            for ($i = 0; $i < 24; $i++) {
+                if (!$paidByMonth->has($candidateKey)) {
+                    break;
+                }
+
+                $candidate = $candidate->copy()->addMonth();
+                $candidateKey = $candidate->format('Y-m');
+            }
+        }
+
+        return $candidateKey;
+    }
+
+    /**
+     * Given a billing month (YYYY-mm), determine which installment number
+     * that month represents for a given purchase.
+     */
+    protected function resolveInstallmentNumberForMonth(Fatura $fatura, string $yearMonth): ?int
+    {
+        $totalInstallments = (int) ($fatura->total_installments ?? 1);
+        if ($totalInstallments <= 1) {
+            return null;
+        }
+
+        $firstBillingMonthKey = $this->resolveBillingMonthKey($fatura);
+        $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+        $current = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+
+        if ($current->lt($first)) {
+            return null;
+        }
+
+        $offset = $first->diffInMonths($current);
+        $installment = $offset + 1; // first month is 1/total
+
+        if ($installment > $totalInstallments) {
+            return $totalInstallments;
+        }
+
+        return $installment;
     }
 
     public function show(Request $request, $id)
@@ -177,8 +302,10 @@ class FaturaController extends Controller
         }
 
         $data['user_id'] = $user->id;
-        $data['total_installments'] = $data['total_installments'] ?? 1;
-        $data['current_installment'] = $data['current_installment'] ?? 1;
+        $data['total_installments'] = max($data['total_installments'] ?? 1, 1);
+        // current_installment representa quantas parcelas já foram pagas.
+        // Iniciamos em 0 para compras novas.
+        $data['current_installment'] = 0;
         $data['status'] = $data['status'] ?? 'unpaid';
         $data['is_recurring'] = $data['is_recurring'] ?? false;
 
@@ -283,15 +410,26 @@ class FaturaController extends Controller
             }
         }
 
-        $startOfMonth = Carbon::createFromFormat('Y-m', $data['month'])->startOfMonth();
-        $endOfMonth = (clone $startOfMonth)->endOfMonth();
-
-        $query = Fatura::forUser($user->id)
-            ->betweenDueDates($startOfMonth, $endOfMonth)
+        $query = Fatura::with('bankUser')
+            ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->notStatus('paid');
 
-        $faturas = $query->get();
+        $allFaturas = $query->get();
+
+        // Seleciona faturas que possuem alguma parcela pertencente ao mês solicitado
+        // (entre o primeiro mês de fatura e o último, baseado em total_installments).
+        $targetMonth = Carbon::createFromFormat('Y-m', $data['month'])->startOfMonth();
+
+        $faturas = $allFaturas->filter(function (Fatura $fatura) use ($targetMonth) {
+            $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
+
+            $firstBillingMonthKey = $this->resolveBillingMonthKey($fatura);
+            $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+            $last = (clone $first)->addMonths($totalInstallments - 1);
+
+            return !$targetMonth->lt($first) && !$targetMonth->gt($last);
+        });
 
         if ($faturas->isEmpty()) {
             return response()->json(['message' => 'Nenhuma fatura pendente para este mês.'], 200);
@@ -303,7 +441,8 @@ class FaturaController extends Controller
 
             foreach ($faturas as $fatura) {
                 $totalInstallments = max((int) $fatura->total_installments, 1);
-                $currentInstallment = (int) ($fatura->current_installment ?? 1);
+                // current_installment = quantas parcelas já foram pagas
+                $currentInstallment = max((int) ($fatura->current_installment ?? 0), 0);
 
                 $installmentAmount = (float) $fatura->amount / $totalInstallments;
 
