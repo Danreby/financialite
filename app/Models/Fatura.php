@@ -26,6 +26,7 @@ class Fatura extends Model
         'is_recurring',
         'user_id',
         'bank_user_id',
+        'category_id',
     ];
 
     protected $casts = [
@@ -42,6 +43,11 @@ class Fatura extends Model
     public function bankUser(): BelongsTo
     {
         return $this->belongsTo(BankUser::class, 'bank_user_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     public function getBankAttribute()

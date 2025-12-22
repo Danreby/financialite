@@ -3,6 +3,7 @@
 use App\Http\Controllers\FaturaController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\BankUserController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -17,4 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('faturas', FaturaController::class);
     Route::get('faturas/stats', [FaturaController::class, 'stats'])->name('faturas.stats');
     Route::post('faturas/{id}/restore', [FaturaController::class, 'restore'])->name('faturas.restore');
+
+    // Categorias de fatura
+    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 });

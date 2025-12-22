@@ -41,7 +41,7 @@ class FaturaController extends Controller
             'bank_user_id' => $bankUserId,
         ];
 
-        $baseQuery = Fatura::with(['bankUser.bank', 'user'])
+        $baseQuery = Fatura::with(['bankUser.bank', 'user', 'category'])
             ->forUser($user->id)
             ->filter($filters)
             ->orderBy('created_at', 'desc');
@@ -157,6 +157,7 @@ class FaturaController extends Controller
                         'display_installment' => $this->resolveInstallmentNumberForMonth($fatura, $entry['month_key']),
                         'is_recurring' => (bool) $fatura->is_recurring,
                         'bank_name' => optional($fatura->bankUser->bank ?? null)->name ?? null,
+                        'category_name' => $fatura->category->name ?? null,
                     ];
                 })->values()->all(),
             ];
@@ -289,6 +290,7 @@ class FaturaController extends Controller
             'current_installment' => 'nullable|integer|min:1',
             'is_recurring' => 'sometimes|boolean',
             'bank_user_id' => 'nullable|exists:bank_user,id',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         if (!empty($data['bank_user_id'])) {
@@ -341,6 +343,7 @@ class FaturaController extends Controller
             'current_installment' => 'nullable|integer|min:1',
             'is_recurring' => 'sometimes|boolean',
             'bank_user_id' => 'nullable|exists:bank_user,id',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
