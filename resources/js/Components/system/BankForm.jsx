@@ -31,7 +31,6 @@ export default function BankForm({ isOpen, onClose, onSuccess }) {
 			cancelled = true;
 		};
 	}, [isOpen]);
-	//toast com erro
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
@@ -47,6 +46,7 @@ export default function BankForm({ isOpen, onClose, onSuccess }) {
 		if (!bankId) {
 			toast.error("Selecione um banco.");
 			formElement.elements.namedItem("bank_id")?.focus();
+			setIsSubmitting(false);
 			return;
 		}
 
@@ -60,7 +60,7 @@ export default function BankForm({ isOpen, onClose, onSuccess }) {
 				} else {
 					toast.success("Banco vinculado com sucesso.");
 				}
-				e.currentTarget.reset();
+				formElement.reset();
 				setIsSubmitting(false);
 				if (onSuccess) onSuccess(payload.bank_user || payload);
 				if (onClose) onClose();

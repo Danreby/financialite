@@ -26,12 +26,14 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
     if (!title) {
       toast.error("Informe o título da transação.");
       formElement.elements.namedItem("title")?.focus();
+      setIsSubmitting(false);
       return;
     }
 
     if (!amount) {
       toast.error("Informe o valor da transação.");
       formElement.elements.namedItem("amount")?.focus();
+      setIsSubmitting(false);
       return;
     }
 
@@ -39,6 +41,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       toast.error("Selecione o tipo: débito ou crédito.");
       const debitRadio = formElement.querySelector('input[name="type"][value="debit"]');
       debitRadio?.focus();
+      setIsSubmitting(false);
       return;
     }
     const payload = {
@@ -57,7 +60,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       .then((response) => {
         toast.dismiss();
         toast.success("Transação criada com sucesso.");
-        e.currentTarget.reset();
+		formElement.reset();
         setIsRecurring(false);
         setIsSubmitting(false);
         if (onSuccess) onSuccess(response.data || {});
