@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\FaturaController;
-use App\Http\Controllers\BankController;
-use App\Http\Controllers\BankUserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\FaturaController;
+use App\Models\BankUser;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -13,7 +13,21 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $user = request()->user();
+
+    $bankAccounts = BankUser::with('bank')
+        ->where('user_id', $user->id)
+        ->get()
+        ->map(function ($bankUser) {
+            return [
+                'id' => $bankUser->id,
+                'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
+            ];
+        });
+
+    return Inertia::render('Dashboard', [
+        'bankAccounts' => $bankAccounts,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -27,10 +41,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Accounts/Index');
     })->name('accounts.index');
 
-    Route::get('/faturas', function () {
-        return Inertia::render('Faturas/Index');
-    })->name('faturas.index');
-
     Route::get('/transactions', function () {
         return Inertia::render('Transactions/Index');
     })->name('transactions.index');
@@ -43,31 +53,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Settings/Index');
     })->name('settings');
 
-    // ============ API Routes (JSON) ============
-    
-    // Bancos
-    Route::get('/api/banks', [BankController::class, 'index'])->name('api.banks.index');
-    Route::post('/api/banks', [BankController::class, 'store'])->name('api.banks.store');
-    Route::get('/api/banks/{id}', [BankController::class, 'show'])->name('api.banks.show');
-    Route::put('/api/banks/{id}', [BankController::class, 'update'])->name('api.banks.update');
-    Route::delete('/api/banks/{id}', [BankController::class, 'destroy'])->name('api.banks.destroy');
-
-    // Associações Banco-Usuário
-    Route::get('/api/bank-users', [BankUserController::class, 'index'])->name('api.bank-users.index');
-    Route::post('/api/bank-users', [BankUserController::class, 'store'])->name('api.bank-users.store');
-    Route::get('/api/bank-users/{id}', [BankUserController::class, 'show'])->name('api.bank-users.show');
-    Route::delete('/api/bank-users/{id}', [BankUserController::class, 'destroy'])->name('api.bank-users.destroy');
-    Route::get('/api/bank-users/stats', [BankUserController::class, 'stats'])->name('api.bank-users.stats')->withoutMiddleware(['web']);
-
-    // Faturas
-    Route::get('/api/faturas', [FaturaController::class, 'index'])->name('api.faturas.index');
-    Route::post('/api/faturas', [FaturaController::class, 'store'])->name('api.faturas.store');
-    Route::get('/api/faturas/filter', [FaturaController::class, 'filter'])->name('api.faturas.filter');
-    Route::get('/api/faturas/stats', [FaturaController::class, 'stats'])->name('api.faturas.stats')->withoutMiddleware(['web']);
-    Route::get('/api/faturas/{id}', [FaturaController::class, 'show'])->name('api.faturas.show');
-    Route::put('/api/faturas/{id}', [FaturaController::class, 'update'])->name('api.faturas.update');
-    Route::delete('/api/faturas/{id}', [FaturaController::class, 'destroy'])->name('api.faturas.destroy');
-    Route::post('/api/faturas/{id}/restore', [FaturaController::class, 'restore'])->name('api.faturas.restore');
+    Route::get('/banks/list', [BankController::class, 'list'])->name('banks.list');
+    Route::post('/banks/attach', [BankController::class, 'attachToUser'])->name('banks.attach');
 });
+
+require __DIR__.'/Fatura.php';
 
 require __DIR__.'/auth.php';

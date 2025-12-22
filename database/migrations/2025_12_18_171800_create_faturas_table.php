@@ -21,13 +21,12 @@ return new class extends Migration
             $table->enum('status', ['paid', 'unpaid', 'overdue'])->default('unpaid');
             $table->date('paid_date')->nullable();
             $table->integer('total_installments')->default(1);
-            $table->integer('current_installment')->default(1);
+            $table->integer('current_installment')->default(1)->nullable();
             $table->boolean('is_recurring')->default(false);
 
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('bank_user_id')
                 ->nullable()
-                ->after('user_id')
                 ->constrained('bank_user')
                 ->nullOnDelete();
 

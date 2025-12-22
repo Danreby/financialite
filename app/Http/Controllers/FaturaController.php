@@ -7,6 +7,7 @@ use App\Models\BankUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class FaturaController extends Controller
 {
@@ -27,7 +28,24 @@ class FaturaController extends Controller
             ->orderBy('due_date', 'desc')
             ->paginate(15);
 
-        return response()->json($faturas);
+        if ($request->wantsJson()) {
+            return response()->json($faturas);
+        }
+
+        $bankAccounts = BankUser::with('bank')
+            ->where('user_id', $user->id)
+            ->get()
+            ->map(function ($bankUser) {
+                return [
+                    'id' => $bankUser->id,
+                    'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
+                ];
+            });
+
+        return Inertia::render('Fatura', [
+            'faturas' => $faturas,
+            'bankAccounts' => $bankAccounts,
+        ]);
     }
 
     /**
@@ -55,10 +73,10 @@ class FaturaController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:0.01',
-            'due_date' => 'required|date',
-            'type' => ['required', Rule::in(['credit', 'debit'])],
-            'status' => ['nullable', Rule::in(['paid', 'unpaid', 'overdue'])],
+            'amount' => 'required|numeric',
+            'due_date' => 'nullable|date',
+            'type' => ['required', Rule::in(['credit','debit'])],
+            'status' => ['nullable', Rule::in(['paid','unpaid','overdue'])],
             'paid_date' => 'nullable|date',
             'total_installments' => 'nullable|integer|min:1',
             'current_installment' => 'nullable|integer|min:1',
@@ -74,9 +92,13 @@ class FaturaController extends Controller
         }
 
         $data['user_id'] = $user->id;
-        $data['status'] = $data['status'] ?? 'unpaid';
+        // Se due_date não vier do formulário, define como hoje
+        if (empty($data['due_date'])) {
+            $data['due_date'] = now()->toDateString();
+        }
         $data['total_installments'] = $data['total_installments'] ?? 1;
         $data['current_installment'] = $data['current_installment'] ?? 1;
+        $data['status'] = $data['status'] ?? 'unpaid';
         $data['is_recurring'] = $data['is_recurring'] ?? false;
 
         DB::beginTransaction();

@@ -95,4 +95,38 @@ class BankController extends Controller
 
         return response()->json(['message' => 'Banco removido.']);
     }
+
+    public function list(Request $request)
+    {
+        $banks = Bank::orderBy('name')->get(['id', 'name']);
+        return response()->json($banks);
+    }
+
+    public function attachToUser(Request $request)
+    {
+        $user = $request->user();
+
+        $data = $request->validate([
+            'bank_id' => 'required|exists:banks,id',
+        ]);
+
+        $exists = BankUser::where('user_id', $user->id)
+            ->where('bank_id', $data['bank_id'])
+            ->first();
+
+        if ($exists) {
+            return response()->json([
+                'already_attached' => true,
+                'message' => 'Este banco já está vinculado ao usuário.',
+                'bank_user' => $exists->load('bank'),
+            ], 200);
+        }
+
+        $bankUser = BankUser::create([
+            'user_id' => $user->id,
+            'bank_id' => $data['bank_id'],
+        ]);
+
+        return response()->json($bankUser->load('bank'), 201);
+    }
 }
