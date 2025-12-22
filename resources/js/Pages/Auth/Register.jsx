@@ -34,13 +34,13 @@ export default function Register() {
         className="w-full max-w-md mx-auto px-4"
       >
         <AuthCard>
-          <div className="mb-2">
+          <div className="mb-2 pt-2 px-2">
             <AuthHeader title="Criar conta" subtitle="Cadastre-se para começar" />
           </div>
 
           <motion.form
             onSubmit={submit}
-            className="space-y-6 grid grid-cols-"
+            className="space-y-6 px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
@@ -93,7 +93,7 @@ export default function Register() {
             </div>
           </motion.form>
 
-          <div className="mt-6 border-t border-gray-800 pt-4 text-center text-sm text-gray-400">
+          <div className="mt-6 border-t border-gray-800 pt-4 text-center text-sm text-gray-400 pb-4">
             <span>Já tem conta? </span>
             <Link href={route('login')} className="underline text-gray-200 ml-1">
               Entrar

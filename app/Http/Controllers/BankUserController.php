@@ -13,9 +13,6 @@ class BankUserController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Lista associações de bancos do usuário autenticado
-     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -28,9 +25,6 @@ class BankUserController extends Controller
         return response()->json($bankUsers);
     }
 
-    /**
-     * Retorna uma associação específica
-     */
     public function show(Request $request, $id)
     {
         $user = $request->user();
@@ -42,9 +36,6 @@ class BankUserController extends Controller
         return response()->json($bankUser);
     }
 
-    /**
-     * Associa um banco ao usuário
-     */
     public function store(Request $request)
     {
         $user = $request->user();
@@ -53,7 +44,6 @@ class BankUserController extends Controller
             'bank_id' => 'required|exists:banks,id',
         ]);
 
-        // Verificar se já existe associação
         $existing = BankUser::where('user_id', $user->id)
             ->where('bank_id', $data['bank_id'])
             ->first();
@@ -72,9 +62,6 @@ class BankUserController extends Controller
         return response()->json($bankUser, 201);
     }
 
-    /**
-     * Remove associação de um banco do usuário
-     */
     public function destroy(Request $request, $id)
     {
         $user = $request->user();
@@ -86,9 +73,6 @@ class BankUserController extends Controller
         return response()->json(['message' => 'Banco desassociado do usuário.']);
     }
 
-    /**
-     * Retorna estatísticas por banco
-     */
     public function stats(Request $request)
     {
         $user = $request->user();

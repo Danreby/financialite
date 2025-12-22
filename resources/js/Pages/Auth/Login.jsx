@@ -46,7 +46,7 @@ export default function Login({ status, canResetPassword }) {
 
           <motion.form
             onSubmit={submit}
-            className="space-y-6"
+            className="space-y-6 px-4 pt-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
@@ -101,7 +101,7 @@ export default function Login({ status, canResetPassword }) {
             </div>
           </motion.form>
 
-          <div className="mt-6 border-t border-gray-800 pt-4 text-center text-sm text-gray-400">
+          <div className="mt-6 border-t border-gray-800 pt-4 text-center text-sm text-gray-400 pb-4">
             <span>Não tem conta? </span>
             <Link href={route('register')} className="underline text-gray-200 ml-1">
               Cadastre-se

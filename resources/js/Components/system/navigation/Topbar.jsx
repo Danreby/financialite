@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/react'
 
 export default function Topbar({ sidebarOpen, setSidebarOpen }) {
   const [isDark, setIsDark] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -33,6 +34,7 @@ export default function Topbar({ sidebarOpen, setSidebarOpen }) {
   }, [isDark])
 
   const toggleTheme = () => setIsDark((prev) => !prev)
+  const toggleUserMenu = () => setUserMenuOpen((prev) => !prev)
 
   return (
     <div className="flex items-center justify-between mt-2 p-4 bg-white text-gray-900 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:text-gray-100 dark:ring-black/30">
@@ -63,7 +65,39 @@ export default function Topbar({ sidebarOpen, setSidebarOpen }) {
           {isDark ? 'Light' : 'Dark'}
         </button>
 
-        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#3a0f0f] to-transparent flex items-center justify-center text-sm text-white">BS</div>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={toggleUserMenu}
+            className="h-8 w-8 rounded-full bg-gradient-to-br from-[#3a0f0f] to-transparent flex items-center justify-center text-sm font-semibold text-white ring-1 ring-black/10 hover:ring-black/20 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            aria-haspopup="true"
+            aria-expanded={userMenuOpen}
+          >
+            BS
+          </button>
+
+          {userMenuOpen && (
+            <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-[#111] dark:text-gray-100 dark:ring-black/40">
+              <Link
+                href={route('profile.edit')}
+                className="block px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => setUserMenuOpen(false)}
+              >
+                Perfil
+              </Link>
+
+              <Link
+                href={route('logout')}
+                method="post"
+                as="button"
+                className="block w-full px-3 py-2 text-left text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-800"
+                onClick={() => setUserMenuOpen(false)}
+              >
+                Sair
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
