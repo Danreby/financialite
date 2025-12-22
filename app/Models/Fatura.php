@@ -18,7 +18,6 @@ class Fatura extends Model
         'title',
         'description',
         'amount',
-        'due_date',
         'type',
         'status',
         'paid_date',
@@ -67,12 +66,6 @@ class Fatura extends Model
             ->when($filters['bank_user_id'] ?? null, function (Builder $q, $bankUserId) {
                 $q->where('bank_user_id', $bankUserId);
             })
-            ->when($filters['due_date_from'] ?? null, function (Builder $q, $from) {
-                $q->whereDate('due_date', '>=', $from);
-            })
-            ->when($filters['due_date_to'] ?? null, function (Builder $q, $to) {
-                $q->whereDate('due_date', '<=', $to);
-            })
             ->when($filters['amount_min'] ?? null, function (Builder $q, $min) {
                 $q->where('amount', '>=', $min);
             })
@@ -89,8 +82,7 @@ class Fatura extends Model
     {
         $startDate = $start instanceof Carbon ? $start->toDateString() : $start;
         $endDate = $end instanceof Carbon ? $end->toDateString() : $end;
-
-        return $query->whereBetween('due_date', [$startDate, $endDate]);
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 
     public function scopeNotStatus(Builder $query, string $status): Builder

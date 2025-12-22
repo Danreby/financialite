@@ -114,7 +114,7 @@ export default function Dashboard({ bankAccounts = [] }) {
                 recentFaturas.slice(0, 5).map((fatura) => {
                   const isDebit = fatura.type === 'debit'
                   const sign = isDebit ? '- ' : '+ '
-                  const labelDate = formatDateLabel(fatura.due_date || fatura.created_at)
+                  const labelDate = formatDateLabel(fatura.created_at)
                   const bankName = fatura.bank_user?.bank?.name
                   const typeLabel = isDebit ? 'Débito' : 'Crédito'
 

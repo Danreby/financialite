@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('title');
             $table->string('description')->nullable();
             $table->decimal('amount', 10, 2);
-            $table->date('due_date');
             $table->enum('type', ['credit', 'debit']);
             $table->enum('status', ['paid', 'unpaid', 'overdue'])->default('unpaid');
             $table->date('paid_date')->nullable();

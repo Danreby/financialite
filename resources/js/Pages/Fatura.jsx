@@ -83,7 +83,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], filters 
 
 	const handlePaidMonth = () => {
 		if (!monthlyGroups || monthlyGroups.length === 0 || !selectedGroup) {
-			router.reload({ only: ['monthlyGroups'] });
+			router.reload({ only: ['monthlyGroups'], preserveState: true });
 			return;
 		}
 
@@ -91,14 +91,12 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], filters 
 			(group) => group.month_key === selectedGroup.month_key,
 		);
 
-		// Próximo mês na lista (mais antigo, já que está em ordem desc)
-		const nextGroup =
-			currentIndex >= 0 && currentIndex < monthlyGroups.length - 1
-				? monthlyGroups[currentIndex + 1]
-				: selectedGroup;
+		// Próximo mês cronológico (lista está em ordem desc, então índices menores são meses mais recentes / à frente)
+		const previousIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
+		const nextGroup = monthlyGroups[previousIndex] || selectedGroup;
 
 		setSelectedMonthKey(nextGroup.month_key);
-		router.reload({ only: ['monthlyGroups'] });
+		router.reload({ only: ['monthlyGroups'], preserveState: true });
 	};
 
 	const selectedGroup =

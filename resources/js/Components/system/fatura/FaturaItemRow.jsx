@@ -24,7 +24,7 @@ export default function FaturaItemRow({
   amount,
   type,
   status,
-  due_date,
+  created_at,
   bank_name,
   total_installments,
   current_installment,
@@ -36,7 +36,7 @@ export default function FaturaItemRow({
   const amountSign = "-";
   const amountColor = "text-rose-500 dark:text-rose-400";
 
-  const dayLabel = formatDayLabel(due_date);
+  const dayLabel = formatDayLabel(created_at);
 
   const statusLabel =
     status === "paid"

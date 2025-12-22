@@ -42,7 +42,7 @@ class FaturaController extends Controller
         $baseQuery = Fatura::with(['bankUser.bank', 'user'])
             ->forUser($user->id)
             ->filter($filters)
-            ->orderBy('due_date', 'desc');
+            ->orderBy('created_at', 'desc');
 
         if ($request->wantsJson()) {
             $paginated = $baseQuery->paginate(15);
@@ -89,7 +89,7 @@ class FaturaController extends Controller
     protected function groupFaturasByMonth($faturas, $paidByMonth = null)
     {
         $grouped = $faturas->groupBy(function ($fatura) {
-            $date = $fatura->due_date ?: $fatura->created_at;
+            $date = $fatura->created_at;
             return Carbon::parse($date)->format('Y-m');
         });
 
@@ -108,7 +108,7 @@ class FaturaController extends Controller
                 'items' => $items->map(function ($fatura) use ($yearMonth) {
                     $displayInstallment = null;
                     if ($fatura->total_installments && $fatura->total_installments > 1) {
-                        $firstMonthKey = Carbon::parse($fatura->due_date ?: $fatura->created_at)->format('Y-m');
+                        $firstMonthKey = Carbon::parse($fatura->created_at)->format('Y-m');
                         $first = Carbon::createFromFormat('Y-m', $firstMonthKey)->startOfMonth();
                         $current = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
                         $offset = $first->diffInMonths($current);
@@ -122,7 +122,7 @@ class FaturaController extends Controller
                         'amount' => (float) $fatura->amount,
                         'type' => $fatura->type,
                         'status' => $fatura->status,
-                        'due_date' => $fatura->due_date,
+                        'created_at' => $fatura->created_at,
                         'paid_date' => $fatura->paid_date,
                         'total_installments' => $fatura->total_installments,
                         'current_installment' => $fatura->current_installment,
@@ -157,7 +157,6 @@ class FaturaController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'amount' => 'required|numeric',
-            'due_date' => 'nullable|date',
             'type' => ['required', Rule::in(['credit','debit'])],
             'status' => ['nullable', Rule::in(['paid','unpaid','overdue'])],
             'paid_date' => 'nullable|date',
@@ -173,23 +172,11 @@ class FaturaController extends Controller
                 return response()->json(['message' => 'A associação banco-usuário não pertence ao usuário autenticado.'], 422);
             }
 
-            if (empty($data['due_date']) && $bankUser->due_day) {
-                $today = Carbon::today();
-                $dueDay = (int) $bankUser->due_day;
-
-                $candidate = $today->copy()->day(min($dueDay, 28));
-                if ($candidate->lessThanOrEqualTo($today)) {
-                    $candidate->addMonth();
-                }
-
-                $data['due_date'] = $candidate->toDateString();
-            }
+            // Mantemos due_day apenas para lógica de UX (vencimento do cartão),
+            // não há mais campo due_date na fatura.
         }
 
         $data['user_id'] = $user->id;
-        if (empty($data['due_date'])) {
-            $data['due_date'] = now()->toDateString();
-        }
         $data['total_installments'] = $data['total_installments'] ?? 1;
         $data['current_installment'] = $data['current_installment'] ?? 1;
         $data['status'] = $data['status'] ?? 'unpaid';
@@ -220,7 +207,6 @@ class FaturaController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'amount' => 'sometimes|required|numeric|min:0.01',
-            'due_date' => 'sometimes|required|date',
             'type' => ['sometimes', 'required', Rule::in(['credit', 'debit'])],
             'status' => ['nullable', Rule::in(['paid', 'unpaid', 'overdue'])],
             'paid_date' => 'nullable|date',
