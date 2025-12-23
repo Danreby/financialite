@@ -58,7 +58,6 @@ export default function FaturaPendingExportButton({ monthlyGroups = [] }) {
       return { rows: [], header: {} };
     }
 
-    // Adiciona linha de totais
     const totalRow = { label: "TOTAL GERAL" };
     const monthlyTotals = {};
     let grandTotal = 0;
