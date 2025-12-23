@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 
 export default function FaturaMonthCarousel({
   months = [],
@@ -67,13 +68,13 @@ export default function FaturaMonthCarousel({
     <div className="flex items-center justify-center gap-4">
       <div className="w-32 flex justify-end">
         {prev && (
-          <button
+          <SecondaryButton
             type="button"
             onClick={handlePrev}
-            className="rounded-full px-3 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-900"
+            className="rounded-full px-3 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-900 border-none shadow-none"
           >
             {prev.month_label}
-          </button>
+          </SecondaryButton>
         )}
       </div>
 
@@ -117,13 +118,13 @@ export default function FaturaMonthCarousel({
 
       <div className="w-32 flex justify-start">
         {next && (
-          <button
+          <SecondaryButton
             type="button"
             onClick={handleNext}
-            className="rounded-full px-3 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-900"
+            className="rounded-full px-3 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-900 border-none shadow-none"
           >
             {next.month_label}
-          </button>
+          </SecondaryButton>
         )}
       </div>
     </div>

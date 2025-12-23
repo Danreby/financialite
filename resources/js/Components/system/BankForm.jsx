@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
+import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 
 export default function BankForm({ isOpen, onClose, onSuccess }) {
 	const [banks, setBanks] = useState([]);
@@ -131,14 +132,14 @@ export default function BankForm({ isOpen, onClose, onSuccess }) {
 				</div>
 
 				<div className="flex items-center justify-end gap-3 pt-2">
-					<button
+					<SecondaryButton
 						type="button"
 						onClick={onClose}
-						className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+						className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 					>
 						Cancelar
-					</button>
-						<PrimaryButton type="submit" disabled={isSubmitting}>
+					</SecondaryButton>
+					<PrimaryButton type="submit" disabled={isSubmitting}>
 						Salvar
 					</PrimaryButton>
 				</div>

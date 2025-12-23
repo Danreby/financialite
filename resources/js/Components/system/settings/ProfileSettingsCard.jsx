@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 
 export default function ProfileSettingsCard({ user, itemVariants }) {
   const [name, setName] = useState(user?.name || '')
@@ -97,13 +98,13 @@ export default function ProfileSettingsCard({ user, itemVariants }) {
         </motion.div>
 
         <motion.div variants={itemVariants} className="pt-4">
-          <button
+          <PrimaryButton
             type="submit"
             disabled={loading}
-            className="w-full bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+            className="w-full py-2 px-4 rounded-lg"
           >
             {loading ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
+          </PrimaryButton>
         </motion.div>
       </form>
     </div>

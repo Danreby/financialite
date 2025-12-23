@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import BareButton from '@/Components/common/buttons/BareButton';
 
 const maxWidthClassMap = {
     sm: 'sm:max-w-sm',
@@ -63,7 +64,7 @@ export default function Modal({
                                 )}
 
                                 {onClose && (
-                                    <button
+                                    <BareButton
                                         type="button"
                                         onClick={() => onClose?.()}
                                         className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
@@ -81,7 +82,7 @@ export default function Modal({
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                    </button>
+                                    </BareButton>
                                 )}
                             </div>
                         )}

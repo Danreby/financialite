@@ -7,6 +7,8 @@ import FaturaMonthSection from '@/Components/system/fatura/FaturaMonthSection';
 import FaturaMonthCarousel from '@/Components/system/fatura/FaturaMonthCarousel';
 import Modal from '@/Components/common/Modal';
 import FaturaPendingExportButton from '@/Components/system/fatura/FaturaPendingExportButton';
+import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
+import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 
 function FaturaFilters({ bankAccounts, categories, filters, onChange }) {
 	const selectedBankId = filters?.bank_user_id ?? '';
@@ -212,13 +214,13 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 									? `todo dia ${selectedAccount.due_day}`
 									: 'ainda não definido'}
 							</span>
-							<button
+							<SecondaryButton
 								type="button"
 								onClick={handleOpenDueDayModal}
-								className="rounded-full border border-rose-500 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+								className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
 							>
 								Definir dia de vencimento
-							</button>
+							</SecondaryButton>
 						</div>
 					)}
 				</header>
@@ -278,20 +280,20 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 						</div>
 
 						<div className="flex items-center justify-end gap-3 pt-2 text-xs">
-							<button
+							<SecondaryButton
 								type="button"
 								onClick={() => !isUpdatingDueDay && setIsDueDayModalOpen(false)}
-								className="rounded-lg px-4 py-2 font-medium text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+								className="rounded-lg px-4 py-2 font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 							>
 								Cancelar
-							</button>
-							<button
+							</SecondaryButton>
+							<PrimaryButton
 								type="submit"
 								disabled={isUpdatingDueDay}
-								className="rounded-lg bg-rose-600 px-4 py-2 font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed"
+								className="rounded-lg px-4 py-2 font-semibold uppercase tracking-wide disabled:cursor-not-allowed"
 							>
 								{isUpdatingDueDay ? 'Salvando...' : 'Salvar dia'}
-							</button>
+							</PrimaryButton>
 						</div>
 					</form>
 				</Modal>

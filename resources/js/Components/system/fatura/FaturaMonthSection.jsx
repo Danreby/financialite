@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import FaturaItemRow from "@/Components/system/fatura/FaturaItemRow";
 import FaturaPayModal from "@/Components/system/fatura/FaturaPayModal";
+import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -42,13 +43,13 @@ export default function FaturaMonthSection({
           </div>
         </div>
         {isCurrentPending && (
-          <button
+          <PrimaryButton
             type="button"
             onClick={() => setShowPayModal(true)}
-            className="shrink-0 rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:ring-offset-[#050505]"
+            className="shrink-0 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide focus:ring-rose-500 focus:ring-offset-2 dark:ring-offset-[#050505]"
           >
             Pagar
-          </button>
+          </PrimaryButton>
         )}
       </div>
 

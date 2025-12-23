@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from '@inertiajs/react'
+import BareButton from '@/Components/common/buttons/BareButton'
 
 export default function Topbar({ user, sidebarOpen, setSidebarOpen }) {
   const [isDark, setIsDark] = useState(false)
@@ -71,17 +72,17 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen }) {
       <div className="flex items-center gap-3">
         <Link href="#" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Ajuda</Link>
 
-        <button
+        <BareButton
           type="button"
           onClick={toggleTheme}
           className="h-8 px-3 rounded-full text-xs font-medium border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-100 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
           aria-label="Alternar tema claro/escuro"
         >
           {isDark ? 'Light' : 'Dark'}
-        </button>
+        </BareButton>
 
         <div className="relative">
-          <button
+          <BareButton
             type="button"
             onClick={toggleUserMenu}
             className="h-8 w-8 rounded-full bg-gradient-to-br from-[#3a0f0f] to-transparent flex items-center justify-center text-sm font-semibold text-white ring-1 ring-black/10 hover:ring-black/20 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -89,7 +90,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen }) {
             aria-expanded={userMenuOpen}
           >
               {initials}
-          </button>
+          </BareButton>
 
           {userMenuOpen && (
             <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-[#111] dark:text-gray-100 dark:ring-black/40">

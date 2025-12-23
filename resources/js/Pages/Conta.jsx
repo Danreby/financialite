@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/common/Modal';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
+import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
+import DangerButton from '@/Components/common/buttons/DangerButton';
 
 function formatDueDay(dueDay) {
 	if (!dueDay) return 'Não definido';
@@ -178,20 +180,20 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 										</div>
 									</div>
 									<div className="flex items-center gap-2 text-xs">
-										<button
+										<SecondaryButton
 											type="button"
 											onClick={() => openEditBankModal(account)}
-											className="rounded-full border border-rose-500 px-3 py-1 font-semibold uppercase tracking-wide text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+											className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
 										>
 											Alterar vencimento
-										</button>
-										<button
+										</SecondaryButton>
+										<DangerButton
 											type="button"
 											onClick={() => openConfirmDelete('bank', { bankId: account.bank_id, name: account.name })}
-											className="rounded-full border border-red-500 px-3 py-1 font-semibold uppercase tracking-wide text-red-600 transition hover:bg-red-50 dark:border-red-500/70 dark:text-red-300 dark:hover:bg-red-900/20"
+											className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
 										>
 											Remover
-										</button>
+										</DangerButton>
 									</div>
 								</div>
 							))}
@@ -222,20 +224,20 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 								>
 									<span className="text-gray-900 dark:text-gray-100">{category.name}</span>
 									<div className="flex items-center gap-2 text-xs">
-										<button
+										<SecondaryButton
 											type="button"
 											onClick={() => openEditCategoryModal(category)}
-											className="rounded-full border border-rose-500 px-3 py-1 font-semibold uppercase tracking-wide text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+											className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
 										>
 											Renomear
-										</button>
-										<button
+										</SecondaryButton>
+										<DangerButton
 											type="button"
 											onClick={() => openConfirmDelete('category', { categoryId: category.id, name: category.name })}
-											className="rounded-full border border-red-500 px-3 py-1 font-semibold uppercase tracking-wide text-red-600 transition hover:bg-red-50 dark:border-red-500/70 dark:text-red-300 dark:hover:bg-red-900/20"
+											className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
 										>
 											Remover
-										</button>
+										</DangerButton>
 									</div>
 								</li>
 							))}
@@ -281,17 +283,17 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 					</div>
 
 					<div className="flex items-center justify-end gap-3 pt-2">
-						<button
+						<SecondaryButton
 							type="button"
 							onClick={() => {
 								if (saving) return;
 								setIsEditBankModalOpen(false);
 								setBankBeingEdited(null);
 							}}
-							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 						>
 							Cancelar
-						</button>
+						</SecondaryButton>
 						<PrimaryButton type="submit" disabled={saving}>
 							{saving ? 'Salvando...' : 'Salvar'}
 						</PrimaryButton>
@@ -324,17 +326,17 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 					</div>
 
 					<div className="flex items-center justify-end gap-3 pt-2">
-						<button
+						<SecondaryButton
 							type="button"
 							onClick={() => {
 								if (saving) return;
 								setIsEditCategoryModalOpen(false);
 								setCategoryBeingEdited(null);
-							}}
-							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+						}}
+							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 						>
 							Cancelar
-						</button>
+						</SecondaryButton>
 						<PrimaryButton type="submit" disabled={saving}>
 							{saving ? 'Salvando...' : 'Salvar'}
 						</PrimaryButton>
@@ -364,20 +366,20 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 						Essa ação não poderá ser desfeita.
 					</p>
 					<div className="flex items-center justify-end gap-3 pt-2">
-						<button
+						<SecondaryButton
 							type="button"
 							onClick={() => {
 								if (saving) return;
 								setIsConfirmModalOpen(false);
 								setConfirmTarget({ type: null, id: null, name: '' });
-							}}
-							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+						}}
+							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 						>
 							Cancelar
-						</button>
-						<PrimaryButton type="button" onClick={handleConfirmDelete} disabled={saving}>
+						</SecondaryButton>
+						<DangerButton type="button" onClick={handleConfirmDelete} disabled={saving}>
 							{saving ? 'Removendo...' : 'Remover'}
-						</PrimaryButton>
+						</DangerButton>
 					</div>
 				</div>
 			</Modal>
