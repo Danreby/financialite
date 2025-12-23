@@ -11,7 +11,7 @@ export default function FaturaPendingExportButton({ monthlyGroups = [] }) {
     const monthLabels = {};
 
     monthlyGroups.forEach((group) => {
-      if (!group || !group.month_key) return;
+      if (!group || !group.month_key || group.is_paid) return;
       monthKeys.push(group.month_key);
       if (group.month_label) {
         monthLabels[group.month_key] = group.month_label;
@@ -24,7 +24,7 @@ export default function FaturaPendingExportButton({ monthlyGroups = [] }) {
 
     monthlyGroups.forEach((group) => {
       const monthKey = group.month_key;
-      if (!monthKey || !group.items) return;
+      if (!monthKey || group.is_paid || !group.items) return;
 
       group.items.forEach((item) => {
         if (!item) return;
