@@ -33,7 +33,6 @@ export default function Config() {
         variants={containerVariants}
         className="max-w-4xl"
       >
-        {/* Header */}
         <motion.div variants={itemVariants} className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Configurações</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
@@ -41,12 +40,10 @@ export default function Config() {
           </p>
         </motion.div>
 
-        {/* Profile Settings Card */}
         <motion.div variants={itemVariants}>
           <ProfileSettingsCard user={user} itemVariants={itemVariants} />
         </motion.div>
 
-        {/* Security Settings Card */}
         <motion.div variants={itemVariants}>
           <SecuritySettingsCard itemVariants={itemVariants} />
         </motion.div>

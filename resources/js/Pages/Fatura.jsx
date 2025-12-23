@@ -247,6 +247,9 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 										bankUserId={selectedBankId || null}
 										due_day={selectedAccount?.due_day ?? null}
 										onPaid={handlePaidMonth}
+										isCurrentPending={
+											selectedGroup.month_key === currentMonthKey && !selectedGroup.is_paid
+										}
 								/>
 							)}
 						</>

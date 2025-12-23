@@ -19,6 +19,7 @@ export default function FaturaMonthSection({
   onPaid,
   is_paid = false,
   due_day = null,
+  isCurrentPending = false,
 }) {
   const [showPayModal, setShowPayModal] = useState(false);
 
@@ -40,7 +41,7 @@ export default function FaturaMonthSection({
             </p>
           </div>
         </div>
-        {!is_paid && (
+        {isCurrentPending && (
           <button
             type="button"
             onClick={() => setShowPayModal(true)}
