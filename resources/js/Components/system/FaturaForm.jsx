@@ -9,6 +9,7 @@ import BareButton from "@/Components/common/buttons/BareButton";
 export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = [], categories = [] }) {
   const [isRecurring, setIsRecurring] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [type, setType] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -19,7 +20,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title")?.toString().trim();
     const amount = formData.get("amount")?.toString().trim();
-    const type = formData.get("type")?.toString().trim();
+    const submittedType = formData.get("type")?.toString().trim();
     const bankUserId = formData.get("bank_user_id")?.toString().trim();
     const categoryId = formData.get("category_id")?.toString().trim();
     const formElement = e.currentTarget;
@@ -40,7 +41,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       return;
     }
 
-    if (!type) {
+    if (!submittedType) {
       toast.error("Selecione o tipo: débito ou crédito.");
       const debitRadio = formElement.querySelector('input[name="type"][value="debit"]');
       debitRadio?.focus();
@@ -48,15 +49,21 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       return;
     }
     const totalInstallmentsRaw = formData.get("total_installments")?.toString().trim();
-    const totalInstallments = isRecurring ? "1" : (totalInstallmentsRaw || "1");
+    const isDebit = submittedType === "debit";
+    const effectiveRecurring = isDebit ? false : isRecurring;
+    const totalInstallments = isDebit
+      ? "1"
+      : effectiveRecurring
+        ? "1"
+        : (totalInstallmentsRaw || "1");
 
     const payload = {
       title,
       description: formData.get("description")?.toString().trim() || "",
       amount,
-      type,
+      type: submittedType,
       total_installments: totalInstallments,
-      is_recurring: isRecurring ? 1 : 0,
+      is_recurring: effectiveRecurring ? 1 : 0,
       bank_user_id: bankUserId || null,
       category_id: categoryId || null,
     };
@@ -181,6 +188,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
                   type="radio"
                   name="type"
                   value="debit"
+                  checked={type === "debit"}
+                  onChange={(e) => setType(e.target.value)}
                   className="h-3 w-3 appearance-none rounded-full border border-gray-400 checked:border-[#7b1818] checked:bg-[#7b1818] dark:border-gray-600"
                 />
                 <span>Débito</span>
@@ -190,6 +199,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
                   type="radio"
                   name="type"
                   value="credit"
+                  checked={type === "credit"}
+                  onChange={(e) => setType(e.target.value)}
                   className="h-3 w-3 appearance-none rounded-full border border-gray-400 checked:border-emerald-600 checked:bg-emerald-600 dark:border-gray-600"
                 />
                 <span>Crédito</span>
@@ -206,7 +217,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
               type="number"
               min="1"
               className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 disabled:bg-gray-100 disabled:dark:bg-gray-800 disabled:text-gray-500 disabled:dark:text-gray-400"
-              disabled={isRecurring}
+              disabled={isRecurring || type === "debit"}
             />
           </div>
 
@@ -216,7 +227,10 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             </span>
             <BareButton
               type="button"
-              onClick={() => setIsRecurring((prev) => !prev)}
+              onClick={() => {
+                if (type === "debit") return;
+                setIsRecurring((prev) => !prev);
+              }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-[#7b1818] focus:ring-offset-2 ${
                 isRecurring
                   ? "bg-[#7b1818] shadow-lg shadow-[#7b1818]/40"
@@ -232,7 +246,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             <input
               type="hidden"
               name="is_recurring"
-              value={isRecurring ? 1 : 0}
+              value={type === "debit" ? 0 : isRecurring ? 1 : 0}
             />
           </div>
           <div className="flex flex-col gap-1 md:col-span-2">

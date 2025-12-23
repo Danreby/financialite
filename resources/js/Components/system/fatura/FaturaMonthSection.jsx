@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import FaturaItemRow from "@/Components/system/fatura/FaturaItemRow";
 import FaturaPayModal from "@/Components/system/fatura/FaturaPayModal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
+import ScrollArea from "@/Components/common/ScrollArea";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -53,17 +54,17 @@ export default function FaturaMonthSection({
         )}
       </div>
 
-      <div className="rounded-2xl bg-white px-2 py-1 shadow-sm ring-1 ring-black/5 dark:bg-[#080808] dark:ring-white/5">
+      <div className="rounded-2xl bg-white px-2 py-1 shadow-sm ring-1 ring-black/5 dark:bg-[#080808] dark:ring-white/5 shadow-gray-500 dark:shadow-gray-900">
         {items.length === 0 ? (
           <p className="px-3 py-3 text-xs text-gray-500 dark:text-gray-400">
             Nenhuma transação neste mês.
           </p>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          <ScrollArea className="divide-y divide-gray-100 dark:divide-gray-800">
             {items.map((item) => (
               <FaturaItemRow key={item.id} {...item} />
             ))}
-          </div>
+          </ScrollArea>
         )}
       </div>
 

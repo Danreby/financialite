@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
+import ScrollArea from "@/Components/common/ScrollArea";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -90,7 +91,7 @@ export default function FaturaPayModal({
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 Pendências do mês
               </p>
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              <ScrollArea maxHeightClassName="max-h-64" className="space-y-2 pr-1">
                 {pendingItems.map((item) => {
                   const totalInstallments = item.total_installments || 1;
                   const currentInstallment = item.current_installment || 0;
@@ -125,7 +126,7 @@ export default function FaturaPayModal({
                     </div>
                   );
                 })}
-              </div>
+              </ScrollArea>
 
               <div className="mt-3 flex items-center justify-between border-t border-dashed border-gray-200 pt-2 text-[11px] dark:border-gray-700">
                 <span className="font-medium text-gray-600 dark:text-gray-300">

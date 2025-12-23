@@ -7,6 +7,7 @@ import Modal from '@/Components/common/Modal';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 import DangerButton from '@/Components/common/buttons/DangerButton';
+import ScrollArea from '@/Components/common/ScrollArea';
 
 function formatDueDay(dueDay) {
 	if (!dueDay) return 'Não definido';
@@ -167,7 +168,7 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 					</div>
 
 					{localBankAccounts && localBankAccounts.length > 0 ? (
-						<div className="space-y-2">
+						<ScrollArea className="space-y-2">
 							{localBankAccounts.map((account) => (
 								<div
 									key={account.id}
@@ -197,7 +198,7 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 									</div>
 								</div>
 							))}
-						</div>
+						</ScrollArea>
 					) : (
 						<p className="text-xs text-gray-500 dark:text-gray-400">
 							Nenhuma conta vinculada. Use o Dashboard ou as ações rápidas para adicionar um banco.
@@ -216,32 +217,34 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 					</div>
 
 					{localCategories && localCategories.length > 0 ? (
-						<ul className="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-							{localCategories.map((category) => (
-								<li
-									key={category.id}
-									className="flex items-center justify-between py-2"
-								>
-									<span className="text-gray-900 dark:text-gray-100">{category.name}</span>
-									<div className="flex items-center gap-2 text-xs">
-										<SecondaryButton
-											type="button"
-											onClick={() => openEditCategoryModal(category)}
-											className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
-										>
-											Renomear
-										</SecondaryButton>
-										<DangerButton
-											type="button"
-											onClick={() => openConfirmDelete('category', { categoryId: category.id, name: category.name })}
-											className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
-										>
-											Remover
-										</DangerButton>
-									</div>
-								</li>
-							))}
-						</ul>
+						<ScrollArea>
+							<ul className="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+								{localCategories.map((category) => (
+									<li
+										key={category.id}
+										className="flex items-center justify-between py-2"
+									>
+										<span className="text-gray-900 dark:text-gray-100">{category.name}</span>
+										<div className="flex items-center gap-2 text-xs">
+											<SecondaryButton
+												type="button"
+												onClick={() => openEditCategoryModal(category)}
+												className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+											>
+												Renomear
+											</SecondaryButton>
+											<DangerButton
+												type="button"
+												onClick={() => openConfirmDelete('category', { categoryId: category.id, name: category.name })}
+												className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+											>
+												Remover
+											</DangerButton>
+										</div>
+									</li>
+								))}
+							</ul>
+						</ScrollArea>
 					) : (
 						<p className="text-xs text-gray-500 dark:text-gray-400">
 							Nenhuma categoria cadastrada. Use as ações rápidas para criar novas categorias.
