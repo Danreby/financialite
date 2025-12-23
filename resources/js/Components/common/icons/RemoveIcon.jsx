@@ -6,8 +6,8 @@ const RemoveIcon = ({ type = 1, size = 18, color = 'text-white' }) => {
       {type === 1 && (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width={size}
+          height={size}
           fill="currentColor"
           className="bi bi-trash-fill mt-2"
           viewBox="0 0 16 16"
@@ -18,8 +18,8 @@ const RemoveIcon = ({ type = 1, size = 18, color = 'text-white' }) => {
       {type === 2 && (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width={size}
+          height={size}
           fill="currentColor"
           className="bi bi-trash mt-2"
           viewBox="0 0 16 16"
@@ -31,8 +31,8 @@ const RemoveIcon = ({ type = 1, size = 18, color = 'text-white' }) => {
       {type === 3 && (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width={size}
+          height={size}
           fill="currentColor"
           className="bi bi-trash3 mt-2 text-red-600"
           viewBox="0 0 16 16"
@@ -43,8 +43,8 @@ const RemoveIcon = ({ type = 1, size = 18, color = 'text-white' }) => {
       {type === 4 && (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width={size}
+          height={size}
           fill="currentColor"
           className="bi bi-trash3-fill mt-2"
           viewBox="0 0 16 16"
