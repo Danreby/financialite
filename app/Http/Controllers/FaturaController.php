@@ -514,10 +514,8 @@ class FaturaController extends Controller
             $currentMonthLabel = $currentGroup['month_label'] ?? null;
 
             foreach ($currentGroup['items'] as $item) {
-                if (($item['type'] ?? null) !== 'debit') {
-                    continue;
-                }
-
+                // Inclui tanto transações de débito quanto de crédito
+                // e considera transações recorrentes conforme projeção
                 $totalInstallments = max((int) ($item['total_installments'] ?? 1), 1);
                 $amount = (float) ($item['amount'] ?? 0);
                 $currentPendingBill += $amount / $totalInstallments;

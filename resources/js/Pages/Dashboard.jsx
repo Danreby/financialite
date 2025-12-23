@@ -84,7 +84,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           },
           {
             id: 2,
-            title: 'Despesas pendentes',
+            title: 'Transações no débito',
             value: formatCurrency(pendingExpenses),
             delta: '',
           },
