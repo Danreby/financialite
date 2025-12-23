@@ -33,4 +33,36 @@ class CategoryController extends Controller
 
         return response()->json($category, 201);
     }
+
+    public function update(Request $request, Category $category)
+    {
+        $user = $request->user();
+
+        if ($category->user_id !== $user->id) {
+            return response()->json(['message' => 'Não autorizado.'], 403);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $category->update([
+            'name' => $data['name'],
+        ]);
+
+        return response()->json($category);
+    }
+
+    public function destroy(Request $request, Category $category)
+    {
+        $user = $request->user();
+
+        if ($category->user_id !== $user->id) {
+            return response()->json(['message' => 'Não autorizado.'], 403);
+        }
+
+        $category->delete();
+
+        return response()->json(['message' => 'Categoria removida.']);
+    }
 }

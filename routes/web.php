@@ -45,7 +45,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ============ Page Routes (Inertia) ============
     Route::get('/accounts', function () {
-        return Inertia::render('Accounts/Index');
+            $user = request()->user();
+
+            $bankAccounts = BankUser::with('bank')
+                ->where('user_id', $user->id)
+                ->get()
+                ->map(function ($bankUser) {
+                    return [
+                        'id' => $bankUser->id,
+                        'bank_id' => $bankUser->bank_id,
+                        'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
+                        'due_day' => $bankUser->due_day,
+                    ];
+                });
+
+            $categories = Category::where('user_id', $user->id)
+                ->orderBy('name')
+                ->get(['id', 'name']);
+
+            return Inertia::render('Conta', [
+                'bankAccounts' => $bankAccounts,
+                'categories' => $categories,
+            ]);
     })->name('accounts.index');
 
     Route::get('/transactions', function () {
