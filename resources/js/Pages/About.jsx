@@ -1,57 +1,269 @@
 import React from 'react'
 import { Head } from '@inertiajs/react'
+import { motion } from 'framer-motion'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 
 export default function About() {
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.1,
+				delayChildren: 0.2,
+			},
+		},
+	}
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 20 },
+		visible: {
+			opacity: 1,
+			y: 0,
+			transition: { duration: 0.5, ease: 'easeOut' },
+		},
+	}
+
+	const featureVariants = {
+		hidden: { opacity: 0, scale: 0.95 },
+		visible: {
+			opacity: 1,
+			scale: 1,
+			transition: { duration: 0.4, ease: 'easeOut' },
+		},
+	}
+
+	const features = [
+		{
+			icon: '📊',
+			title: 'Acompanhe Faturas',
+			description: 'Controle suas faturas mês a mês com pagamentos organizados',
+		},
+		{
+			icon: '💳',
+			title: 'Registre Transações',
+			description: 'Compras em crédito, débito, recorrentes e parceladas',
+		},
+		{
+			icon: '🏦',
+			title: 'Organize Contas',
+			description: 'Gerencie contas bancárias e categorias para relatórios claros',
+		},
+		{
+			icon: '📈',
+			title: 'Painel Visual',
+			description: 'Visão geral completa de suas finanças mensais',
+		},
+		{
+			icon: '📥',
+			title: 'Exporte Dados',
+			description: 'Baixe planilhas Excel com dados das próximas faturas',
+		},
+		{
+			icon: '⚡',
+			title: 'Interface Rápida',
+			description: 'Aplicação leve e responsiva para qualquer dispositivo',
+		},
+	]
+
+	const socialLinks = [
+		{
+			label: 'Portfólio',
+			url: 'https://danreby.github.io/danreby-portifolio/',
+			icon: '🌐',
+		},
+		{
+			label: 'GitHub',
+			url: 'https://github.com/Danreby',
+			icon: '💻',
+		},
+		{
+			label: 'LinkedIn',
+			url: 'https://www.linkedin.com/in/bernardo-rolim-aa6802213/',
+			icon: '🔗',
+		},
+	]
+
 	return (
 		<AuthenticatedLayout>
 			<Head title="Sobre" />
-			<div className="w-full max-w-3xl mx-auto px-3 py-6 space-y-5 sm:px-4 sm:py-8 lg:px-6">
-				<header className="space-y-2">
-					<h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 sm:text-2xl">
-						Sobre o Projeto
+			<motion.div
+				className="w-full max-w-5xl mx-auto space-y-12 sm:space-y-14"
+				variants={containerVariants}
+				initial="hidden"
+				animate="visible"
+			>
+				<motion.header className="pt-1 sm:pt-2 space-y-4" variants={itemVariants}>
+					<motion.div
+						initial={{ opacity: 0, y: -20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: 0.1, duration: 0.6 }}
+						className="mb-3"
+					>
+						<span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-2xl shadow-md text-white">
+							💰
+						</span>
+					</motion.div>
+					<h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-gray-100">
+						Financialite
 					</h1>
-					<p className="text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
-						O projeto foi criado por <a href="https://danreby.github.io/danreby-portifolio/" className='font-medium text-blue-500 hover:underline'>Bernardo Santos Rolim</a>,
-                        desenvolvedor full-stack com foco em aplicações web modernas. O objetivo principal é fornecer
-                        uma ferramenta simples e eficiente para o gerenciamento financeiro pessoal. Gerênciamento de faturas e registro de transações para rastrear despesas de forma prática.
+					<p className="mt-1 text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-2xl">
+						Seu gerenciador financeiro pessoal inteligente e moderno
 					</p>
-                    <p>
-                        Pode saber mais sobre mim e meus outros projetos visitando minhas redes sociais:
-                        <ul className="list-disc list-inside mt-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
-                            <li>Site Pessoal: <a href="https://danreby.github.io/danreby-portifolio/" className='font-medium text-blue-500 hover:underline'>bernardo.portifolio</a></li>
-                            <li>GitHub: <a href="https://github.com/Danreby" className='font-medium text-blue-500 hover:underline'>github.com/Danreby</a></li>
-                            <li>LinkedIn: <a href="https://www.linkedin.com/in/bernardo-rolim-aa6802213/" className='font-medium text-blue-500 hover:underline'>linkedin.com/in/bernardo-rolim/</a></li>
-                        </ul>
-                    </p>
-				</header>
-
-				<section className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-5">
-					<h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 sm:text-base">
-						O que é possível fazer com esta aplicação?
-					</h2>
-					<ul className="mt-3 space-y-2 text-xs text-gray-700 dark:text-gray-300 sm:text-sm">
-						<li>• Acompanhar suas faturas mês a mês e controlar pagamentos.</li>
-						<li>• Registrar compras no crédito e no débito, inclusive compras recorrentes e parcelamentos.</li>
-						<li>• Organizar contas bancárias e categorias para ter relatórios mais claros.</li>
-						<li>• Visualizar um painel com visão geral das finanças do mês.</li>
-						<li>• Fazer download de uma planilha excel com os dados das próximas faturas.</li>
-					</ul>
-				</section>
-
-				<section className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-5">
-					<h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 sm:text-base">
-						Sobre este projeto
-					</h2>
-					<p className="mt-3 text-xs leading-relaxed text-gray-700 dark:text-gray-300 sm:text-sm">
-						Esta é uma aplicação em constante evolução. Novos recursos podem ser adicionados com o tempo
-						e alguns fluxos podem ser refinados conforme o uso diário. Use esta página apenas como um
-						ponto de referência geral e pessoal. Este projeto não será monetizado de nenhuma forma e
-                        não haverá anúncios ou vendas de dados, será usado puramente para fins pessoais e não comerciais. Sinta-se à vontade para contribuir com sugestões ou
-                        reportar bugs através do meu GitHub.
+					<p className="mt-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
+						Desenvolvido por{' '}
+						<a
+							href="https://danreby.github.io/danreby-portifolio/"
+							className="font-semibold text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Bernardo Santos Rolim
+						</a>
+						, um desenvolvedor full-stack apaixonado por aplicações web modernas. Uma ferramenta simples
+						e eficiente para o gerenciamento de faturas, transações e despesas.
 					</p>
-				</section>
-			</div>
+				</motion.header>
+
+				<motion.section className="mb-4" variants={itemVariants}>
+					<h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+						Recursos Disponíveis
+					</h2>
+					<motion.div
+						className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+						variants={containerVariants}
+						initial="hidden"
+						animate="visible"
+					>
+						{features.map((feature, index) => (
+							<motion.div
+								key={index}
+								className="group relative bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 shadow-md ring-1 ring-black/5 dark:ring-white/10 hover:shadow-lg hover:ring-blue-500/20 dark:hover:ring-blue-500/30 transition-all duration-300 overflow-hidden"
+								variants={featureVariants}
+								whileHover={{ y: -5 }}
+							>
+								<div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+								<div className="relative z-10">
+									<div className="text-3xl mb-3">{feature.icon}</div>
+									<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+										{feature.title}
+									</h3>
+									<p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+										{feature.description}
+									</p>
+								</div>
+							</motion.div>
+						))}
+					</motion.div>
+				</motion.section>
+
+				<motion.section
+					className="mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-3xl p-6 sm:p-8 ring-1 ring-blue-200/50 dark:ring-blue-800/30"
+					variants={itemVariants}
+				>
+					<h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+						Sobre o Projeto
+					</h2>
+					<div className="space-y-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+						<p className="text-sm sm:text-base">
+							Financialite é uma aplicação em constante evolução, desenvolvida com as tecnologias
+							mais modernas para garantir uma experiência de usuário excepcional. Novos recursos são
+							adicionados regularmente, refinando fluxos conforme o uso diário.
+						</p>
+						<p className="text-sm sm:text-base">
+							<span className="font-semibold text-blue-600 dark:text-blue-400">100% Pessoal:</span>{' '}
+							Este projeto não será monetizado, não contém anúncios e seus dados estão seguros. É
+							desenvolvido puramente para fins pessoais e não comerciais.
+						</p>
+						<p className="text-sm sm:text-base">
+							<span className="font-semibold text-green-600 dark:text-green-400">Código Aberto:</span>{' '}
+							Sinta-se à vontade para explorar o repositório, contribuir com sugestões ou reportar
+							bugs através do GitHub.
+						</p>
+					</div>
+				</motion.section>
+
+				<motion.section
+					className="mb-4"
+					variants={itemVariants}
+				>
+					<h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+						Conecte-se Comigo
+					</h2>
+					<motion.div
+						className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+						variants={containerVariants}
+						initial="hidden"
+						animate="visible"
+					>
+						{socialLinks.map((link, index) => (
+							<motion.a
+								key={index}
+								href={link.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="group bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 text-center shadow-md ring-1 ring-black/5 dark:ring-white/10 hover:shadow-lg transition-all duration-300 overflow-hidden"
+								variants={featureVariants}
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.98 }}
+							>
+								<div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+								<div className="relative z-10">
+									<div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+										{link.icon}
+									</div>
+									<p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+										{link.label}
+									</p>
+									<p className="text-xs text-gray-500 dark:text-gray-400 mt-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+										Visite meu perfil
+									</p>
+								</div>
+							</motion.a>
+						))}
+					</motion.div>
+				</motion.section>
+
+				<motion.section
+					className="bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 sm:p-8 shadow-md ring-1 ring-black/5 dark:ring-white/10"
+					variants={itemVariants}
+				>
+					<h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+						Tecnologias Utilizadas
+					</h2>
+					<motion.div
+						className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+						variants={containerVariants}
+						initial="hidden"
+						animate="visible"
+					>
+						{[
+							{ name: 'Laravel', icon: '🚀' },
+							{ name: 'React', icon: '⚛️' },
+							{ name: 'Tailwind CSS', icon: '🎨' },
+							{ name: 'Inertia.js', icon: '🔗' },
+							{ name: 'MySQL', icon: '🗄️' },
+							{ name: 'Vite', icon: '⚡' },
+							{ name: 'Framer Motion', icon: '✨' },
+							{ name: 'JavaScript', icon: '📝' },
+						].map((tech, index) => (
+							<motion.div
+								key={index}
+								className="flex flex-col items-center justify-center p-4 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 hover:shadow-md transition-shadow duration-300"
+								variants={featureVariants}
+								whileHover={{ y: -5 }}
+							>
+								<span className="text-3xl mb-2">{tech.icon}</span>
+								<p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+									{tech.name}
+								</p>
+							</motion.div>
+						))}
+					</motion.div>
+				</motion.section>
+			</motion.div>
 		</AuthenticatedLayout>
 	)
 }
