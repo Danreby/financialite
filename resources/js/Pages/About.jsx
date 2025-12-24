@@ -2,6 +2,7 @@ import React from 'react'
 import { Head } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
+import { FeatureCard, SocialCard, TechCard } from '@/Components/system/about/AboutCards'
 
 export default function About() {
 	const containerVariants = {
@@ -136,24 +137,13 @@ export default function About() {
 						animate="visible"
 					>
 						{features.map((feature, index) => (
-							<motion.div
+							<FeatureCard
 								key={index}
-								className="group relative bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 shadow-md ring-1 ring-black/5 dark:ring-white/10 hover:shadow-lg hover:ring-blue-500/20 dark:hover:ring-blue-500/30 transition-all duration-300 overflow-hidden"
+								icon={feature.icon}
+								title={feature.title}
+								description={feature.description}
 								variants={featureVariants}
-								whileHover={{ y: -5 }}
-							>
-								<div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-								<div className="relative z-10">
-									<div className="text-3xl mb-3">{feature.icon}</div>
-									<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-										{feature.title}
-									</h3>
-									<p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-										{feature.description}
-									</p>
-								</div>
-							</motion.div>
+							/>
 						))}
 					</motion.div>
 				</motion.section>
@@ -184,10 +174,7 @@ export default function About() {
 					</div>
 				</motion.section>
 
-				<motion.section
-					className="mb-4"
-					variants={itemVariants}
-				>
+				<motion.section className="mb-4" variants={itemVariants}>
 					<h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
 						Conecte-se Comigo
 					</h2>
@@ -198,30 +185,13 @@ export default function About() {
 						animate="visible"
 					>
 						{socialLinks.map((link, index) => (
-							<motion.a
+							<SocialCard
 								key={index}
-								href={link.url}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="group bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 text-center shadow-md ring-1 ring-black/5 dark:ring-white/10 hover:shadow-lg transition-all duration-300 overflow-hidden"
+								icon={link.icon}
+								label={link.label}
+								url={link.url}
 								variants={featureVariants}
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.98 }}
-							>
-								<div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-								<div className="relative z-10">
-									<div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
-										{link.icon}
-									</div>
-									<p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-										{link.label}
-									</p>
-									<p className="text-xs text-gray-500 dark:text-gray-400 mt-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
-										Visite meu perfil
-									</p>
-								</div>
-							</motion.a>
+							/>
 						))}
 					</motion.div>
 				</motion.section>
@@ -249,17 +219,12 @@ export default function About() {
 							{ name: 'Framer Motion', icon: '✨' },
 							{ name: 'JavaScript', icon: '📝' },
 						].map((tech, index) => (
-							<motion.div
+							<TechCard
 								key={index}
-								className="flex flex-col items-center justify-center p-4 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 hover:shadow-md transition-shadow duration-300"
+								icon={tech.icon}
+								name={tech.name}
 								variants={featureVariants}
-								whileHover={{ y: -5 }}
-							>
-								<span className="text-3xl mb-2">{tech.icon}</span>
-								<p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
-									{tech.name}
-								</p>
-							</motion.div>
+							/>
 						))}
 					</motion.div>
 				</motion.section>
