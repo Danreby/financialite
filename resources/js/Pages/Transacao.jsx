@@ -7,6 +7,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import TransactionsList from "@/Components/system/transactions/TransactionsList";
 import EditTransactionModal from "@/Components/system/transactions/EditTransactionModal";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
+import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
+import DangerButton from "@/Components/common/buttons/DangerButton";
+import Modal from "@/Components/common/Modal";
 
 export default function Transacao({ transactions = [], bankAccounts = [], categories = [] }) {
 	const [localTransactions, setLocalTransactions] = useState(transactions);
@@ -16,6 +19,8 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 	const [editingTransaction, setEditingTransaction] = useState(null);
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isDeletingId, setIsDeletingId] = useState(null);
+	const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+	const [transactionToDelete, setTransactionToDelete] = useState(null);
 
 	const filteredTransactions = useMemo(() => {
 		const term = searchTerm.trim().toLowerCase();
@@ -54,18 +59,20 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 
 	const handleDelete = async (tx) => {
 		if (!tx || isDeletingId) return;
+		setTransactionToDelete(tx);
+		setIsDeleteConfirmOpen(true);
+	};
 
-		if (!window.confirm("Deseja realmente remover esta transação?")) {
-			return;
-		}
+	const handleConfirmDelete = async () => {
+		if (!transactionToDelete || isDeletingId) return;
 
-		setIsDeletingId(tx.id);
+		setIsDeletingId(transactionToDelete.id);
 		toast.dismiss();
 
 		try {
-			await axios.delete(route("faturas.destroy", tx.id));
+			await axios.delete(route("faturas.destroy", transactionToDelete.id));
 			toast.success("Transação removida com sucesso.");
-			setLocalTransactions((prev) => prev.filter((item) => item.id !== tx.id));
+			setLocalTransactions((prev) => prev.filter((item) => item.id !== transactionToDelete.id));
 		} catch (error) {
 			console.error(error);
 			if (error.response?.data?.message) {
@@ -75,6 +82,8 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 			}
 		} finally {
 			setIsDeletingId(null);
+			setIsDeleteConfirmOpen(false);
+			setTransactionToDelete(null);
 		}
 	};
 
@@ -172,6 +181,51 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 				categories={categories}
 				onUpdated={handleUpdated}
 			/>
+
+			<Modal
+				isOpen={isDeleteConfirmOpen}
+				onClose={() => {
+					if (isDeletingId) return;
+					setIsDeleteConfirmOpen(false);
+					setTransactionToDelete(null);
+				}}
+				title="Remover transação"
+				maxWidth="sm"
+			>
+				<p className="text-sm text-gray-600 dark:text-gray-300">
+					Tem certeza que deseja remover a transação
+					{" "}
+					<span className="font-semibold">
+						{transactionToDelete?.title ?? "selecionada"}
+					</span>
+					?
+				</p>
+				<p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+					Essa ação é permanente e não poderá ser desfeita.
+				</p>
+
+				<div className="mt-5 flex items-center justify-end gap-3">
+					<SecondaryButton
+						type="button"
+						onClick={() => {
+							if (isDeletingId) return;
+							setIsDeleteConfirmOpen(false);
+							setTransactionToDelete(null);
+						}}
+						className="rounded-lg px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+					>
+						Cancelar
+					</SecondaryButton>
+					<DangerButton
+						type="button"
+						onClick={handleConfirmDelete}
+						disabled={Boolean(isDeletingId)}
+						className="rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+					>
+						{isDeletingId ? "Removendo..." : "Remover"}
+					</DangerButton>
+				</div>
+			</Modal>
 		</AuthenticatedLayout>
 	);
 }
