@@ -309,22 +309,48 @@ class FaturaController extends Controller
 
         $currentMonthKey = $this->faturaService->resolveCurrentBillingMonthKey($selectedBankUser, $paidByMonth);
 
-        $currentGroup = collect($monthlyGroups)->firstWhere('month_key', $currentMonthKey);
+        $groupsCollection = collect($monthlyGroups);
+
+        $effectiveGroup = $groupsCollection->firstWhere('month_key', $currentMonthKey);
+
+        if (!$effectiveGroup || ($effectiveGroup['is_paid'] ?? false)) {
+            $targetMonth = null;
+            try {
+                $targetMonth = Carbon::createFromFormat('Y-m', $currentMonthKey)->startOfMonth();
+            } catch (\Throwable $e) {
+                $targetMonth = Carbon::today()->startOfMonth();
+            }
+
+            $unpaidGroups = $groupsCollection->filter(function ($group) {
+                return !($group['is_paid'] ?? false);
+            });
+
+            if ($unpaidGroups->isNotEmpty()) {
+                $effectiveGroup = $unpaidGroups->sortBy(function ($group) use ($targetMonth) {
+                    $groupMonth = Carbon::createFromFormat('Y-m', $group['month_key'])->startOfMonth();
+                    return $targetMonth->diffInMonths($groupMonth);
+                })->first();
+            } else {
+                $effectiveGroup = null;
+            }
+        }
 
         $currentPendingBill = 0.0;
         $currentMonthLabel = null;
+        $effectiveMonthKey = $currentMonthKey;
 
-        if ($currentGroup && !($currentGroup['is_paid'] ?? false)) {
-            $currentMonthLabel = $currentGroup['month_label'] ?? null;
+        if ($effectiveGroup && !($effectiveGroup['is_paid'] ?? false)) {
+            $currentMonthLabel = $effectiveGroup['month_label'] ?? null;
+            $effectiveMonthKey = $effectiveGroup['month_key'] ?? $currentMonthKey;
 
-            foreach ($currentGroup['items'] as $item) {
+            foreach ($effectiveGroup['items'] as $item) {
                 $totalInstallments = max((int) ($item['total_installments'] ?? 1), 1);
                 $amount = (float) ($item['amount'] ?? 0);
                 $currentPendingBill += $amount / $totalInstallments;
             }
         }
 
-        $stats['current_month_key'] = $currentMonthKey;
+        $stats['current_month_key'] = $effectiveMonthKey;
         $stats['current_month_label'] = $currentMonthLabel;
         $stats['current_month_pending_bill'] = (float) $currentPendingBill;
 
