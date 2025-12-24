@@ -24,6 +24,14 @@ class FaturaService
             $data['current_installment'] = 0;
         }
 
+        if (($data['type'] ?? null) === 'debit') {
+            $data['status'] = 'paid';
+            $data['paid_date'] = Carbon::today()->toDateString();
+            $data['total_installments'] = 1;
+            $data['current_installment'] = 1;
+            $data['is_recurring'] = false;
+        }
+
         return DB::transaction(function () use ($data) {
             return Fatura::create($data);
         });

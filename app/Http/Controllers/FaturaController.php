@@ -54,11 +54,15 @@ class FaturaController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->wantsJson()) {
+            // Dashboard e APIs: retornam todas as transações (crédito e débito)
             $paginated = $baseQuery->paginate(15);
             return response()->json($paginated);
         }
 
-        $allFaturas = $baseQuery->get();
+        // Página de Faturas (Inertia): considera apenas transações de crédito
+        $allFaturas = (clone $baseQuery)
+            ->where('type', 'credit')
+            ->get();
 
         $paidQuery = Paid::where('user_id', $user->id);
 
@@ -289,6 +293,7 @@ class FaturaController extends Controller
         $allFaturas = Fatura::with('bankUser')
             ->forUser($user->id)
             ->forBankUser($bankUserId)
+            ->where('type', 'credit')
             ->orderBy('created_at', 'desc')
             ->get();
 
