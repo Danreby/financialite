@@ -74,15 +74,45 @@ function FaturaFilters({ bankAccounts, categories, filters, onChange }) {
 	);
 }
 
+
+function monthKeyToIndex(key) {
+	if (!key || typeof key !== 'string') return 0;
+	const [yearStr, monthStr] = key.split('-');
+	const year = parseInt(yearStr, 10) || 0;
+	const month = parseInt(monthStr, 10) || 0;
+	return year * 12 + (month - 1);
+}
+
+function getClosestMonthKey(monthlyGroups, currentMonthKey) {
+	if (!monthlyGroups || monthlyGroups.length === 0) return null;
+
+	if (currentMonthKey) {
+		const hasCurrent = monthlyGroups.some((g) => g.month_key === currentMonthKey);
+		if (hasCurrent) return currentMonthKey;
+
+		const targetIndex = monthKeyToIndex(currentMonthKey);
+		let best = monthlyGroups[0];
+		let bestDiff = Math.abs(monthKeyToIndex(best.month_key) - targetIndex);
+
+		for (const group of monthlyGroups) {
+			const diff = Math.abs(monthKeyToIndex(group.month_key) - targetIndex);
+			if (diff < bestDiff) {
+				best = group;
+				bestDiff = diff;
+			}
+		}
+
+		return best.month_key;
+	}
+
+	return monthlyGroups[0].month_key;
+}
+
 export default function Fatura({ monthlyGroups = [], bankAccounts = [], categories = [], filters = {}, currentMonthKey = null }) {
 	const selectedBankId = filters?.bank_user_id ?? '';
-	const [selectedMonthKey, setSelectedMonthKey] = useState(() => {
-		if (currentMonthKey && monthlyGroups && monthlyGroups.length > 0) {
-			const hasCurrent = monthlyGroups.some((g) => g.month_key === currentMonthKey);
-			if (hasCurrent) return currentMonthKey;
-		}
-		return monthlyGroups && monthlyGroups.length > 0 ? monthlyGroups[0].month_key : null;
-	});
+	const [selectedMonthKey, setSelectedMonthKey] = useState(() =>
+		getClosestMonthKey(monthlyGroups, currentMonthKey),
+	);
 	const [isDueDayModalOpen, setIsDueDayModalOpen] = useState(false);
 	const [dueDayInput, setDueDayInput] = useState('');
 	const [isUpdatingDueDay, setIsUpdatingDueDay] = useState(false);
@@ -95,14 +125,8 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 
 		const exists = monthlyGroups.some((g) => g.month_key === selectedMonthKey);
 		if (!exists) {
-			if (currentMonthKey) {
-				const hasCurrent = monthlyGroups.some((g) => g.month_key === currentMonthKey);
-				if (hasCurrent) {
-					setSelectedMonthKey(currentMonthKey);
-					return;
-				}
-			}
-			setSelectedMonthKey(monthlyGroups[0].month_key);
+			const closest = getClosestMonthKey(monthlyGroups, currentMonthKey);
+			setSelectedMonthKey(closest);
 		}
 	}, [monthlyGroups, selectedMonthKey, currentMonthKey]);
 
@@ -179,6 +203,8 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 			? monthlyGroups.find((g) => g.month_key === selectedMonthKey) || monthlyGroups[0]
 			: null;
 
+	const logicalCurrentKey = getClosestMonthKey(monthlyGroups, currentMonthKey);
+
 	return (
 		<AuthenticatedLayout>
 			<Head title="Faturas" />
@@ -249,9 +275,11 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 										bankUserId={selectedBankId || null}
 										due_day={selectedAccount?.due_day ?? null}
 										onPaid={handlePaidMonth}
-										isCurrentPending={
-											selectedGroup.month_key === currentMonthKey && !selectedGroup.is_paid
-										}
+											isCurrentPending={
+												logicalCurrentKey &&
+												selectedGroup.month_key === logicalCurrentKey &&
+												!selectedGroup.is_paid
+											}
 								/>
 							)}
 						</>

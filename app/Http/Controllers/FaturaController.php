@@ -222,13 +222,7 @@ class FaturaController extends Controller
         $targetMonth = Carbon::createFromFormat('Y-m', $data['month'])->startOfMonth();
 
         $faturas = $allFaturas->filter(function (Fatura $fatura) use ($targetMonth) {
-            $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
-
-            $firstBillingMonthKey = $this->faturaService->resolveBillingMonthKey($fatura);
-            $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
-            $last = (clone $first)->addMonths($totalInstallments - 1);
-
-            return !$targetMonth->lt($first) && !$targetMonth->gt($last);
+            return $this->faturaService->faturaAppliesToMonth($fatura, $targetMonth);
         });
 
         if ($faturas->isEmpty()) {
@@ -240,28 +234,7 @@ class FaturaController extends Controller
             $totalPaidThisRun = 0;
 
             foreach ($faturas as $fatura) {
-                $totalInstallments = max((int) $fatura->total_installments, 1);
-                $currentInstallment = max((int) ($fatura->current_installment ?? 0), 0);
-
-                $installmentAmount = (float) $fatura->amount / $totalInstallments;
-
-                if ($totalInstallments <= 1) {
-                    $fatura->status = 'paid';
-                    $fatura->paid_date = now()->toDateString();
-                    $totalPaidThisRun += (float) $fatura->amount;
-                } else {
-                    if ($currentInstallment < $totalInstallments) {
-                        $currentInstallment++;
-                        $fatura->current_installment = $currentInstallment;
-                        $totalPaidThisRun += $installmentAmount;
-                    }
-
-                    if ($currentInstallment >= $totalInstallments) {
-                        $fatura->status = 'paid';
-                        $fatura->paid_date = now()->toDateString();
-                    }
-                }
-
+                $totalPaidThisRun += $this->faturaService->applyPaymentForMonth($fatura);
                 $fatura->save();
             }
 

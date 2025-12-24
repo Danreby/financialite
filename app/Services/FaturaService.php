@@ -19,6 +19,11 @@ class FaturaService
         $data['status'] = $data['status'] ?? 'unpaid';
         $data['is_recurring'] = $data['is_recurring'] ?? false;
 
+        if ($data['is_recurring']) {
+            $data['total_installments'] = 1;
+            $data['current_installment'] = 0;
+        }
+
         return DB::transaction(function () use ($data) {
             return Fatura::create($data);
         });
@@ -28,6 +33,14 @@ class FaturaService
     {
         return DB::transaction(function () use ($fatura, $data) {
             $fatura->update($data);
+
+            if ($fatura->is_recurring) {
+                $fatura->total_installments = 1;
+                $fatura->current_installment = 0;
+                $fatura->paid_date = null;
+                $fatura->save();
+            }
+
             return $fatura->refresh();
         });
     }
@@ -140,6 +153,22 @@ class FaturaService
         return $result->sortByDesc('month_key')->values()->all();
     }
 
+    public function faturaAppliesToMonth(Fatura $fatura, Carbon $targetMonth): bool
+    {
+        $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
+
+        $firstBillingMonthKey = $this->resolveBillingMonthKey($fatura);
+        $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+
+        if ($fatura->is_recurring) {
+            return !$targetMonth->lt($first);
+        }
+
+        $last = (clone $first)->addMonths($totalInstallments - 1);
+
+        return !$targetMonth->lt($first) && !$targetMonth->gt($last);
+    }
+
     public function resolveBillingMonthKey(Fatura $fatura): string
     {
         $createdAt = $fatura->created_at instanceof Carbon
@@ -177,20 +206,39 @@ class FaturaService
                 : $today->copy()->addMonth();
         }
 
-        $candidateKey = $candidate->format('Y-m');
+        return $candidate->format('Y-m');
+    }
 
-        if ($paidByMonth) {
-            for ($i = 0; $i < 24; $i++) {
-                if (!$paidByMonth->has($candidateKey)) {
-                    break;
-                }
+    public function applyPaymentForMonth(Fatura $fatura): float
+    {
+        $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
+        $installmentAmount = (float) $fatura->amount / $totalInstallments;
+        $isRecurring = (bool) $fatura->is_recurring;
 
-                $candidate = $candidate->copy()->addMonth();
-                $candidateKey = $candidate->format('Y-m');
-            }
+        if ($isRecurring) {
+            return $installmentAmount;
         }
 
-        return $candidateKey;
+        if ($totalInstallments <= 1) {
+            $fatura->status = 'paid';
+            $fatura->paid_date = now()->toDateString();
+
+            return (float) $fatura->amount;
+        }
+
+        $currentInstallment = max((int) ($fatura->current_installment ?? 0), 0);
+
+        if ($currentInstallment < $totalInstallments) {
+            $currentInstallment++;
+            $fatura->current_installment = $currentInstallment;
+        }
+
+        if ($currentInstallment >= $totalInstallments) {
+            $fatura->status = 'paid';
+            $fatura->paid_date = now()->toDateString();
+        }
+
+        return $installmentAmount;
     }
 
     public function resolveInstallmentNumberForMonth(Fatura $fatura, string $yearMonth): ?int
