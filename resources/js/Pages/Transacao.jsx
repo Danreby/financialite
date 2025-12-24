@@ -91,19 +91,19 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 		<AuthenticatedLayout>
 			<Head title="Transações" />
 
-			<div className="mx-auto max-w-5xl space-y-6">
-				<header className="space-y-2 pt-2">
-					<h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+				<div className="w-full max-w-5xl mx-auto px-3 py-4 space-y-5 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+				<header className="space-y-2 pt-1 sm:pt-2">
+					<h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 sm:text-2xl">
 						Transações pendentes
 					</h1>
-					<p className="text-sm text-gray-600 dark:text-gray-300">
+					<p className="text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
 						Visualize, edite ou remova transações que ainda não foram pagas.
 					</p>
 				</header>
 
-				<section className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
-					<div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
-						<div className="flex items-center gap-2">
+				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-4">
+					<div className="mb-4 flex flex-col gap-3 text-xs sm:flex-wrap sm:flex-row sm:items-center">
+						<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 sm:w-auto w-full">
 							<span className="font-medium text-gray-600 dark:text-gray-300">
 								Buscar
 							</span>
@@ -111,19 +111,19 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 								type="text"
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
-								className="w-44 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+								className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:w-44"
 								placeholder="Título da transação"
 							/>
 						</div>
 
-						<div className="flex items-center gap-2">
+						<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
 							<span className="font-medium text-gray-600 dark:text-gray-300">
 								Banco
 							</span>
 							<select
 								value={selectedBankId}
 								onChange={(e) => setSelectedBankId(e.target.value)}
-								className="min-w-[180px] rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+								className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[180px]"
 							>
 								<option value="">Todos</option>
 								{bankAccounts.map((account) => (
@@ -134,14 +134,14 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 							</select>
 						</div>
 
-						<div className="flex items-center gap-2">
+						<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
 							<span className="font-medium text-gray-600 dark:text-gray-300">
 								Categoria
 							</span>
 							<select
 								value={selectedCategoryId}
 								onChange={(e) => setSelectedCategoryId(e.target.value)}
-								className="min-w-[180px] rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+								className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[180px]"
 							>
 								<option value="">Todas</option>
 								{categories.map((category) => (
@@ -159,7 +159,7 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 								setSelectedCategoryId("");
 								setSearchTerm("");
 							}}
-							className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+							className="w-full justify-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 sm:w-auto"
 						>
 							Limpar filtros
 						</SecondaryButton>

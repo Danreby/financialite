@@ -6,7 +6,10 @@ import Topbar from '@/Components/system/navigation/Topbar'
 
 export default function AuthenticatedLayout({ children }) {
   const user = usePage().props.auth.user
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return window.innerWidth >= 1024
+  })
 
   return (
     <div className="min-h-screen flex bg-gray-100 text-gray-900 dark:bg-[#070707] dark:text-gray-100">
@@ -19,7 +22,7 @@ export default function AuthenticatedLayout({ children }) {
           setSidebarOpen={setSidebarOpen}
         />
 
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-[#070707]">
+        <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 lg:px-6 bg-gray-50 dark:bg-[#070707]">
           {children}
         </main>
       </div>

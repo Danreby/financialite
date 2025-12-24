@@ -149,16 +149,16 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 		<AuthenticatedLayout>
 			<Head title="Contas" />
 
-			<div className="max-w-5xl mx-auto space-y-8">
+				<div className="w-full max-w-5xl mx-auto px-3 py-4 space-y-6 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
 				<header className="space-y-1">
-					<h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Minhas contas</h1>
-					<p className="text-sm text-gray-600 dark:text-gray-300">
+					<h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 sm:text-2xl">Minhas contas</h1>
+					<p className="text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
 						Gerencie as contas bancárias vinculadas e as categorias usadas nas suas transações.
 					</p>
 				</header>
 
-				<section className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
-					<div className="flex items-center justify-between mb-3">
+				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-4">
+					<div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
 							Contas / bancos vinculados
 						</h2>
@@ -172,7 +172,7 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 							{localBankAccounts.map((account) => (
 								<div
 									key={account.id}
-									className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm dark:border-gray-800 dark:bg-black"
+									className="flex flex-col gap-3 rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm dark:border-gray-800 dark:bg-black sm:flex-row sm:items-center sm:justify-between sm:py-2.5"
 								>
 									<div>
 										<div className="font-medium text-gray-900 dark:text-gray-100">{account.name}</div>
@@ -180,7 +180,7 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 											{formatDueDay(account.due_day)}
 										</div>
 									</div>
-									<div className="flex items-center gap-2 text-xs">
+									<div className="flex flex-wrap items-center justify-end gap-2 text-xs sm:flex-nowrap">
 										<SecondaryButton
 											type="button"
 											onClick={() => openEditBankModal(account)}
@@ -206,8 +206,8 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 					)}
 				</section>
 
-				<section className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
-					<div className="flex items-center justify-between mb-3">
+				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-4">
+					<div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
 							Categorias
 						</h2>
@@ -222,10 +222,10 @@ export default function Conta({ bankAccounts = [], categories = [] }) {
 								{localCategories.map((category) => (
 									<li
 										key={category.id}
-										className="flex items-center justify-between py-2"
+										className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
 									>
 										<span className="text-gray-900 dark:text-gray-100">{category.name}</span>
-										<div className="flex items-center gap-2 text-xs">
+										<div className="flex flex-wrap items-center justify-end gap-2 text-xs sm:flex-nowrap">
 											<SecondaryButton
 												type="button"
 												onClick={() => openEditCategoryModal(category)}

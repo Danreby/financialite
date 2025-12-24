@@ -55,15 +55,15 @@ export default function FaturaMonthSection({
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex-1 flex justify-start items-center gap-4">
-          <div className="inline-flex flex-col items-start rounded-full px-6 py-3">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex-1 flex justify-start items-center gap-3 sm:gap-4">
+          <div className="inline-flex flex-col items-start rounded-2xl sm:rounded-full px-4 py-2 sm:px-6 sm:py-3 bg-transparent">
             {due_day && (
-              <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+              <p className="mt-0.5 text-[11px] sm:text-[12px] text-gray-500 dark:text-gray-400">
                 Vencimento do cartão: todo dia <span className="font-semibold">{due_day}</span>
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
               Total de despesas do mês:
               <span className="ml-1 font-semibold text-rose-600 dark:text-rose-400">
                 {formatCurrency(total_spent)}
@@ -75,7 +75,7 @@ export default function FaturaMonthSection({
           <PrimaryButton
             type="button"
             onClick={() => setShowPayModal(true)}
-            className="shrink-0 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide focus:ring-rose-500 focus:ring-offset-2 dark:ring-offset-[#050505]"
+            className="shrink-0 rounded-full px-3 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-wide focus:ring-rose-500 focus:ring-offset-2 dark:ring-offset-[#050505] w-full sm:w-auto"
           >
             Pagar
           </PrimaryButton>

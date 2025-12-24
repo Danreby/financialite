@@ -65,8 +65,8 @@ export default function FaturaMonthCarousel({
   }
   
   return (
-    <div className="flex items-center justify-center gap-4">
-      <div className="w-32 flex justify-end">
+    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
+      <div className="flex justify-between sm:w-32 sm:justify-end">
         {prev && (
           <SecondaryButton
             type="button"
@@ -101,7 +101,7 @@ export default function FaturaMonthCarousel({
               <div />
             )}
             <span
-              className={`mt-1 text-2xl md:text-3xl font-bold tracking-tight ${
+              className={`mt-1 text-xl sm:text-2xl md:text-3xl font-bold tracking-tight ${
                 isPaid
                   ? "text-emerald-600 dark:text-emerald-400"
                   : "text-gray-900 dark:text-gray-50"
@@ -109,14 +109,14 @@ export default function FaturaMonthCarousel({
             >
               {current.month_label}
             </span>
-            <span className={`font-semibold text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+            <span className={`font-semibold text-2xl sm:text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
               {formatCurrency(total_spent)}
             </span>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <div className="w-32 flex justify-start">
+      <div className="flex justify-between sm:w-32 sm:justify-start">
         {next && (
           <SecondaryButton
             type="button"

@@ -42,7 +42,7 @@ export default function TransactionRow({ transaction, onEdit, onDelete }) {
     totalInstallmentsNumber > 1 ? `${totalInstallmentsNumber}x` : null;
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-900/60">
+    <div className="flex flex-col gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-900/60 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -66,7 +66,7 @@ export default function TransactionRow({ transaction, onEdit, onDelete }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="mt-1 flex items-center justify-between gap-3 sm:mt-0 sm:gap-4">
         <div className="flex flex-col items-end text-right">
           <span className="text-sm font-semibold text-rose-500 dark:text-rose-400">
             -{formatCurrency(amount)}

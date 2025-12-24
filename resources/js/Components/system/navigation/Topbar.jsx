@@ -53,20 +53,18 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen }) {
   })()
 
   return (
-    <div className="flex items-center justify-between mt-2 p-4 bg-white text-gray-900 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:text-gray-100 dark:ring-black/30">
+    <div className="flex items-center justify-between mt-2 px-3 py-3 sm:px-4 sm:py-4 bg-white text-gray-900 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:text-gray-100 dark:ring-black/30">
       <div className="flex items-center gap-3">
-        {/* <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-md hover:bg-gray-900/30 focus:outline-none"
-          aria-label="Toggle sidebar"
+        <BareButton
           type="button"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 focus:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus:ring-offset-[#0b0b0b] md:hidden"
+          aria-label="Alternar menu lateral"
         >
-          <svg className="h-5 w-5 text-gray-300" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </button>
-
-        <h1 className="text-lg font-semibold text-gray-100">Dashboard</h1> */}
+        </BareButton>
       </div>
 
       <div className="flex items-center gap-3">

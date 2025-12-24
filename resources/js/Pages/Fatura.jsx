@@ -209,18 +209,18 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 		<AuthenticatedLayout>
 			<Head title="Faturas" />
 
-			<div className="max-w-5xl mx-auto space-y-6">
-				<header className="pt-2 space-y-4">
+			<div className="w-full max-w-5xl mx-auto space-y-5 sm:space-y-6">
+				<header className="pt-1 sm:pt-2 space-y-3 sm:space-y-4">
 					<div>
-						<h1 className="text-2xl font-semibold text-gray-900 mb-1 dark:text-gray-100">
+						<h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-1 dark:text-gray-100">
 							Faturas
 						</h1>
-						<p className="text-sm text-gray-600 dark:text-gray-300">
+						<p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
 							Visualize suas despesas agrupadas por mês.
 						</p>
 					</div>
 
-					<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+					<div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
 						<FaturaFilters
 							bankAccounts={bankAccounts}
 							categories={categories}
@@ -232,8 +232,8 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 						</div>
 					</div>
 
-					{selectedAccount && (
-						<div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+						{selectedAccount && (
+							<div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-gray-600 dark:text-gray-300">
 							<span>
 								Dia de vencimento:{' '}
 								{selectedAccount.due_day
@@ -251,7 +251,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 					)}
 				</header>
 
-				<div className="space-y-5 pb-8">
+				<div className="space-y-4 sm:space-y-5 pb-6 sm:pb-8">
 					{(!monthlyGroups || monthlyGroups.length === 0) && (
 						<p className="text-sm text-gray-500 dark:text-gray-400">
 							Nenhuma fatura encontrada para o filtro atual.
