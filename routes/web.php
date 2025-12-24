@@ -122,6 +122,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Reports/Index');
     })->name('reports.index');
 
+    Route::get('/about', function () {
+        return Inertia::render('About');
+    })->name('about');
+
     Route::get('/settings', function () {
         return Inertia::render('Config');
     })->name('settings');
