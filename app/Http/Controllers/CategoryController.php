@@ -24,7 +24,7 @@ class CategoryController extends Controller
     {
         $user = $request->user();
 
-        $data = $request->validated();
+        $data = $this->normalizeInsertData($request->validated());
 
         $category = Category::create([
             'name' => $data['name'],
@@ -42,7 +42,7 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Não autorizado.'], 403);
         }
 
-        $data = $request->validated();
+        $data = $this->normalizeInsertData($request->validated());
 
         $category->update([
             'name' => $data['name'],

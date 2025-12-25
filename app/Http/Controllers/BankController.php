@@ -41,7 +41,7 @@ class BankController extends Controller
     {
         $user = $request->user();
         
-        $data = $request->validated();
+        $data = $this->normalizeInsertData($request->validated());
 
         $bank = Bank::create($data);
         
@@ -109,7 +109,7 @@ class BankController extends Controller
     {
         $user = $request->user();
 
-        $data = $request->validated();
+        $data = $this->normalizeInsertData($request->validated());
 
         $exists = BankUser::where('user_id', $user->id)
             ->where('bank_id', $data['bank_id'])

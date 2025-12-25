@@ -41,7 +41,7 @@ class BankUserController extends Controller
     {
         $user = $request->user();
 
-        $data = $request->validated();
+        $data = $this->normalizeInsertData($request->validated());
 
         $existing = BankUser::where('user_id', $user->id)
             ->where('bank_id', $data['bank_id'])

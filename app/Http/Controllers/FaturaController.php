@@ -54,12 +54,10 @@ class FaturaController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->wantsJson()) {
-            // Dashboard e APIs: retornam todas as transações (crédito e débito)
             $paginated = $baseQuery->paginate(15);
             return response()->json($paginated);
         }
 
-        // Página de Faturas (Inertia): considera apenas transações de crédito
         $allFaturas = (clone $baseQuery)
             ->where('type', 'credit')
             ->get();
@@ -128,7 +126,7 @@ class FaturaController extends Controller
     public function store(FaturaStoreRequest $request)
     {
         $user = $request->user();
-        $data = $request->validated();
+        $data = $this->normalizeInsertData($request->validated());
 
         if (!empty($data['bank_user_id'])) {
             $bankUser = BankUser::with('bank')->findOrFail($data['bank_user_id']);
@@ -155,7 +153,7 @@ class FaturaController extends Controller
             return $response;
         }
 
-        $data = $request->validated();
+        $data = $this->normalizeInsertData($request->validated());
 
         if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
             $bankUser = BankUser::findOrFail($data['bank_user_id']);
