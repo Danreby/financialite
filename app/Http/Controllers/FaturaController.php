@@ -108,9 +108,10 @@ class FaturaController extends Controller
             return response()->json($paginated);
         }
 
+        // Para a página de faturas, consideramos todas as compras no crédito,
+        // inclusive as já pagas, para permitir histórico completo.
         $allFaturas = (clone $baseQuery)
             ->where('type', 'credit')
-            ->notStatus('paid')
             ->get();
 
         $paidQuery = Paid::where('user_id', $user->id);
