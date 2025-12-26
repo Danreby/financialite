@@ -1,4 +1,5 @@
 import React from "react";
+import FaturaMonthDropdownGrid from "@/Components/system/fatura/FaturaMonthDropdownGrid";
 
 export default function FaturaFiltersBar({
   bankAccounts = [],
@@ -32,8 +33,7 @@ export default function FaturaFiltersBar({
     }
   };
 
-  const handleMonthChange = (event) => {
-    const key = event.target.value || null;
+  const handleMonthChange = (key) => {
     if (!key || !onMonthChange) return;
     onMonthChange(key);
   };
@@ -68,18 +68,11 @@ export default function FaturaFiltersBar({
       </select>
 
       {months && months.length > 0 && (
-        <select
-          value={monthValue || ""}
+        <FaturaMonthDropdownGrid
+          months={months}
+          value={monthValue}
           onChange={handleMonthChange}
-          className="min-w-[160px] sm:min-w-[180px] lg:min-w-[220px] rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs lg:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-        >
-          {months.map((month) => (
-            <option key={month.month_key} value={month.month_key}>
-              {month.month_label}
-              {month.is_paid ? " (paga)" : ""}
-            </option>
-          ))}
-        </select>
+        />
       )}
     </div>
   );
