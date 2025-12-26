@@ -1,25 +1,41 @@
 import React from 'react'
-import InputLabel from '@/Components/InputLabel'
-import TextInput from '@/Components/TextInput'
 import InputError from '@/Components/InputError'
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField'
 
-export default function FormField({ id, label, type = 'text', value, onChange, error, autoComplete, autoFocus }) {
+export default function FormField({
+  id,
+  label,
+  type = 'text',
+  value,
+  onChange,
+  error,
+  autoComplete,
+  autoFocus,
+  required,
+  helperText,
+}) {
   return (
-    <div>
-      <InputLabel htmlFor={id} value={label} className="dark:text-gray-200 text-sm" />
-
-      <TextInput
+    <div className="space-y-1.5">
+      <FloatLabelField
         id={id}
-        type={type}
         name={id}
+        type={type}
+        label={label}
         value={value}
-        className="mt-1 block w-full dark:bg-[#0f0f0f] dark:border-gray-700 dark:text-gray-100"
-        autoComplete={autoComplete}
-        isFocused={autoFocus}
         onChange={onChange}
+        error={error}
+        isRequired={required}
+        containerClassName="w-full"
+        inputProps={{
+          autoComplete,
+          autoFocus,
+        }}
       />
 
-      <InputError message={error} className="mt-2" />
+      <InputError message={error} className="text-xs mt-0.5" />
+      {!error && helperText && (
+        <p className="text-[11px] text-gray-500 dark:text-gray-400">{helperText}</p>
+      )}
     </div>
   )
 }

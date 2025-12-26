@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
+import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 
 export default function BankForm({ isOpen, onClose, onSuccess }) {
 	const [banks, setBanks] = useState([]);
@@ -115,41 +116,39 @@ export default function BankForm({ isOpen, onClose, onSuccess }) {
 	};
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar conta bancária">
-			<form className="space-y-4" onSubmit={handleSubmit} noValidate>
-				<div className="flex flex-col gap-1">
-					<label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-						Banco
-					</label>
-					<select
-						name="bank_id"
-						className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-						defaultValue=""
-					>
-						<option value="">Selecione um banco</option>
-						{banks.map((bank) => (
-							<option key={bank.id} value={bank.id}>
-								{bank.name}
-							</option>
-						))}
-					</select>
-				</div>
+			<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar conta bancária">
+				<form className="space-y-4" onSubmit={handleSubmit} noValidate>
+					<div className="flex flex-col gap-1">
+						<label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+							Banco
+						</label>
+						<select
+							name="bank_id"
+							className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+							defaultValue=""
+						>
+							<option value="">Selecione um banco</option>
+							{banks.map((bank) => (
+								<option key={bank.id} value={bank.id}>
+									{bank.name}
+								</option>
+							))}
+						</select>
+					</div>
 
-				<div className="flex flex-col gap-1">
-					<label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-						Dia de vencimento do cartão (1 a 31)
-					</label>
-					<input
+					<FloatLabelField
+						id="due_day"
 						name="due_day"
 						type="number"
-						min={1}
-						max={31}
-						inputMode="numeric"
-						onKeyDown={handleIntegerKeyDown}
-						className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-						placeholder="Opcional. Ex: 10"
+						label="Dia de vencimento do cartão (1 a 31)"
+						inputProps={{
+							min: 1,
+							max: 31,
+							inputMode: 'numeric',
+							onKeyDown: handleIntegerKeyDown,
+							placeholder: 'Opcional. Ex: 10',
+						}}
 					/>
-				</div>
 
 				<div className="flex items-center justify-end gap-3 pt-2">
 					<SecondaryButton

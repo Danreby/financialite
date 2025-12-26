@@ -1,7 +1,6 @@
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
 
@@ -38,32 +37,32 @@ export default function UpdateProfileInformation({
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>
-                    <InputLabel htmlFor="name" value="Name" className='dark:text-white'/>
-
-                    <TextInput
+                    <FloatLabelField
                         id="name"
-                        className="mt-1 block w-full dark:text-white dark:bg-gray-800 dark:border-gray-700"
+                        name="name"
+                        type="text"
+                        label="Name"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
-                        required
-                        isFocused
-                        autoComplete="name"
+                        error={errors.name}
+                        isRequired
+                        inputProps={{ autoComplete: 'name', autoFocus: true }}
                     />
 
                     <InputError className="mt-2" message={errors.name} />
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="Email" className='dark:text-white'/>
-
-                    <TextInput
+                    <FloatLabelField
                         id="email"
+                        name="email"
                         type="email"
-                        className="mt-1 block w-full dark:text-white dark:bg-gray-800 dark:border-gray-700"
+                        label="Email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
-                        required
-                        autoComplete="username"
+                        error={errors.email}
+                        isRequired
+                        inputProps={{ autoComplete: 'username' }}
                     />
 
                     <InputError className="mt-2" message={errors.email} />

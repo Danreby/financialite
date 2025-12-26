@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
+import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 
 export default function CategoryForm({ isOpen, onClose, onSuccess }) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,19 +58,18 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }) {
 			maxWidth="sm"
 			title="Nova categoria"
 		>
-			<form className="space-y-4" onSubmit={handleSubmit} noValidate>
-				<div className="flex flex-col gap-1">
-					<label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-						Nome da categoria
-					</label>
-					<input
+				<form className="space-y-4" onSubmit={handleSubmit} noValidate>
+					<FloatLabelField
+						id="name"
 						name="name"
 						type="text"
-						maxLength={120}
-						className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-						placeholder="Ex: Mercado, Lazer, Shopping"
+						label="Nome da categoria"
+						inputProps={{
+							maxLength: 120,
+							placeholder: 'Ex: Mercado, Lazer, Shopping',
+						}}
+						isRequired
 					/>
-				</div>
 
 				<div className="flex items-center justify-end gap-3 pt-2">
 					<SecondaryButton

@@ -1,7 +1,6 @@
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { useRef } from 'react';
@@ -58,22 +57,19 @@ export default function UpdatePasswordForm({ className = '' }) {
 
             <form onSubmit={updatePassword} className="mt-6 space-y-6">
                 <div>
-                    <InputLabel
-                        htmlFor="current_password"
-                        value="Current Password"
-                        className='dark:text-white'
-                    />
-
-                    <TextInput
+                    <FloatLabelField
                         id="current_password"
-                        ref={currentPasswordInput}
+                        name="current_password"
+                        type="password"
+                        label="Current Password"
                         value={data.current_password}
                         onChange={(e) =>
                             setData('current_password', e.target.value)
                         }
-                        type="password"
-                        className="mt-1 block w-full dark:text-white dark:bg-gray-800 dark:border-gray-700"
-                        autoComplete="current-password"
+                        error={errors.current_password}
+                        isRequired
+                        ref={currentPasswordInput}
+                        inputProps={{ autoComplete: 'current-password' }}
                     />
 
                     <InputError
@@ -83,37 +79,35 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="New Password" className='dark:text-white'/>
-
-                    <TextInput
+                    <FloatLabelField
                         id="password"
-                        ref={passwordInput}
+                        name="password"
+                        type="password"
+                        label="New Password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
-                        type="password"
-                        className="mt-1 block w-full dark:text-white dark:bg-gray-800 dark:border-gray-700"
-                        autoComplete="new-password"
+                        error={errors.password}
+                        isRequired
+                        ref={passwordInput}
+                        inputProps={{ autoComplete: 'new-password' }}
                     />
 
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
                 <div>
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                        className='dark:text-white'
-                    />
-
-                    <TextInput
+                    <FloatLabelField
                         id="password_confirmation"
+                        name="password_confirmation"
+                        type="password"
+                        label="Confirm Password"
                         value={data.password_confirmation}
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
                         }
-                        type="password"
-                        className="mt-1 block w-full dark:text-white dark:bg-gray-800 dark:border-gray-700"
-                        autoComplete="new-password"
+                        error={errors.password_confirmation}
+                        isRequired
+                        inputProps={{ autoComplete: 'new-password' }}
                     />
 
                     <InputError

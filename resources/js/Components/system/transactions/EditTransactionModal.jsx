@@ -5,6 +5,7 @@ import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import BareButton from "@/Components/common/buttons/BareButton";
+import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 
 export default function EditTransactionModal({
   isOpen,
@@ -141,12 +142,16 @@ export default function EditTransactionModal({
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Título
             </label>
-            <input
+            <FloatLabelField
+              id="edit_title"
+              name="edit_title"
               type="text"
+              label="Título"
               value={title}
-              maxLength={120}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              isRequired
+              containerClassName="flex flex-col"
+              inputProps={{ maxLength: 120 }}
             />
           </div>
 
@@ -224,12 +229,15 @@ export default function EditTransactionModal({
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Descrição
             </label>
-            <input
+            <FloatLabelField
+              id="edit_description"
+              name="edit_description"
               type="text"
+              label="Descrição"
               value={description}
-              maxLength={255}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              containerClassName="flex flex-col"
+              inputProps={{ maxLength: 255 }}
             />
           </div>
 

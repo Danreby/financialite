@@ -1,9 +1,8 @@
 import DangerButton from '@/Components/common/buttons/DangerButton';
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
-import TextInput from '@/Components/TextInput';
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import { useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
@@ -75,25 +74,20 @@ export default function DeleteUserForm({ className = '' }) {
                         confirmar essa ação.
                     </p>
 
-                    <div className="mt-6">
-                        <InputLabel
-                            htmlFor="password"
-                            value="Password"
-                            className="sr-only"
-                        />
-
-                        <TextInput
+                    <div className="mt-6 w-3/4">
+                        <FloatLabelField
                             id="password"
-                            type="password"
                             name="password"
+                            type="password"
+                            label="Password"
                             ref={passwordInput}
                             value={data.password}
                             onChange={(e) =>
                                 setData('password', e.target.value)
                             }
-                            className="mt-1 block w-3/4"
-                            isFocused
-                            placeholder="Senha"
+                            error={errors.password}
+                            isRequired
+                            inputProps={{ autoFocus: true }}
                         />
 
                         <InputError

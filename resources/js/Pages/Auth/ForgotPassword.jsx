@@ -1,6 +1,6 @@
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -31,18 +31,22 @@ export default function ForgotPassword({ status }) {
                 </div>
             )}
 
-            <form onSubmit={submit}>
-                <TextInput
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
+            <form onSubmit={submit} className="space-y-4">
+                <div>
+                    <FloatLabelField
+                        id="email"
+                        name="email"
+                        type="email"
+                        label="Email"
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                        error={errors.email}
+                        isRequired
+                        inputProps={{ autoFocus: true }}
+                    />
 
-                <InputError message={errors.email} className="mt-2" />
+                    <InputError message={errors.email} className="mt-2" />
+                </div>
 
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton className="ms-4" disabled={processing}>

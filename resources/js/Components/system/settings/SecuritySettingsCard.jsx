@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField'
 
 export default function SecuritySettingsCard({ itemVariants }) {
   const [formData, setFormData] = useState({
@@ -85,21 +86,16 @@ export default function SecuritySettingsCard({ itemVariants }) {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <motion.div variants={itemVariants}>
-          <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Senha Atual
-          </label>
-          <input
+          <FloatLabelField
             id="currentPassword"
-            type="password"
             name="currentPassword"
+            type="password"
+            label="Senha Atual"
             value={formData.currentPassword}
             onChange={handleChange}
-            disabled={loading}
-            className={`w-full px-4 py-2 rounded-lg border transition-colors ${
-              errors.currentPassword
-                ? 'border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-rose-500 dark:border-gray-700'
-            } bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 dark:focus:border-gray-600`}
+            error={errors.currentPassword}
+            isRequired
+            isDisabled={loading}
           />
           {errors.currentPassword && (
             <p className="mt-1 text-sm text-red-500">{errors.currentPassword}</p>
@@ -107,44 +103,31 @@ export default function SecuritySettingsCard({ itemVariants }) {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Nova Senha
-          </label>
-          <input
+          <FloatLabelField
             id="newPassword"
-            type="password"
             name="newPassword"
+            type="password"
+            label="Nova Senha"
             value={formData.newPassword}
             onChange={handleChange}
-            disabled={loading}
-            className={`w-full px-4 py-2 rounded-lg border transition-colors ${
-              errors.newPassword
-                ? 'border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-rose-500 dark:border-gray-700'
-            } bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 dark:focus:border-gray-600`}
+            error={errors.newPassword}
+            isRequired
+            isDisabled={loading}
+            helperText="Mínimo de 8 caracteres"
           />
-          {errors.newPassword && (
-            <p className="mt-1 text-sm text-red-500">{errors.newPassword}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Mínimo de 8 caracteres</p>
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Confirmar Nova Senha
-          </label>
-          <input
+          <FloatLabelField
             id="confirmPassword"
-            type="password"
             name="confirmPassword"
+            type="password"
+            label="Confirmar Nova Senha"
             value={formData.confirmPassword}
             onChange={handleChange}
-            disabled={loading}
-            className={`w-full px-4 py-2 rounded-lg border transition-colors ${
-              errors.confirmPassword
-                ? 'border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-rose-500 dark:border-gray-700'
-            } bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 dark:focus:border-gray-600`}
+            error={errors.confirmPassword}
+            isRequired
+            isDisabled={loading}
           />
           {errors.confirmPassword && (
             <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>

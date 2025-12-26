@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField'
 
 export default function ProfileSettingsCard({ user, itemVariants }) {
   const [name, setName] = useState(user?.name || '')
@@ -52,47 +53,37 @@ export default function ProfileSettingsCard({ user, itemVariants }) {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <motion.div variants={itemVariants}>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Nome Completo
-          </label>
-          <input
+          <FloatLabelField
             id="name"
-            type="text"
             name="name"
+            type="text"
+            label="Nome Completo"
             value={name}
             onChange={(e) => {
               setName(e.target.value)
               if (errors.name) setErrors((prev) => ({ ...prev, name: '' }))
             }}
-            disabled={loading}
-            className={`w-full px-4 py-2 rounded-lg border transition-colors ${
-              errors.name
-                ? 'border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-rose-500 dark:border-gray-700'
-            } bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 dark:focus:border-gray-600`}
+            error={errors.name}
+            isRequired
+            isDisabled={loading}
           />
           {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            E-mail
-          </label>
-          <input
+          <FloatLabelField
             id="email"
-            type="email"
             name="email"
+            type="email"
+            label="E-mail"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value)
               if (errors.email) setErrors((prev) => ({ ...prev, email: '' }))
             }}
-            disabled={loading}
-            className={`w-full px-4 py-2 rounded-lg border transition-colors ${
-              errors.email
-                ? 'border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-rose-500 dark:border-gray-700'
-            } bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 dark:focus:border-gray-600`}
+            error={errors.email}
+            isRequired
+            isDisabled={loading}
           />
           {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </motion.div>

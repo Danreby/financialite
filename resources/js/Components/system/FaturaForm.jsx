@@ -5,6 +5,7 @@ import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import BareButton from "@/Components/common/buttons/BareButton";
+import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 
 export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = [], categories = [] }) {
   const [isRecurring, setIsRecurring] = useState(false);
@@ -175,31 +176,30 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="2xl" title="Nova transação">
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Título
-            </label>
-            <input
-              name="title"
-              type="text"
-              maxLength={120}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              placeholder="Título da transação"
-            />
-          </div>
+          <FloatLabelField
+            id="title"
+            name="title"
+            type="text"
+            label="Título"
+            isRequired
+            containerClassName="flex flex-col"
+            inputProps={{
+              maxLength: 120,
+              placeholder: 'Título da transação',
+            }}
+          />
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Descrição
-            </label>
-            <input
-              name="description"
-              type="text"
-              maxLength={255}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              placeholder="Descrição da transação"
-            />
-          </div>
+          <FloatLabelField
+            id="description"
+            name="description"
+            type="text"
+            label="Descrição"
+            containerClassName="flex flex-col"
+            inputProps={{
+              maxLength: 255,
+              placeholder: 'Descrição da transação',
+            }}
+          />
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
