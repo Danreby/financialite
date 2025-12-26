@@ -9,70 +9,7 @@ import Modal from '@/Components/common/Modal';
 import FaturaPendingExportButton from '@/Components/system/fatura/FaturaPendingExportButton';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
-
-function FaturaFilters({ bankAccounts, categories, filters, onChange }) {
-	const selectedBankId = filters?.bank_user_id ?? '';
-	const selectedCategoryId = filters?.category_id ?? '';
-
-	const handleBankChange = (event) => {
-		const value = event.target.value || undefined;
-		onChange({
-			bank_user_id: value,
-			category_id: selectedCategoryId || undefined,
-		});
-	};
-
-	const handleCategoryChange = (event) => {
-		const value = event.target.value || undefined;
-		onChange({
-			bank_user_id: selectedBankId || undefined,
-			category_id: value,
-		});
-	};
-
-	return (
-		<div className="flex flex-wrap items-center gap-4 text-sm">
-			<div className="flex items-center gap-3">
-				<label className="text-xs lg:text-sm font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-					Filtrar por banco
-				</label>
-				<select
-					value={selectedBankId || ''}
-					onChange={handleBankChange}
-					className="min-w-[200px] lg:min-w-[240px] rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs lg:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-				>
-					<option value="">Todos os bancos</option>
-					{bankAccounts.map((account) => (
-						<option key={account.id} value={account.id}>
-							{account.name}
-							{account.due_day
-								? ` - vence todo dia ${account.due_day}`
-								: ''}
-						</option>
-					))}
-				</select>
-			</div>
-
-			<div className="flex items-center gap-3">
-				<label className="text-xs lg:text-sm font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-					Filtrar por categoria
-				</label>
-				<select
-					value={selectedCategoryId || ''}
-					onChange={handleCategoryChange}
-					className="min-w-[200px] lg:min-w-[240px] rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs lg:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-				>
-					<option value="">Todas as categorias</option>
-					{categories.map((category) => (
-						<option key={category.id} value={category.id}>
-							{category.name}
-						</option>
-					))}
-				</select>
-			</div>
-		</div>
-	);
-}
+import FaturaFiltersBar from '@/Components/system/fatura/FaturaFiltersBar';
 
 
 function monthKeyToIndex(key) {
@@ -239,11 +176,14 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 					</div>
 
 					<div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
-						<FaturaFilters
+						<FaturaFiltersBar
 							bankAccounts={bankAccounts}
 							categories={categories}
 							filters={filters}
-							onChange={handleFiltersChange}
+							months={monthlyGroups}
+							monthValue={selectedGroup?.month_key || selectedMonthKey}
+							onFiltersChange={handleFiltersChange}
+							onMonthChange={handleChangeMonth}
 						/>
 						<div className="flex justify-start md:justify-end">
 							<FaturaPendingExportButton monthlyGroups={monthlyGroups} />

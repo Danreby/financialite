@@ -50,6 +50,35 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
     }
   };
 
+  const MAX_AMOUNT = 1_000_000_000;
+
+  const handleAmountInputLimit = (event) => {
+    const rawValue = event.target.value;
+    if (!rawValue) return;
+
+    const normalized = rawValue.replace(",", ".");
+    const numeric = parseFloat(normalized);
+
+    if (Number.isNaN(numeric)) return;
+
+    if (numeric > MAX_AMOUNT) {
+      event.target.value = String(MAX_AMOUNT);
+    }
+  };
+
+  const handleInstallmentsInputLimit = (event) => {
+    const rawValue = event.target.value;
+    if (!rawValue) return;
+
+    const numeric = parseInt(rawValue, 10);
+
+    if (Number.isNaN(numeric)) return;
+
+    if (numeric > 360) {
+      event.target.value = "360";
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -214,6 +243,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
               step: "0.01",
               onKeyDown: handleDecimalKeyDown,
               placeholder: "Valor da transação",
+              maxLength: 12,
+              onInput: handleAmountInputLimit,
             }}
           />
 
@@ -260,6 +291,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
               inputMode: "numeric",
               onKeyDown: handleIntegerKeyDown,
               placeholder: "Quantidade de parcelas",
+              maxLength: 3,
+              onInput: handleInstallmentsInputLimit,
             }}
           />
 
