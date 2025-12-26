@@ -119,7 +119,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('transactions.index');
 
     Route::get('/reports', function () {
-        return Inertia::render('Reports/Index');
+        $user = request()->user();
+
+        $bankAccounts = BankUser::with('bank')
+            ->where('user_id', $user->id)
+            ->get()
+            ->map(function ($bankUser) {
+                return [
+                    'id' => $bankUser->id,
+                    'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
+                ];
+            });
+
+        $categories = Category::where('user_id', $user->id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return Inertia::render('Relatorio', [
+            'bankAccounts' => $bankAccounts,
+            'categories' => $categories,
+        ]);
     })->name('reports.index');
 
     Route::get('/about', function () {

@@ -23,6 +23,56 @@ class FaturaController extends Controller
         $this->middleware('auth');
     }
 
+    public function exportData(Request $request)
+    {
+        $user = $request->user();
+        $bankUserId = $request->input('bank_user_id');
+        $categoryId = $request->input('category_id');
+
+        $query = Fatura::with(['bankUser.bank', 'category'])
+            ->forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->when($categoryId, function ($q, $categoryId) {
+                $q->where('category_id', $categoryId);
+            })
+            ->orderBy('created_at', 'desc');
+
+        $faturas = $query->get()->map(function (Fatura $fatura) {
+            $createdAt = $fatura->created_at ? Carbon::parse($fatura->created_at) : null;
+            $yearMonth = $createdAt ? $createdAt->format('Y-m') : null;
+            $monthLabel = $createdAt ? ucfirst($createdAt->translatedFormat('F Y')) : null;
+            $createdAtFormatted = $createdAt ? $createdAt->format('d/m/Y H:i') : null;
+
+            return [
+                'id' => (string) $fatura->id,
+                'title' => $fatura->title,
+                'description' => $fatura->description,
+                'amount' => (float) $fatura->amount,
+                'type' => $fatura->type,
+                'status' => $fatura->status,
+                'created_at' => $fatura->created_at,
+                'total_installments' => $fatura->total_installments,
+                'current_installment' => $fatura->current_installment,
+                'is_recurring' => (bool) $fatura->is_recurring,
+                'year_month' => $yearMonth,
+                'month_label' => $monthLabel,
+                'created_at_formatted' => $createdAtFormatted,
+                'bank_user' => [
+                    'id' => $fatura->bankUser->id ?? null,
+                    'bank' => [
+                        'name' => optional($fatura->bankUser->bank ?? null)->name ?? null,
+                    ],
+                ],
+                'category' => [
+                    'id' => $fatura->category->id ?? null,
+                    'name' => $fatura->category->name ?? null,
+                ],
+            ];
+        });
+
+        return response()->json($faturas);
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -305,6 +355,7 @@ class FaturaController extends Controller
     {
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
+        $categoryId = $request->input('category_id');
         $selectedBankUser = null;
 
         if ($request->filled('bank_user_id')) {
@@ -316,7 +367,10 @@ class FaturaController extends Controller
         }
 
         $base = Fatura::forUser($user->id)
-            ->forBankUser($bankUserId);
+            ->forBankUser($bankUserId)
+            ->when($categoryId, function ($q, $categoryId) {
+                $q->where('category_id', $categoryId);
+            });
 
         $stats = $this->faturaService->calculateBaseStats($base);
 
@@ -326,6 +380,9 @@ class FaturaController extends Controller
 
         $currentMonthDebitTotal = Fatura::forUser($user->id)
             ->forBankUser($bankUserId)
+            ->when($categoryId, function ($q, $categoryId) {
+                $q->where('category_id', $categoryId);
+            })
             ->where('type', 'debit')
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->sum('amount');
@@ -333,6 +390,9 @@ class FaturaController extends Controller
         $allFaturas = Fatura::with('bankUser')
             ->forUser($user->id)
             ->forBankUser($bankUserId)
+            ->when($categoryId, function ($q, $categoryId) {
+                $q->where('category_id', $categoryId);
+            })
             ->where('type', 'credit')
             ->orderBy('created_at', 'desc')
             ->get();

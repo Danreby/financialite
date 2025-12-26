@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import TransactionsList from "@/Components/system/transactions/TransactionsList";
 import EditTransactionModal from "@/Components/system/transactions/EditTransactionModal";
+// import TransactionsExportButton from "@/Components/system/transactions/TransactionsExportButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import DangerButton from "@/Components/common/buttons/DangerButton";
@@ -102,7 +103,7 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 				</header>
 
 				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-4">
-					<div className="mb-4 flex flex-col gap-3 text-xs sm:flex-wrap sm:flex-row sm:items-center">
+					<div className="mb-4 flex flex-col gap-3 text-xs sm:flex-wrap sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 sm:w-auto w-full">
 							<span className="font-medium text-gray-600 dark:text-gray-300">
 								Buscar
@@ -164,6 +165,7 @@ export default function Transacao({ transactions = [], bankAccounts = [], catego
 							Limpar filtros
 						</SecondaryButton>
 					</div>
+					{/* Removed TransactionsExportButton */}
 
 					<TransactionsList
 						transactions={filteredTransactions}

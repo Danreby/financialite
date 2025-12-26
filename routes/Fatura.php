@@ -9,6 +9,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 		Route::get('/', [FaturaController::class, 'index'])->name('index');
 		// Rotas "estáticas" precisam vir antes da rota dinâmica /{id}
 		Route::get('/stats', [FaturaController::class, 'stats'])->name('stats');
+		Route::get('/export-data', [FaturaController::class, 'exportData'])->name('export_data');
 		Route::post('/pay-month', [FaturaController::class, 'payMonth'])->name('pay_month');
 		Route::post('/{id}/restore', [FaturaController::class, 'restore'])->name('restore');
 		Route::get('/{id}', [FaturaController::class, 'show'])->name('show');
