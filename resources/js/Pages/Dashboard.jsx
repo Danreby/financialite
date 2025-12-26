@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import StatCard from '@/Components/system/dashboard/StatCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
+import MonthlySummaryChart from '@/Components/system/dashboard/MonthlySummaryChart'
+import TopSpendingCategories from '@/Components/system/dashboard/TopSpendingCategories'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
 function formatDateLabel(value) {
@@ -24,6 +26,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [reloadKey, setReloadKey] = useState(0)
   const [data, setData] = useState(null)
   const [recentFaturas, setRecentFaturas] = useState([])
+  const [monthlySummary, setMonthlySummary] = useState([])
+  const [topSpendingCategories, setTopSpendingCategories] = useState([])
 
   const [stats, setStats] = useState([
     { id: 1, title: 'Saldo Disponível', value: formatCurrencyBRL(0), delta: '+0%' },
@@ -46,7 +50,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
       try {
         const [faturasResponse, statsResponse] = await Promise.all([
           axios.get(route('faturas.index'), { params: { ...currentFilters, page } }),
-	      axios.get(route('faturas.stats'), { params: { ...currentFilters } }),
+          axios.get(route('faturas.stats'), { params: { ...currentFilters } }),
         ])
 
         const payload = faturasResponse.data || {}
@@ -63,6 +67,14 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         const pendingExpenses = Number(statsPayload.pending_expenses || 0)
         const currentMonthDebitTotal = Number(statsPayload.current_month_debit_total || 0)
         const overdueCount = Number(statsPayload.overdue_count || 0)
+
+        const monthlySummaryPayload = Array.isArray(statsPayload.monthly_summary)
+          ? statsPayload.monthly_summary
+          : []
+
+        const topSpendingPayload = Array.isArray(statsPayload.top_spending_categories)
+          ? statsPayload.top_spending_categories
+          : []
 
         const currentMonthPendingBill = Number(statsPayload.current_month_pending_bill || 0)
         const currentMonthLabel = statsPayload.current_month_label || 'Mês atual'
@@ -93,6 +105,25 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
             delta: '',
           },
         ])
+
+        setMonthlySummary(monthlySummaryPayload)
+
+        const totalTopSpending = topSpendingPayload.reduce(
+          (acc, item) => acc + Number(item.total || 0),
+          0,
+        )
+
+        const normalizedTopSpending = totalTopSpending > 0
+          ? topSpendingPayload.map((item) => ({
+              ...item,
+              share: Math.max(
+                5,
+                Math.round((Number(item.total || 0) / totalTopSpending) * 100),
+              ),
+            }))
+          : topSpendingPayload
+
+        setTopSpendingCategories(normalizedTopSpending)
       } catch (error) {
         console.error(error)
       }
@@ -186,6 +217,14 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </div>
 
           <QuickActions bankAccounts={bankAccounts} categories={categories} />
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <MonthlySummaryChart data={monthlySummary} />
+          </div>
+
+          <TopSpendingCategories data={topSpendingCategories} />
         </div>
       </motion.div>
     </AuthenticatedLayout>

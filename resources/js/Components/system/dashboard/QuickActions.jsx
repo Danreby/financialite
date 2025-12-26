@@ -42,7 +42,7 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
           >
             Adicionar Categoria
           </PrimaryButton>
-          <PrimaryButton className="w-full" style={{ background: '#222' }}>Importar CSV</PrimaryButton>
+          {/* <PrimaryButton className="w-full" style={{ background: '#222' }}>Importar CSV</PrimaryButton> */}
         </div>
       </div>
 

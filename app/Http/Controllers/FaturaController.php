@@ -379,6 +379,68 @@ class FaturaController extends Controller
         $monthStart = $today->copy()->startOfMonth();
         $monthEnd = $today->copy()->endOfMonth();
 
+        // Monthly income vs expenses (last 6 months) for dashboard charts
+        $seriesStart = $today->copy()->subMonths(5)->startOfMonth();
+
+        $seriesEntries = (clone $base)
+            ->whereBetween('created_at', [$seriesStart, $monthEnd])
+            ->get();
+
+        $monthlySummary = $seriesEntries
+            ->groupBy(function (Fatura $fatura) {
+                return $fatura->created_at instanceof Carbon
+                    ? $fatura->created_at->format('Y-m')
+                    : Carbon::parse($fatura->created_at)->format('Y-m');
+            })
+            ->map(function ($items, $yearMonth) {
+                $carbon = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+
+                $incomePaid = $items
+                    ->where('type', 'credit')
+                    ->where('status', 'paid')
+                    ->sum('amount');
+
+                $expensesPaid = $items
+                    ->where('type', 'debit')
+                    ->where('status', 'paid')
+                    ->sum('amount');
+
+                return [
+                    'month_key' => $yearMonth,
+                    'month_label' => ucfirst($carbon->translatedFormat('M Y')),
+                    'income_paid' => (float) $incomePaid,
+                    'expenses_paid' => (float) $expensesPaid,
+                ];
+            })
+            ->sortBy('month_key')
+            ->values()
+            ->all();
+
+        // Top spending categories in the current month (paid debits)
+        $currentMonthPaidDebits = (clone $base)
+            ->with('category')
+            ->where('type', 'debit')
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->get();
+
+        $topSpendingCategories = $currentMonthPaidDebits
+            ->groupBy('category_id')
+            ->map(function ($items) {
+                /** @var Fatura|null $first */
+                $first = $items->first();
+
+                return [
+                    'category_id' => $first?->category_id,
+                    'category_name' => $first && $first->category ? $first->category->name : 'Sem categoria',
+                    'total' => (float) $items->sum('amount'),
+                ];
+            })
+            ->sortByDesc('total')
+            ->take(5)
+            ->values()
+            ->all();
+
         $currentMonthDebitTotal = Fatura::forUser($user->id)
             ->forBankUser($bankUserId)
             ->when($categoryId, function ($q, $categoryId) {
@@ -461,6 +523,8 @@ class FaturaController extends Controller
         $stats['current_month_label'] = $currentMonthLabel;
         $stats['current_month_pending_bill'] = (float) $currentPendingBill;
         $stats['current_month_debit_total'] = (float) $currentMonthDebitTotal;
+        $stats['monthly_summary'] = $monthlySummary;
+        $stats['top_spending_categories'] = $topSpendingCategories;
 
         return response()->json($stats);
     }
