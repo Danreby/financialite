@@ -119,9 +119,9 @@ export default function BankForm({ isOpen, onClose, onSuccess }) {
 			<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar conta bancária">
 				<form className="space-y-4" onSubmit={handleSubmit} noValidate>
 					<div className="flex flex-col gap-1">
-						<label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+						{/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
 							Banco
-						</label>
+						</label> */}
 						<select
 							name="bank_id"
 							className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"

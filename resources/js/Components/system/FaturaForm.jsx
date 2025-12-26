@@ -201,31 +201,26 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             }}
           />
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Valor
-            </label>
-            <div className="flex items-center rounded-md border border-gray-300 bg-white text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f]">
-              <span className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
-                R$
-              </span>
-              <input
-                name="amount"
-                type="number"
-                inputMode="decimal"
-                min="0.01"
-                step="0.01"
-                onKeyDown={handleDecimalKeyDown}
-                className="flex-1 border-0 bg-transparent p-2 text-sm outline-none focus:ring-0 dark:text-gray-100"
-                placeholder="Valor da transação"
-              />
-            </div>
-          </div>
+          <FloatLabelField
+            id="amount"
+            name="amount"
+            type="number"
+            label="Valor (R$)"
+            isRequired
+            containerClassName="flex flex-col"
+            inputProps={{
+              inputMode: "decimal",
+              min: "0.01",
+              step: "0.01",
+              onKeyDown: handleDecimalKeyDown,
+              placeholder: "Valor da transação",
+            }}
+          />
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            {/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Tipo
-            </label>
+            </label> */}
             <div className="inline-flex items-center gap-2 rounded-full p-1 text-xs font-medium">
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-full px-3 py-1 text-gray-700 transition hover:bg-white hover:shadow-sm dark:text-gray-200 dark:hover:bg-gray-800">
                 <input
@@ -252,21 +247,21 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Parcelas
-            </label>
-            <input
-              name="total_installments"
-              type="number"
-              min="1"
-              max="360"
-              inputMode="numeric"
-              onKeyDown={handleIntegerKeyDown}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 disabled:bg-gray-100 disabled:dark:bg-gray-800 disabled:text-gray-500 disabled:dark:text-gray-400"
-              disabled={isRecurring || type === "debit"}
-            />
-          </div>
+          <FloatLabelField
+            id="total_installments"
+            name="total_installments"
+            type="number"
+            label="Parcelas"
+            containerClassName="flex flex-col"
+            isDisabled={isRecurring || type === "debit"}
+            inputProps={{
+              min: "1",
+              max: "360",
+              inputMode: "numeric",
+              onKeyDown: handleIntegerKeyDown,
+              placeholder: "Quantidade de parcelas",
+            }}
+          />
 
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -297,9 +292,9 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             />
           </div>
           <div className="flex flex-col gap-1 md:col-span-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            {/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Categoria
-            </label>
+            </label> */}
             <select
               name="category_id"
               className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
@@ -314,15 +309,15 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             </select>
           </div>
           <div className="flex flex-col gap-1 md:col-span-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            {/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Conta / Banco
-            </label>
+            </label> */}
             <select
               name="bank_user_id"
               className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               defaultValue=""
             >
-              <option value="">Selecione uma conta</option>
+              <option value="">Selecione um banco</option>
               {bankAccounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.name}
