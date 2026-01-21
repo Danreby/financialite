@@ -1,5 +1,6 @@
 import React from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
+import TopSpendingPieChart from '@/Components/system/dashboard/TopSpendingPieChart'
 
 export default function TopSpendingCategories({ data = [], label = 'Mês vigente' }) {
   const topSix = Array.isArray(data)
@@ -16,6 +17,15 @@ export default function TopSpendingCategories({ data = [], label = 'Mês vigente
     }
   })
 
+  const colors = [
+    'rgba(244, 63, 94, 0.85)',
+    'rgba(59, 130, 246, 0.85)',
+    'rgba(34, 197, 94, 0.85)',
+    'rgba(234, 179, 8, 0.85)',
+    'rgba(168, 85, 247, 0.85)',
+    'rgba(14, 116, 144, 0.85)',
+  ]
+
   return (
     <div className="rounded-2xl border dark:border-red-950/50 border-gray-50/90 bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
       <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
@@ -29,26 +39,13 @@ export default function TopSpendingCategories({ data = [], label = 'Mês vigente
       )}
 
       {prepared && prepared.length > 0 && (
-        <ul className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
-          {prepared.map((item) => (
-            <li key={item.category_id ?? 'none'} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-gray-900 dark:text-gray-200">
-                  {item.category_name || 'Sem categoria'}
-                </span>
-                <span className="text-gray-600 dark:text-gray-400">
-                  {formatCurrencyBRL(item.total || 0)}
-                </span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-rose-400/90 dark:bg-rose-500/90"
-                  style={{ width: `${item.share || 0}%` }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
+        <TopSpendingPieChart
+          labels={prepared.map((item) => item.category_name || 'Sem categoria')}
+          values={prepared.map((item) => Number(item.total || 0))}
+          total={totalTop}
+          colors={colors}
+          items={prepared}
+        />
       )}
     </div>
   )
