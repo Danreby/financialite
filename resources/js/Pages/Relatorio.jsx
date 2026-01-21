@@ -11,6 +11,7 @@ import ReportsPeriodModal from "@/Components/system/reports/ReportsPeriodModal";
 import ReportsInsightsBar from "@/Components/system/reports/ReportsInsightsBar";
 import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
 import { formatCurrencyBRL } from "@/Lib/formatters";
+import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer";
 
 export default function Relatorio({ bankAccounts = [], categories = [] }) {
 	const [selectedBankId, setSelectedBankId] = useState("");
@@ -182,18 +183,20 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 		<AuthenticatedLayout>
 			<Head title="Relatórios" />
 
-			<div className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-3 space-y-4 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
-				<header className="space-y-1.5 pt-0.5 sm:pt-1">
-					<h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-gray-100">
-						Relatórios
-					</h1>
-					<p className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-3xl">
-						Acompanhe todas as suas transações em faturas, veja um resumo financeiro por período,
-						filtre por conta e categoria e exporte um arquivo Excel completo.
-					</p>
-				</header>
+			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-3 space-y-4 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
+				<FadeInItem type="fast">
+					<header className="space-y-1.5 pt-0.5 sm:pt-1">
+						<h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-gray-100">
+							Relatórios
+						</h1>
+						<p className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-3xl">
+							Acompanhe todas as suas transações em faturas, veja um resumo financeiro por período,
+							filtre por conta e categoria e exporte um arquivo Excel completo.
+						</p>
+					</header>
+				</FadeInItem>
 
-				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-4 space-y-3">
+				<FadeInItem type="subtle">				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-4 space-y-3">
 					<div className="flex flex-col gap-2 text-xs sm:text-sm sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
 							<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
@@ -237,8 +240,10 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 						</div>
 					</div>
 				</section>
+			</FadeInItem>
 
-				<section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+			<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+				<FadeInItem type="feature">
 					<ReportsPeriodSelector
 						periods={periodGroups}
 						selectedKey={selectedPeriodKey}
@@ -246,22 +251,37 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 						onOpen={handleOpenPeriodModal}
 						isLoading={isLoading}
 					/>
+				</FadeInItem>
+				<FadeInItem type="feature">
 					<ReportsInsightsBar insights={insights} />
-				</section>
+				</FadeInItem>
+			</FadeInContainer>
 
-				<section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<FadeInContainer stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+				<FadeInItem type="feature">
 					<StatCard title="Receitas pagas" value={formatCurrencyBRL(stats.total_income)} />
+				</FadeInItem>
+				<FadeInItem type="feature">
 					<StatCard title="Despesas pagas" value={formatCurrencyBRL(stats.total_expenses)} />
+				</FadeInItem>
+				<FadeInItem type="feature">
 					<StatCard title="Receitas pendentes" value={formatCurrencyBRL(stats.pending_income)} />
+				</FadeInItem>
+				<FadeInItem type="feature">
 					<StatCard title="Despesas pendentes" value={formatCurrencyBRL(stats.pending_expenses)} />
+				</FadeInItem>
+				<FadeInItem type="feature">
 					<StatCard
 						title="Transações no débito (mês atual)"
 						value={formatCurrencyBRL(stats.current_month_debit_total)}
 					/>
+				</FadeInItem>
+				<FadeInItem type="feature">
 					<StatCard title="Faturas vencidas" value={stats.overdue_count} />
-				</section>
+				</FadeInItem>
+			</FadeInContainer>
 
-				<section className="space-y-3">
+			<FadeInItem type="subtle">				<section className="space-y-3">
 					<div className="flex items-center justify-between gap-2">
 						<h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
 							Resumo por mês / ano
@@ -274,20 +294,22 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 					</div>
 					<ReportsMonthlySummary items={monthlySummary} onSelectPeriod={handleOpenPeriodModal} />
 				</section>
+			</FadeInItem>
 
-					<ReportsPeriodModal
-						isOpen={isPeriodModalOpen}
-						onClose={handleClosePeriodModal}
-						period={selectedPeriod}
-						onSelectTransaction={handleSelectTransaction}
-					/>
+		<ReportsPeriodModal
+			isOpen={isPeriodModalOpen}
+			onClose={handleClosePeriodModal}
+			period={selectedPeriod}
+			onSelectTransaction={handleSelectTransaction}
+		/>
 
-					<FaturaDetailModal
-						isOpen={!!selectedTransaction}
-						onClose={() => setSelectedTransaction(null)}
-						item={selectedTransaction}
-					/>
-			</div>
+		<FaturaDetailModal
+			isOpen={!!selectedTransaction}
+			onClose={() => setSelectedTransaction(null)}
+			item={selectedTransaction}
+		/>
+	</FadeInContainer>
+			</FadeInContainer>
 		</AuthenticatedLayout>
 	);
 }

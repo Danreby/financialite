@@ -10,6 +10,7 @@ import FaturaPendingExportButton from '@/Components/system/fatura/FaturaPendingE
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 import FaturaFiltersBar from '@/Components/system/fatura/FaturaFiltersBar';
+import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer';
 
 
 function monthKeyToIndex(key) {
@@ -200,85 +201,87 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 		<AuthenticatedLayout>
 			<Head title="Faturas" />
 
-			<div className="w-full max-w-[1500px] 2xl:max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 2xl:px-6 space-y-4 sm:space-y-5 lg:space-y-6 2xl:space-y-6">
-				<header className="pt-1 sm:pt-2 space-y-3 sm:space-y-4">
-					<div>
-						<h1 className="text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl font-semibold text-gray-900 mb-1 dark:text-gray-100">
-							Faturas
-						</h1>
-						<p className="text-xs sm:text-sm lg:text-base 2xl:text-base text-gray-600 dark:text-gray-300">
-							Visualize suas despesas agrupadas por mês.
-						</p>
-					</div>
-
-					<div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
-						<FaturaFiltersBar
-							bankAccounts={bankAccounts}
-							categories={categories}
-							filters={filters}
-							months={normalizedMonthlyGroups}
-							monthValue={selectedGroup?.month_key || selectedMonthKey}
-							onFiltersChange={handleFiltersChange}
-							onMonthChange={handleChangeMonth}
-						/>
-						<div className="flex justify-start md:justify-end">
-							<FaturaPendingExportButton monthlyGroups={monthlyGroups} />
+			<FadeInContainer className="w-full max-w-[1500px] 2xl:max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 2xl:px-6 space-y-4 sm:space-y-5 lg:space-y-6 2xl:space-y-6">
+				<FadeInItem type="fast">
+					<header className="pt-1 sm:pt-2 space-y-3 sm:space-y-4">
+						<div>
+							<h1 className="text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl font-semibold text-gray-900 mb-1 dark:text-gray-100">
+								Faturas
+							</h1>
+							<p className="text-xs sm:text-sm lg:text-base 2xl:text-base text-gray-600 dark:text-gray-300">
+								Visualize suas despesas agrupadas por mês.
+							</p>
 						</div>
-					</div>
+
+						<div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
+							<FaturaFiltersBar
+								bankAccounts={bankAccounts}
+								categories={categories}
+								filters={filters}
+								months={normalizedMonthlyGroups}
+								monthValue={selectedGroup?.month_key || selectedMonthKey}
+								onFiltersChange={handleFiltersChange}
+								onMonthChange={handleChangeMonth}
+							/>
+							<div className="flex justify-start md:justify-end">
+								<FaturaPendingExportButton monthlyGroups={monthlyGroups} />
+							</div>
+						</div>
 
 						{selectedAccount && (
 							<div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm 2xl:text-sm text-gray-600 dark:text-gray-300">
-							<span>
-								Dia de vencimento:{' '}
-								{selectedAccount.due_day
-									? `todo dia ${selectedAccount.due_day}`
-									: 'ainda não definido'}
-							</span>
-							<SecondaryButton
-								type="button"
-								onClick={handleOpenDueDayModal}
-								className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
-							>
-								Definir dia de vencimento
-							</SecondaryButton>
-						</div>
+								<span>
+									Dia de vencimento:{' '}
+									{selectedAccount.due_day
+										? `todo dia ${selectedAccount.due_day}`
+										: 'ainda não definido'}
+								</span>
+								<SecondaryButton
+									type="button"
+									onClick={handleOpenDueDayModal}
+									className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+								>
+									Definir dia de vencimento
+								</SecondaryButton>
+							</div>
 						)}
 					</header>
+				</FadeInItem>
 
-					<div className="space-y-3 sm:space-y-4 lg:space-y-5 2xl:space-y-5 pb-4 sm:pb-6 2xl:pb-6">
-						{(!normalizedMonthlyGroups || normalizedMonthlyGroups.length === 0) && (
-							<p className="text-xs sm:text-sm lg:text-base 2xl:text-base text-gray-500 dark:text-gray-400">
+				<FadeInItem type="subtle" className="space-y-3 sm:space-y-4 lg:space-y-5 2xl:space-y-5 pb-4 sm:pb-6 2xl:pb-6">
+					{(!normalizedMonthlyGroups || normalizedMonthlyGroups.length === 0) && (
+						<p className="text-xs sm:text-sm lg:text-base 2xl:text-base text-gray-500 dark:text-gray-400">
 							Nenhuma fatura encontrada para o filtro atual.
 						</p>
 					)}
 
-						{normalizedMonthlyGroups && normalizedMonthlyGroups.length > 0 && (
+					{normalizedMonthlyGroups && normalizedMonthlyGroups.length > 0 && (
 						<>
 							<FaturaMonthCarousel
-									months={normalizedMonthlyGroups}
-									selectedMonthKey={selectedGroup?.month_key}
-									onChangeMonth={handleChangeMonth}
-									{...selectedGroup}
+								months={normalizedMonthlyGroups}
+								selectedMonthKey={selectedGroup?.month_key}
+								onChangeMonth={handleChangeMonth}
+								{...selectedGroup}
 							/>
 
 							{selectedGroup && (
 								<FaturaMonthSection
-										key={selectedGroup.month_key}
-										{...selectedGroup}
-										month_key={selectedGroup.month_key}
-										bankUserId={selectedBankId || null}
-										due_day={selectedAccount?.due_day ?? null}
-										onPaid={handlePaidMonth}
-											isCurrentPending={
-												logicalCurrentKey &&
-												selectedGroup.month_key === logicalCurrentKey &&
-												!selectedGroup.is_paid
-											}
+									key={selectedGroup.month_key}
+									{...selectedGroup}
+									month_key={selectedGroup.month_key}
+									bankUserId={selectedBankId || null}
+									due_day={selectedAccount?.due_day ?? null}
+									onPaid={handlePaidMonth}
+									isCurrentPending={
+										logicalCurrentKey &&
+										selectedGroup.month_key === logicalCurrentKey &&
+										!selectedGroup.is_paid
+									}
 								/>
 							)}
 						</>
 					)}
-				</div>
+				</FadeInItem>
 
 				<Modal
 					isOpen={isDueDayModalOpen}
@@ -320,7 +323,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 						</div>
 					</form>
 				</Modal>
-			</div>
+			</FadeInContainer>
 		</AuthenticatedLayout>
 	);
 }
