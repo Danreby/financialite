@@ -2,15 +2,6 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useFadeInAnimation } from '@/Hooks/useFadeInAnimation'
 
-/**
- * Componente wrapper que aplica animação fade-in em seus filhos
- * @param {Object} props
- * @param {React.ReactNode} props.children - Elementos filhos
- * @param {string} props.className - Classes CSS adicionais
- * @param {Object} props.variants - Variantes customizadas (opcional)
- * @param {string} props.type - Tipo de animação: 'container', 'item', 'feature', 'fast', 'subtle'
- * @param {boolean} props.stagger - Se true, aplica stagger aos filhos
- */
 export default function FadeInContainer({
 	children,
 	className = '',
@@ -21,7 +12,6 @@ export default function FadeInContainer({
 }) {
 	const animation = useFadeInAnimation()
 
-	// Seleciona as variantes baseado no tipo
 	const getVariants = () => {
 		if (variants) return variants
 		
@@ -55,9 +45,6 @@ export default function FadeInContainer({
 	)
 }
 
-/**
- * Componente para itens dentro de um container com stagger
- */
 export function FadeInItem({ children, className = '', type = 'item', ...props }) {
 	const animation = useFadeInAnimation()
 
