@@ -13,6 +13,7 @@ class Category extends Model
 {
     use SoftDeletes;
 
+
     protected $table = 'categories';
 
     protected $fillable = [
@@ -20,7 +21,14 @@ class Category extends Model
         'user_id',
     ];
 
+    protected $hidden = [
+        'deleted_at',
+    ];
+
     protected $casts = [
+        'user_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
@@ -42,5 +50,10 @@ class Category extends Model
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('name');
+    }
+
+    public function belongsToUser(int $userId): bool
+    {
+        return $this->user_id === $userId;
     }
 }
