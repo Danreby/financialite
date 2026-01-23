@@ -15,15 +15,15 @@ class FaturaImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'rows' => ['required', 'array', 'min:1'],
+            'rows' => ['required', 'array', 'min:1', 'max:500'],
             'rows.*.title' => ['required', 'string', 'max:255'],
             'rows.*.description' => ['nullable', 'string'],
-            'rows.*.amount' => ['required', 'numeric', 'min:0'],
+            'rows.*.amount' => ['required', 'numeric', 'min:0.01'],
             'rows.*.type' => ['required', 'string', Rule::in(['credit', 'debit'])],
             'rows.*.status' => ['nullable', 'string', Rule::in(['unpaid', 'paid', 'overdue'])],
             'rows.*.total_installments' => ['nullable', 'integer', 'min:1', 'max:360'],
             'rows.*.current_installment' => ['nullable', 'integer', 'min:0', 'max:360'],
-            'rows.*.is_recurring' => ['nullable'],
+            'rows.*.is_recurring' => ['nullable', 'boolean'],
             'rows.*.bank_user_name' => ['nullable', 'string', 'max:255'],
             'rows.*.category_name' => ['nullable', 'string', 'max:255'],
         ];

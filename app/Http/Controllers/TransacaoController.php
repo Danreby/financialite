@@ -38,6 +38,10 @@ class TransacaoController extends Controller
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
 
+        if ($request->filled('bank_user_id')) {
+            BankUser::forUser($user->id)->findOrFail($bankUserId);
+        }
+
         $faturas = $this->exportService->exportForUser($user->id, $bankUserId, $categoryId);
 
         return response()->json($faturas);
@@ -80,16 +84,7 @@ class TransacaoController extends Controller
         $selectedBankUser = null;
 
         if ($request->filled('bank_user_id')) {
-            $bankUser = BankUser::findOrFail($bankUserId);
-            $selectedBankUser = $bankUser;
-
-            if ($bankUser->user_id !== $user->id) {
-                if ($request->wantsJson()) {
-                    return response()->json(['message' => 'Não autorizado.'], 403);
-                }
-
-                abort(403, 'Não autorizado.');
-            }
+            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $filters = [
@@ -134,7 +129,9 @@ class TransacaoController extends Controller
         $data = $this->normalizeInsertData($request->validated());
 
         if (!empty($data['bank_user_id'])) {
-            $bankUser = BankUser::with('bank')->findOrFail($data['bank_user_id']);
+            $bankUser = BankUser::with('bank')
+                ->forUser($user->id)
+                ->findOrFail($data['bank_user_id']);
             if ($response = $this->ensureBankUserBelongsToUser($bankUser, $user->id, 422)) {
                 return $response;
             }
@@ -145,9 +142,10 @@ class TransacaoController extends Controller
             $fatura->load(['bankUser.bank', 'user']);
             return response()->json($fatura, 201);
         } catch (\Throwable $e) {
+            report($e);
             $this->notifications->error($user, 'Erro ao criar fatura', 'Ocorreu um erro inesperado ao criar uma fatura.');
 
-            return response()->json(['message' => 'Erro ao criar fatura', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Erro ao criar fatura'], 500);
         }
     }
 
@@ -163,7 +161,7 @@ class TransacaoController extends Controller
         $data = $this->normalizeInsertData($request->validated());
 
         if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
-            $bankUser = BankUser::findOrFail($data['bank_user_id']);
+            $bankUser = BankUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             if ($response = $this->ensureBankUserBelongsToUser($bankUser, $user->id, 422)) {
                 return $response;
             }
@@ -174,9 +172,10 @@ class TransacaoController extends Controller
             $fatura->load(['bankUser.bank', 'user']);
             return response()->json($fatura);
         } catch (\Throwable $e) {
+            report($e);
             $this->notifications->error($user, 'Erro ao atualizar fatura', 'Ocorreu um erro inesperado ao atualizar uma fatura.');
 
-            return response()->json(['message' => 'Erro ao atualizar fatura', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Erro ao atualizar fatura'], 500);
         }
     }
 
@@ -218,7 +217,7 @@ class TransacaoController extends Controller
         $bankUser = null;
 
         if ($bankUserId) {
-            $bankUser = BankUser::findOrFail($bankUserId);
+            $bankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
             if ($response = $this->ensureBankUserBelongsToUser($bankUser, $user->id, 403)) {
                 return $response;
             }
@@ -237,11 +236,11 @@ class TransacaoController extends Controller
                 'message' => 'Pagamentos registrados com sucesso.',
             ]);
         } catch (\Throwable $e) {
+            report($e);
             $this->notifications->error($user, 'Erro ao registrar pagamentos', 'Ocorreu um erro inesperado ao registrar os pagamentos do mês.');
 
             return response()->json([
                 'message' => 'Erro ao registrar pagamentos do mês.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -252,7 +251,7 @@ class TransacaoController extends Controller
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = BankUser::findOrFail($bankUserId);
+            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
 
             if ($response = $this->ensureBankUserBelongsToUser($selectedBankUser, $user->id, 403)) {
                 return $response;

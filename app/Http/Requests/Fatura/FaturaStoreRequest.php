@@ -19,14 +19,19 @@ class FaturaStoreRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'amount' => 'required|numeric',
-            'type' => ['required', Rule::in(['credit','debit'])],
+            'amount' => 'required|numeric|min:0.01',
+            'type' => ['required', Rule::in(['credit', 'debit'])],
             'status' => ['nullable', Rule::in(['paid','unpaid','overdue'])],
             'paid_date' => 'nullable|date',
-            'total_installments' => 'nullable|integer|min:1',
-            'current_installment' => 'nullable|integer|min:1',
+            'total_installments' => 'nullable|integer|min:1|max:360',
+            'current_installment' => 'nullable|integer|min:1|max:360',
             'is_recurring' => 'sometimes|boolean',
-            'bank_user_id' => 'nullable|exists:bank_user,id',
+            'bank_user_id' => [
+                'nullable',
+                Rule::exists('bank_user', 'id')->where(function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }),
+            ],
             'category_id' => [
                 'nullable',
                 Rule::exists('categories', 'id')->where(function ($query) use ($userId) {

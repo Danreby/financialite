@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -21,7 +26,11 @@ class NotificationController extends Controller
 
     public function markAsRead(Notification $notification)
     {
-        $this->authorize('update', $notification);
+        $userId = Auth::id();
+
+        if ($notification->user_id !== $userId) {
+            return response()->json(['message' => 'Não autorizado.'], 403);
+        }
 
         $notification->update([
             'is_read' => true,
