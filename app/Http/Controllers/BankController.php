@@ -10,6 +10,7 @@ use App\Models\Bank;
 use App\Models\BankUser;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class BankController extends Controller
@@ -19,28 +20,34 @@ class BankController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Bank::class);
+
         $user = $request->user();
         
         $banks = Bank::forUser($user->id)
             ->ordered()
             ->paginate(20);
             
-        return response()->json($banks);
+        return $this->success($banks);
     }
 
-    public function show(Request $request, $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
         
         $bank = Bank::forUser($user->id)->findOrFail($id);
         
-        return response()->json($bank);
+        $this->authorize('view', $bank);
+        
+        return $this->success($bank);
     }
 
-    public function store(BankStoreRequest $request)
+    public function store(BankStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', Bank::class);
+
         $user = $request->user();
         
         $data = $this->normalizeInsertData($request->validated());
@@ -57,14 +64,16 @@ class BankController extends Controller
             return $bank;
         });
 
-        return response()->json($bank, 201);
+        return $this->success($bank, 201);
     }
 
-    public function update(BankUpdateRequest $request, $id)
+    public function update(BankUpdateRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
         
         $bank = Bank::forUser($user->id)->findOrFail($id);
+
+        $this->authorize('update', $bank);
 
         $data = $request->validated();
         DB::transaction(function () use ($bank, $data, $user) {
@@ -73,14 +82,16 @@ class BankController extends Controller
             $this->notifications->info($user, 'Banco atualizado', 'As informações do banco foram atualizadas.');
         });
 
-        return response()->json($bank);
+        return $this->success($bank);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
         
         $bank = $user->banks()->findOrFail($id);
+        
+        $this->authorize('delete', $bank);
         
         DB::transaction(function () use ($user, $bank) {
             BankUser::forUser($user->id)
@@ -92,23 +103,20 @@ class BankController extends Controller
             $this->notifications->info($user, 'Banco removido', 'Um banco foi desvinculado da sua conta.');
         });
 
-        return response()->json(['message' => 'Banco removido.']);
+        return $this->success(['message' => 'Banco removido.']);
     }
 
-    public function list(Request $request)
+    public function list(Request $request): JsonResponse
     {
         $banks = Bank::ordered()->get(['id', 'name']);
-        return response()->json($banks);
+        return $this->success($banks);
     }
 
-    public function updateDueDay(UpdateBankDueDayRequest $request, BankUser $bankUser)
+    public function updateDueDay(UpdateBankDueDayRequest $request, BankUser $bankUser): JsonResponse
     {
+        $this->authorize('update', $bankUser);
+
         $user = $request->user();
-
-        if (!$bankUser->belongsToUser($user->id)) {
-            return response()->json(['message' => 'Não autorizado.'], 403);
-        }
-
         $data = $request->validated();
 
         DB::transaction(function () use ($bankUser, $data, $user) {
@@ -118,15 +126,17 @@ class BankController extends Controller
             $this->notifications->info($user, 'Vencimento atualizado', 'O dia de vencimento da fatura foi atualizado.');
         });
 
-        return response()->json([
+        return $this->success([
             'message' => 'Dia de vencimento atualizado com sucesso.',
             'bank_user_id' => $bankUser->id,
             'due_day' => $data['due_day'],
         ]);
     }
 
-    public function attachToUser(AttachBankToUserRequest $request)
+    public function attachToUser(AttachBankToUserRequest $request): JsonResponse
     {
+        $this->authorize('create', BankUser::class);
+
         $user = $request->user();
 
         $data = $this->normalizeInsertData($request->validated());
@@ -138,11 +148,11 @@ class BankController extends Controller
         if ($exists) {
             $this->notifications->warning($user, 'Banco já vinculado', 'Tentativa de vincular um banco que já está associado à sua conta.');
 
-            return response()->json([
+            return $this->success([
                 'already_attached' => true,
                 'message' => 'Este banco já está vinculado ao usuário.',
                 'bank_user' => $exists->load('bank'),
-            ], 200);
+            ]);
         }
 
         $bankUser = DB::transaction(function () use ($data, $user) {
@@ -157,6 +167,6 @@ class BankController extends Controller
             return $bankUser;
         });
 
-        return response()->json($bankUser->load('bank'), 201);
+        return $this->success($bankUser->load('bank'), 201);
     }
 }

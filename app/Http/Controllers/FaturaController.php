@@ -15,7 +15,9 @@ use App\Http\Requests\Fatura\FaturaUpdateRequest;
 use App\Http\Requests\Fatura\PayMonthRequest;
 use App\Http\Requests\Fatura\FaturaImportRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 use DomainException;
 
 class FaturaController extends Controller
@@ -32,8 +34,10 @@ class FaturaController extends Controller
         $this->middleware('auth');
     }
 
-    public function exportData(Request $request)
+    public function exportData(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Transacao::class);
+
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
@@ -44,11 +48,13 @@ class FaturaController extends Controller
 
         $faturas = $this->exportService->exportForUser($user->id, $bankUserId, $categoryId);
 
-        return response()->json($faturas);
+        return $this->success($faturas);
     }
 
-    public function import(FaturaImportRequest $request)
+    public function import(FaturaImportRequest $request): JsonResponse
     {
+        $this->authorize('create', Transacao::class);
+
         $user = $request->user();
 
         $rows = $request->validated()['rows'] ?? [];
@@ -56,28 +62,25 @@ class FaturaController extends Controller
         try {
             $importedCount = $this->importService->importRows($user, $rows);
 
-            return response()->json([
+            return $this->success([
                 'message' => 'Importação concluída.',
                 'imported_count' => $importedCount,
             ]);
         } catch (DomainException $e) {
             $this->notifications->error($user, 'Erro na importação de faturas', $e->getMessage());
 
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 422);
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             $this->notifications->error($user, 'Erro ao importar faturas', 'Ocorreu um erro inesperado ao importar faturas.');
 
-            return response()->json([
-                'message' => 'Erro ao importar faturas.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverError('Erro ao importar faturas.');
         }
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse|Response
     {
+        $this->authorize('viewAny', Transacao::class);
+
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
@@ -96,7 +99,7 @@ class FaturaController extends Controller
 
         if ($request->wantsJson()) {
             $paginated = $dashboard['base_query']->paginate(15);
-            return response()->json($paginated);
+            return $this->success($paginated);
         }
 
         return Inertia::render('Fatura', [
@@ -111,20 +114,19 @@ class FaturaController extends Controller
         ]);
     }
 
-    public function show(Request $request, $id)
+    public function show(Request $request, int $id): JsonResponse
     {
-        $user = $request->user();
         $fatura = Transacao::with(['bankUser.bank', 'user'])->findOrFail($id);
 
-        if ($response = $this->ensureFaturaBelongsToUser($fatura, $user->id)) {
-            return $response;
-        }
+        $this->authorize('view', $fatura);
 
-        return response()->json($fatura);
+        return $this->success($fatura);
     }
 
-    public function store(FaturaStoreRequest $request)
+    public function store(FaturaStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', Transacao::class);
+
         $user = $request->user();
         $data = $this->normalizeInsertData($request->validated());
 
@@ -132,85 +134,76 @@ class FaturaController extends Controller
             $bankUser = BankUser::with('bank')
                 ->forUser($user->id)
                 ->findOrFail($data['bank_user_id']);
-            if ($response = $this->ensureBankUserBelongsToUser($bankUser, $user->id, 422)) {
-                return $response;
-            }
+            
+            $this->authorize('view', $bankUser);
         }
 
         try {
             $fatura = $this->faturaService->createForUser($user, $data);
             $fatura->load(['bankUser.bank', 'user']);
-            return response()->json($fatura, 201);
+            return $this->success($fatura, 201);
         } catch (\Throwable $e) {
             report($e);
             $this->notifications->error($user, 'Erro ao criar fatura', 'Ocorreu um erro inesperado ao criar uma fatura.');
 
-            return response()->json(['message' => 'Erro ao criar fatura'], 500);
+            return $this->serverError('Erro ao criar fatura');
         }
     }
 
-    public function update(FaturaUpdateRequest $request, $id)
+    public function update(FaturaUpdateRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
         $fatura = Transacao::findOrFail($id);
 
-        if ($response = $this->ensureFaturaBelongsToUser($fatura, $user->id)) {
-            return $response;
-        }
+        $this->authorize('update', $fatura);
 
         $data = $this->normalizeInsertData($request->validated());
 
         if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
             $bankUser = BankUser::forUser($user->id)->findOrFail($data['bank_user_id']);
-            if ($response = $this->ensureBankUserBelongsToUser($bankUser, $user->id, 422)) {
-                return $response;
-            }
+            $this->authorize('view', $bankUser);
         }
 
         try {
             $fatura = $this->faturaService->updateForUser($fatura, $data);
             $fatura->load(['bankUser.bank', 'user']);
-            return response()->json($fatura);
+            return $this->success($fatura);
         } catch (\Throwable $e) {
             report($e);
             $this->notifications->error($user, 'Erro ao atualizar fatura', 'Ocorreu um erro inesperado ao atualizar uma fatura.');
 
-            return response()->json(['message' => 'Erro ao atualizar fatura'], 500);
+            return $this->serverError('Erro ao atualizar fatura');
         }
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        $user = $request->user();
         $fatura = Transacao::findOrFail($id);
 
-        if ($response = $this->ensureFaturaBelongsToUser($fatura, $user->id)) {
-            return $response;
-        }
+        $this->authorize('delete', $fatura);
 
         $fatura->delete();
-        return response()->json(['message' => 'Fatura removida.']);
+        return $this->success(['message' => 'Fatura removida.']);
     }
 
-    public function restore(Request $request, $id)
+    public function restore(Request $request, int $id): JsonResponse
     {
-        $user = $request->user();
         $fatura = Transacao::withTrashed()->findOrFail($id);
 
-        if ($response = $this->ensureFaturaBelongsToUser($fatura, $user->id)) {
-            return $response;
-        }
+        $this->authorize('restore', $fatura);
 
         if ($fatura->trashed()) {
             $fatura->restore();
-            return response()->json(['message' => 'Fatura restaurada.', 'fatura' => $fatura]);
+            return $this->success(['message' => 'Fatura restaurada.', 'fatura' => $fatura]);
         }
 
-        return response()->json(['message' => 'Fatura não está removida.'], 400);
+        return $this->error('Fatura não está removida.', 400);
     }
 
-    public function payMonth(PayMonthRequest $request)
+    public function payMonth(PayMonthRequest $request): JsonResponse
     {
+        $this->authorize('update', Transacao::class);
+
         $user = $request->user();
         $data = $request->validated();
         $bankUserId = $data['bank_user_id'] ?? null;
@@ -218,44 +211,40 @@ class FaturaController extends Controller
 
         if ($bankUserId) {
             $bankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
-            if ($response = $this->ensureBankUserBelongsToUser($bankUser, $user->id, 403)) {
-                return $response;
-            }
+            $this->authorize('view', $bankUser);
         }
 
         try {
             $totalPaidThisRun = $this->paymentService->payMonthForUser($user, $data['month'], $bankUser ?? null);
 
             if ($totalPaidThisRun <= 0) {
-                return response()->json(['message' => 'Nenhuma fatura pendente para este mês.'], 200);
+                return $this->success(['message' => 'Nenhuma fatura pendente para este mês.']);
             }
 
             $this->notifications->info($user, 'Pagamentos do mês', 'Pagamentos registrados com sucesso para o mês selecionado.');
 
-            return response()->json([
+            return $this->success([
                 'message' => 'Pagamentos registrados com sucesso.',
             ]);
         } catch (\Throwable $e) {
             report($e);
             $this->notifications->error($user, 'Erro ao registrar pagamentos', 'Ocorreu um erro inesperado ao registrar os pagamentos do mês.');
 
-            return response()->json([
-                'message' => 'Erro ao registrar pagamentos do mês.',
-            ], 500);
+            return $this->serverError('Erro ao registrar pagamentos do mês.');
         }
     }
 
-    public function stats(Request $request)
+    public function stats(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Transacao::class);
+
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
+        
         if ($request->filled('bank_user_id')) {
             $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
-
-            if ($response = $this->ensureBankUserBelongsToUser($selectedBankUser, $user->id, 403)) {
-                return $response;
-            }
+            $this->authorize('view', $selectedBankUser);
         }
 
         $stats = $this->dashboardService->buildStats(
@@ -265,28 +254,7 @@ class FaturaController extends Controller
             $request->has('bank_user_id')
         );
 
-        return response()->json($stats);
+        return $this->success($stats);
     }
-
-    protected function ensureFaturaBelongsToUser(Transacao $fatura, int $userId)
-    {
-        if ($fatura->user_id !== $userId) {
-            return response()->json(['message' => 'Não autorizado.'], 403);
-        }
-
-        return null;
-    }
-
-    protected function ensureBankUserBelongsToUser(BankUser $bankUser, int $userId, int $statusCode = 403)
-    {
-        if ($bankUser->user_id !== $userId) {
-            return response()->json([
-                'message' => 'A associação banco-usuário não pertence ao usuário autenticado.',
-            ], $statusCode);
-        }
-
-        return null;
-    }
-
 }
 

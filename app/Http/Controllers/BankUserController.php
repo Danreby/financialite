@@ -6,6 +6,7 @@ use App\Http\Requests\BankUser\BankUserStoreRequest;
 use App\Models\Bank;
 use App\Models\BankUser;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class BankUserController extends Controller
@@ -15,8 +16,10 @@ class BankUserController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', BankUser::class);
+
         $user = $request->user();
 
         $bankUsers = BankUser::with('bank')
@@ -24,10 +27,10 @@ class BankUserController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return response()->json($bankUsers);
+        return $this->success($bankUsers);
     }
 
-    public function show(Request $request, $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
 
@@ -35,11 +38,15 @@ class BankUserController extends Controller
             ->forUser($user->id)
             ->findOrFail($id);
 
-        return response()->json($bankUser);
+        $this->authorize('view', $bankUser);
+
+        return $this->success($bankUser);
     }
 
-    public function store(BankUserStoreRequest $request)
+    public function store(BankUserStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', BankUser::class);
+
         $user = $request->user();
 
         $data = $this->normalizeInsertData($request->validated());
@@ -49,7 +56,7 @@ class BankUserController extends Controller
             ->first();
 
         if ($existing) {
-            return response()->json(['message' => 'Este banco já está associado ao usuário.'], 422);
+            return $this->error('Este banco já está associado ao usuário.', 422);
         }
 
         $bankUser = DB::transaction(function () use ($data, $user) {
@@ -61,24 +68,28 @@ class BankUserController extends Controller
 
         $bankUser->load('bank');
 
-        return response()->json($bankUser, 201);
+        return $this->success($bankUser, 201);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
 
         $bankUser = BankUser::forUser($user->id)->findOrFail($id);
 
+        $this->authorize('delete', $bankUser);
+
         DB::transaction(function () use ($bankUser) {
             $bankUser->delete();
         });
 
-        return response()->json(['message' => 'Banco desassociado do usuário.']);
+        return $this->success(['message' => 'Banco desassociado do usuário.']);
     }
 
-    public function stats(Request $request)
+    public function stats(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', BankUser::class);
+
         $user = $request->user();
 
         $stats = BankUser::with('bank')
@@ -99,6 +110,6 @@ class BankUserController extends Controller
                 ];
             });
 
-        return response()->json($stats);
+        return $this->success($stats);
     }
 }

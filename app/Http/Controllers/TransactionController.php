@@ -7,6 +7,7 @@ use App\Models\BankUser;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 use Carbon\Carbon;
 
 class TransactionController extends Controller
@@ -16,8 +17,10 @@ class TransactionController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Transacao::class);
+
         $user = $request->user();
 
         $perPage = 5;
@@ -53,6 +56,7 @@ class TransactionController extends Controller
         }
 
         $search = trim((string) $request->get('search', ''));
+        $search = e($search);
 
         $transactions = Transacao::with(['bankUser.bank', 'category'])
             ->forUser($user->id)
@@ -62,30 +66,20 @@ class TransactionController extends Controller
                 $q->whereBetween('created_at', [$start, $end]);
             })
             ->when($search !== '', function ($q) use ($search) {
-                $q->where('title', 'like', "%$search%");
+                $q->where('title', 'like', "%{$search}%");
             })
             ->when(true, function ($q) use ($order) {
-                switch ($order) {
-                    case 'created_asc':
-                        $q->orderBy('created_at', 'asc');
-                        break;
-                    case 'title_asc':
-                        $q->orderBy('title', 'asc');
-                        break;
-                    case 'title_desc':
-                        $q->orderBy('title', 'desc');
-                        break;
-                    case 'amount_asc':
-                        $q->orderBy('amount', 'asc');
-                        break;
-                    case 'amount_desc':
-                        $q->orderBy('amount', 'desc');
-                        break;
-                    case 'created_desc':
-                    default:
-                        $q->orderBy('created_at', 'desc');
-                        break;
-                }
+                $validOrders = [
+                    'created_asc' => ['created_at', 'asc'],
+                    'created_desc' => ['created_at', 'desc'],
+                    'title_asc' => ['title', 'asc'],
+                    'title_desc' => ['title', 'desc'],
+                    'amount_asc' => ['amount', 'asc'],
+                    'amount_desc' => ['amount', 'desc'],
+                ];
+                
+                $orderConfig = $validOrders[$order] ?? $validOrders['created_desc'];
+                $q->orderBy($orderConfig[0], $orderConfig[1]);
             })
             ->paginate($perPage, ['*'], 'transactions_page')
             ->withQueryString()
