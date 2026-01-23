@@ -13,6 +13,7 @@ import Modal from "@/Components/common/Modal";
 import Pagination from "@/Components/common/Pagination";
 import TransactionFilters from "@/Components/system/transactions/TransactionFilters";
 import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
+import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer";
 
 export default function Transacao({ transactions, bankAccounts = [], categories = [], months = [], filters = {} }) {
 	const initialTransactions = Array.isArray(transactions?.data)
@@ -140,17 +141,20 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 		<AuthenticatedLayout>
 			<Head title="Transações" />
 
-			<div className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-3 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
-				<header className="space-y-1 pt-1 sm:pt-1.5">
-					<h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
-						Transações
-					</h1>
-					<p className="text-xs sm:text-sm lg:text-sm text-gray-600 dark:text-gray-300">
-						Visualize, edite ou remova transações que ainda não foram pagas.
-					</p>
-				</header>
+			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-3 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
+				<FadeInItem type="fast">
+					<header className="space-y-1 pt-1 sm:pt-1.5">
+						<h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
+							Transações
+						</h1>
+						<p className="text-xs sm:text-sm lg:text-sm text-gray-600 dark:text-gray-300">
+							Visualize, edite ou remova transações que ainda não foram pagas.
+						</p>
+					</header>
+				</FadeInItem>
 
-				<section className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-4 lg:p-4">
+				<FadeInItem type="subtle">
+					<section className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-4 lg:p-4">
 					<TransactionFilters
 						searchTerm={searchTerm}
 						onSearchChange={setSearchTerm}
@@ -182,9 +186,10 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 						onShowDetails={handleShowDetails}
 					/>
 
-					<Pagination links={transactions?.links || []} />
-				</section>
-			</div>
+						<Pagination links={transactions?.links || []} />
+					</section>
+				</FadeInItem>
+			</FadeInContainer>
 
 			<EditTransactionModal
 				isOpen={isEditModalOpen}

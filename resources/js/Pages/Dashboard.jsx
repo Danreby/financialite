@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Head } from '@inertiajs/react'
 import { toast } from 'react-toastify'
-import { motion } from 'framer-motion'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import StatCard from '@/Components/system/dashboard/StatCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
@@ -11,6 +10,7 @@ import TopSpendingCategories from '@/Components/system/dashboard/TopSpendingCate
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
 import ScrollArea from '@/Components/common/ScrollArea'
+import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
 
 function formatDateLabel(value) {
   if (!value) return ''
@@ -144,13 +144,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
     <AuthenticatedLayout>
       <Head title="Dashboard" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="max-w-[1600px] mx-auto pb-6"
-      >
-        <div className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
+      <FadeInContainer className="max-w-[1600px] mx-auto pb-6">
+        <FadeInItem className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
           <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
             Visão geral
           </h1>
@@ -173,21 +168,22 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               ))}
             </select>
           </div>
-        </div>
+        </FadeInItem>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+        <FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
           {stats.map((stat) => (
-            <StatCard
-              key={stat.id}
-              title={stat.title}
-              value={stat.value}
-              delta={stat.delta}
-            />
+            <FadeInItem key={stat.id} type="feature">
+              <StatCard
+                title={stat.title}
+                value={stat.value}
+                delta={stat.delta}
+              />
+            </FadeInItem>
           ))}
-        </div>
+        </FadeInContainer>
 
-        <div className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-          <div className="lg:col-span-2 border dark:border-red-950/50 border-gray-50/90 rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
+          <FadeInItem className="lg:col-span-2 border dark:border-red-950/50 border-gray-50/90 rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
                 Transações recentes
@@ -243,25 +239,29 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
                 </p>
               )}
             </ScrollArea>
-          </div>
+          </FadeInItem>
 
-          <QuickActions bankAccounts={bankAccounts} categories={categories} />
-        </div>
+          <FadeInItem>
+            <QuickActions bankAccounts={bankAccounts} categories={categories} />
+          </FadeInItem>
+        </FadeInContainer>
 
-        <div className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-          <div className="lg:col-span-2 border rounded-2xl dark:border-red-950/50 border-gray-50/90">
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
+          <FadeInItem className="lg:col-span-2 border rounded-2xl dark:border-red-950/50 border-gray-50/90">
             <MonthlySummaryChart data={monthlySummary} />
-          </div>
+          </FadeInItem>
 
-          <TopSpendingCategories data={topSpendingCategories} label={topSpendingLabel} />
-        </div>
+          <FadeInItem>
+            <TopSpendingCategories data={topSpendingCategories} label={topSpendingLabel} />
+          </FadeInItem>
+        </FadeInContainer>
 
         <FaturaDetailModal
           isOpen={!!selectedFaturaItem}
           onClose={() => setSelectedFaturaItem(null)}
           item={selectedFaturaItem}
         />
-      </motion.div>
+      </FadeInContainer>
     </AuthenticatedLayout>
   )
 }

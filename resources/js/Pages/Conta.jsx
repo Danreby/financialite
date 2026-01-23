@@ -10,6 +10,7 @@ import DangerButton from '@/Components/common/buttons/DangerButton';
 import ScrollArea from '@/Components/common/ScrollArea';
 import Pagination from '@/Components/common/Pagination';
 import { useNumericInput } from '@/Hooks/useNumericInput';
+import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer';
 
 function formatDueDay(dueDay) {
 	if (!dueDay) return 'Não definido';
@@ -174,15 +175,17 @@ export default function Conta({ bankAccounts, categories }) {
 		<AuthenticatedLayout>
 			<Head title="Contas" />
 
-			<div className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-3 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
-				<header className="space-y-1">
-					<h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">Contas</h1>
-					<p className="text-xs sm:text-sm lg:text-sm text-gray-600 dark:text-gray-300">
-						Gerencie as contas bancárias vinculadas e as categorias usadas nas suas transações.
-					</p>
-				</header>
+			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-3 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
+				<FadeInItem type="fast">
+					<header className="space-y-1">
+						<h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">Contas</h1>
+						<p className="text-xs sm:text-sm lg:text-sm text-gray-600 dark:text-gray-300">
+							Gerencie as contas bancárias vinculadas e as categorias usadas nas suas transações.
+						</p>
+					</header>
+				</FadeInItem>
 
-				<section className="rounded-2xl bg-white p-3 sm:p-3 lg:p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+				<FadeInItem type="subtle">				<section className="rounded-2xl bg-white p-3 sm:p-3 lg:p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
 					<div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
 							Contas / bancos vinculados
@@ -236,7 +239,9 @@ export default function Conta({ bankAccounts, categories }) {
 						</p>
 					)}
 				</section>
+			</FadeInItem>
 
+			<FadeInItem type="subtle">
 				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-3">
 					<div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -285,7 +290,8 @@ export default function Conta({ bankAccounts, categories }) {
 						</p>
 					)}
 				</section>
-			</div>
+			</FadeInItem>
+		</FadeInContainer>
 
 			<Modal
 				isOpen={isEditBankModalOpen}
