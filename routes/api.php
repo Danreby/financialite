@@ -6,7 +6,7 @@ use App\Http\Controllers\BankUserController;
 use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     // Rotas de Bancos
     Route::apiResource('banks', BankController::class);
 
