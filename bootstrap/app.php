@@ -28,7 +28,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogSecurityEvents::class,
         ]);
 
-        // Register middleware aliases for route-specific rate limiting
         $middleware->alias([
             'action.limit' => \App\Http\Middleware\ActionRateLimiter::class,
         ]);
