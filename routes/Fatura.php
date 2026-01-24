@@ -7,11 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->group(function () {
 	Route::prefix('transacoes')->name('transacoes.')->group(function () {
 		Route::get('/', [TransacaoController::class, 'index'])->name('index');
-		
-		// Rotas "estáticas" precisam vir antes da rota dinâmica /{id}
 		Route::get('/stats', [TransacaoController::class, 'stats'])->name('stats');
-		
-		// Rate limited sensitive operations
 		Route::get('/export-data', [TransacaoController::class, 'exportData'])
 			->middleware('action.limit:export,10')
 			->name('export_data');
@@ -21,7 +17,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 		Route::post('/pay-month', [TransacaoController::class, 'payMonth'])
 			->middleware('action.limit:pay_month,10')
 			->name('pay_month');
-		
 		Route::post('/{id}/restore', [TransacaoController::class, 'restore'])->name('restore');
 		Route::get('/{id}', [TransacaoController::class, 'show'])->name('show');
 		Route::post('/', [TransacaoController::class, 'store'])->name('store');
