@@ -14,9 +14,11 @@ abstract class Controller extends BaseController
 
     protected function normalizeInsertData(array $data): array
     {
+        $preserveCase = ['email', 'password', 'password_confirmation'];
+        
         foreach ($data as $key => $value) {
-            if (is_string($value)) {
-                $data[$key] = mb_strtolower($value, 'UTF-8');
+            if (is_string($value) && !in_array($key, $preserveCase, true)) {
+                $data[$key] = mb_strtolower(trim($value), 'UTF-8');
             }
         }
 
@@ -25,12 +27,12 @@ abstract class Controller extends BaseController
 
     protected function unauthorized(string $message = 'Não autorizado.'): JsonResponse
     {
-        return response()->json(['message' => $message], 403);
+        return response()->json(['error' => $message], 403);
     }
 
     protected function notFound(string $message = 'Recurso não encontrado.'): JsonResponse
     {
-        return response()->json(['message' => $message], 404);
+        return response()->json(['error' => $message], 404);
     }
 
     protected function success(mixed $data = null, int $status = 200): JsonResponse
@@ -40,12 +42,20 @@ abstract class Controller extends BaseController
 
     protected function error(string $message, int $status = 400): JsonResponse
     {
-        return response()->json(['message' => $message], $status);
+        return response()->json(['error' => $message], $status);
     }
 
     protected function serverError(string $message = 'Erro interno do servidor.'): JsonResponse
     {
-        return response()->json(['message' => $message], 500);
+        return response()->json(['error' => $message], 500);
+    }
+
+    protected function validationError(array $errors, string $message = 'Dados inválidos.'): JsonResponse
+    {
+        return response()->json([
+            'error' => $message,
+            'errors' => $errors,
+        ], 422);
     }
 }
 
