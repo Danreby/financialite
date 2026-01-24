@@ -309,7 +309,6 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 			item={selectedTransaction}
 		/>
 	</FadeInContainer>
-			</FadeInContainer>
 		</AuthenticatedLayout>
 	);
 }
