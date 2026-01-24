@@ -18,7 +18,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('faturas', function (Blueprint $table) {
-            // Recreate the column as nullable in case of rollback
             if (!Schema::hasColumn('faturas', 'due_date')) {
                 $table->date('due_date')->nullable();
             }
