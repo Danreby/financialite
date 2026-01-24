@@ -7,19 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 
-/**
- * Security event logger service.
- * 
- * Provides comprehensive logging for security-related events
- * for auditing, monitoring, and incident response.
- */
 class SecurityLogger implements SecurityLoggerInterface
 {
     protected string $channel = 'security';
 
-    /**
-     * {@inheritdoc}
-     */
     public function logAuth(string $event, ?int $userId = null, array $context = []): void
     {
         $context = $this->enrichContext($context, $userId);
@@ -29,9 +20,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->log($level, "Auth event: {$event}", $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function logAuthorizationFailure(string $action, string $resource, ?int $userId = null, array $context = []): void
     {
         $context = array_merge($context, [
@@ -44,9 +32,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->warning("Authorization denied: {$action} on {$resource}", $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function logSuspicious(string $activity, array $context = []): void
     {
         $context = $this->enrichContext($context);
@@ -55,9 +40,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->warning("Suspicious activity: {$activity}", $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function logRateLimitExceeded(string $identifier, string $action, array $context = []): void
     {
         $context = array_merge($context, [
@@ -70,9 +52,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->warning("Rate limit exceeded for action: {$action}", $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function logDataAccess(string $action, string $resource, ?int $userId = null, array $context = []): void
     {
         $context = array_merge($context, [
@@ -85,9 +64,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->info("Data access: {$action} on {$resource}", $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function logValidationFailure(string $source, array $errors, array $context = []): void
     {
         $context = array_merge($context, [
@@ -100,13 +76,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->notice("Validation failure in {$source}", $context);
     }
 
-    /**
-     * Log a security exception.
-     *
-     * @param \Throwable $exception
-     * @param array $context
-     * @return void
-     */
     public function logSecurityException(\Throwable $exception, array $context = []): void
     {
         $context = array_merge($context, [
@@ -122,12 +91,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->error("Security exception: " . get_class($exception), $context);
     }
 
-    /**
-     * Log a CSRF token mismatch.
-     *
-     * @param array $context
-     * @return void
-     */
     public function logCsrfMismatch(array $context = []): void
     {
         $context = $this->enrichContext($context);
@@ -136,13 +99,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->warning("CSRF token mismatch detected", $context);
     }
 
-    /**
-     * Log an SQL injection attempt.
-     *
-     * @param string $input
-     * @param array $context
-     * @return void
-     */
     public function logSqlInjectionAttempt(string $input, array $context = []): void
     {
         $context = $this->enrichContext($context);
@@ -152,13 +108,6 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->error("Potential SQL injection attempt detected", $context);
     }
 
-    /**
-     * Log an XSS attempt.
-     *
-     * @param string $input
-     * @param array $context
-     * @return void
-     */
     public function logXssAttempt(string $input, array $context = []): void
     {
         $context = $this->enrichContext($context);
@@ -168,21 +117,12 @@ class SecurityLogger implements SecurityLoggerInterface
         Log::channel($this->channel)->error("Potential XSS attempt detected", $context);
     }
 
-    /**
-     * Enrich context with request information.
-     *
-     * @param array $context
-     * @param int|null $userId
-     * @return array
-     */
     protected function enrichContext(array $context, ?int $userId = null): array
     {
         $request = Request::instance();
         
-        // Get user ID safely
         $resolvedUserId = $userId;
         if ($resolvedUserId === null && Auth::check()) {
-            /** @var \App\Models\User|null $user */
             $user = Auth::user();
             $resolvedUserId = $user?->id;
         }
@@ -198,20 +138,12 @@ class SecurityLogger implements SecurityLoggerInterface
         ], $context);
     }
 
-    /**
-     * Hash IP address for privacy-conscious logging.
-     *
-     * @param string|null $ip
-     * @return string|null
-     */
     protected function hashIp(?string $ip): ?string
     {
         if (!$ip) {
             return null;
         }
         
-        // In production, you might want to hash the IP
-        // For debugging purposes, we keep the first part
         if (config('app.env') === 'production') {
             return hash('sha256', $ip . config('app.key'));
         }
@@ -219,41 +151,22 @@ class SecurityLogger implements SecurityLoggerInterface
         return $ip;
     }
 
-    /**
-     * Hash identifier for privacy.
-     *
-     * @param string $identifier
-     * @return string
-     */
     protected function hashIdentifier(string $identifier): string
     {
         return hash('sha256', $identifier . config('app.key'));
     }
 
-    /**
-     * Sanitize error messages to remove sensitive data.
-     *
-     * @param array $errors
-     * @return array
-     */
     protected function sanitizeErrors(array $errors): array
     {
         $sanitized = [];
         
         foreach ($errors as $field => $messages) {
-            // Don't log actual values, just field names and error types
             $sanitized[$field] = is_array($messages) ? count($messages) . ' error(s)' : 'error';
         }
         
         return $sanitized;
     }
 
-    /**
-     * Get the appropriate log level for auth events.
-     *
-     * @param string $event
-     * @return string
-     */
     protected function getAuthEventLevel(string $event): string
     {
         return match($event) {

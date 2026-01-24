@@ -5,14 +5,8 @@ namespace App\Security\Rules;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/**
- * Validation rule to detect potential SQL injection patterns.
- */
 class NoSqlInjection implements ValidationRule
 {
-    /**
-     * Common SQL injection patterns to detect.
-     */
     protected array $patterns = [
         '/(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|TRUNCATE)\b.*\b(FROM|INTO|TABLE|SET|WHERE)\b)/i',
         '/(\bOR\b|\bAND\b)\s*[\'\"]?\s*\d+\s*=\s*\d+/i',
@@ -30,14 +24,6 @@ class NoSqlInjection implements ValidationRule
         '/INTO\s+(OUT|DUMP)FILE/i',
     ];
 
-    /**
-     * Run the validation rule.
-     *
-     * @param string $attribute
-     * @param mixed $value
-     * @param Closure $fail
-     * @return void
-     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!is_string($value)) {
