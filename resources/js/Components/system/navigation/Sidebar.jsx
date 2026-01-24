@@ -37,10 +37,10 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isOpen ? 260 : 64 }}
+      animate={{ width: isOpen ? 220 : 64 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="flex-shrink-0 h-screen bg-white border-r border-gray-200 mt-2 shadow-md ring-1 ring-black/5 overflow-hidden dark:bg-gradient-to-b dark:from-[#070707] dark:to-[#0b0b0b] dark:border-gray-800 dark:ring-black/30"
-      style={{ minWidth: 64 }}
+      className="flex-shrink-0 h-screen bg-white border-r border-gray-200 mt-2 shadow-md ring-1 ring-black/5 dark:bg-gradient-to-b dark:from-[#070707] dark:to-[#0b0b0b] dark:border-gray-800 dark:ring-black/30"
+      style={{ minWidth: 64, width: isOpen ? 'fit-content' : 64 }}
       aria-expanded={isOpen}
     >
       <div className="h-full flex flex-col">
@@ -123,7 +123,7 @@ function NavItem({ type = 3, size = 16, color, open, href, label }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900/30"
+      className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900/30 whitespace-nowrap"
     >
       <div className="h-8 w-8 rounded-md bg-gray-100 flex items-center justify-center ring-1 ring-gray-200 dark:bg-[#0f0f0f] dark:ring-black/20" aria-hidden>
         <NavIcon type={type} size={size} color={color}/>

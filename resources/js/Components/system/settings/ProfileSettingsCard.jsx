@@ -31,7 +31,7 @@ export default function ProfileSettingsCard({ user, itemVariants }) {
   }
 
   return (
-    <div className="bg-white dark:bg-[#0f0f0f] rounded-lg shadow-sm ring-1 ring-gray-200 dark:ring-gray-800 p-6 mb-6">
+    <div className="bg-white dark:bg-[#0b0b0b] rounded-2xl shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:ring-black/30 p-6 mb-6">
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <svg
