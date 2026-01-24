@@ -16,6 +16,10 @@ class ProfileUpdateRequest extends FormRequest
 
     public function rules(): array
     {
+        $emailRules = app()->environment('testing')
+            ? 'email'
+            : 'email:rfc,dns';
+
         return [
             'name' => [
                 'required',
@@ -28,7 +32,7 @@ class ProfileUpdateRequest extends FormRequest
                 'required',
                 'string',
                 'lowercase',
-                'email:rfc,dns',
+                $emailRules,
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],

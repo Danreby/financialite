@@ -5,26 +5,13 @@ namespace App\Http\Requests\Bank;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Validated and secured form request for creating banks.
- */
 class BankStoreRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize(): bool
     {
         return $this->user() !== null;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
         return [
@@ -45,11 +32,6 @@ class BankStoreRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
@@ -62,11 +44,6 @@ class BankStoreRequest extends FormRequest
         ];
     }
 
-    /**
-     * Prepare the data for validation.
-     *
-     * @return void
-     */
     protected function prepareForValidation(): void
     {
         if ($this->has('name') && is_string($this->name)) {
