@@ -11,9 +11,6 @@ use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
-    /**
-     * Register a new user.
-     */
     public function register(array $data): User
     {
         $user = User::create([
@@ -32,9 +29,6 @@ class AuthService
         return $user;
     }
 
-    /**
-     * Attempt to authenticate a user.
-     */
     public function authenticate(array $credentials, bool $remember = false): bool
     {
         if (!Auth::attempt($credentials, $remember)) {
@@ -58,9 +52,6 @@ class AuthService
         return true;
     }
 
-    /**
-     * Log the user out.
-     */
     public function logout(): void
     {
         $userId = Auth::id();
@@ -73,11 +64,9 @@ class AuthService
         Log::info('User logged out', ['user_id' => $userId]);
     }
 
-    /**
-     * Check if user email is verified.
-     */
     public function isEmailVerified(?User $user = null): bool
     {
+        /** @var User|null $user */
         $user = $user ?? Auth::user();
 
         if (!$user) {
@@ -87,9 +76,6 @@ class AuthService
         return $user->hasVerifiedEmail();
     }
 
-    /**
-     * Send email verification notification.
-     */
     public function sendVerificationEmail(User $user): void
     {
         if (!$user->hasVerifiedEmail()) {
@@ -99,9 +85,6 @@ class AuthService
         }
     }
 
-    /**
-     * Mark user email as verified.
-     */
     public function markEmailAsVerified(User $user): bool
     {
         if ($user->hasVerifiedEmail()) {
@@ -115,11 +98,9 @@ class AuthService
         return true;
     }
 
-    /**
-     * Get the authenticated user with verification status.
-     */
     public function getAuthenticatedUser(): ?array
     {
+        /** @var User|null $user */
         $user = Auth::user();
 
         if (!$user) {

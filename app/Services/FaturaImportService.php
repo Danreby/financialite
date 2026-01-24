@@ -11,15 +11,11 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Service for importing faturas/transactions with security validations.
- */
 class FaturaImportService
 {
-    /**
-     * Maximum rows allowed per import to prevent abuse.
-     */
     private const MAX_IMPORT_ROWS = 500;
+    private const MAX_AMOUNT = 999999999.99;
+    private const MAX_INSTALLMENTS = 120;
 
     public function __construct(
         private FaturaService $writer,
@@ -27,24 +23,14 @@ class FaturaImportService
     ) {
     }
 
-    /**
-     * Import rows of fatura data for a user.
-     *
-     * @param Authenticatable $user
-     * @param array $rows
-     * @return int Number of imported records
-     * @throws DomainException
-     */
     public function importRows(Authenticatable $user, array $rows): int
     {
-        // Security: Limit import size to prevent DoS attacks
         if (count($rows) > self::MAX_IMPORT_ROWS) {
             throw new DomainException(
                 'O número máximo de registros por importação é ' . self::MAX_IMPORT_ROWS . '.'
             );
         }
 
-        // Security: Log import attempt
         Log::channel('security')->info('Import attempt', [
             'user_id' => $user->id,
             'row_count' => count($rows),
@@ -55,10 +41,7 @@ class FaturaImportService
             $importedCount = 0;
 
             foreach ($rows as $index => $row) {
-                // Security: Sanitize all string inputs
                 $sanitizedRow = $this->sanitizeRow($row);
-                
-                // Security: Validate row structure
                 $this->validateRowStructure($sanitizedRow, $index);
 
                 $bankUserId = $this->resolveBankUserIdByName($user->id, $sanitizedRow['bank_user_name'] ?? null, $index);
@@ -81,7 +64,6 @@ class FaturaImportService
                 $importedCount++;
             }
 
-            // Security: Log successful import
             Log::channel('security')->info('Import successful', [
                 'user_id' => $user->id,
                 'imported_count' => $importedCount,
@@ -91,12 +73,6 @@ class FaturaImportService
         });
     }
 
-    /**
-     * Sanitize all string values in a row.
-     *
-     * @param array $row
-     * @return array
-     */
     private function sanitizeRow(array $row): array
     {
         $sanitized = [];
@@ -112,13 +88,6 @@ class FaturaImportService
         return $sanitized;
     }
 
-    /**
-     * Validate row has required fields.
-     *
-     * @param array $row
-     * @param int $index
-     * @throws DomainException
-     */
     private function validateRowStructure(array $row, int $index): void
     {
         $required = ['title', 'amount', 'type'];
@@ -132,14 +101,6 @@ class FaturaImportService
         }
     }
 
-    /**
-     * Sanitize and validate amount.
-     *
-     * @param mixed $amount
-     * @param int $index
-     * @return float
-     * @throws DomainException
-     */
     private function sanitizeAmount(mixed $amount, int $index): float
     {
         $sanitized = filter_var($amount, FILTER_VALIDATE_FLOAT);
@@ -150,8 +111,7 @@ class FaturaImportService
             );
         }
 
-        // Security: Limit maximum amount to prevent abuse
-        if ($sanitized > 999999999.99) {
+        if ($sanitized > self::MAX_AMOUNT) {
             throw new DomainException(
                 'Valor muito alto na linha ' . ($index + 2) . '. O valor máximo permitido é 999.999.999,99.'
             );
@@ -160,14 +120,6 @@ class FaturaImportService
         return round($sanitized, 2);
     }
 
-    /**
-     * Validate type against allowed values.
-     *
-     * @param string $type
-     * @param int $index
-     * @return string
-     * @throws DomainException
-     */
     private function validateType(string $type, int $index): string
     {
         $type = strtolower(trim($type));
@@ -182,14 +134,6 @@ class FaturaImportService
         return $type;
     }
 
-    /**
-     * Validate status against allowed values.
-     *
-     * @param string $status
-     * @param int $index
-     * @return string
-     * @throws DomainException
-     */
     private function validateStatus(string $status, int $index): string
     {
         $status = strtolower(trim($status));
@@ -204,12 +148,6 @@ class FaturaImportService
         return $status;
     }
 
-    /**
-     * Sanitize installment number.
-     *
-     * @param mixed $value
-     * @return int|null
-     */
     private function sanitizeInstallment(mixed $value): ?int
     {
         if ($value === null || $value === '') {
@@ -222,19 +160,9 @@ class FaturaImportService
             return null;
         }
 
-        // Security: Reasonable limit for installments
-        return min($sanitized, 120);
+        return min($sanitized, self::MAX_INSTALLMENTS);
     }
 
-    /**
-     * Resolve bank user ID by bank name.
-     *
-     * @param int $userId
-     * @param string|null $bankUserName
-     * @param int $index
-     * @return int|null
-     * @throws DomainException
-     */
     private function resolveBankUserIdByName(int $userId, ?string $bankUserName, int $index): ?int
     {
         if (!$bankUserName) {
@@ -257,15 +185,6 @@ class FaturaImportService
         return $bankUser->id;
     }
 
-    /**
-     * Resolve category ID by name.
-     *
-     * @param int $userId
-     * @param string|null $categoryName
-     * @param int $index
-     * @return int|null
-     * @throws DomainException
-     */
     private function resolveCategoryIdByName(int $userId, ?string $categoryName, int $index): ?int
     {
         if (!$categoryName) {

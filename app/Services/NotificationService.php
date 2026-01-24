@@ -7,9 +7,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class NotificationService
 {
-    /**
-     * Registra uma notificação genérica para um usuário autenticado.
-     */
     public function send(Authenticatable|int $user, string $title, string $message, string $type = 'info'): Notification
     {
         $userId = $user instanceof Authenticatable ? $user->getAuthIdentifier() : $user;
