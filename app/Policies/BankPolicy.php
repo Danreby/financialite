@@ -17,7 +17,7 @@ class BankPolicy
 
     public function view(User $user, Bank $bank): bool
     {
-        return $bank->users()->where('users.id', $user->id)->exists();
+        return $bank->belongsToUser($user->id);
     }
 
     public function create(User $user): bool
@@ -27,29 +27,14 @@ class BankPolicy
 
     public function update(User $user, Bank $bank): bool
     {
-        // User can update a bank if they have a relationship with it
-        return $bank->users()->where('users.id', $user->id)->exists();
+        return $bank->belongsToUser($user->id);
     }
 
-    /**
-     * Determine whether the user can delete the bank.
-     *
-     * @param User $user
-     * @param Bank $bank
-     * @return bool
-     */
     public function delete(User $user, Bank $bank): bool
     {
-        // User can delete a bank if they have a relationship with it
-        return $bank->users()->where('users.id', $user->id)->exists();
+        return $bank->belongsToUser($user->id);
     }
 
-    /**
-     * Determine whether the user can attach the bank.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function attach(User $user): bool
     {
         return true;
