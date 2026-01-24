@@ -12,13 +12,11 @@ use App\Security\Contracts\SanitizerInterface;
  */
 class InputSanitizer implements SanitizerInterface
 {
-    /**
-     * Keys that should never be sanitized (e.g., password fields).
-     */
     protected array $globalExcept = [
         'password',
         'password_confirmation',
         'current_password',
+        'email',
     ];
 
     /**

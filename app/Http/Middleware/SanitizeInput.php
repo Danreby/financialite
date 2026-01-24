@@ -14,6 +14,7 @@ class SanitizeInput
         'password_confirmation',
         'current_password',
         '_token',
+        'email',
     ];
 
     public function __construct(protected SanitizerInterface $sanitizer)

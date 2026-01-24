@@ -74,6 +74,7 @@ return [
             'password_confirmation',
             'current_password',
             '_token',
+            'email',
         ],
         
         // Whether to strip HTML tags from all input
