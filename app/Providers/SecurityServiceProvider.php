@@ -19,18 +19,8 @@ use App\Security\Services\SecurityLogger;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * Security Service Provider.
- * 
- * Registers security services, policies, and configurations.
- */
 class SecurityServiceProvider extends ServiceProvider
 {
-    /**
-     * Policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
     protected array $policies = [
         Transacao::class => TransacaoPolicy::class,
         Category::class => CategoryPolicy::class,
@@ -39,30 +29,18 @@ class SecurityServiceProvider extends ServiceProvider
         Bank::class => BankPolicy::class,
     ];
 
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        // Register sanitizer as singleton
         $this->app->singleton(SanitizerInterface::class, InputSanitizer::class);
-        
-        // Register security logger as singleton
         $this->app->singleton(SecurityLoggerInterface::class, SecurityLogger::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         $this->registerPolicies();
         $this->configureSecuritySettings();
     }
 
-    /**
-     * Register the application's policies.
-     */
     protected function registerPolicies(): void
     {
         foreach ($this->policies as $model => $policy) {
@@ -70,12 +48,8 @@ class SecurityServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * Configure additional security settings.
-     */
     protected function configureSecuritySettings(): void
     {
-        // Ensure cookies are secure in production
         if ($this->app->environment('production')) {
             config([
                 'session.secure' => true,
