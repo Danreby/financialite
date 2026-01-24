@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Transacao;
 
 class Category extends Model
 {
@@ -20,7 +19,14 @@ class Category extends Model
         'user_id',
     ];
 
+    protected $hidden = [
+        'deleted_at',
+    ];
+
     protected $casts = [
+        'user_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
@@ -42,5 +48,10 @@ class Category extends Model
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('name');
+    }
+
+    public function belongsToUser(int $userId): bool
+    {
+        return $this->user_id === $userId;
     }
 }

@@ -20,6 +20,10 @@ class BankUser extends Model
 
     protected $casts = [
         'due_day' => 'integer',
+        'bank_id' => 'integer',
+        'user_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function bank(): BelongsTo
