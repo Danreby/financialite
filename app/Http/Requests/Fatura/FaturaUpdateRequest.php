@@ -63,6 +63,7 @@ class FaturaUpdateRequest extends FormRequest
                 'integer',
                 'min:0',
                 'max:360',
+                'lte:total_installments',
             ],
             'is_recurring' => [
                 'sometimes',
