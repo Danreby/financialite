@@ -6,14 +6,7 @@ import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import ScrollArea from "@/Components/common/ScrollArea";
 import BareButton from "@/Components/common/buttons/BareButton";
 import Tooltip from "@/Components/common/Tooltip";
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(value || 0);
-}
+import { formatCurrency } from "@/Lib/formatters";
 
 export default function FaturaMonthSection({
   month_label,

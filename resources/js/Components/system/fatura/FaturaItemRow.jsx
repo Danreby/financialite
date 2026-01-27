@@ -1,23 +1,6 @@
 import React from "react";
 import { PaperclipIcon } from "@/Components/system/anexo/FileIcons";
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(value || 0);
-}
-
-function formatDayLabel(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = date.toLocaleDateString("pt-BR", { month: "short" });
-  return `${day} ${month}`;
-}
+import { formatCurrency, formatDayLabel } from "@/Lib/formatters";
 
 export default function FaturaItemRow({
   title,

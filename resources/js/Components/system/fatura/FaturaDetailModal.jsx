@@ -1,14 +1,7 @@
 import React from "react";
 import Modal from "@/Components/common/Modal";
 import { AnexoSection } from "@/Components/system/anexo";
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(value || 0);
-}
+import { formatCurrency, formatDateBR } from "@/Lib/formatters";
 
 function formatFullDate(dateString) {
   if (!dateString) return "-";

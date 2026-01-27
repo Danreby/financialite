@@ -6,25 +6,7 @@ import Tooltip from "@/Components/common/Tooltip";
 import RemoveIcon from "@/Components/common/icons/RemoveIcon";
 import EditIcon from "@/Components/common/icons/EditIcon";
 import { PaperclipIcon } from "@/Components/system/anexo/FileIcons";
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(value || 0);
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
+import { formatCurrency, formatDate } from "@/Lib/formatters";
 
 export default function TransactionRow({ transaction, onEdit, onDelete, onShowDetails }) {
   const {

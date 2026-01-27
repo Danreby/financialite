@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
+import { formatCurrency } from "@/Lib/formatters";
 
 export default function FaturaMonthCarousel({
   months = [],
@@ -84,14 +85,6 @@ export default function FaturaMonthCarousel({
       transition: { duration: 0.18 },
     }),
   };
-
-  function formatCurrency(value) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      minimumFractionDigits: 2,
-    }).format(value || 0);
-  }
   
   return (
 	<div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-center sm:gap-3 lg:gap-4 2xl:gap-4">
