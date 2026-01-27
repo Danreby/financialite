@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Anexo\AnexoAttachRequest;
 use App\Http\Requests\Anexo\AnexoStoreRequest;
 use App\Http\Requests\Anexo\AnexoUpdateRequest;
+use App\Models\Anexo;
 use App\Services\AnexoService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -26,6 +27,8 @@ class AnexoController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Anexo::class);
+
         $user = $request->user();
 
         $filters = [
@@ -36,7 +39,7 @@ class AnexoController extends Controller
 
         $anexos = $this->anexoService->listForUser($user->id, $filters);
 
-        return response()->json($anexos);
+        return $this->success($anexos);
     }
 
     /**
@@ -44,12 +47,14 @@ class AnexoController extends Controller
      */
     public function listForTransacao(Request $request, int $transacaoId): JsonResponse
     {
+        $this->authorize('viewAny', Anexo::class);
+
         $user = $request->user();
 
         try {
             $anexos = $this->anexoService->listForTransacao($transacaoId, $user->id);
 
-            return response()->json([
+            return $this->success([
                 'data' => $anexos->map(function ($anexo) {
                     return [
                         'id' => $anexo->id,
@@ -69,7 +74,7 @@ class AnexoController extends Controller
                 }),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Transação não encontrada.'], 404);
+            return $this->notFound('Transação não encontrada.');
         }
     }
 
@@ -78,6 +83,8 @@ class AnexoController extends Controller
      */
     public function store(AnexoStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', Anexo::class);
+
         $user = $request->user();
         $validated = $request->validated();
 
@@ -90,7 +97,7 @@ class AnexoController extends Controller
                     $validated['transacao_id'] ?? null
                 );
 
-                return response()->json([
+                return $this->success([
                     'message' => count($anexos) . ' arquivo(s) enviado(s) com sucesso.',
                     'data' => array_map(fn($anexo) => $this->formatAnexoResponse($anexo), $anexos),
                 ], 201);
@@ -104,19 +111,16 @@ class AnexoController extends Controller
                 $validated['description'] ?? null
             );
 
-            return response()->json([
+            return $this->success([
                 'message' => 'Arquivo enviado com sucesso.',
                 'data' => $this->formatAnexoResponse($anexo),
             ], 201);
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             $this->notifications->error($user, 'Erro no upload', 'Ocorreu um erro ao enviar o arquivo.');
 
-            return response()->json([
-                'message' => 'Erro ao enviar arquivo.',
-                'error' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+            return $this->serverError(config('app.debug') ? $e->getMessage() : 'Erro ao enviar arquivo.');
         }
     }
 
@@ -129,12 +133,13 @@ class AnexoController extends Controller
 
         try {
             $anexo = $this->anexoService->getForUser($id, $user->id);
+            $this->authorize('view', $anexo);
 
-            return response()->json([
+            return $this->success([
                 'data' => $this->formatAnexoResponse($anexo),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Anexo não encontrado.'], 404);
+            return $this->notFound('Anexo não encontrado.');
         }
     }
 
@@ -147,12 +152,13 @@ class AnexoController extends Controller
 
         try {
             $anexo = $this->anexoService->getForUser($id, $user->id);
+            $this->authorize('download', $anexo);
 
             return $this->anexoService->download($anexo);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Anexo não encontrado.'], 404);
+            return $this->notFound('Anexo não encontrado.');
         } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return $this->notFound($e->getMessage());
         }
     }
 
@@ -165,19 +171,18 @@ class AnexoController extends Controller
 
         try {
             $anexo = $this->anexoService->getForUser($id, $user->id);
+            $this->authorize('view', $anexo);
 
             // Permite preview apenas para imagens e PDFs
             if (!$anexo->is_image && !$anexo->is_pdf) {
-                return response()->json([
-                    'message' => 'Preview disponível apenas para imagens e PDFs.',
-                ], 400);
+                return $this->error('Preview disponível apenas para imagens e PDFs.', 400);
             }
 
             return $this->anexoService->inline($anexo);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Anexo não encontrado.'], 404);
+            return $this->notFound('Anexo não encontrado.');
         } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return $this->notFound($e->getMessage());
         }
     }
 
@@ -191,14 +196,16 @@ class AnexoController extends Controller
 
         try {
             $anexo = $this->anexoService->getForUser($id, $user->id);
+            $this->authorize('update', $anexo);
+
             $anexo = $this->anexoService->updateDescription($anexo, $validated['description'] ?? null);
 
-            return response()->json([
+            return $this->success([
                 'message' => 'Anexo atualizado com sucesso.',
                 'data' => $this->formatAnexoResponse($anexo),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Anexo não encontrado.'], 404);
+            return $this->notFound('Anexo não encontrado.');
         }
     }
 
@@ -211,17 +218,17 @@ class AnexoController extends Controller
 
         try {
             $anexo = $this->anexoService->getForUser($id, $user->id);
+            $this->authorize('delete', $anexo);
+
             $this->anexoService->delete($anexo);
 
-            return response()->json(['message' => 'Anexo removido com sucesso.']);
+            return $this->success(['message' => 'Anexo removido com sucesso.']);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Anexo não encontrado.'], 404);
+            return $this->notFound('Anexo não encontrado.');
         } catch (\Throwable $e) {
             $this->notifications->error($user, 'Erro ao remover anexo', 'Ocorreu um erro ao remover o anexo.');
 
-            return response()->json([
-                'message' => 'Erro ao remover anexo.',
-            ], 500);
+            return $this->serverError('Erro ao remover anexo.');
         }
     }
 
@@ -235,15 +242,17 @@ class AnexoController extends Controller
 
         try {
             $anexo = $this->anexoService->getForUser($validated['anexo_id'], $user->id);
+            $this->authorize('attach', $anexo);
+
             $this->anexoService->attachToTransacao($anexo, $validated['transacao_id'], $user->id);
 
-            return response()->json([
+            return $this->success([
                 'message' => 'Anexo associado à transação com sucesso.',
             ]);
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 403);
+            return $this->unauthorized($e->getMessage());
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Recurso não encontrado.'], 404);
+            return $this->notFound('Recurso não encontrado.');
         }
     }
 
@@ -256,15 +265,17 @@ class AnexoController extends Controller
 
         try {
             $anexo = $this->anexoService->getForUser($anexoId, $user->id);
+            $this->authorize('detach', $anexo);
+
             $this->anexoService->detachFromTransacao($anexo, $transacaoId, $user->id);
 
-            return response()->json([
+            return $this->success([
                 'message' => 'Anexo desassociado da transação com sucesso.',
             ]);
         } catch (DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 403);
+            return $this->unauthorized($e->getMessage());
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Recurso não encontrado.'], 404);
+            return $this->notFound('Recurso não encontrado.');
         }
     }
 
@@ -273,6 +284,8 @@ class AnexoController extends Controller
      */
     public function stats(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Anexo::class);
+
         $user = $request->user();
 
         $totalSpace = $this->anexoService->getTotalSpaceUsed($user->id);
@@ -288,7 +301,7 @@ class AnexoController extends Controller
             $index++;
         }
 
-        return response()->json([
+        return $this->success([
             'total_files' => $totalCount,
             'total_space_bytes' => $totalSpace,
             'total_space_formatted' => round($bytes, 2) . ' ' . $units[$index],
