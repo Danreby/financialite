@@ -75,7 +75,7 @@ export default function MonthlySummaryChart({ data = [] }) {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: true,
+        display: false, // Esconde a legenda padrão do ChartJS
       },
       tooltip: {
         callbacks: {
@@ -164,7 +164,7 @@ export default function MonthlySummaryChart({ data = [] }) {
       </div>
 
       <div className="h-56 w-full lg:h-64">
-         <Line data={chartData} {/*options={options} */} />
+         <Line data={chartData} options={options} />
       </div>
     </div>
   )

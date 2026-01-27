@@ -1,13 +1,34 @@
 // FILE: src/Pages/Auth/Login.jsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Head, Link, useForm } from '@inertiajs/react'
 import { motion } from 'framer-motion'
+import { toast } from 'react-toastify'
 import GuestLayout from '@/Layouts/GuestLayout'
 import AuthCard from '@/Components/auth/AuthCard'
 import AuthHeader from '@/Components/auth/AuthHeader'
 import FormField from '@/Components/auth/FormField'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import EyeIcon from '@/Components/common/icons/EyeIcon'
+
+// Mapeamento de mensagens de erro amigáveis
+const errorMessages = {
+  'auth.failed': 'Email ou senha incorretos.',
+  'auth.throttle': 'Muitas tentativas de login. Tente novamente em alguns minutos.',
+  'validation.required': 'Este campo é obrigatório.',
+  'validation.email': 'Por favor, insira um email válido.',
+}
+
+const getErrorMessage = (error) => {
+  if (!error) return null
+  // Verificar se contém palavras-chave específicas
+  if (error.toLowerCase().includes('credentials') || error.toLowerCase().includes('incorretos') || error.toLowerCase().includes('failed')) {
+    return 'Email ou senha incorretos.'
+  }
+  if (error.toLowerCase().includes('throttle') || error.toLowerCase().includes('tentativas')) {
+    return 'Muitas tentativas de login. Tente novamente em alguns minutos.'
+  }
+  return errorMessages[error] || error
+}
 
 export default function Login({ status, canResetPassword }) {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -18,9 +39,34 @@ export default function Login({ status, canResetPassword }) {
 
   const [showPassword, setShowPassword] = useState(false)
 
+  // Mostrar toast de sucesso quando houver status (ex: senha resetada)
+  useEffect(() => {
+    if (status) {
+      toast.success(status)
+    }
+  }, [status])
+
+  // Mostrar toast quando houver erros
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      if (errors.email) {
+        toast.error(getErrorMessage(errors.email))
+      } else if (errors.password) {
+        toast.error(getErrorMessage(errors.password))
+      } else {
+        toast.error('Por favor, corrija os erros no formulário.')
+      }
+    }
+  }, [errors])
+
   const submit = (e) => {
     e.preventDefault()
-    post(route('login'), { onFinish: () => reset('password') })
+    post(route('login'), {
+      onFinish: () => reset('password'),
+      onSuccess: () => {
+        toast.success('Login realizado com sucesso!')
+      },
+    })
   }
 
   return (

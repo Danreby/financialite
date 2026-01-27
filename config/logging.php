@@ -127,6 +127,23 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Security Log Channel
+        |--------------------------------------------------------------------------
+        |
+        | This channel is dedicated to security-related events including
+        | authentication, authorization, rate limiting, and suspicious activity.
+        |
+        */
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => env('SECURITY_LOG_LEVEL', 'info'),
+            'days' => env('SECURITY_LOG_DAYS', 90),
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

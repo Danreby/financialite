@@ -11,6 +11,9 @@
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
+        "nyholm/psr7": "^1.8",
+        "railsware/mailtrap-php": "^3.10",
+        "symfony/http-client": "^7.4",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {

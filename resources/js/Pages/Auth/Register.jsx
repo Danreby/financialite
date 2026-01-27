@@ -1,13 +1,28 @@
 // FILE: src/Pages/Auth/Register.jsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Head, Link, useForm } from '@inertiajs/react'
 import { motion } from 'framer-motion'
+import { toast } from 'react-toastify'
 import GuestLayout from '@/Layouts/GuestLayout'
 import AuthCard from '@/Components/auth/AuthCard'
 import AuthHeader from '@/Components/auth/AuthHeader'
 import FormField from '@/Components/auth/FormField'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import EyeIcon from '@/Components/common/icons/EyeIcon'
+
+// Mapeamento de mensagens de erro amigáveis
+const errorMessages = {
+  'validation.unique': 'Este email já está cadastrado.',
+  'validation.email': 'Por favor, insira um email válido.',
+  'validation.required': 'Este campo é obrigatório.',
+  'validation.min.string': 'A senha deve ter pelo menos 8 caracteres.',
+  'validation.confirmed': 'As senhas não conferem.',
+}
+
+const getErrorMessage = (error) => {
+  if (!error) return null
+  return errorMessages[error] || error
+}
 
 export default function Register() {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -20,10 +35,34 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
 
+  // Mostrar toast quando houver erros
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      // Priorizar mensagens específicas
+      if (errors.email?.includes('unique') || errors.email?.includes('cadastrado')) {
+        toast.error('Este email já está cadastrado. Tente fazer login ou use outro email.')
+      } else if (errors.email) {
+        toast.error(getErrorMessage(errors.email))
+      } else if (errors.password) {
+        toast.error(getErrorMessage(errors.password))
+      } else if (errors.name) {
+        toast.error(getErrorMessage(errors.name))
+      } else {
+        toast.error('Por favor, corrija os erros no formulário.')
+      }
+    }
+  }, [errors])
+
   const submit = (e) => {
     e.preventDefault()
     post(route('register'), {
       onFinish: () => reset('password', 'password_confirmation'),
+      onSuccess: () => {
+        toast.success('Conta criada com sucesso! Verifique seu email.')
+      },
+      onError: () => {
+        // Erros já são tratados pelo useEffect
+      },
     })
   }
 

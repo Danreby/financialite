@@ -36,14 +36,9 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $data = $this->normalizeInsertData([
-            'name' => $request->name,
-            'email' => $request->email,
-        ]);
-
         $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
+            'name' => trim($request->name),
+            'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
         ]);
 

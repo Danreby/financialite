@@ -185,7 +185,7 @@ export default function Conta({ bankAccounts, categories }) {
 					</header>
 				</FadeInItem>
 
-				<FadeInItem type="subtle">				<section className="rounded-2xl bg-white p-3 sm:p-3 lg:p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+				<FadeInItem type="subtle">				<section className="rounded-2xl bg-white p-3 sm:p-3 lg:p-3 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
 					<div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
 							Contas / bancos vinculados
@@ -242,7 +242,7 @@ export default function Conta({ bankAccounts, categories }) {
 			</FadeInItem>
 
 			<FadeInItem type="subtle">
-				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-3">
+				<section className="rounded-2xl bg-white p-3 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-3">
 					<div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
 							Categorias

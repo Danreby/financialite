@@ -196,7 +196,7 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 					</header>
 				</FadeInItem>
 
-				<FadeInItem type="subtle">				<section className="rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-4 space-y-3">
+				<FadeInItem type="subtle">\t\t\t\t<section className="rounded-2xl bg-white p-3 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-4 space-y-3">
 					<div className="flex flex-col gap-2 text-xs sm:text-sm sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
 							<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
@@ -309,7 +309,6 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 			item={selectedTransaction}
 		/>
 	</FadeInContainer>
-			</FadeInContainer>
 		</AuthenticatedLayout>
 	);
 }

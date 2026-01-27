@@ -33,11 +33,27 @@ class Transacao extends Model
         'category_id',
     ];
 
+    protected $hidden = [
+        'deleted_at',
+    ];
+
     protected $casts = [
         'amount' => 'decimal:2',
         'paid_date' => 'date',
         'is_recurring' => 'boolean',
+        'total_installments' => 'integer',
+        'current_installment' => 'integer',
+        'user_id' => 'integer',
+        'bank_user_id' => 'integer',
+        'category_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
+
+    public const VALID_TYPES = ['credit', 'debit'];
+
+    public const VALID_STATUSES = ['paid', 'unpaid', 'overdue'];
 
     public function user(): BelongsTo
     {
@@ -82,22 +98,26 @@ class Transacao extends Model
     {
         return $query
             ->when($filters['type'] ?? null, function (Builder $q, $type) {
-                $q->where('type', $type);
+                if (in_array($type, self::VALID_TYPES, true)) {
+                    $q->where('type', $type);
+                }
             })
             ->when($filters['status'] ?? null, function (Builder $q, $status) {
-                $q->where('status', $status);
+                if (in_array($status, self::VALID_STATUSES, true)) {
+                    $q->where('status', $status);
+                }
             })
             ->when($filters['bank_user_id'] ?? null, function (Builder $q, $bankUserId) {
-                $q->where('bank_user_id', $bankUserId);
+                $q->where('bank_user_id', (int) $bankUserId);
             })
             ->when($filters['amount_min'] ?? null, function (Builder $q, $min) {
-                $q->where('amount', '>=', $min);
+                $q->where('amount', '>=', (float) $min);
             })
             ->when($filters['amount_max'] ?? null, function (Builder $q, $max) {
-                $q->where('amount', '<=', $max);
+                $q->where('amount', '<=', (float) $max);
             })
             ->when($filters['category_id'] ?? null, function (Builder $q, $categoryId) {
-                $q->where('category_id', $categoryId);
+                $q->where('category_id', (int) $categoryId);
             })
             ->when(isset($filters['is_recurring']) && $filters['is_recurring'] !== null, function (Builder $q) use ($filters) {
                 $value = filter_var($filters['is_recurring'], FILTER_VALIDATE_BOOLEAN);
@@ -114,7 +134,10 @@ class Transacao extends Model
 
     public function scopeNotStatus(Builder $query, string $status): Builder
     {
-        return $query->where('status', '!=', $status);
+        if (in_array($status, self::VALID_STATUSES, true)) {
+            return $query->where('status', '!=', $status);
+        }
+        return $query;
     }
 
     public function scopeForBankUser(Builder $query, ?int $bankUserId): Builder
@@ -124,5 +147,20 @@ class Transacao extends Model
         }
 
         return $query;
+    }
+
+    public function belongsToUser(int $userId): bool
+    {
+        return $this->user_id === $userId;
+    }
+
+    public static function isValidType(string $type): bool
+    {
+        return in_array($type, self::VALID_TYPES, true);
+    }
+
+    public static function isValidStatus(string $status): bool
+    {
+        return in_array($status, self::VALID_STATUSES, true);
     }
 }

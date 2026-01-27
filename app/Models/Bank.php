@@ -19,6 +19,10 @@ class Bank extends Model
         'name',
     ];
 
+    protected $hidden = [
+        'deleted_at',
+    ];
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -50,6 +54,11 @@ class Bank extends Model
     public function faturas(): HasManyThrough
     {
         return $this->hasManyThrough(Fatura::class, BankUser::class, 'bank_id', 'bank_user_id');
+    }
+
+    public function belongsToUser(int $userId): bool
+    {
+        return $this->users()->where('users.id', $userId)->exists();
     }
 }
 

@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -40,12 +43,10 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // ============ Profile Routes ============
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // ============ Page Routes (Inertia) ============
     Route::get('/accounts', function () {
             $user = request()->user();
 
@@ -111,7 +112,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/banks/user/{bankUser}/due-day', [BankController::class, 'updateDueDay'])
         ->name('banks.update-due-day');
 
-    // ============ Notifications ============
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
         ->name('notifications.mark-as-read');
