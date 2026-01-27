@@ -60,6 +60,24 @@ return [
             'report' => false,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Anexos Disk
+        |--------------------------------------------------------------------------
+        |
+        | Disco dedicado para armazenamento de anexos de transações.
+        | Os arquivos são armazenados de forma privada e acessíveis
+        | apenas através de rotas autenticadas.
+        |
+        */
+        'anexos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/anexos'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
     ],
 
     /*
