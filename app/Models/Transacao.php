@@ -59,6 +59,15 @@ class Transacao extends Model
         return $this->belongsToMany(Fatura::class, 'fatura_transacao', 'transacao_id', 'fatura_id')->withTimestamps();
     }
 
+    /**
+     * Relacionamento: Transação pode ter múltiplos anexos
+     */
+    public function anexos(): BelongsToMany
+    {
+        return $this->belongsToMany(Anexo::class, 'anexo_transacao')
+            ->withTimestamps();
+    }
+
     public function getBankAttribute()
     {
         return $this->bankUser?->bank;
