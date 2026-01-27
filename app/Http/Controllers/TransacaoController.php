@@ -119,7 +119,7 @@ class TransacaoController extends Controller
     public function show(Request $request, $id)
     {
         $user = $request->user();
-        $fatura = Transacao::with(['bankUser.bank', 'user'])->findOrFail($id);
+        $fatura = Transacao::with(['bankUser.bank', 'user', 'anexos'])->findOrFail($id);
 
         if ($response = $this->ensureFaturaBelongsToUser($fatura, $user->id)) {
             return $response;

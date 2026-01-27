@@ -1,4 +1,5 @@
 import React from "react";
+import { PaperclipIcon } from "@/Components/system/anexo/FileIcons";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -31,6 +32,7 @@ export default function FaturaItemRow({
   display_installment,
   is_recurring,
   category_name,
+  anexos_count,
   onClick,
 }) {
   const isCredit = type === "credit";
@@ -99,6 +101,12 @@ export default function FaturaItemRow({
             {is_recurring && (
 							<span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[10px] sm:text-[11px] 2xl:text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                 Recorrente
+              </span>
+            )}
+            {anexos_count > 0 && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" title={`${anexos_count} anexo${anexos_count > 1 ? 's' : ''}`}>
+                <PaperclipIcon className="w-3 h-3" />
+                {anexos_count}
               </span>
             )}
           </div>

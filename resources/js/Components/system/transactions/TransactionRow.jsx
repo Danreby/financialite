@@ -5,6 +5,7 @@ import DangerButton from "@/Components/common/buttons/DangerButton";
 import Tooltip from "@/Components/common/Tooltip";
 import RemoveIcon from "@/Components/common/icons/RemoveIcon";
 import EditIcon from "@/Components/common/icons/EditIcon";
+import { PaperclipIcon } from "@/Components/system/anexo/FileIcons";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -35,6 +36,7 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
     bank_name,
     category_name,
     total_installments,
+    anexos_count,
   } = transaction;
 
   const totalInstallmentsNumber = Math.max(Number(total_installments || 1), 1);
@@ -72,6 +74,14 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
             <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-700 dark:bg-gray-800 dark:text-gray-300">
               {status === "overdue" ? "Vencida" : status === "unpaid" ? "Em aberto" : status}
             </span>
+          )}
+          {anexos_count > 0 && (
+            <Tooltip label={`${anexos_count} anexo${anexos_count > 1 ? 's' : ''}`}>
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                <PaperclipIcon className="w-3 h-3" />
+                {anexos_count}
+              </span>
+            </Tooltip>
           )}
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] lg:text-xs text-gray-500 dark:text-gray-400">

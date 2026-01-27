@@ -50,6 +50,7 @@ class TransactionController extends Controller
         $search = trim((string) $request->get('search', ''));
 
         $transactions = Transacao::with(['bankUser.bank', 'category'])
+            ->withCount('anexos')
             ->forUser($user->id)
             ->filter($filters)
             ->when($monthRange, function ($q) use ($monthRange) {
@@ -101,6 +102,7 @@ class TransactionController extends Controller
                     'bank_name' => optional($transacao->bankUser->bank ?? null)->name ?? null,
                     'category_id' => $transacao->category_id,
                     'category_name' => $transacao->category->name ?? null,
+                    'anexos_count' => $transacao->anexos_count ?? 0,
                 ];
             });
 

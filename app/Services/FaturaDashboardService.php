@@ -27,6 +27,7 @@ class FaturaDashboardService
         }
 
         $baseQuery = Transacao::with(['bankUser.bank', 'user', 'category'])
+            ->withCount('anexos')
             ->forUser($user->id)
             ->filter($filters)
             ->orderBy('created_at', 'desc');
