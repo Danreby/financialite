@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "@/Components/common/Modal";
+import { AnexoSection } from "@/Components/system/anexo";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -29,6 +30,8 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
   }
 
   const {
+    id,
+    transacao_id,
     title,
     description,
     amount,
@@ -43,6 +46,9 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
     bank_name,
     category_name,
   } = item;
+
+  // Usa transacao_id se disponível (para itens agrupados), caso contrário usa id
+  const realTransacaoId = transacao_id || id;
 
   const totalInstallmentsNumber = Math.max(Number(total_installments || 1), 1);
   const rawAmountNumber = Number(amount || 0) || 0;
@@ -167,6 +173,13 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
             <p className="text-base sm:text-lg">Transação única.</p>
           )}
         </div>
+
+        {/* Seção de Anexos */}
+        {realTransacaoId && (
+          <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+            <AnexoSection transacaoId={realTransacaoId} />
+          </div>
+        )}
       </div>
     </Modal>
   );

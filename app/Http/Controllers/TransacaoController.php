@@ -116,7 +116,7 @@ class TransacaoController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $fatura = Transacao::with(['bankUser.bank', 'user'])->findOrFail($id);
+        $fatura = Transacao::with(['bankUser.bank', 'user', 'anexos'])->findOrFail($id);
 
         $this->authorize('view', $fatura);
 
