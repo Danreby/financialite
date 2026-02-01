@@ -22,9 +22,6 @@ class AnexoController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Lista todos os anexos do usuário
-     */
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Anexo::class);
@@ -42,9 +39,6 @@ class AnexoController extends Controller
         return $this->success($anexos);
     }
 
-    /**
-     * Lista anexos de uma transação específica
-     */
     public function listForTransacao(Request $request, int $transacaoId): JsonResponse
     {
         $this->authorize('viewAny', Anexo::class);
@@ -78,9 +72,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Upload de arquivo único
-     */
     public function store(AnexoStoreRequest $request): JsonResponse
     {
         $this->authorize('create', Anexo::class);
@@ -89,7 +80,6 @@ class AnexoController extends Controller
         $validated = $request->validated();
 
         try {
-            // Upload múltiplo
             if ($request->hasFile('files')) {
                 $anexos = $this->anexoService->uploadMultiple(
                     $user,
@@ -103,7 +93,6 @@ class AnexoController extends Controller
                 ], 201);
             }
 
-            // Upload único
             $anexo = $this->anexoService->upload(
                 $user,
                 $request->file('file'),
@@ -124,9 +113,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Exibe informações de um anexo
-     */
     public function show(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
@@ -143,9 +129,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Download de um anexo
-     */
     public function download(Request $request, int $id): StreamedResponse|JsonResponse
     {
         $user = $request->user();
@@ -162,9 +145,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Visualização inline de um anexo (imagens e PDFs)
-     */
     public function preview(Request $request, int $id): StreamedResponse|JsonResponse
     {
         $user = $request->user();
@@ -173,7 +153,6 @@ class AnexoController extends Controller
             $anexo = $this->anexoService->getForUser($id, $user->id);
             $this->authorize('view', $anexo);
 
-            // Permite preview apenas para imagens e PDFs
             if (!$anexo->is_image && !$anexo->is_pdf) {
                 return $this->error('Preview disponível apenas para imagens e PDFs.', 400);
             }
@@ -186,9 +165,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Atualiza descrição de um anexo
-     */
     public function update(AnexoUpdateRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
@@ -209,9 +185,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Remove um anexo (soft delete)
-     */
     public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
@@ -232,9 +205,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Associa um anexo existente a uma transação
-     */
     public function attach(AnexoAttachRequest $request): JsonResponse
     {
         $user = $request->user();
@@ -256,9 +226,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Remove associação de um anexo com uma transação
-     */
     public function detach(Request $request, int $anexoId, int $transacaoId): JsonResponse
     {
         $user = $request->user();
@@ -279,9 +246,6 @@ class AnexoController extends Controller
         }
     }
 
-    /**
-     * Retorna estatísticas de uso de anexos do usuário
-     */
     public function stats(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Anexo::class);
@@ -291,7 +255,6 @@ class AnexoController extends Controller
         $totalSpace = $this->anexoService->getTotalSpaceUsed($user->id);
         $totalCount = $this->anexoService->getTotalCount($user->id);
 
-        // Formata o espaço usado
         $units = ['B', 'KB', 'MB', 'GB'];
         $index = 0;
         $bytes = $totalSpace;
@@ -308,9 +271,6 @@ class AnexoController extends Controller
         ]);
     }
 
-    /**
-     * Formata resposta de anexo para JSON
-     */
     private function formatAnexoResponse($anexo): array
     {
         return [
