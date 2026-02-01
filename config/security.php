@@ -174,16 +174,51 @@ return [
     |
     */
     'csp' => [
-        'enabled' => env('CSP_ENABLED', false),
-        'report_only' => env('CSP_REPORT_ONLY', true),
+        'enabled' => env('CSP_ENABLED', true),
+        'report_only' => env('CSP_REPORT_ONLY', false),
+        'report_uri' => env('CSP_REPORT_URI', null),
         'directives' => [
             'default-src' => ["'self'"],
-            'script-src' => ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-            'style-src' => ["'self'", "'unsafe-inline'"],
+            'script-src' => ["'self'", "'nonce'"], // Use nonce instead of unsafe-inline
+            'style-src' => ["'self'", "'unsafe-inline'"], // Required for Inertia/Vue
             'img-src' => ["'self'", 'data:', 'https:'],
             'font-src' => ["'self'", 'https:', 'data:'],
             'connect-src' => ["'self'"],
             'frame-ancestors' => ["'none'"],
+            'base-uri' => ["'self'"],
+            'form-action' => ["'self'"],
+            'object-src' => ["'none'"],
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Suspicious Activity Detection
+    |--------------------------------------------------------------------------
+    |
+    | Configure how the application handles detected suspicious activity.
+    |
+    */
+    'suspicious_activity' => [
+        // Block requests with suspicious activity
+        'block_requests' => env('SECURITY_BLOCK_SUSPICIOUS', true),
+        
+        // Block only critical threats (SQL injection, path traversal)
+        // If false, also blocks XSS attempts
+        'block_only_critical' => env('SECURITY_BLOCK_CRITICAL_ONLY', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | SSRF Protection
+    |--------------------------------------------------------------------------
+    |
+    | Configure Server-Side Request Forgery protection.
+    |
+    */
+    'ssrf' => [
+        'enabled' => env('SSRF_PROTECTION_ENABLED', true),
+        'block_private_networks' => true,
+        'block_reserved_ranges' => true,
     ],
 ];
