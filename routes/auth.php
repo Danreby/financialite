@@ -39,8 +39,6 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
-// Rota de verificação de email - NÃO requer autenticação
-// Permite que o usuário verifique o email mesmo se não estiver logado
 Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['throttle:6,1'])
     ->name('verification.verify');

@@ -14,11 +14,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
-    // Rotas de Bancos (apenas se necessário para API externa)
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(function () {
+    // Rotas de Bancos
     Route::apiResource('banks', BankController::class);
 
-    // Rotas de Associações Banco-Usuário (apenas se necessário para API externa)
-    Route::apiResource('bank-users', BankUserController::class);
+    // Stats route MUST come before apiResource to prevent route conflict
     Route::get('bank-users/stats', [BankUserController::class, 'stats'])->name('api.bank-users.stats');
+    
+    // Rotas de Associações Banco-Usuário
+    Route::apiResource('bank-users', BankUserController::class);
+});
+
+// Backward compatibility - redirect old routes to v1
+Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+    Route::apiResource('banks', BankController::class);
+    Route::get('bank-users/stats', [BankUserController::class, 'stats']);
+    Route::apiResource('bank-users', BankUserController::class);
 });
