@@ -174,16 +174,17 @@ return [
     |
     */
     'csp' => [
-        'enabled' => env('CSP_ENABLED', true),
-        'report_only' => env('CSP_REPORT_ONLY', false),
+        'enabled' => env('CSP_ENABLED', false),
+        'report_only' => env('CSP_REPORT_ONLY', true),
         'report_uri' => env('CSP_REPORT_URI', null),
         'directives' => [
             'default-src' => ["'self'"],
-            'script-src' => ["'self'", "'nonce'"], // Use nonce instead of unsafe-inline
-            'style-src' => ["'self'", "'unsafe-inline'"], // Required for Inertia/Vue
-            'img-src' => ["'self'", 'data:', 'https:'],
-            'font-src' => ["'self'", 'https:', 'data:'],
-            'connect-src' => ["'self'"],
+            'script-src' => ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+            'style-src' => ["'self'", "'unsafe-inline'", "https://fonts.bunny.net"],
+            'style-src-elem' => ["'self'", "'unsafe-inline'", "https://fonts.bunny.net"],
+            'img-src' => ["'self'", 'data:', 'https:', 'blob:'],
+            'font-src' => ["'self'", 'https://fonts.bunny.net', 'https://fonts.gstatic.com', 'data:'],
+            'connect-src' => ["'self'", 'ws://localhost:5173', 'http://localhost:5173'],
             'frame-ancestors' => ["'none'"],
             'base-uri' => ["'self'"],
             'form-action' => ["'self'"],
