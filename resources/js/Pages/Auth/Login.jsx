@@ -1,4 +1,3 @@
-// FILE: src/Pages/Auth/Login.jsx
 import React, { useState, useEffect } from 'react'
 import { Head, Link, useForm } from '@inertiajs/react'
 import { motion } from 'framer-motion'
@@ -10,7 +9,6 @@ import FormField from '@/Components/auth/FormField'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import EyeIcon from '@/Components/common/icons/EyeIcon'
 
-// Mapeamento de mensagens de erro amigáveis
 const errorMessages = {
   'auth.failed': 'Email ou senha incorretos.',
   'auth.throttle': 'Muitas tentativas de login. Tente novamente em alguns minutos.',
@@ -20,7 +18,6 @@ const errorMessages = {
 
 const getErrorMessage = (error) => {
   if (!error) return null
-  // Verificar se contém palavras-chave específicas
   if (error.toLowerCase().includes('credentials') || error.toLowerCase().includes('incorretos') || error.toLowerCase().includes('failed')) {
     return 'Email ou senha incorretos.'
   }
@@ -39,14 +36,12 @@ export default function Login({ status, canResetPassword }) {
 
   const [showPassword, setShowPassword] = useState(false)
 
-  // Mostrar toast de sucesso quando houver status (ex: senha resetada)
   useEffect(() => {
     if (status) {
       toast.success(status)
     }
   }, [status])
 
-  // Mostrar toast quando houver erros
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       if (errors.email) {
