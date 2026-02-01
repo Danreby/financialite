@@ -66,7 +66,6 @@ class AuthService
 
     public function isEmailVerified(?User $user = null): bool
     {
-        /** @var User|null $user */
         $user = $user ?? Auth::user();
 
         if (!$user) {
@@ -100,7 +99,6 @@ class AuthService
 
     public function getAuthenticatedUser(): ?array
     {
-        /** @var User|null $user */
         $user = Auth::user();
 
         if (!$user) {
