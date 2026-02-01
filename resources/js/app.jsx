@@ -22,7 +22,6 @@ if (typeof window !== 'undefined') {
             document.documentElement.classList.remove('dark');
         }
     } catch (error) {
-        // 
     }
 }
 
