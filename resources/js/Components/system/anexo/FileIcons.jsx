@@ -1,9 +1,5 @@
 import React from 'react';
 
-/**
- * Ícones para diferentes tipos de arquivos
- */
-
 export function ImageIcon({ className = 'w-5 h-5' }) {
     return (
         <svg
@@ -241,9 +237,6 @@ export function LoadingSpinner({ className = 'w-5 h-5' }) {
     );
 }
 
-/**
- * Retorna o componente de ícone baseado no tipo
- */
 export function getFileIcon(iconType, className = 'w-5 h-5') {
     const icons = {
         image: ImageIcon,
@@ -257,9 +250,6 @@ export function getFileIcon(iconType, className = 'w-5 h-5') {
     return <IconComponent className={className} />;
 }
 
-/**
- * Retorna a cor do ícone baseado no tipo
- */
 export function getFileIconColor(iconType) {
     const colors = {
         image: 'text-blue-500 dark:text-blue-400',

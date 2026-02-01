@@ -33,7 +33,6 @@ function AnexoItem({
             exit={{ opacity: 0, scale: 0.95 }}
             className="group flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/80 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
-            {/* Ícone do arquivo */}
             <div
                 className={`
                     flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center
@@ -48,7 +47,6 @@ function AnexoItem({
                 </span>
             </div>
 
-            {/* Informações */}
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                     {anexo.original_name}
@@ -65,7 +63,6 @@ function AnexoItem({
                 )}
             </div>
 
-            {/* Ações */}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 {canPreview && (
                     <button

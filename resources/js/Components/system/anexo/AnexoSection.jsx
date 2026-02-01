@@ -16,7 +16,6 @@ export default function AnexoSection({
     const [previewAnexo, setPreviewAnexo] = useState(null);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Carrega anexos da transação
     const loadAnexos = useCallback(async () => {
         if (!transacaoId) return;
 
@@ -38,7 +37,6 @@ export default function AnexoSection({
         loadAnexos();
     }, [loadAnexos]);
 
-    // Upload de arquivos
     const handleUpload = useCallback(async (formData) => {
         try {
             formData.append('transacao_id', transacaoId);
@@ -59,17 +57,14 @@ export default function AnexoSection({
         }
     }, [transacaoId, loadAnexos]);
 
-    // Preview de arquivo
     const handlePreview = useCallback((anexo) => {
         setPreviewAnexo(anexo);
     }, []);
 
-    // Download de arquivo
     const handleDownload = useCallback((anexo) => {
         window.open(route('anexos.download', anexo.id), '_blank');
     }, []);
 
-    // Deletar anexo
     const handleDelete = useCallback(async (anexo) => {
         if (!confirm(`Deseja realmente remover o anexo "${anexo.original_name}"?`)) {
             return;
@@ -90,7 +85,6 @@ export default function AnexoSection({
 
     return (
         <div className={`space-y-4 ${className}`}>
-            {/* Header da seção */}
             <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -124,10 +118,8 @@ export default function AnexoSection({
                 </svg>
             </button>
 
-            {/* Conteúdo expandido */}
             {isExpanded && (
                 <div className="space-y-4 pt-2">
-                    {/* Lista de anexos */}
                     <AnexoList
                         anexos={anexos}
                         loading={loading}
@@ -138,7 +130,6 @@ export default function AnexoSection({
                         emptyMessage="Nenhum anexo adicionado a esta transação."
                     />
 
-                    {/* Upload de novos arquivos */}
                     <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
                         <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
                             Adicionar novos anexos
@@ -152,7 +143,6 @@ export default function AnexoSection({
                 </div>
             )}
 
-            {/* Modal de Preview */}
             <AnexoPreviewModal
                 isOpen={previewAnexo !== null}
                 onClose={() => setPreviewAnexo(null)}

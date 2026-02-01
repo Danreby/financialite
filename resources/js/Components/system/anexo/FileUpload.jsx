@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { UploadIcon, XIcon, LoadingSpinner, getFileIcon, getFileIconColor } from './FileIcons';
 
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
 
 function formatFileSize(bytes) {
@@ -143,7 +143,6 @@ export default function FileUpload({
                 return newFiles.slice(0, MAX_FILES);
             });
         }
-        // Reset input para permitir selecionar o mesmo arquivo novamente
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -181,7 +180,6 @@ export default function FileUpload({
 
             await onUpload(formData);
 
-            // Limpa arquivos após upload bem-sucedido
             selectedFiles.forEach((item) => {
                 if (item.preview) {
                     URL.revokeObjectURL(item.preview);
@@ -206,7 +204,6 @@ export default function FileUpload({
 
     return (
         <div className={`space-y-3 ${className}`}>
-            {/* Área de Drop */}
             <div
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -248,7 +245,6 @@ export default function FileUpload({
                 </p>
             </div>
 
-            {/* Lista de arquivos selecionados */}
             <AnimatePresence mode="popLayout">
                 {selectedFiles.length > 0 && (
                     <motion.div
@@ -280,7 +276,6 @@ export default function FileUpload({
                                     exit={{ opacity: 0, x: 20 }}
                                     className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
                                 >
-                                    {/* Preview ou ícone */}
                                     <div className="flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                                         {item.preview ? (
                                             <img
@@ -295,7 +290,6 @@ export default function FileUpload({
                                         )}
                                     </div>
 
-                                    {/* Info */}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                                             {item.file.name}
@@ -305,7 +299,6 @@ export default function FileUpload({
                                         </p>
                                     </div>
 
-                                    {/* Remover */}
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveFile(item.id)}
@@ -317,7 +310,6 @@ export default function FileUpload({
                             ))}
                         </div>
 
-                        {/* Botão de upload */}
                         <button
                             type="button"
                             onClick={handleUpload}

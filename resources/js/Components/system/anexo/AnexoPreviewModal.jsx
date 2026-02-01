@@ -42,16 +42,13 @@ export default function AnexoPreviewModal({
             title={anexo.original_name}
         >
             <div className="space-y-4">
-                {/* Área de preview */}
                 <div className="relative min-h-[300px] max-h-[70vh] overflow-auto bg-gray-100 dark:bg-gray-900 rounded-lg">
-                    {/* Loading */}
                     {loading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
                             <LoadingSpinner className="w-8 h-8 text-gray-400" />
                         </div>
                     )}
 
-                    {/* Erro */}
                     {error && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900">
                             <span className={getFileIconColor(anexo.icon_type)}>
@@ -71,7 +68,6 @@ export default function AnexoPreviewModal({
                         </div>
                     )}
 
-                    {/* Preview de imagem */}
                     {anexo.is_image && (
                         <img
                             src={anexo.preview_url}
@@ -82,7 +78,6 @@ export default function AnexoPreviewModal({
                         />
                     )}
 
-                    {/* Preview de PDF */}
                     {anexo.is_pdf && (
                         <iframe
                             src={anexo.preview_url}
@@ -94,7 +89,6 @@ export default function AnexoPreviewModal({
                     )}
                 </div>
 
-                {/* Informações do arquivo */}
                 <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-4">
                         <span>{anexo.formatted_size}</span>
