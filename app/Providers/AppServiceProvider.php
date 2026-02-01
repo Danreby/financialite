@@ -26,7 +26,6 @@ class AppServiceProvider extends ServiceProvider
 
         setlocale(LC_TIME, $locale . '.utf8', $locale . '.UTF-8', $locale);
 
-        // Registrar o transport do Mailtrap API
         Mail::extend('mailtrap', function (array $config = []) {
             return new MailtrapTransport(
                 apiKey: config('services.mailtrap.api_key')

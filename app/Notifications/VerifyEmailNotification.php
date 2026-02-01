@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\URL;
 
 class VerifyEmailNotification extends BaseVerifyEmail
 {
-    /**
-     * Build the mail representation of the notification.
-     */
     public function toMail($notifiable): MailMessage
     {
         $verificationUrl = $this->verificationUrl($notifiable);
@@ -28,9 +25,6 @@ class VerifyEmailNotification extends BaseVerifyEmail
             ->salutation('Atenciosamente, Equipe ' . config('app.name'));
     }
 
-    /**
-     * Get the verification URL for the given notifiable.
-     */
     protected function verificationUrl($notifiable): string
     {
         return URL::temporarySignedRoute(

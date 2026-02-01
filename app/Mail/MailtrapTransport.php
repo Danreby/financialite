@@ -32,31 +32,25 @@ class MailtrapTransport extends AbstractTransport
 
         $mailtrapEmail = new MailtrapEmail();
 
-        // From
         $from = $email->getFrom()[0] ?? null;
         if ($from) {
             $mailtrapEmail->from(new Address($from->getAddress(), $from->getName() ?? ''));
         }
 
-        // To
         foreach ($email->getTo() as $to) {
             $mailtrapEmail->addTo(new Address($to->getAddress(), $to->getName() ?? ''));
         }
 
-        // CC
         foreach ($email->getCc() as $cc) {
             $mailtrapEmail->addCc(new Address($cc->getAddress(), $cc->getName() ?? ''));
         }
 
-        // BCC
         foreach ($email->getBcc() as $bcc) {
             $mailtrapEmail->addBcc(new Address($bcc->getAddress(), $bcc->getName() ?? ''));
         }
 
-        // Subject
         $mailtrapEmail->subject($email->getSubject() ?? '');
 
-        // Body
         if ($email->getHtmlBody()) {
             $mailtrapEmail->html($email->getHtmlBody());
         }
@@ -65,7 +59,6 @@ class MailtrapTransport extends AbstractTransport
             $mailtrapEmail->text($email->getTextBody());
         }
 
-        // Send via Mailtrap API
         MailtrapClient::initSendingEmails(apiKey: $this->apiKey)->send($mailtrapEmail);
     }
 
