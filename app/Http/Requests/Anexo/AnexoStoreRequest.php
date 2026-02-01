@@ -8,17 +8,11 @@ use Illuminate\Validation\Rule;
 
 class AnexoStoreRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return $this->user() !== null;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         $maxSizeKb = Anexo::MAX_FILE_SIZE / 1024;
@@ -28,17 +22,17 @@ class AnexoStoreRequest extends FormRequest
 
         return [
             'file' => [
-                'required_without:files', // Requerido apenas se 'files' não for enviado
+                'required_without:files',
                 'file',
                 'max:' . $maxSizeKb,
                 'mimes:' . $allowedExtensions,
                 'mimetypes:' . $allowedMimes,
             ],
             'files' => [
-                'required_without:file', // Requerido apenas se 'file' não for enviado
+                'required_without:file',
                 'array',
                 'min:1',
-                'max:10', // Máximo 10 arquivos por vez
+                'max:10',
             ],
             'files.*' => [
                 'file',
@@ -61,9 +55,6 @@ class AnexoStoreRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     */
     public function messages(): array
     {
         $maxSizeMb = Anexo::MAX_FILE_SIZE / 1024 / 1024;
@@ -85,9 +76,6 @@ class AnexoStoreRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom attributes for validator errors.
-     */
     public function attributes(): array
     {
         return [
