@@ -1,4 +1,3 @@
-// FILE: src/Layouts/AuthenticatedLayout.jsx
 import { useState } from 'react'
 import { usePage } from '@inertiajs/react'
 import Sidebar from '@/Components/system/navigation/Sidebar'
