@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Contracts\Services\FaturaServiceInterface;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 
-class FaturaService
+class FaturaService implements FaturaServiceInterface
 {
     public function createForUser(Authenticatable $user, array $data): Transacao
     {
@@ -48,6 +49,13 @@ class FaturaService
             }
 
             return $fatura->refresh();
+        });
+    }
+
+    public function deleteForUser(Transacao $fatura): bool
+    {
+        return DB::transaction(function () use ($fatura) {
+            return $fatura->delete();
         });
     }
 }
