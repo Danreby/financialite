@@ -8,18 +8,10 @@ use App\Models\Transacao;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Transacao>
- */
 class TransacaoFactory extends Factory
 {
     protected $model = Transacao::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $type = $this->faker->randomElement(['credit', 'debit']);
@@ -41,9 +33,6 @@ class TransacaoFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the transacao is credit.
-     */
     public function credit(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -52,9 +41,6 @@ class TransacaoFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the transacao is debit.
-     */
     public function debit(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -66,9 +52,6 @@ class TransacaoFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the transacao is paid.
-     */
     public function paid(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -77,9 +60,6 @@ class TransacaoFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the transacao is unpaid.
-     */
     public function unpaid(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -88,9 +68,6 @@ class TransacaoFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the transacao is recurring.
-     */
     public function recurring(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -99,9 +76,6 @@ class TransacaoFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the transacao has installments.
-     */
     public function withInstallments(int $total = 12): static
     {
         return $this->state(fn (array $attributes) => [
