@@ -11,9 +11,6 @@ use App\Models\Notification;
 
 class PasswordController extends Controller
 {
-    /**
-     * Update the user's password.
-     */
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([
