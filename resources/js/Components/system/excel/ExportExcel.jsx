@@ -6,28 +6,6 @@ import Tooltip from '@/Components/common/Tooltip';
 
 export default function ExportExcel({ data, header, all = false, get, filters, name, currencyColumns }) {
     const [novoObjeto, setNovoObjeto] = useState([]);
-  //   const [data, setData] = useState([]);
-
-  //   const getData = (params) => {
-  //     try {
-  //         axios({
-  //             method: "GET",
-  //             url: route(get),
-  //             params,
-  //         }).then((response) => {
-  //             setData(response.data);
-  //             // console.log('atendimentos: ', response.data);
-  //         });
-  //     } catch (e) {
-  //         console.log(e);
-  //     }
-  // };
-
-  //     const reload = () => {
-  //         getData(filters);
-  //     };
-
-  //     useEffect(reload, [filters]);
 
     const getValueInCascade = (pathArray, source) => {
       let current = source;

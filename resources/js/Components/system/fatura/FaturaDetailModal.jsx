@@ -40,7 +40,6 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
     category_name,
   } = item;
 
-  // Usa transacao_id se disponível (para itens agrupados), caso contrário usa id
   const realTransacaoId = transacao_id || id;
 
   const totalInstallmentsNumber = Math.max(Number(total_installments || 1), 1);
@@ -167,7 +166,6 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
           )}
         </div>
 
-        {/* Seção de Anexos */}
         {realTransacaoId && (
           <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
             <AnexoSection transacaoId={realTransacaoId} />

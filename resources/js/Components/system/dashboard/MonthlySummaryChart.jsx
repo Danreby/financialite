@@ -75,7 +75,7 @@ export default function MonthlySummaryChart({ data = [] }) {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false, // Esconde a legenda padrão do ChartJS
+        display: false,
       },
       tooltip: {
         callbacks: {

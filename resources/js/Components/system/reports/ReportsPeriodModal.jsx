@@ -68,7 +68,6 @@ function TableContent({ transactions, onSelectTransaction }) {
           <th className="px-3 py-2 text-left">Status</th>
           <th className="px-3 py-2 text-right">Valor período</th>
           <th className="px-3 py-2 text-right">Valor total</th>
-          {/* <th className="px-3 py-2 text-left">Parcela</th> */}
           <th className="px-3 py-2 text-left">Banco</th>
           <th className="px-3 py-2 text-left">Categoria</th>
           <th className="px-3 py-2 text-left">Data</th>
@@ -77,10 +76,6 @@ function TableContent({ transactions, onSelectTransaction }) {
       <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
         {transactions.map((tx) => {
           const periodValue = tx.type === "credit" ? tx.installment_amount ?? tx.amount : tx.amount;
-          // const installmentLabel =
-          //   tx.total_installments && tx.total_installments > 1 && (tx.display_installment || 1)
-          //     ? `${tx.display_installment || 1}/${tx.total_installments}`
-          //     : "-";
           const statusLabel = tx.status === "paid" ? "Pago" : tx.status === "overdue" ? "Vencido" : "Em aberto";
           const typeLabel = tx.type === "credit" ? "Crédito" : "Débito";
 
@@ -112,7 +107,6 @@ function TableContent({ transactions, onSelectTransaction }) {
               <td className="px-3 py-2 text-right text-gray-900 dark:text-gray-100 whitespace-nowrap">
                 {formatCurrencyBRL(tx.amount)}
               </td>
-              {/* <td className="px-3 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap">{installmentLabel}</td> */}
               <td className="px-3 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap">
                 {tx.bank_name || "-"}
               </td>

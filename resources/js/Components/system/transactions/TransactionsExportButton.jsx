@@ -51,7 +51,6 @@ export default function TransactionsExportButton({ filters = {} }) {
   const header = useMemo(
     () => ({
       month_label: { name: "Mês/Ano" },
-      // id: { name: "ID" },
       created_at_formatted: { name: "Data" },
       type: { name: "Tipo" },
       status: { name: "Status" },
