@@ -1,9 +1,9 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { UploadIcon, XIcon, LoadingSpinner, getFileIcon, getFileIconColor } from './FileIcons';
+import { UploadIcon, XIcon, LoadingSpinner, getFileIcon, getFileIconColor } from '../../common/icons/FileIcons';
 
-const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'];
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
 

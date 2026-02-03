@@ -41,19 +41,11 @@ class Anexo extends Model
         'image/webp',
         'image/svg+xml',
         'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/csv',
-        'text/plain',
     ];
 
     public const ALLOWED_EXTENSIONS = [
         'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
-        'pdf', 'doc', 'docx',
-        'xls', 'xlsx', 'csv',
-        'txt',
+        'pdf',
     ];
 
     public const MAX_FILE_SIZE = 10 * 1024 * 1024;
