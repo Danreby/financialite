@@ -20,7 +20,15 @@ class SecurityHeaders
         $response = $next($request);
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $response->headers->set('X-Frame-Options', 'DENY');
+        
+        // Permite iframe apenas para preview de anexos
+        if (!$request->is('anexos/*/preview')) {
+            $response->headers->set('X-Frame-Options', 'DENY');
+        } else {
+            // Para preview de anexos, permite apenas do mesmo domínio
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        }
+        
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
         $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');

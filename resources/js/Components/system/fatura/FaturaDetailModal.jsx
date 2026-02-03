@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "@/Components/common/Modal";
-import { AnexoSection } from "@/Components/system/anexo";
-import { formatCurrency, formatDateBR } from "@/Lib/formatters";
+import AnexoSection from "@/Components/system/anexo/AnexoSection";
+import { formatCurrency } from "@/Lib/formatters";
 
 function formatFullDate(dateString) {
   if (!dateString) return "-";

@@ -63,6 +63,7 @@ class AnexoController extends Controller
                         'is_spreadsheet' => $anexo->is_spreadsheet,
                         'icon_type' => $anexo->icon_type,
                         'url' => $anexo->url,
+                        'preview_url' => route('anexos.preview', $anexo->id),
                         'created_at' => $anexo->created_at,
                     ];
                 }),
