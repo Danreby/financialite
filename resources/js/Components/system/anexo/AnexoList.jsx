@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getFileIcon, getFileIconColor, DownloadIcon, TrashIcon, EyeIcon, LoadingSpinner } from './FileIcons';
+import { getFileIcon, getFileIconColor, DownloadIcon, TrashIcon, EyeIcon, LoadingSpinner } from '../../common/icons/FileIcons';
 
 function formatDate(dateString) {
     if (!dateString) return '-';
@@ -16,17 +16,18 @@ function formatDate(dateString) {
     });
 }
 
-function AnexoItem({
+const AnexoItem = React.forwardRef(({
     anexo,
     onPreview,
     onDownload,
     onDelete,
     deleting = false,
-}) {
+}, ref) => {
     const canPreview = anexo.is_image || anexo.is_pdf;
 
     return (
         <motion.div
+            ref={ref}
             layout
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -100,7 +101,9 @@ function AnexoItem({
             </div>
         </motion.div>
     );
-}
+});
+
+AnexoItem.displayName = 'AnexoItem';
 
 export default function AnexoList({
     anexos = [],

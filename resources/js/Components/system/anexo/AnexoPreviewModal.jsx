@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Modal from '@/Components/common/Modal';
-import { XIcon, DownloadIcon, LoadingSpinner, getFileIcon, getFileIconColor } from './FileIcons';
+import { XIcon, DownloadIcon, LoadingSpinner, getFileIcon, getFileIconColor } from '../../common/icons/FileIcons';
 
 export default function AnexoPreviewModal({
     isOpen,

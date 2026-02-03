@@ -5,7 +5,7 @@ import DangerButton from "@/Components/common/buttons/DangerButton";
 import Tooltip from "@/Components/common/Tooltip";
 import RemoveIcon from "@/Components/common/icons/RemoveIcon";
 import EditIcon from "@/Components/common/icons/EditIcon";
-import { PaperclipIcon } from "@/Components/system/anexo/FileIcons";
+import { PaperclipIcon } from "@/Components/common/icons/FileIcons";
 import { formatCurrency, formatDate } from "@/Lib/formatters";
 
 export default function TransactionRow({ transaction, onEdit, onDelete, onShowDetails }) {

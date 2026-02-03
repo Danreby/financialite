@@ -1,5 +1,5 @@
 import React from "react";
-import { PaperclipIcon } from "@/Components/system/anexo/FileIcons";
+import { PaperclipIcon } from "@/Components/common/icons/FileIcons";
 import { formatCurrency, formatDayLabel } from "@/Lib/formatters";
 
 export default function FaturaItemRow({

@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import FileUpload from './FileUpload';
+import CompactFileUpload from './CompactFileUpload';
 import AnexoList from './AnexoList';
 import AnexoPreviewModal from './AnexoPreviewModal';
-import { PaperclipIcon } from './FileIcons';
+import { PaperclipIcon } from '../../common/icons/FileIcons';
 
 export default function AnexoSection({
     transacaoId,
@@ -14,10 +14,12 @@ export default function AnexoSection({
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const [previewAnexo, setPreviewAnexo] = useState(null);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true); // Inicia expandido por padrão
 
     const loadAnexos = useCallback(async () => {
-        if (!transacaoId) return;
+        if (!transacaoId) {
+            return;
+        }
 
         setLoading(true);
         try {
@@ -120,26 +122,42 @@ export default function AnexoSection({
 
             {isExpanded && (
                 <div className="space-y-4 pt-2">
-                    <AnexoList
-                        anexos={anexos}
-                        loading={loading}
-                        onPreview={handlePreview}
-                        onDownload={handleDownload}
-                        onDelete={handleDelete}
-                        deletingId={deletingId}
-                        emptyMessage="Nenhum anexo adicionado a esta transação."
-                    />
+                    {anexos.length > 0 && (
+                        <>
+                            <AnexoList
+                                anexos={anexos}
+                                loading={loading}
+                                onPreview={handlePreview}
+                                onDownload={handleDownload}
+                                onDelete={handleDelete}
+                                deletingId={deletingId}
+                            />
 
-                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
-                            Adicionar novos anexos
-                        </p>
-                        <FileUpload
-                            onUpload={handleUpload}
-                            transacaoId={transacaoId}
-                            multiple={true}
-                        />
-                    </div>
+                            <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
+                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                                    Adicionar novos anexos
+                                </p>
+                                <CompactFileUpload
+                                    onUpload={handleUpload}
+                                    transacaoId={transacaoId}
+                                    multiple={true}
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {anexos.length === 0 && !loading && (
+                        <div>
+                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                                Adicionar anexos
+                            </p>
+                            <CompactFileUpload
+                                onUpload={handleUpload}
+                                transacaoId={transacaoId}
+                                multiple={true}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
 
