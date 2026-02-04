@@ -123,7 +123,7 @@ export default function Modal({
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-0"
+                    className="fixed inset-0 z-50 flex items-center justify-center px-2 py-2 sm:px-4 sm:py-6"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -140,7 +140,7 @@ export default function Modal({
 
                     <motion.div
                         ref={modalRef}
-                        className={`relative mb-6 w-full transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all sm:mx-auto ${widthClass}`}
+                        className={`relative w-full transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col ${widthClass}`}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby={title ? 'modal-title' : undefined}
@@ -152,12 +152,12 @@ export default function Modal({
                         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                     >
                         {(title || onClose) && (
-                            <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 dark:bg-gray-900 px-4 py-3">
+                            <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 dark:bg-gray-900 px-2.5 py-2 sm:px-4 sm:py-3 flex-shrink-0">
                                 <div>
                                     {title && (
                                         <h2
                                             id="modal-title"
-                                            className="text-sm font-semibold text-gray-900 dark:text-gray-100"
+                                            className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100"
                                         >
                                             {title}
                                         </h2>
@@ -197,7 +197,7 @@ export default function Modal({
                             </div>
                         )}
 
-                        <div className="px-4 py-5 sm:p-6">{children}</div>
+                        <div className="px-2.5 py-3 sm:px-4 sm:py-5 md:p-6 overflow-y-auto flex-1">{children}</div>
                     </motion.div>
                 </motion.div>
             )}

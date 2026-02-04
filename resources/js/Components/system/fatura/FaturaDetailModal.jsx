@@ -65,95 +65,95 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="lg" title="Detalhes da transação">
-      <div className="space-y-3 sm:space-y-4 text-base sm:text-lg text-gray-800 dark:text-gray-200">
+      <div className="space-y-2 sm:space-y-3 md:space-y-4 text-base sm:text-lg text-gray-800 dark:text-gray-200">
         <div>
-          <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+          <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
             Título
           </p>
-          <p className="mt-1 text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
+          <p className="mt-0.5 sm:mt-1 text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight">
             {title}
           </p>
           {description && (
-            <p className="mt-1 text-sm sm:text-base text-gray-700 dark:text-gray-400">{description}</p>
+            <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-400">{description}</p>
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-2 sm:gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-1.5 sm:gap-2 md:gap-3 sm:grid-cols-2">
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Valor total
             </p>
-            <p className="text-base sm:text-lg font-semibold text-rose-600 dark:text-rose-400">
+            <p className="text-sm sm:text-base md:text-lg font-semibold text-rose-600 dark:text-rose-400">
               {formatCurrency(rawAmountNumber)}
             </p>
           </div>
 
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Valor do mês
             </p>
-            <p className="text-base sm:text-lg font-semibold text-rose-600 dark:text-rose-400">
+            <p className="text-sm sm:text-base md:text-lg font-semibold text-rose-600 dark:text-rose-400">
               {formatCurrency(installmentAmount)}
             </p>
           </div>
 
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Tipo
             </p>
-            <p className="text-sm sm:text-base">{typeLabel}</p>
+            <p className="text-xs sm:text-sm md:text-base">{typeLabel}</p>
           </div>
 
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Status
             </p>
-            <p className="text-sm sm:text-base">{statusLabel}</p>
+            <p className="text-xs sm:text-sm md:text-base">{statusLabel}</p>
           </div>
 
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Banco
             </p>
-            <p className="text-sm sm:text-base truncate">{bank_name || "-"}</p>
+            <p className="text-xs sm:text-sm md:text-base truncate">{bank_name || "-"}</p>
           </div>
 
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Categoria
             </p>
-            <p className="text-sm sm:text-base truncate">{category_name || "-"}</p>
+            <p className="text-xs sm:text-sm md:text-base truncate">{category_name || "-"}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 sm:gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-1.5 sm:gap-2 md:gap-3 sm:grid-cols-2">
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Data da compra
             </p>
-            <p className="text-sm sm:text-base">{formatFullDate(created_at)}</p>
+            <p className="text-xs sm:text-sm md:text-base">{formatFullDate(created_at)}</p>
           </div>
 
           <div className="space-y-0.5">
-            <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Data de pagamento
             </p>
-            <p className="text-sm sm:text-base">{formatFullDate(paid_date)}</p>
+            <p className="text-xs sm:text-sm md:text-base">{formatFullDate(paid_date)}</p>
           </div>
         </div>
 
         <div className="space-y-0.5">
-          <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+          <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
             Parcelamento / recorrência
           </p>
           {is_recurring ? (
-            <p className="text-sm sm:text-base">Transação recorrente.</p>
+            <p className="text-xs sm:text-sm md:text-base">Transação recorrente.</p>
           ) : hasInstallments ? (
             <>
-              <p className="text-sm sm:text-base">
+              <p className="text-xs sm:text-sm md:text-base">
                 {`Valor por parcela: ${formatCurrency(installmentAmount)}`}
               </p>
-              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mt-0.5">
+              <p className="text-[10px] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 mt-0.5">
                 {effectiveInstallmentNumber && (
                   <span className="mr-3">
                     Parcelas: <span className="font-semibold">{effectiveInstallmentNumber}/{totalInstallmentsNumber}</span>
@@ -162,12 +162,12 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
               </p>
             </>
           ) : (
-            <p className="text-sm sm:text-base">Transação única.</p>
+            <p className="text-xs sm:text-sm md:text-base">Transação única.</p>
           )}
         </div>
 
         {realTransacaoId && (
-          <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
+          <div className="pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700">
             <AnexoSection transacaoId={realTransacaoId} />
           </div>
         )}

@@ -90,17 +90,17 @@ export default function AnexoSection({
             <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg sm:rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+                className="w-full flex items-center justify-between p-2 sm:p-2.5 md:p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg sm:rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
             >
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-rose-100 dark:bg-rose-900/40 rounded-md sm:rounded-lg">
-                        <PaperclipIcon className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 dark:text-rose-400" />
+                <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                    <div className="p-1 sm:p-1.5 md:p-2 bg-rose-100 dark:bg-rose-900/40 rounded sm:rounded-md md:rounded-lg">
+                        <PaperclipIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-rose-600 dark:text-rose-400" />
                     </div>
                     <div className="text-left">
-                        <h3 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        <h3 className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight">
                             Anexos
                         </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight">
                             {loading
                                 ? 'Carregando...'
                                 : anexos.length === 0
@@ -111,7 +111,7 @@ export default function AnexoSection({
                 </div>
 
                 <svg
-                    className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -121,10 +121,10 @@ export default function AnexoSection({
             </button>
 
             {isExpanded && (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                     {anexos.length > 0 && (
                         <>
-                            <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+                            <div className="max-h-[200px] sm:max-h-[300px] md:max-h-[400px] overflow-y-auto">
                                 <AnexoList
                                     anexos={anexos}
                                     loading={loading}
@@ -135,8 +135,8 @@ export default function AnexoSection({
                                 />
                             </div>
 
-                            <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            <div className="pt-1.5 sm:pt-2 border-t border-gray-100 dark:border-gray-800">
+                                <p className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 sm:mb-2">
                                     Adicionar novos anexos
                                 </p>
                                 <CompactFileUpload
@@ -150,7 +150,7 @@ export default function AnexoSection({
 
                     {anexos.length === 0 && !loading && (
                         <div>
-                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            <p className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 sm:mb-2">
                                 Adicionar anexos
                             </p>
                             <CompactFileUpload
