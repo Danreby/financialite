@@ -64,8 +64,8 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
       : null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Detalhes da transação">
-      <div className="space-y-5 text-base sm:text-lg text-gray-800 dark:text-gray-200">
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="lg" title="Detalhes da transação">
+      <div className="space-y-3 sm:space-y-4 text-base sm:text-lg text-gray-800 dark:text-gray-200">
         <div>
           <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
             Título
@@ -78,8 +78,8 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 gap-2 sm:gap-3 sm:grid-cols-2">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Valor total
             </p>
@@ -88,7 +88,7 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
             </p>
           </div>
 
-          <div className="space -y-1">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Valor do mês
             </p>
@@ -97,63 +97,63 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
             </p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Tipo
             </p>
-            <p className="text-base sm:text-lg">{typeLabel}</p>
+            <p className="text-sm sm:text-base">{typeLabel}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Status
             </p>
-            <p className="text-base sm:text-lg">{statusLabel}</p>
+            <p className="text-sm sm:text-base">{statusLabel}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Banco
             </p>
-            <p className="text-base sm:text-lg">{bank_name || "-"}</p>
+            <p className="text-sm sm:text-base truncate">{bank_name || "-"}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Categoria
             </p>
-            <p className="text-base sm:text-lg">{category_name || "-"}</p>
+            <p className="text-sm sm:text-base truncate">{category_name || "-"}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 gap-2 sm:gap-3 sm:grid-cols-2">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Data da compra
             </p>
-            <p className="text-base sm:text-lg">{formatFullDate(created_at)}</p>
+            <p className="text-sm sm:text-base">{formatFullDate(created_at)}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Data de pagamento
             </p>
-            <p className="text-base sm:text-lg">{formatFullDate(paid_date)}</p>
+            <p className="text-sm sm:text-base">{formatFullDate(paid_date)}</p>
           </div>
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           <p className="text-xs sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
             Parcelamento / recorrência
           </p>
           {is_recurring ? (
-            <p className="text-base sm:text-lg">Transação recorrente.</p>
+            <p className="text-sm sm:text-base">Transação recorrente.</p>
           ) : hasInstallments ? (
             <>
-              <p className="text-base sm:text-lg">
+              <p className="text-sm sm:text-base">
                 {`Valor por parcela: ${formatCurrency(installmentAmount)}`}
               </p>
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mt-1">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mt-0.5">
                 {effectiveInstallmentNumber && (
                   <span className="mr-3">
                     Parcelas: <span className="font-semibold">{effectiveInstallmentNumber}/{totalInstallmentsNumber}</span>
@@ -162,12 +162,12 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
               </p>
             </>
           ) : (
-            <p className="text-base sm:text-lg">Transação única.</p>
+            <p className="text-sm sm:text-base">Transação única.</p>
           )}
         </div>
 
         {realTransacaoId && (
-          <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+          <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
             <AnexoSection transacaoId={realTransacaoId} />
           </div>
         )}

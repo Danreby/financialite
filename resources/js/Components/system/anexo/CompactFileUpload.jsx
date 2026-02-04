@@ -234,16 +234,16 @@ export default function CompactFileUpload({
                     className="hidden"
                 />
 
-                <div className="flex items-center justify-between gap-3 p-3">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <div className={`
-                            flex-shrink-0 p-2 rounded-lg transition-colors
+                            flex-shrink-0 p-1.5 sm:p-2 rounded-md sm:rounded-lg transition-colors
                             ${isDragging 
                                 ? 'bg-rose-100 dark:bg-rose-900/50' 
                                 : 'bg-gray-100 dark:bg-gray-800'
                             }
                         `}>
-                            <PaperclipIcon className={`w-5 h-5 ${
+                            <PaperclipIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${
                                 isDragging 
                                     ? 'text-rose-600 dark:text-rose-400' 
                                     : 'text-gray-500 dark:text-gray-400'
@@ -251,7 +251,7 @@ export default function CompactFileUpload({
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                            <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                                 {selectedFiles.length > 0 
                                     ? `${selectedFiles.length} arquivo${selectedFiles.length > 1 ? 's' : ''} selecionado${selectedFiles.length > 1 ? 's' : ''}`
                                     : isDragging 
@@ -259,13 +259,16 @@ export default function CompactFileUpload({
                                         : 'Clique ou arraste arquivos'
                                 }
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
                                 {ALLOWED_EXTENSIONS.slice(0, 4).join(', ')}... (máx. {formatFileSize(MAX_FILE_SIZE)})
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate sm:hidden">
+                                {ALLOWED_EXTENSIONS.slice(0, 2).join(', ')}... (máx. {formatFileSize(MAX_FILE_SIZE)})
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                         {selectedFiles.length > 0 && (
                             <>
                                 <button
@@ -274,11 +277,11 @@ export default function CompactFileUpload({
                                         e.stopPropagation();
                                         setShowFiles(!showFiles);
                                     }}
-                                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                    className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md sm:rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                     title={showFiles ? 'Ocultar arquivos' : 'Ver arquivos'}
                                 >
                                     <svg
-                                        className={`w-5 h-5 transition-transform  ${showFiles ? 'rotate-180' : ''}`}
+                                        className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform  ${showFiles ? 'rotate-180' : ''}`}
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -292,7 +295,7 @@ export default function CompactFileUpload({
                                     onClick={handleUpload}
                                     disabled={uploading}
                                     className={`
-                                        flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all
+                                        flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all
                                         ${uploading
                                             ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
                                             : 'bg-rose-600 hover:bg-rose-700 text-white'
@@ -301,12 +304,12 @@ export default function CompactFileUpload({
                                 >
                                     {uploading ? (
                                         <>
-                                            <LoadingSpinner className="w-4 h-4" />
+                                            <LoadingSpinner className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                             <span className="hidden sm:inline">Enviando...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <UploadIcon className="w-4 h-4" />
+                                            <UploadIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                             <span className="hidden sm:inline">Enviar</span>
                                         </>
                                     )}
@@ -319,7 +322,7 @@ export default function CompactFileUpload({
                                 type="button"
                                 onClick={() => !disabled && fileInputRef.current?.click()}
                                 disabled={disabled}
-                                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-medium rounded-md sm:rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span className="hidden sm:inline">Selecionar</span>
                                 <span className="sm:hidden">+</span>
@@ -337,7 +340,7 @@ export default function CompactFileUpload({
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="space-y-1.5 p-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg max-h-40 overflow-y-auto">
+                        <div className="space-y-1.5 p-1.5 sm:p-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg max-h-32 sm:max-h-40 overflow-y-auto">
                             {selectedFiles.map((item) => (
                                 <motion.div
                                     key={item.id}
@@ -345,9 +348,9 @@ export default function CompactFileUpload({
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 10 }}
-                                    className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md group hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                                    className="flex items-center gap-2 p-1.5 sm:p-2 bg-white dark:bg-gray-800 rounded-md group hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                 >
-                                    <div className="flex-shrink-0 w-8 h-8 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                                         {item.preview ? (
                                             <img
                                                 src={item.preview}
@@ -356,7 +359,7 @@ export default function CompactFileUpload({
                                             />
                                         ) : (
                                             <span className={getFileIconColor(item.iconType)}>
-                                                {getFileIcon(item.iconType, 'w-4 h-4')}
+                                                {getFileIcon(item.iconType, 'w-3.5 h-3.5 sm:w-4 sm:h-4')}
                                             </span>
                                         )}
                                     </div>
@@ -373,10 +376,10 @@ export default function CompactFileUpload({
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveFile(item.id)}
-                                        className="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                                        className="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all"
                                         title="Remover arquivo"
                                     >
-                                        <XIcon className="w-4 h-4" />
+                                        <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     </button>
                                 </motion.div>
                             ))}

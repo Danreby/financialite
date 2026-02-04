@@ -32,11 +32,11 @@ const AnexoItem = React.forwardRef(({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="group flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/80 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="group flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/80 rounded-lg sm:rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
             <div
                 className={`
-                    flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center
+                    flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center
                     ${anexo.is_image ? 'bg-blue-100 dark:bg-blue-900/40' : ''}
                     ${anexo.is_pdf ? 'bg-red-100 dark:bg-red-900/40' : ''}
                     ${anexo.is_spreadsheet ? 'bg-green-100 dark:bg-green-900/40' : ''}
@@ -44,58 +44,58 @@ const AnexoItem = React.forwardRef(({
                 `}
             >
                 <span className={getFileIconColor(anexo.icon_type)}>
-                    {getFileIcon(anexo.icon_type, 'w-5 h-5')}
+                    {getFileIcon(anexo.icon_type, 'w-4 h-4 sm:w-5 sm:h-5')}
                 </span>
             </div>
 
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                <p className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                     {anexo.original_name}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <span>{anexo.formatted_size}</span>
                     <span>•</span>
-                    <span>{formatDate(anexo.created_at)}</span>
+                    <span className="hidden sm:inline">{formatDate(anexo.created_at)}</span>
                 </div>
                 {anexo.description && (
-                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 truncate">
+                    <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-400 truncate">
                         {anexo.description}
                     </p>
                 )}
             </div>
 
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-0.5 sm:gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                 {canPreview && (
                     <button
                         type="button"
                         onClick={() => onPreview?.(anexo)}
-                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                        className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 rounded-md sm:rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                         title="Visualizar"
                     >
-                        <EyeIcon className="w-4 h-4" />
+                        <EyeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                 )}
 
                 <button
                     type="button"
                     onClick={() => onDownload?.(anexo)}
-                    className="p-2 text-gray-500 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                    className="p-1.5 sm:p-2 text-gray-500 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400 rounded-md sm:rounded-lg hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
                     title="Baixar"
                 >
-                    <DownloadIcon className="w-4 h-4" />
+                    <DownloadIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
 
                 <button
                     type="button"
                     onClick={() => onDelete?.(anexo)}
                     disabled={deleting}
-                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                    className="p-1.5 sm:p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-md sm:rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
                     title="Remover"
                 >
                     {deleting ? (
-                        <LoadingSpinner className="w-4 h-4" />
+                        <LoadingSpinner className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     ) : (
-                        <TrashIcon className="w-4 h-4" />
+                        <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     )}
                 </button>
             </div>
