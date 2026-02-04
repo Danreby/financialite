@@ -227,11 +227,10 @@ export default function CompactFileUpload({
                 <input
                     ref={fileInputRef}
                     type="file"
-                    accept={ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
+                    accept="image/*,.pdf"
                     multiple={multiple}
                     onChange={handleFileSelect}
                     disabled={disabled}
-                    capture="environment"
                     className="hidden"
                 />
 

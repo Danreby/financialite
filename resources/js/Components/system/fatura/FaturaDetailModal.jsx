@@ -78,7 +78,7 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-1.5 sm:gap-2 md:gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3">
           <div className="space-y-0.5">
             <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Valor total
@@ -126,7 +126,7 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-1.5 sm:gap-2 md:gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3">
           <div className="space-y-0.5">
             <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Data da compra
