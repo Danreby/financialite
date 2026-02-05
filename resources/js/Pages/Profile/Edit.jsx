@@ -3,8 +3,15 @@ import { Head, usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import IncomeSection from '@/Components/system/income/IncomeSection';
 
-export default function Edit({ mustVerifyEmail, status }) {
+export default function Edit({
+    mustVerifyEmail,
+    status,
+    bankAccounts = [],
+    incomes = [],
+    totalMonthlyIncome = 0,
+}) {
     const { auth } = usePage().props;
     const user = auth?.user;
 
@@ -42,6 +49,15 @@ export default function Edit({ mustVerifyEmail, status }) {
                         <div className="rounded-2xl bg-white/95 p-6 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
                             <UpdatePasswordForm className="max-w-xl" />
                         </div>
+                    </div>
+
+                    {/* Seção de Rendas */}
+                    <div className="rounded-2xl bg-white/95 p-6 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+                        <IncomeSection
+                            incomes={incomes}
+                            totalMonthlyIncome={totalMonthlyIncome}
+                            bankAccounts={bankAccounts}
+                        />
                     </div>
 
                     <div className="rounded-2xl bg-white/95 p-6 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
