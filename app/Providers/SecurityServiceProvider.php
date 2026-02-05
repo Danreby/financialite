@@ -6,12 +6,14 @@ use App\Models\Anexo;
 use App\Models\Bank;
 use App\Models\BankUser;
 use App\Models\Category;
+use App\Models\Income;
 use App\Models\Notification;
 use App\Models\Transacao;
 use App\Policies\AnexoPolicy;
 use App\Policies\BankPolicy;
 use App\Policies\BankUserPolicy;
 use App\Policies\CategoryPolicy;
+use App\Policies\IncomePolicy;
 use App\Policies\NotificationPolicy;
 use App\Policies\TransacaoPolicy;
 use App\Security\Contracts\SanitizerInterface;
@@ -28,6 +30,7 @@ class SecurityServiceProvider extends ServiceProvider
         Transacao::class => TransacaoPolicy::class,
         Category::class => CategoryPolicy::class,
         BankUser::class => BankUserPolicy::class,
+        Income::class => IncomePolicy::class,
         Notification::class => NotificationPolicy::class,
         Bank::class => BankPolicy::class,
     ];
