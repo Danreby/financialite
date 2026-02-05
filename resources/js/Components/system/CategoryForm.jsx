@@ -5,8 +5,7 @@ import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
-import IconPicker from "@/Components/common/pickers/IconPicker";
-import ColorPicker from "@/Components/common/pickers/ColorPicker";
+import { AVAILABLE_ICONS, AVAILABLE_COLORS } from "@/Utils/categoryIcons";
 
 export default function CategoryForm({ isOpen, onClose, onSuccess, categories = [] }) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,18 +106,51 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 					isRequired
 				/>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<IconPicker
-						value={selectedIcon}
-						onChange={setSelectedIcon}
-						label="Ícone da categoria"
-					/>
+				<div className="space-y-4">
+					<div>
+						<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+							Ícone da categoria
+						</label>
+						<div className="grid grid-cols-6 gap-2">
+							{AVAILABLE_ICONS.map((iconItem) => (
+								<button
+									key={iconItem.name}
+									type="button"
+									onClick={() => setSelectedIcon(iconItem.name)}
+									className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all ${
+										selectedIcon === iconItem.name
+											? 'border-rose-500 bg-rose-50 dark:bg-rose-900/20'
+											: 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#0f0f0f] dark:hover:bg-gray-900/50'
+									}`}
+									title={iconItem.label}
+								>
+									<span className="text-2xl">{iconItem.icon}</span>
+								</button>
+							))}
+						</div>
+					</div>
 
-					<ColorPicker
-						value={selectedColor}
-						onChange={setSelectedColor}
-						label="Cor da categoria"
-					/>
+					<div>
+						<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+							Cor da categoria
+						</label>
+						<div className="grid grid-cols-7 gap-2">
+							{AVAILABLE_COLORS.map((colorItem) => (
+								<button
+									key={colorItem.hex}
+									type="button"
+									onClick={() => setSelectedColor(colorItem.hex)}
+									className={`w-full aspect-square rounded-lg border-2 transition-all ${
+										selectedColor === colorItem.hex
+											? 'border-rose-500 ring-2 ring-rose-500 ring-offset-2 dark:ring-offset-gray-900'
+											: 'border-gray-300 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-600'
+									}`}
+									title={colorItem.name}
+									style={{ backgroundColor: colorItem.hex }}
+								/>
+							))}
+						</div>
+					</div>
 				</div>
 
 				<div className="flex items-center justify-end gap-3 pt-2">

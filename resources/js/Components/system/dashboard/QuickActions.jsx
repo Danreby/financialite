@@ -83,7 +83,7 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
             <button
               key={index}
               onClick={action.onClick}
-              className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${action.gradient} ${action.hoverGradient} p-4 text-left shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]`}
+              className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${action.gradient} ${action.hoverGradient} p-4 text-left shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-xl active:scale-[0.98]`}
             >
               <div className="relative z-10 flex items-start gap-3">
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white/20 text-2xl backdrop-blur-sm">

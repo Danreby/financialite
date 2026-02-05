@@ -101,6 +101,8 @@ class TransactionController extends Controller
                     'bank_name' => optional($transacao->bankUser->bank ?? null)->name ?? null,
                     'category_id' => $transacao->category_id,
                     'category_name' => $transacao->category->name ?? null,
+                    'category_icon' => $transacao->category->icon ?? null,
+                    'category_color' => $transacao->category->color ?? null,
                     'anexos_count' => $transacao->anexos_count ?? 0,
                 ];
             });
@@ -120,7 +122,7 @@ class TransactionController extends Controller
 
         $categories = Category::forUser($user->id)
             ->ordered()
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'icon', 'color']);
 
         $months = Transacao::where('user_id', $user->id)
             ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key")

@@ -1,5 +1,6 @@
 import React from "react";
 import { PaperclipIcon } from "@/Components/common/icons/FileIcons";
+import CategoryBadge from "@/Components/common/CategoryBadge";
 import { formatCurrency, formatDayLabel } from "@/Lib/formatters";
 
 export default function FaturaItemRow({
@@ -15,6 +16,8 @@ export default function FaturaItemRow({
   display_installment,
   is_recurring,
   category_name,
+  category_icon,
+  category_color,
   anexos_count,
   onClick,
 }) {
@@ -96,9 +99,12 @@ export default function FaturaItemRow({
 					<div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] lg:text-xs 2xl:text-xs text-gray-500 dark:text-gray-400">
             {bank_name && <span>{bank_name}</span>}
             {category_name && (
-							<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] sm:text-[11px] 2xl:text-[11px] font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-200">
-                {category_name}
-              </span>
+              <CategoryBadge
+                name={category_name}
+                icon={category_icon}
+                color={category_color}
+                size="sm"
+              />
             )}
             {description && <span className="truncate max-w-xs">• {description}</span>}
           </div>

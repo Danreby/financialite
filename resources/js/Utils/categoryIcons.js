@@ -1,0 +1,104 @@
+// Mapeamento de nomes de ícones para seus emojis
+export const ICON_MAP = {
+  'utensils': '🍴',
+  'coffee': '☕',
+  'pizza': '🍕',
+  'hamburger': '🍔',
+  'beer': '🍺',
+  'cake': '🍰',
+  'car': '🚗',
+  'bus': '🚌',
+  'train': '🚆',
+  'plane': '✈️',
+  'bicycle': '🚲',
+  'fuel': '⛽',
+  'home': '🏠',
+  'bed': '🛏️',
+  'couch': '🛋️',
+  'bulb': '💡',
+  'key': '🔑',
+  'tools': '🔧',
+  'heart': '❤️',
+  'medical': '🏥',
+  'pill': '💊',
+  'dumbbell': '🏋️',
+  'apple': '🍎',
+  'tooth': '🦷',
+  'book': '📚',
+  'graduation': '🎓',
+  'pencil': '✏️',
+  'backpack': '🎒',
+  'computer': '💻',
+  'microscope': '🔬',
+  'game': '🎮',
+  'music': '🎵',
+  'movie': '🎬',
+  'camera': '📷',
+  'ball': '⚽',
+  'gift': '🎁',
+  'dollar': '💰',
+  'credit-card': '💳',
+  'wallet': '👛',
+  'bank': '🏦',
+  'chart': '📊',
+  'piggy': '🐷',
+  'shopping': '🛒',
+  'phone': '📱',
+  'shirt': '👕',
+  'paw': '🐾',
+  'scissors': '✂️',
+  'umbrella': '☂️',
+};
+
+// Função para obter o emoji de um ícone pelo nome
+export function getIconEmoji(iconName) {
+  if (!iconName) return null;
+  
+  // Se já é um emoji (caractere Unicode), retorna diretamente
+  if (/\p{Emoji}/u.test(iconName)) {
+    return iconName;
+  }
+  
+  // Caso contrário, busca no mapeamento
+  return ICON_MAP[iconName] || null;
+}
+
+// Lista de ícones disponíveis para seleção
+export const AVAILABLE_ICONS = [
+  { name: 'utensils', label: 'Talheres', icon: '🍴' },
+  { name: 'coffee', label: 'Café', icon: '☕' },
+  { name: 'pizza', label: 'Pizza', icon: '🍕' },
+  { name: 'hamburger', label: 'Hambúrguer', icon: '🍔' },
+  { name: 'car', label: 'Carro', icon: '🚗' },
+  { name: 'bus', label: 'Ônibus', icon: '🚌' },
+  { name: 'home', label: 'Casa', icon: '🏠' },
+  { name: 'heart', label: 'Coração', icon: '❤️' },
+  { name: 'medical', label: 'Médico', icon: '🏥' },
+  { name: 'book', label: 'Livro', icon: '📚' },
+  { name: 'game', label: 'Jogo', icon: '🎮' },
+  { name: 'music', label: 'Música', icon: '🎵' },
+  { name: 'dollar', label: 'Dinheiro', icon: '💰' },
+  { name: 'credit-card', label: 'Cartão', icon: '💳' },
+  { name: 'shopping', label: 'Compras', icon: '🛒' },
+  { name: 'phone', label: 'Telefone', icon: '📱' },
+  { name: 'shirt', label: 'Roupa', icon: '👕' },
+  { name: 'paw', label: 'Pet', icon: '🐾' },
+];
+
+// Lista de cores disponíveis
+export const AVAILABLE_COLORS = [
+  { name: 'Vermelho', hex: '#EF4444' },
+  { name: 'Rosa', hex: '#EC4899' },
+  { name: 'Roxo', hex: '#A855F7' },
+  { name: 'Índigo', hex: '#6366F1' },
+  { name: 'Azul', hex: '#3B82F6' },
+  { name: 'Ciano', hex: '#06B6D4' },
+  { name: 'Verde-água', hex: '#14B8A6' },
+  { name: 'Verde', hex: '#22C55E' },
+  { name: 'Lima', hex: '#84CC16' },
+  { name: 'Amarelo', hex: '#EAB308' },
+  { name: 'Laranja', hex: '#F97316' },
+  { name: 'Marrom', hex: '#92400E' },
+  { name: 'Cinza', hex: '#6B7280' },
+  { name: 'Preto', hex: '#1F2937' },
+];

@@ -34,7 +34,7 @@ Route::get('/dashboard', function () {
 
     $categories = Category::forUser($user->id)
         ->orderBy('name')
-        ->get(['id', 'name']);
+        ->get(['id', 'name', 'icon', 'color']);
 
     return Inertia::render('Dashboard', [
         'bankAccounts' => $bankAccounts,
@@ -65,7 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             $categories = Category::forUser($user->id)
                 ->orderBy('name')
-                ->paginate(5, ['id', 'name'], 'categories_page');
+                ->paginate(5, ['id', 'name', 'icon', 'color'], 'categories_page');
 
             return Inertia::render('Conta', [
                 'bankAccounts' => $bankAccounts,

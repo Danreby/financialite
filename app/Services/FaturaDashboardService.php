@@ -62,7 +62,7 @@ class FaturaDashboardService
 
         $categories = Category::forUser($user->id)
             ->ordered()
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'icon', 'color']);
 
         return [
             'base_query' => $baseQuery,

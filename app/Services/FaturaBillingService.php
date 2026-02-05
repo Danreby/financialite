@@ -197,6 +197,8 @@ class FaturaBillingService
                         'is_recurring' => (bool) $fatura->is_recurring,
                         'bank_name' => optional($fatura->bankUser->bank ?? null)->name ?? null,
                         'category_name' => $fatura->category->name ?? null,
+                        'category_icon' => $fatura->category->icon ?? null,
+                        'category_color' => $fatura->category->color ?? null,
                         'anexos_count' => $fatura->anexos_count ?? $fatura->anexos()->count(),
                     ];
                 })->values()->all(),
