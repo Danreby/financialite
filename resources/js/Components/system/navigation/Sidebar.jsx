@@ -54,9 +54,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
             className={`flex items-center gap-3 ${isOpen ? 'opacity-100' : 'justify-center'} cursor-pointer`}
           >
             <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center ring-1 ring-gray-200 dark:bg-[#0f0f0f] dark:ring-black/20">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M3 7h18M3 12h18M3 17h18" stroke="#7b1818" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <img src="/favicon.ico" alt="" className="h-6 w-6" aria-hidden />
             </div>
 
             <AnimatePresence initial={false}>
@@ -75,25 +73,32 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
             </AnimatePresence>
           </div>
 
-          <motion.button
-            onClick={toggle}
-            className="p-2 rounded-md hover:bg-gray-100 focus:outline-none dark:hover:bg-gray-900/30"
-            aria-label={isOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
-            aria-pressed={isOpen}
-            type="button"
-            whileTap={{ scale: 0.95 }}
-          >
-            <motion.svg
-              className="h-5 w-5 text-gray-500 dark:text-gray-300"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden
-              animate={{ rotate: isOpen ? 0 : 180 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-            >
-              <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </motion.svg>
-          </motion.button>
+          <AnimatePresence initial={false}>
+            {isOpen && (
+              <motion.button
+                key="toggle-button"
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.18 }}
+                onClick={toggle}
+                className="p-2 rounded-md hover:bg-gray-100 focus:outline-none dark:hover:bg-gray-900/30"
+                aria-label="Fechar sidebar"
+                aria-pressed={isOpen}
+                type="button"
+                whileTap={{ scale: 0.95 }}
+              >
+                <motion.svg
+                  className="h-5 w-5 text-gray-500 dark:text-gray-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </motion.svg>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
         <nav className="mt-3 flex-1 px-2 space-y-1">
