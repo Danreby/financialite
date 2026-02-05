@@ -73,6 +73,8 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 						period_label: periodLabel,
 						bank_name: item.bank_user?.bank?.name || "Sem banco",
 						category_name: item.category?.name || "Sem categoria",
+						category_icon: item.category?.icon || null,
+						category_color: item.category?.color || null,
 						display_installment: item.display_installment || item.current_installment,
 						installment_amount: Number(item.installment_amount ?? item.amount ?? 0),
 						amount: Number(item.amount || 0),

@@ -8,6 +8,7 @@ import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 import DangerButton from '@/Components/common/buttons/DangerButton';
 import ScrollArea from '@/Components/common/ScrollArea';
+import CategoryBadge from '@/Components/common/CategoryBadge';
 import Pagination from '@/Components/common/Pagination';
 import { useNumericInput } from '@/Hooks/useNumericInput';
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer';
@@ -278,7 +279,12 @@ export default function Conta({ bankAccounts, categories }) {
 										key={category.id}
 										className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
 									>
-										<span className="text-gray-900 dark:text-gray-100">{category.name}</span>
+										<CategoryBadge
+											name={category.name}
+											icon={category.icon}
+											color={category.color}
+											size="md"
+										/>
 										<div className="flex flex-wrap items-center justify-end gap-2 text-[11px] sm:text-xs lg:text-sm sm:flex-nowrap">
 											<SecondaryButton
 												type="button"
