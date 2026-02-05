@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "@/Components/common/Modal";
 import AnexoSection from "@/Components/system/anexo/AnexoSection";
+import CategoryBadge from "@/Components/common/CategoryBadge";
 import { formatCurrency } from "@/Lib/formatters";
 
 function formatFullDate(dateString) {
@@ -38,6 +39,8 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
     is_recurring,
     bank_name,
     category_name,
+    category_icon,
+    category_color,
   } = item;
 
   const realTransacaoId = transacao_id || id;
@@ -122,7 +125,16 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
             <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Categoria
             </p>
-            <p className="text-xs sm:text-sm md:text-base truncate">{category_name || "-"}</p>
+            {category_name ? (
+              <CategoryBadge
+                name={category_name}
+                icon={category_icon}
+                color={category_color}
+                size="md"
+              />
+            ) : (
+              <p className="text-xs sm:text-sm md:text-base truncate">-</p>
+            )}
           </div>
         </div>
 

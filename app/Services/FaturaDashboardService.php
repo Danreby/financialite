@@ -166,6 +166,8 @@ class FaturaDashboardService
             return [
                 'category_id' => $transacao->category_id,
                 'category_name' => optional($transacao->category)->name,
+                'category_icon' => optional($transacao->category)->icon,
+                'category_color' => optional($transacao->category)->color,
                 'amount' => (float) $transacao->amount,
                 'is_recurring' => $transacao->is_recurring,
             ];
@@ -178,6 +180,8 @@ class FaturaDashboardService
             return [
                 'category_id' => $transacao->category_id,
                 'category_name' => optional($transacao->category)->name,
+                'category_icon' => optional($transacao->category)->icon,
+                'category_color' => optional($transacao->category)->color,
                 'amount' => $installmentAmount,
                 'is_recurring' => $transacao->is_recurring,
             ];
@@ -193,6 +197,8 @@ class FaturaDashboardService
                 return [
                     'category_id' => $first['category_id'] ?? null,
                     'category_name' => $first['category_name'] ?? 'Sem categoria',
+                    'category_icon' => $first['category_icon'] ?? null,
+                    'category_color' => $first['category_color'] ?? null,
                     'total' => (float) $items->sum('amount'),
                 ];
             })

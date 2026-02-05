@@ -1,6 +1,7 @@
 import React from 'react'
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import CategoryBadge from '@/Components/common/CategoryBadge'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -69,15 +70,18 @@ export default function TopSpendingPieChart({
             <li key={item.category_id ?? 'none'} className="flex items-center justify-between gap-3 text-sm">
               <div className="flex items-center gap-2 min-w-0">
                 <span
-                  className="h-2.5 w-2.5 rounded-full"
+                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: colors[index % colors.length] }}
                   aria-hidden
                 />
-                <span className="font-medium text-gray-900 dark:text-gray-200 truncate">
-                  {item.category_name || 'Sem categoria'}
-                </span>
+                <CategoryBadge
+                  name={item.category_name || 'Sem categoria'}
+                  icon={item.category_icon}
+                  color={item.category_color}
+                  size="sm"
+                />
               </div>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 flex-shrink-0">
                 <span className="text-[11px] uppercase tracking-wide">{item.share || 0}%</span>
                 <span>{formatCurrencyBRL(item.total || 0)}</span>
               </div>

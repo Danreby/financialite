@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "@/Components/common/Modal";
 import ScrollArea from "@/Components/common/ScrollArea";
+import CategoryBadge from "@/Components/common/CategoryBadge";
 import { formatCurrencyBRL } from "@/Lib/formatters";
 
 export default function ReportsPeriodModal({ isOpen, onClose, period, onSelectTransaction }) {
@@ -110,8 +111,17 @@ function TableContent({ transactions, onSelectTransaction }) {
               <td className="px-3 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap">
                 {tx.bank_name || "-"}
               </td>
-              <td className="px-3 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                {tx.category_name || "-"}
+              <td className="px-3 py-2 whitespace-nowrap">
+                {tx.category_name ? (
+                  <CategoryBadge
+                    name={tx.category_name}
+                    icon={tx.category_icon}
+                    color={tx.category_color}
+                    size="sm"
+                  />
+                ) : (
+                  <span className="text-gray-500 dark:text-gray-400">-</span>
+                )}
               </td>
               <td className="px-3 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap">
                 {formatDate(tx.created_at)}
