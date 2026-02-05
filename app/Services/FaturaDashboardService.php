@@ -167,6 +167,7 @@ class FaturaDashboardService
                 'category_id' => $transacao->category_id,
                 'category_name' => optional($transacao->category)->name,
                 'amount' => (float) $transacao->amount,
+                'is_recurring' => $transacao->is_recurring,
             ];
         })->values()->all();
 
@@ -178,11 +179,13 @@ class FaturaDashboardService
                 'category_id' => $transacao->category_id,
                 'category_name' => optional($transacao->category)->name,
                 'amount' => $installmentAmount,
+                'is_recurring' => $transacao->is_recurring,
             ];
         })->values()->all();
 
-        $topSpendingCategories = collect($debitRows)
-            ->merge($creditRows)
+        $allRows = collect($debitRows)->merge($creditRows);
+
+        $topSpendingCategories = $allRows
             ->groupBy('category_id')
             ->map(function ($items) {
                 $first = $items->first();
@@ -197,6 +200,13 @@ class FaturaDashboardService
             ->take(6)
             ->values()
             ->all();
+
+        $totalRecurring = $allRows->where('is_recurring', true)->sum('amount');
+        $totalNonRecurring = $allRows->where('is_recurring', false)->sum('amount');
+        $totalAmount = $totalRecurring + $totalNonRecurring;
+
+        $recurringPercentage = $totalAmount > 0 ? round(($totalRecurring / $totalAmount) * 100, 1) : 0;
+        $nonRecurringPercentage = $totalAmount > 0 ? round(($totalNonRecurring / $totalAmount) * 100, 1) : 0;
 
         $currentPendingBill = $this->billing->calculatePendingBillFromGroup($effectiveGroup);
 
@@ -217,6 +227,14 @@ class FaturaDashboardService
         $stats['current_month_debit_total'] = (float) $currentMonthDebitTotal;
         $stats['monthly_summary'] = $monthlySummary;
         $stats['top_spending_categories'] = $topSpendingCategories;
+        $stats['recurring_spending'] = [
+            'total' => (float) $totalRecurring,
+            'percentage' => $recurringPercentage,
+        ];
+        $stats['non_recurring_spending'] = [
+            'total' => (float) $totalNonRecurring,
+            'percentage' => $nonRecurringPercentage,
+        ];
 
         return $stats;
     }
@@ -300,12 +318,10 @@ class FaturaDashboardService
     {
         $query = Fatura::where('user_id', $userId);
 
-        if ($shouldFilterByBankUser) {
-            if (is_null($bankUserId)) {
-                $query->whereNull('bank_user_id');
-            } else {
-                $query->where('bank_user_id', $bankUserId);
-            }
+        if ($shouldFilterByBankUser && !is_null($bankUserId)) {
+            $query->where('bank_user_id', $bankUserId);
+        } elseif ($shouldFilterByBankUser && is_null($bankUserId)) {
+            $query->whereNull('bank_user_id');
         }
 
         return $query->pluck('total_paid', 'month_key');
