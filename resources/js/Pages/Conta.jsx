@@ -8,9 +8,12 @@ import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 import DangerButton from '@/Components/common/buttons/DangerButton';
 import ScrollArea from '@/Components/common/ScrollArea';
+import CategoryBadge from '@/Components/common/CategoryBadge';
 import Pagination from '@/Components/common/Pagination';
 import { useNumericInput } from '@/Hooks/useNumericInput';
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer';
+import IconPicker from '@/Components/common/pickers/IconPicker';
+import ColorPicker from '@/Components/common/pickers/ColorPicker';
 
 function formatDueDay(dueDay) {
 	if (!dueDay) return 'Não definido';
@@ -39,6 +42,8 @@ export default function Conta({ bankAccounts, categories }) {
 	const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
 	const [categoryBeingEdited, setCategoryBeingEdited] = useState(null);
 	const [categoryNameInput, setCategoryNameInput] = useState('');
+	const [categoryIconInput, setCategoryIconInput] = useState(null);
+	const [categoryColorInput, setCategoryColorInput] = useState(null);
 	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 	const [confirmTarget, setConfirmTarget] = useState({ type: null, id: null, name: '' });
 	const handleNumericInput = useNumericInput();
@@ -98,6 +103,8 @@ export default function Conta({ bankAccounts, categories }) {
 	const openEditCategoryModal = (category) => {
 		setCategoryBeingEdited(category);
 		setCategoryNameInput(category.name || '');
+		setCategoryIconInput(category.icon || null);
+		setCategoryColorInput(category.color || null);
 		setIsEditCategoryModalOpen(true);
 	};
 
@@ -113,17 +120,28 @@ export default function Conta({ bankAccounts, categories }) {
 
 		setSaving(true);
 		try {
-			const response = await axios.put(route('categories.update', categoryBeingEdited.id), { name });
+			const payload = { name };
+			if (categoryIconInput) payload.icon = categoryIconInput;
+			if (categoryColorInput) payload.color = categoryColorInput;
+
+			const response = await axios.put(route('categories.update', categoryBeingEdited.id), payload);
 			const updated = response.data;
 			setLocalCategories((prev) =>
-				prev.map((cat) => (cat.id === categoryBeingEdited.id ? { ...cat, name: updated.name } : cat)),
+				prev.map((cat) => (cat.id === categoryBeingEdited.id ? { ...cat, ...updated } : cat)),
 			);
 			toast.success('Categoria atualizada.');
 			setIsEditCategoryModalOpen(false);
 			setCategoryBeingEdited(null);
 		} catch (error) {
 			console.error(error);
-			toast.error('Não foi possível atualizar a categoria.');
+			const errors = error.response?.data?.errors;
+			if (errors?.color?.[0]) {
+				toast.error(errors.color[0]);
+			} else if (errors?.icon?.[0]) {
+				toast.error(errors.icon[0]);
+			} else {
+				toast.error('Não foi possível atualizar a categoria.');
+			}
 		} finally {
 			setSaving(false);
 		}
@@ -261,7 +279,12 @@ export default function Conta({ bankAccounts, categories }) {
 										key={category.id}
 										className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
 									>
-										<span className="text-gray-900 dark:text-gray-100">{category.name}</span>
+										<CategoryBadge
+											name={category.name}
+											icon={category.icon}
+											color={category.color}
+											size="md"
+										/>
 										<div className="flex flex-wrap items-center justify-end gap-2 text-[11px] sm:text-xs lg:text-sm sm:flex-nowrap">
 											<SecondaryButton
 												type="button"
@@ -367,6 +390,20 @@ export default function Conta({ bankAccounts, categories }) {
 							onChange={(e) => setCategoryNameInput(e.target.value)}
 							className="w-full rounded-md border border-gray-300 p-2 text-sm sm:text-base shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
 							placeholder="Ex: Mercado, Lazer, Shopping"
+						/>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<IconPicker
+							value={categoryIconInput}
+							onChange={setCategoryIconInput}
+							label="Ícone da categoria"
+						/>
+
+						<ColorPicker
+							value={categoryColorInput}
+							onChange={setCategoryColorInput}
+							label="Cor da categoria"
 						/>
 					</div>
 

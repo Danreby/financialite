@@ -7,6 +7,7 @@ import StatCard from '@/Components/system/dashboard/StatCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
 import MonthlySummaryChart from '@/Components/system/dashboard/MonthlySummaryChart'
 import TopSpendingCategories from '@/Components/system/dashboard/TopSpendingCategories'
+import CategoryBadge from '@/Components/common/CategoryBadge'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
 import ScrollArea from '@/Components/common/ScrollArea'
@@ -33,6 +34,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [topSpendingCategories, setTopSpendingCategories] = useState([])
   const [topSpendingLabel, setTopSpendingLabel] = useState('Mês vigente')
   const [selectedFaturaItem, setSelectedFaturaItem] = useState(null)
+  const [recurringSpending, setRecurringSpending] = useState({ total: 0, percentage: 0 })
+  const [nonRecurringSpending, setNonRecurringSpending] = useState({ total: 0, percentage: 0 })
 
   const [stats, setStats] = useState([
     { id: 1, title: 'Saldo Disponível', value: formatCurrencyBRL(0), delta: '+0%' },
@@ -129,6 +132,16 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
         setTopSpendingCategories(normalizedTopSpending)
         setTopSpendingLabel(topSpendingLabelPayload)
+
+        setRecurringSpending({
+          total: Number(statsPayload.recurring_spending?.total || 0),
+          percentage: Number(statsPayload.recurring_spending?.percentage || 0),
+        })
+
+        setNonRecurringSpending({
+          total: Number(statsPayload.non_recurring_spending?.total || 0),
+          percentage: Number(statsPayload.non_recurring_spending?.percentage || 0),
+        })
       } catch (error) {
         console.error(error)
         if (error.response?.data?.message) {
@@ -197,11 +210,13 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
                   const isDebit = fatura.type === 'debit'
                   const labelDate = formatDateLabel(fatura.created_at)
                   const bankName = fatura.bank_user?.bank?.name
-                  const categoryName = fatura.category?.name
+                  const category = fatura.category
+                  const categoryName = category?.name
+                  const categoryIcon = category?.icon
+                  const categoryColor = category?.color
                   const typeLabel = isDebit ? 'Débito' : 'Crédito'
                   const subtitleParts = [typeLabel]
                   if (bankName) subtitleParts.push(bankName)
-                  if (categoryName) subtitleParts.push(categoryName)
                   if (labelDate) subtitleParts.push(labelDate)
 
                   const handleClick = () => {
@@ -219,6 +234,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
                       is_recurring: fatura.is_recurring,
                       bank_name: bankName,
                       category_name: categoryName,
+                      category_icon: categoryIcon,
+                      category_color: categoryColor,
                     })
                   }
 
@@ -230,6 +247,9 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
                       value={`${formatCurrencyBRL(fatura.amount)}`}
                       negative={isDebit}
                       onClick={handleClick}
+                      categoryName={categoryName}
+                      categoryIcon={categoryIcon}
+                      categoryColor={categoryColor}
                     />
                   )
                 })
@@ -252,7 +272,12 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </FadeInItem>
 
           <FadeInItem>
-            <TopSpendingCategories data={topSpendingCategories} label={topSpendingLabel} />
+            <TopSpendingCategories 
+              data={topSpendingCategories} 
+              label={topSpendingLabel}
+              recurringSpending={recurringSpending}
+              nonRecurringSpending={nonRecurringSpending}
+            />
           </FadeInItem>
         </FadeInContainer>
 
@@ -266,7 +291,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   )
 }
 
-function Transaction({ title, subtitle, value, negative, onClick }) {
+function Transaction({ title, subtitle, value, negative, onClick, categoryName, categoryIcon, categoryColor }) {
   return (
     <div
       className="flex items-center justify-between rounded-xl px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-900/30 cursor-pointer"
@@ -274,9 +299,19 @@ function Transaction({ title, subtitle, value, negative, onClick }) {
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      <div>
+      <div className="flex-1 min-w-0">
         <div className="text-sm lg:text-base font-medium text-gray-900 dark:text-gray-200">{title}</div>
-        <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">{subtitle}</div>
+        <div className="flex items-center gap-2 mt-1">
+          <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">{subtitle}</div>
+          {categoryName && (
+            <CategoryBadge
+              name={categoryName}
+              icon={categoryIcon}
+              color={categoryColor}
+              size="sm"
+            />
+          )}
+        </div>
       </div>
       <div className="text-sm lg:text-base font-semibold text-red-400">
         {value}

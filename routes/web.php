@@ -91,7 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         $categories = Category::forUser($user->id)
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'icon', 'color']);
 
         return Inertia::render('Relatorio', [
             'bankAccounts' => $bankAccounts,

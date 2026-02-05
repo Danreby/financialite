@@ -1,4 +1,5 @@
 import React from "react";
+import CategoryBadge from "@/Components/common/CategoryBadge";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", {
@@ -27,6 +28,8 @@ export default function ReportsTransactionRow({ transaction, onSelect }) {
     status,
     bank_name,
     category_name,
+    category_icon,
+    category_color,
     installment_amount,
     amount,
     total_installments,
@@ -84,9 +87,12 @@ export default function ReportsTransactionRow({ transaction, onSelect }) {
         <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
           {bank_name && <span>{bank_name}</span>}
           {category_name && (
-            <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-200">
-              {category_name}
-            </span>
+            <CategoryBadge
+              name={category_name}
+              icon={category_icon}
+              color={category_color}
+              size="sm"
+            />
           )}
           {description && <span className="truncate max-w-xs">• {description}</span>}
         </div>

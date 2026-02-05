@@ -6,6 +6,7 @@ import Tooltip from "@/Components/common/Tooltip";
 import RemoveIcon from "@/Components/common/icons/RemoveIcon";
 import EditIcon from "@/Components/common/icons/EditIcon";
 import { PaperclipIcon } from "@/Components/common/icons/FileIcons";
+import CategoryBadge from "@/Components/common/CategoryBadge";
 import { formatCurrency, formatDate } from "@/Lib/formatters";
 
 export default function TransactionRow({ transaction, onEdit, onDelete, onShowDetails }) {
@@ -17,6 +18,8 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
     created_at,
     bank_name,
     category_name,
+    category_icon,
+    category_color,
     total_installments,
     anexos_count,
   } = transaction;
@@ -73,7 +76,14 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
               {installmentsLabel && ` • ${installmentsLabel}`}
             </span>
           )}
-          {category_name && <span>• {category_name}</span>}
+          {category_name && (
+            <CategoryBadge 
+              name={category_name}
+              icon={category_icon}
+              color={category_color}
+              size="sm"
+            />
+          )}
           {description && <span className="truncate max-w-xs">• {description}</span>}
         </div>
       </div>

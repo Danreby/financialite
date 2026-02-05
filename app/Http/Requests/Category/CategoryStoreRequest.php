@@ -27,6 +27,17 @@ class CategoryStoreRequest extends FormRequest
                 Rule::unique('categories')
                     ->where(fn ($query) => $query->where('user_id', $userId)),
             ],
+            'color' => [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            ],
+            'icon' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
         ];
     }
 
@@ -37,6 +48,9 @@ class CategoryStoreRequest extends FormRequest
             'name.min' => 'O nome deve ter pelo menos :min caracteres.',
             'name.max' => 'O nome não pode ter mais de :max caracteres.',
             'name.unique' => 'Você já possui uma categoria com este nome.',
+            'color.regex' => 'A cor deve estar no formato hexadecimal (#RRGGBB ou #RGB).',
+            'color.max' => 'A cor não pode ter mais de :max caracteres.',
+            'icon.max' => 'O ícone não pode ter mais de :max caracteres.',
         ];
     }
 

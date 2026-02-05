@@ -39,7 +39,7 @@ class Transacao extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'paid_date' => 'date',
+        'paid_date' => 'datetime',
         'is_recurring' => 'boolean',
         'total_installments' => 'integer',
         'current_installment' => 'integer',

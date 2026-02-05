@@ -51,7 +51,7 @@ class FaturaPaymentService
                 ]);
 
                 $paid->total_paid = ($paid->total_paid ?? 0) + $totalPaidThisRun;
-                $paid->paid_at = now()->toDateString();
+                $paid->paid_at = now();
                 $paid->save();
             }
 

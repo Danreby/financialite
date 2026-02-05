@@ -2,7 +2,7 @@ import React from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import TopSpendingPieChart from '@/Components/system/dashboard/TopSpendingPieChart'
 
-export default function TopSpendingCategories({ data = [], label = 'Mês vigente' }) {
+export default function TopSpendingCategories({ data = [], label = 'Mês vigente', recurringSpending = {}, nonRecurringSpending = {} }) {
   const topSix = Array.isArray(data)
     ? [...data].sort((a, b) => Number(b.total || 0) - Number(a.total || 0)).slice(0, 6)
     : []
@@ -45,6 +45,8 @@ export default function TopSpendingCategories({ data = [], label = 'Mês vigente
           total={totalTop}
           colors={colors}
           items={prepared}
+          recurringSpending={recurringSpending}
+          nonRecurringSpending={nonRecurringSpending}
         />
       )}
     </div>

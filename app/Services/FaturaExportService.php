@@ -68,6 +68,8 @@ class FaturaExportService
             'category' => [
                 'id' => $fatura->category->id ?? null,
                 'name' => $fatura->category->name ?? null,
+                'icon' => $fatura->category->icon ?? null,
+                'color' => $fatura->category->color ?? null,
             ],
         ];
     }
