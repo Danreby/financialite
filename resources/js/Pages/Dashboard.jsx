@@ -33,6 +33,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [topSpendingCategories, setTopSpendingCategories] = useState([])
   const [topSpendingLabel, setTopSpendingLabel] = useState('Mês vigente')
   const [selectedFaturaItem, setSelectedFaturaItem] = useState(null)
+  const [recurringSpending, setRecurringSpending] = useState({ total: 0, percentage: 0 })
+  const [nonRecurringSpending, setNonRecurringSpending] = useState({ total: 0, percentage: 0 })
 
   const [stats, setStats] = useState([
     { id: 1, title: 'Saldo Disponível', value: formatCurrencyBRL(0), delta: '+0%' },
@@ -129,6 +131,16 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
         setTopSpendingCategories(normalizedTopSpending)
         setTopSpendingLabel(topSpendingLabelPayload)
+
+        setRecurringSpending({
+          total: Number(statsPayload.recurring_spending?.total || 0),
+          percentage: Number(statsPayload.recurring_spending?.percentage || 0),
+        })
+
+        setNonRecurringSpending({
+          total: Number(statsPayload.non_recurring_spending?.total || 0),
+          percentage: Number(statsPayload.non_recurring_spending?.percentage || 0),
+        })
       } catch (error) {
         console.error(error)
         if (error.response?.data?.message) {
@@ -252,7 +264,12 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </FadeInItem>
 
           <FadeInItem>
-            <TopSpendingCategories data={topSpendingCategories} label={topSpendingLabel} />
+            <TopSpendingCategories 
+              data={topSpendingCategories} 
+              label={topSpendingLabel}
+              recurringSpending={recurringSpending}
+              nonRecurringSpending={nonRecurringSpending}
+            />
           </FadeInItem>
         </FadeInContainer>
 
