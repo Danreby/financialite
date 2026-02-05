@@ -8,6 +8,7 @@ const links = [
   { href: () => route('transacoes.index'), label: 'Fatura' },
   { href: () => route('accounts.index'), label: 'Contas' },
   { href: () => route('transactions.index'), label: 'Transações' },
+  { href: () => route('extrato.index'), label: 'Extrato' },
   { href: () => route('reports.index'), label: 'Relatórios' },
   { href: () => route('about'), label: 'Sobre' },
   { href: () => route('settings'), label: 'Configurações' },
