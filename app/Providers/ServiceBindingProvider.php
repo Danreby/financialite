@@ -13,6 +13,8 @@ use App\Contracts\Services\ExportServiceInterface;
 use App\Contracts\Services\ImportServiceInterface;
 use App\Contracts\Services\DashboardServiceInterface;
 use App\Contracts\Services\AuthServiceInterface;
+use App\Contracts\Services\IncomeServiceInterface;
+use App\Contracts\Services\ExtratoServiceInterface;
 
 use App\Services\FaturaService;
 use App\Services\AnexoService;
@@ -23,6 +25,8 @@ use App\Services\FaturaExportService;
 use App\Services\FaturaImportService;
 use App\Services\FaturaDashboardService;
 use App\Services\Auth\AuthService;
+use App\Services\IncomeService;
+use App\Services\ExtratoService;
 
 class ServiceBindingProvider extends ServiceProvider
 {
@@ -36,6 +40,8 @@ class ServiceBindingProvider extends ServiceProvider
         ImportServiceInterface::class => FaturaImportService::class,
         DashboardServiceInterface::class => FaturaDashboardService::class,
         AuthServiceInterface::class => AuthService::class,
+        IncomeServiceInterface::class => IncomeService::class,
+        ExtratoServiceInterface::class => ExtratoService::class,
     ];
 
     public function register(): void

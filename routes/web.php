@@ -123,6 +123,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__.'/Fatura.php';
 
+require __DIR__.'/Income.php';
+
 require __DIR__.'/Anexo.php';
 
 require __DIR__.'/auth.php';

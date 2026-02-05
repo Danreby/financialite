@@ -11,19 +11,53 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Services\NotificationService;
+use App\Services\IncomeService;
 
 class ProfileController extends Controller
 {
-    public function __construct(private NotificationService $notifications)
-    {
+    public function __construct(
+        private NotificationService $notifications,
+        private IncomeService $incomeService
+    ) {
         $this->middleware('auth');
     }
 
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
+        $bankAccounts = \App\Models\BankUser::with('bank')
+            ->forUser($user->id)
+            ->get()
+            ->map(fn ($bu) => [
+                'id'   => $bu->id,
+                'name' => $bu->bank?->name ?? ('Conta #' . $bu->id),
+            ]);
+
+        $incomes = $this->incomeService->listForUser($user->id)
+            ->map(fn ($income) => [
+                'id'                => $income->id,
+                'title'             => $income->title,
+                'description'       => $income->description,
+                'amount'            => (float) $income->amount,
+                'type'              => $income->type,
+                'type_label'        => $income->type_label,
+                'payment_day_type'  => $income->payment_day_type,
+                'payment_day_value' => $income->payment_day_value,
+                'payment_day_label' => $income->payment_day_label,
+                'is_active'         => $income->is_active,
+                'bank_name'         => optional($income->bankUser?->bank)->name,
+                'bank_user_id'      => $income->bank_user_id,
+            ]);
+
+        $totalMonthly = $this->incomeService->totalMonthlyIncome($user->id);
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
+            'mustVerifyEmail'    => $request->user() instanceof MustVerifyEmail,
+            'status'             => session('status'),
+            'bankAccounts'       => $bankAccounts,
+            'incomes'            => $incomes,
+            'totalMonthlyIncome' => $totalMonthly,
         ]);
     }
 
