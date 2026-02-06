@@ -50,7 +50,7 @@ export default function ReportsMonthlySummary({ items = [], onSelectPeriod }) {
                 <td className="py-1.5 px-3 text-right text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                   {formatCurrency(row.total_credit)}
                 </td>
-                <td className="py-1.5 px-3 text-right text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                <td className="py-1.5 px-3 text-right themed-amount whitespace-nowrap">
                   {formatCurrency(row.total_debit)}
                 </td>
                 <td className="py-1.5 pl-3 text-right text-gray-700 dark:text-gray-200 whitespace-nowrap">
@@ -61,7 +61,7 @@ export default function ReportsMonthlySummary({ items = [], onSelectPeriod }) {
                     <button
                       type="button"
                       onClick={() => onSelectPeriod(row.year_month)}
-                      className="inline-flex items-center rounded-full border border-rose-500 px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+                      className="inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide transition themed-outline-btn"
                     >
                       Ver período
                     </button>

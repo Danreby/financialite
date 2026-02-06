@@ -119,7 +119,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 									onClick={() => setSelectedIcon(iconItem.name)}
 									className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all ${
 										selectedIcon === iconItem.name
-											? 'border-rose-500 bg-rose-50 dark:bg-rose-900/20'
+											? 'themed-selected border-theme-accent'
 											: 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#0f0f0f] dark:hover:bg-gray-900/50'
 									}`}
 									title={iconItem.label}
@@ -142,7 +142,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 									onClick={() => setSelectedColor(colorItem.hex)}
 									className={`w-full aspect-square rounded-lg border-2 transition-all ${
 										selectedColor === colorItem.hex
-											? 'border-rose-500 ring-2 ring-rose-500 ring-offset-2 dark:ring-offset-gray-900'
+											? 'border-theme-accent ring-2 ring-theme-accent ring-offset-2 dark:ring-offset-gray-900'
 											: 'border-gray-300 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-600'
 									}`}
 									title={colorItem.name}

@@ -215,8 +215,8 @@ export default function FileUpload({
                     border-2 border-dashed rounded-xl p-6 cursor-pointer
                     transition-all duration-200 ease-in-out
                     ${isDragging
-                        ? 'border-rose-500 bg-rose-50 dark:bg-rose-900/20'
-                        : 'border-gray-300 dark:border-gray-600 hover:border-rose-400 dark:hover:border-rose-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                        ? 'border-theme-accent bg-theme-accent-light'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-theme-accent dark:hover:border-theme-accent hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }
                     ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
@@ -233,7 +233,7 @@ export default function FileUpload({
 
                 <UploadIcon
                     className={`w-10 h-10 mb-3 transition-colors ${
-                        isDragging ? 'text-rose-500' : 'text-gray-400 dark:text-gray-500'
+                        isDragging ? 'text-theme-accent' : 'text-gray-400 dark:text-gray-500'
                     }`}
                 />
 
@@ -319,7 +319,7 @@ export default function FileUpload({
                                 rounded-lg text-sm font-semibold transition-all
                                 ${uploading || selectedFiles.length === 0
                                     ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                                    : 'bg-rose-600 hover:bg-rose-700 text-white shadow-md hover:shadow-lg'
+                                    : 'bg-theme-accent hover:bg-theme-accent-hover text-white shadow-md hover:shadow-lg'
                                 }
                             `}
                         >

@@ -43,12 +43,11 @@ const FloatLabelField = forwardRef(
 
         const baseInputClasses =
             'block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm outline-none transition ' +
-            'placeholder-transparent text-gray-900 ' +
-            'focus:border-rose-500 focus:ring-1 focus:ring-rose-500 ' +
-            'dark:focus:border-rose-400 dark:focus:ring-rose-400 border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100';
+            'placeholder-transparent text-gray-900 themed-focus ' +
+            'dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 p-2';
 
         const errorInputClasses = error
-            ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400 '
+            ? 'border-red-500 dark:border-red-500 '
             : '';
 
         const disabledClasses = isDisabled
@@ -144,7 +143,7 @@ const FloatLabelField = forwardRef(
                         }
                     >
                         {label}
-                        {isRequired && <span className="ml-0.5 text-rose-500">*</span>}
+                        {isRequired && <span className="ml-0.5 text-red-500">*</span>}
                     </motion.label>
                 </div>
 
@@ -158,7 +157,7 @@ const FloatLabelField = forwardRef(
                     <motion.p
                         initial={{ opacity: 0, y: -3 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-1 text-xs font-medium text-rose-500"
+                        className="mt-1 text-xs font-medium text-red-500"
                     >
                         {error}
                     </motion.p>

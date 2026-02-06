@@ -13,7 +13,7 @@ import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
 import { formatCurrencyBRL } from "@/Lib/formatters";
 import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer";
 
-export default function Relatorio({ bankAccounts = [], categories = [] }) {
+export default function Relatorio({ bankAccounts = [], categories = [], incomes = [], totalMonthlyIncome = 0 }) {
 	const [selectedBankId, setSelectedBankId] = useState("");
 	const [selectedCategoryId, setSelectedCategoryId] = useState("");
 	const [stats, setStats] = useState({
@@ -198,14 +198,14 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 					</header>
 				</FadeInItem>
 
-				<FadeInItem type="subtle"><section className="rounded-2xl bg-white p-3 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-4 space-y-3">
+				<FadeInItem type="subtle"><section className="rounded-2xl bg-white p-3 shadow-md themed-card dark:bg-[#0b0b0b] sm:p-3 lg:p-4 space-y-3">
 					<div className="flex flex-col gap-2 text-xs sm:text-sm sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
 							<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
 								<select
 									value={selectedBankId}
 									onChange={(e) => setSelectedBankId(e.target.value)}
-									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
+									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
 								>
 									<option value="">Todos</option>
 									{bankAccounts.map((account) => (
@@ -220,7 +220,7 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 								<select
 									value={selectedCategoryId}
 									onChange={(e) => setSelectedCategoryId(e.target.value)}
-									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
+									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
 								>
 									<option value="">Todas</option>
 									{categories.map((category) => (
@@ -259,12 +259,18 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 				</FadeInItem>
 			</FadeInContainer>
 
-			<FadeInContainer stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<FadeInContainer stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				<FadeInItem type="feature">
+					<StatCard title="Renda mensal total" value={formatCurrencyBRL(totalMonthlyIncome)} delta={`${incomes.filter(i => i.is_active).length} fonte(s) ativa(s)`} />
+				</FadeInItem>
 				<FadeInItem type="feature">
 					<StatCard title="Receitas pagas" value={formatCurrencyBRL(stats.total_income)} />
 				</FadeInItem>
 				<FadeInItem type="feature">
 					<StatCard title="Despesas pagas" value={formatCurrencyBRL(stats.total_expenses)} />
+				</FadeInItem>
+				<FadeInItem type="feature">
+					<StatCard title="Balanço líquido" value={formatCurrencyBRL(totalMonthlyIncome - stats.total_expenses - stats.current_month_debit_total)} />
 				</FadeInItem>
 				<FadeInItem type="feature">
 					<StatCard title="Receitas pendentes" value={formatCurrencyBRL(stats.pending_income)} />

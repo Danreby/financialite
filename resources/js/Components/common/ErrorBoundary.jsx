@@ -93,7 +93,7 @@ class ErrorBoundary extends React.Component {
                         
                         <button
                             onClick={this.handleReset}
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-rose-500 rounded-lg hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-colors"
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-theme-accent rounded-lg hover:bg-theme-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-accent transition-colors"
                         >
                             Tentar novamente
                         </button>

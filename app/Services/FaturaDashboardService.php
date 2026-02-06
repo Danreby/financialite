@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\BankUser;
 use App\Models\Category;
 use App\Models\Fatura;
+use App\Models\Income;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -241,6 +242,13 @@ class FaturaDashboardService
             'total' => (float) $totalNonRecurring,
             'percentage' => $nonRecurringPercentage,
         ];
+
+        // Calculate total monthly income and remaining money
+        $totalMonthlyIncome = (float) Income::forUser($user->id)->active()->sum('amount');
+        $remainingMoney = $totalMonthlyIncome - (float) $currentPendingBill - (float) $currentMonthDebitTotal;
+
+        $stats['total_monthly_income'] = $totalMonthlyIncome;
+        $stats['remaining_money'] = $remainingMoney;
 
         return $stats;
     }

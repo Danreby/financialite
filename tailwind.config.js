@@ -16,6 +16,20 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                theme: {
+                    primary: 'var(--theme-primary)',
+                    'primary-hover': 'var(--theme-primaryHover)',
+                    'primary-light': 'var(--theme-primaryLight)',
+                    'primary-ring': 'var(--theme-primaryRing)',
+                    accent: 'var(--theme-accent)',
+                    'accent-hover': 'var(--theme-accentHover)',
+                    'accent-light': 'var(--theme-accentLight)',
+                    'border-dark': 'var(--theme-borderDark)',
+                    scrollbar: 'var(--theme-scrollbar)',
+                    'scrollbar-dark': 'var(--theme-scrollbarDark)',
+                },
+            },
         },
     },
 

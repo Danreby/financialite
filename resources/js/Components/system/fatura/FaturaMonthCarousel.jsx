@@ -112,7 +112,7 @@ export default function FaturaMonthCarousel({
             className={`inline-flex flex-col items-center rounded-full px-4 py-2 sm:px-6 sm:py-2 lg:px-8 lg:py-3 2xl:px-8 2xl:py-3 shadow-sm ring-1 bg-gradient-to-r dark:bg-gradient-to-r ${
               isPaid
                 ? "from-emerald-50 via-white to-emerald-50 ring-emerald-200 dark:from-[#052e26] dark:via-[#050505] dark:to-[#052e26] dark:ring-emerald-900/50"
-                : "from-rose-50 via-white to-rose-50 ring-rose-100 dark:from-[#150709] dark:via-[#0b0b0b] dark:to-[#150709] dark:ring-rose-900/40"
+                : "themed-carousel-unpaid from-[var(--theme-accentLight)] via-white to-[var(--theme-accentLight)] ring-theme-accent/20 dark:via-[#0b0b0b] dark:ring-theme-accent/15"
             }`}
           >
             {isPaid ? (
@@ -131,7 +131,7 @@ export default function FaturaMonthCarousel({
             >
 				  {capitalizeFirst(formatMonthLabel(current.month_key, current.month_label))}
             </span>
-				<span className={`font-semibold text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+				<span className={`font-semibold text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "themed-amount"}`}>
               {formatCurrency(total_spent)}
             </span>
           </motion.div>

@@ -115,7 +115,7 @@ export default function NotificationSidebar({ open, onClose }) {
                   className={`rounded-md border px-3 py-2 text-xs shadow-sm dark:border-gray-800 ${
                     notification.is_read
                       ? 'bg-gray-50 text-gray-600 dark:bg-[#111] dark:text-gray-400'
-                      : 'bg-white text-gray-800 border-indigo-100 dark:bg-[#151515] dark:text-gray-100'
+                      : 'bg-white text-gray-800 themed-unread-border dark:bg-[#151515] dark:text-gray-100'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">

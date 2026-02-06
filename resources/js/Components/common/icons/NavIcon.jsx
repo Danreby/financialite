@@ -1,6 +1,6 @@
 import React from 'react';
 
-const NavIcon = ({ type = 1, size = 18, color = 'text-red-900' }) => {
+const NavIcon = ({ type = 1, size = 18, color = 'text-theme-accent' }) => {
   const isCssColor = /^(#|rgb|hsl)/i.test(color) || color.includes('(');
 
   const className = isCssColor ? undefined : color;

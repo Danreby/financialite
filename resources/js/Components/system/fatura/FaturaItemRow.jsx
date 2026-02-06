@@ -24,7 +24,7 @@ export default function FaturaItemRow({
   const isCredit = type === "credit";
   const isDebit = type === "debit";
   const amountSign = "-";
-  const amountColor = "text-rose-500 dark:text-rose-400";
+  const amountColor = "themed-amount";
 
   const totalInstallmentsNumber = Math.max(Number(total_installments || 1), 1);
   const rawAmountNumber = Number(amount || 0) || 0;
@@ -69,7 +69,7 @@ export default function FaturaItemRow({
           <span
             className={`h-2 w-2 rounded-full ${
               isDebit || isCredit
-                ? "bg-rose-500"
+                ? "bg-theme-accent"
                 : "bg-gray-400"
             }`}
           />

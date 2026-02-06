@@ -22,8 +22,8 @@ export default function FaturaImportIntro({ templateRows, templateHeader }) {
         </p>
       </div>
 
-      <div className="rounded-lg border border-dashed border-indigo-300 bg-indigo-50/60 p-3 text-center dark:border-indigo-500/50 dark:bg-indigo-950/40">
-        <p className="mb-2 text-xs font-medium text-indigo-900 dark:text-indigo-100">
+      <div className="rounded-lg border border-dashed border-theme-accent bg-theme-accent-light p-3 text-center">
+        <p className="mb-2 text-xs font-medium text-gray-900 dark:text-gray-100">
           Baixar modelo pronto para preenchimento
         </p>
         <div className="flex justify-center">
@@ -34,7 +34,7 @@ export default function FaturaImportIntro({ templateRows, templateHeader }) {
             currencyColumns={["amount"]}
           />
         </div>
-        <p className="mt-2 text-[11px] text-indigo-900/80 dark:text-indigo-200/80">
+        <p className="mt-2 text-[11px] text-gray-700 dark:text-gray-300">
           O modelo inclui uma linha de exemplo para orientar o
           preenchimento de cada coluna.
         </p>

@@ -227,7 +227,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
                   value="debit"
                   checked={type === "debit"}
                   onChange={(e) => setType(e.target.value)}
-                  className="h-3 w-3 appearance-none rounded-full border border-gray-400 checked:border-[#7b1818] checked:bg-[#7b1818] dark:border-gray-600"
+                  className="h-3 w-3 appearance-none rounded-full border border-gray-400 themed-radio dark:border-gray-600"
                 />
                 <span>Débito</span>
               </label>
@@ -273,9 +273,9 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
                 if (type === "debit") return;
                 setIsRecurring((prev) => !prev);
               }}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-[#7b1818] focus:ring-offset-2 ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 themed-ring focus:ring-offset-2 ${
                 isRecurring
-                  ? "bg-[#7b1818] shadow-lg shadow-[#7b1818]/40"
+                  ? "themed-toggle-on"
                   : "bg-gray-300 dark:bg-gray-700"
               }`}
             >

@@ -218,8 +218,8 @@ export default function CompactFileUpload({
                 className={`
                     relative rounded-lg border-2 border-dashed transition-all
                     ${isDragging
-                        ? 'border-rose-500 bg-rose-50 dark:bg-rose-900/20'
-                        : 'border-gray-300 dark:border-gray-600 hover:border-rose-400 dark:hover:border-rose-500'
+                        ? 'border-theme-accent bg-theme-accent-light'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-theme-accent dark:hover:border-theme-accent'
                     }
                     ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
@@ -239,13 +239,13 @@ export default function CompactFileUpload({
                         <div className={`
                             flex-shrink-0 p-1 sm:p-2 rounded sm:rounded-lg transition-colors
                             ${isDragging 
-                                ? 'bg-rose-100 dark:bg-rose-900/50' 
+                                ? 'bg-theme-accent-light' 
                                 : 'bg-gray-100 dark:bg-gray-800'
                             }
                         `}>
                             <PaperclipIcon className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${
                                 isDragging 
-                                    ? 'text-rose-600 dark:text-rose-400' 
+                                    ? 'text-theme-accent' 
                                     : 'text-gray-500 dark:text-gray-400'
                             }`} />
                         </div>
@@ -298,7 +298,7 @@ export default function CompactFileUpload({
                                         flex items-center gap-0.5 sm:gap-1.5 px-1.5 py-1 sm:px-3 sm:py-2 rounded sm:rounded-lg text-[10px] sm:text-sm font-medium transition-all
                                         ${uploading
                                             ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                                            : 'bg-rose-600 hover:bg-rose-700 text-white'
+                                            : 'bg-theme-accent hover:bg-theme-accent-hover text-white'
                                         }
                                     `}
                                 >
@@ -322,7 +322,7 @@ export default function CompactFileUpload({
                                 type="button"
                                 onClick={() => !disabled && fileInputRef.current?.click()}
                                 disabled={disabled}
-                                className="px-2 py-1 sm:px-4 sm:py-2 bg-rose-600 hover:bg-rose-700 text-white text-[10px] sm:text-sm font-medium rounded sm:rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                className="px-2 py-1 sm:px-4 sm:py-2 bg-theme-accent hover:bg-theme-accent-hover text-white text-[10px] sm:text-sm font-medium rounded sm:rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                             >
                                 <span className="hidden sm:inline">Selecionar</span>
                                 <span className="sm:hidden">+</span>

@@ -54,7 +54,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
             className={`flex items-center gap-3 ${isOpen ? 'opacity-100' : 'justify-center'} cursor-pointer`}
           >
             <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center ring-1 ring-gray-200 dark:bg-[#0f0f0f] dark:ring-black/20">
-              <img src="/favicon.ico" alt="" className="h-6 w-6" aria-hidden />
+              <img src="/favicon.ico" alt="" className="h-10 w-10" aria-hidden />
             </div>
 
             <AnimatePresence initial={false}>

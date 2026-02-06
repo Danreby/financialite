@@ -1,8 +1,10 @@
 import React from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import TopSpendingPieChart from '@/Components/system/dashboard/TopSpendingPieChart'
+import useThemeColors from '@/Hooks/useThemeColors'
 
 export default function TopSpendingCategories({ data = [], label = 'Mês vigente', recurringSpending = {}, nonRecurringSpending = {} }) {
+  const { chartColors } = useThemeColors()
   const topSix = Array.isArray(data)
     ? [...data].sort((a, b) => Number(b.total || 0) - Number(a.total || 0)).slice(0, 6)
     : []
@@ -17,17 +19,10 @@ export default function TopSpendingCategories({ data = [], label = 'Mês vigente
     }
   })
 
-  const colors = [
-    'rgba(244, 63, 94, 0.85)',
-    'rgba(59, 130, 246, 0.85)',
-    'rgba(34, 197, 94, 0.85)',
-    'rgba(234, 179, 8, 0.85)',
-    'rgba(168, 85, 247, 0.85)',
-    'rgba(14, 116, 144, 0.85)',
-  ]
+  const colors = chartColors.palette
 
   return (
-    <div className="rounded-2xl border dark:border-red-950/50 border-gray-50/90 bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+    <div className="rounded-2xl themed-card bg-white p-4 dark:bg-[#0b0b0b]">
       <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
         Maiores Gastos — {label}
       </h2>

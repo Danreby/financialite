@@ -239,7 +239,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 								<SecondaryButton
 									type="button"
 									onClick={handleOpenDueDayModal}
-									className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+									className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide themed-outline-btn"
 								>
 									Definir dia de vencimento
 								</SecondaryButton>

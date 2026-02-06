@@ -149,7 +149,7 @@ export default function IconPicker({ value, onChange, label = 'Ícone', classNam
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar ícone..."
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 themed-focus dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                   autoFocus
                 />
               </div>
@@ -163,7 +163,7 @@ export default function IconPicker({ value, onChange, label = 'Ícone', classNam
                       onClick={() => setActiveCategory(category)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
                         activeCategory === category
-                          ? 'bg-rose-500 text-white'
+                          ? 'themed-pill-active'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                       }`}
                     >
@@ -185,7 +185,7 @@ export default function IconPicker({ value, onChange, label = 'Ícone', classNam
                         whileTap={{ scale: 0.95 }}
                         className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-colors ${
                           value === icon.name
-                            ? 'bg-rose-100 ring-2 ring-rose-500 dark:bg-rose-900/30'
+                            ? 'bg-theme-accent-light ring-2 ring-theme-accent dark:bg-theme-primary-light'
                             : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                         }`}
                         title={icon.label}

@@ -93,9 +93,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->orderBy('name')
             ->get(['id', 'name', 'icon', 'color']);
 
+        $incomeService = app(\App\Services\IncomeService::class);
+        $totalMonthlyIncome = $incomeService->totalMonthlyIncome($user->id);
+        $incomes = $incomeService->listForUser($user->id)
+            ->map(fn ($income) => [
+                'id'         => $income->id,
+                'title'      => $income->title,
+                'amount'     => (float) $income->amount,
+                'type'       => $income->type,
+                'type_label' => $income->type_label,
+                'is_active'  => $income->is_active,
+                'bank_name'  => optional($income->bankUser?->bank)->name,
+            ]);
+
         return Inertia::render('Relatorio', [
-            'bankAccounts' => $bankAccounts,
-            'categories' => $categories,
+            'bankAccounts'       => $bankAccounts,
+            'categories'         => $categories,
+            'incomes'            => $incomes,
+            'totalMonthlyIncome' => $totalMonthlyIncome,
         ]);
     })->name('reports.index');
 
@@ -104,8 +119,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('about');
 
     Route::get('/settings', function () {
-        return Inertia::render('Config');
+        $user = request()->user();
+        return Inertia::render('Config', [
+            'userTheme' => $user->theme ?? 'rose',
+        ]);
     })->name('settings');
+
+    Route::patch('/settings/theme', function () {
+        $user = request()->user();
+        $theme = request()->input('theme');
+
+        $validThemes = ['rose', 'ocean', 'forest', 'sunset', 'lavender', 'midnight'];
+        if (!in_array($theme, $validThemes, true)) {
+            return response()->json(['error' => 'Tema inválido.'], 422);
+        }
+
+        $user->update(['theme' => $theme]);
+
+        return response()->json(['theme' => $theme]);
+    })->name('settings.theme');
 
     Route::get('/banks/list', [BankController::class, 'list'])->name('banks.list');
     Route::post('/banks/attach', [BankController::class, 'attachToUser'])->name('banks.attach');
@@ -119,6 +151,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('notifications.mark-all-as-read');
     Route::delete('/notifications', [NotificationController::class, 'clearAll'])
         ->name('notifications.clear-all');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])
+        ->name('notifications.unread-count');
 });
 
 require __DIR__.'/Fatura.php';
@@ -126,5 +160,7 @@ require __DIR__.'/Fatura.php';
 require __DIR__.'/Income.php';
 
 require __DIR__.'/Anexo.php';
+
+require __DIR__.'/SavingsGoal.php';
 
 require __DIR__.'/auth.php';
