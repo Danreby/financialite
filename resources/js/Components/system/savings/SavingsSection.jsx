@@ -23,7 +23,6 @@ export default function SavingsSection({
   const [transactionGoal, setTransactionGoal] = useState(null)
   const [transactionType, setTransactionType] = useState('deposit')
   const [deleting, setDeleting] = useState(false)
-  const [activeTab, setActiveTab] = useState('all')
 
   const handleCloseForm = useCallback(() => setShowForm(false), [])
   const handleCloseEdit = useCallback(() => setEditingGoal(null), [])
@@ -32,14 +31,15 @@ export default function SavingsSection({
 
   const refreshSummary = (updatedGoals) => {
     const active = updatedGoals.filter((g) => g.is_active)
-    const totalMontante = active.filter((g) => g.type === 'montante').reduce((s, g) => s + Number(g.current_amount || 0), 0)
-    const totalPorquinho = active.filter((g) => g.type === 'porquinho').reduce((s, g) => s + Number(g.current_amount || 0), 0)
+    const totalSaved = active.reduce((s, g) => s + Number(g.current_amount || 0), 0)
+    const totalTarget = active.reduce((s, g) => s + Number(g.target_amount || 0), 0)
     setSummary({
       ...summary,
-      total_saved: totalMontante + totalPorquinho,
-      total_montante: totalMontante,
-      total_porquinho: totalPorquinho,
+      total_saved: totalSaved,
+      total_target: totalTarget,
       active_count: active.length,
+      goals_count: updatedGoals.length,
+      completed_count: updatedGoals.filter((g) => g.is_completed || g.completed_at).length,
     })
   }
 
@@ -100,13 +100,6 @@ export default function SavingsSection({
     }
   }
 
-  const filteredGoals = activeTab === 'all'
-    ? goals
-    : goals.filter((g) => g.type === activeTab)
-
-  const montanteCount = goals.filter((g) => g.type === 'montante').length
-  const porquinhoCount = goals.filter((g) => g.type === 'porquinho').length
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -127,60 +120,54 @@ export default function SavingsSection({
         </PrimaryButton>
       </div>
 
-      {/* Summary cards */}
+      {/* Summary bar */}
       {goals.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-3 py-2 shadow-sm dark:border-gray-800 dark:bg-gray-900/60">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
-              💰 Montantes
-            </p>
-            <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              {formatCurrencyBRL(summary.total_montante || 0)}
-            </p>
-            <p className="text-[10px] text-gray-400">{montanteCount} meta(s)</p>
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-2.5 shadow-sm dark:border-gray-800 dark:bg-gray-900/60">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🎯</span>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Total guardado</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--theme-accent, #22c55e)' }}>
+                {formatCurrencyBRL(summary.total_saved || 0)}
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl border border-gray-100 bg-gray-50/80 px-3 py-2 shadow-sm dark:border-gray-800 dark:bg-gray-900/60">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
-              🐷 Porquinhos
+          {(summary.total_target || 0) > 0 && (
+            <>
+              <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block" />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Meta total</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                  {formatCurrencyBRL(summary.total_target || 0)}
+                </p>
+              </div>
+              <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block" />
+              <div className="flex-1 min-w-[100px] hidden sm:block">
+                <div className="h-2 w-full max-w-[200px] rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(((summary.total_saved || 0) / (summary.total_target || 1)) * 100, 100)}%`,
+                      backgroundColor: 'var(--theme-accent, #22c55e)',
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          <div className="ml-auto text-right">
+            <p className="text-[10px] text-gray-400">
+              {summary.active_count || 0} ativa(s) · {summary.completed_count || 0} concluída(s)
             </p>
-            <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              {formatCurrencyBRL(summary.total_porquinho || 0)}
-            </p>
-            <p className="text-[10px] text-gray-400">{porquinhoCount} meta(s)</p>
           </div>
-        </div>
-      )}
-
-      {/* Tabs */}
-      {goals.length > 0 && (
-        <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1 text-[11px] dark:bg-gray-900/50 w-fit">
-          {[
-            { key: 'all', label: 'Todos' },
-            { key: 'montante', label: '💰 Montantes' },
-            { key: 'porquinho', label: '🐷 Porquinhos' },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-1 rounded-md border text-[11px] transition-colors ${
-                activeTab === tab.key
-                  ? 'text-white border-transparent'
-                  : 'bg-transparent text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-200 dark:hover:bg-gray-800'
-              }`}
-              style={activeTab === tab.key ? { backgroundColor: 'var(--theme-primary, #7b1818)' } : {}}
-            >
-              {tab.label}
-            </button>
-          ))}
         </div>
       )}
 
       {/* Goals list */}
-      {filteredGoals.length > 0 ? (
+      {goals.length > 0 ? (
         <ScrollArea maxHeightClassName="max-h-[400px]">
           <div className="space-y-3">
-            {filteredGoals.map((goal) => (
+            {goals.map((goal) => (
               <SavingsCard
                 key={goal.id}
                 goal={goal}
@@ -199,7 +186,7 @@ export default function SavingsSection({
             Nenhuma meta de economia cadastrada ainda.
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Crie montantes para guardar dinheiro ou porquinhos para metas específicas.
+            Crie potes para organizar suas economias e acompanhar cada meta.
           </p>
         </div>
       )}

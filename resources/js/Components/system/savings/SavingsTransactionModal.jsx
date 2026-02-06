@@ -54,7 +54,6 @@ export default function SavingsTransactionModal({ isOpen, onClose, onSuccess, go
           : 0,
         remaining: Math.max(data.target_amount - data.current_amount, 0),
         is_completed: data.completed_at !== null,
-        type_label: data.type === 'montante' ? 'Montante' : 'Porquinho',
       })
       handleClose()
     } catch (err) {
@@ -83,7 +82,7 @@ export default function SavingsTransactionModal({ isOpen, onClose, onSuccess, go
         {/* Goal summary */}
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-[#0f0f0f]">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{goal.icon || (goal.type === 'montante' ? '💰' : '🐷')}</span>
+            <span className="text-2xl">{goal.icon || '💰'}</span>
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{goal.title}</h4>
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -131,7 +130,7 @@ export default function SavingsTransactionModal({ isOpen, onClose, onSuccess, go
               step="0.01"
               min="0.01"
               max={!isDeposit ? maxWithdraw : undefined}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               autoFocus
               required
             />

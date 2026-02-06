@@ -3,12 +3,7 @@ import Modal from '@/Components/common/Modal'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
 
-const GOAL_TYPES = [
-  { value: 'montante', label: 'Montante', icon: '💰', description: 'Reserve dinheiro como poupança geral' },
-  { value: 'porquinho', label: 'Porquinho', icon: '🐷', description: 'Guarde para uma meta específica' },
-]
-
-const ICON_OPTIONS = ['💰', '🐷', '🎯', '🏠', '🚗', '✈️', '📱', '💎', '🎓', '💊', '🎮', '🏖️']
+const ICON_OPTIONS = ['💰', '🐷', '🎯', '🏠', '🚗', '✈️', '📱', '💎', '🎓', '💊', '🎮', '🏖️', '🎁', '👶', '💍', '🏋️']
 
 const COLOR_OPTIONS = ['#f43f5e', '#3b82f6', '#22c55e', '#f97316', '#a855f7', '#6366f1', '#ec4899', '#14b8a6', '#eab308', '#ef4444']
 
@@ -18,8 +13,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
   const [title, setTitle] = useState(goal?.title || '')
   const [description, setDescription] = useState(goal?.description || '')
   const [targetAmount, setTargetAmount] = useState(goal?.target_amount ? String(goal.target_amount) : '')
-  const [type, setType] = useState(goal?.type || 'porquinho')
-  const [icon, setIcon] = useState(goal?.icon || '🐷')
+  const [icon, setIcon] = useState(goal?.icon || '💰')
   const [color, setColor] = useState(goal?.color || '#f43f5e')
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
@@ -29,8 +23,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
       setTitle(goal.title || '')
       setDescription(goal.description || '')
       setTargetAmount(goal.target_amount ? String(goal.target_amount) : '')
-      setType(goal.type || 'porquinho')
-      setIcon(goal.icon || '🐷')
+      setIcon(goal.icon || '💰')
       setColor(goal.color || '#f43f5e')
     }
   }, [goal])
@@ -40,8 +33,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
       setTitle('')
       setDescription('')
       setTargetAmount('')
-      setType('porquinho')
-      setIcon('🐷')
+      setIcon('💰')
       setColor('#f43f5e')
     }
     setErrors({})
@@ -63,7 +55,6 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
       title: title.trim(),
       description: description.trim() || null,
       target_amount: parseFloat(targetAmount),
-      type,
       icon,
       color,
     }
@@ -81,7 +72,6 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
           : 0,
         remaining: Math.max(data.target_amount - data.current_amount, 0),
         is_completed: data.completed_at !== null,
-        type_label: type === 'montante' ? 'Montante' : 'Porquinho',
       })
       handleClose()
     } catch (error) {
@@ -100,7 +90,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
       isOpen={isOpen}
       onClose={handleClose}
       title={isEditing ? 'Editar Meta' : 'Nova Meta de Economia'}
-      description={isEditing ? 'Atualize os dados da sua meta.' : 'Crie um montante ou porquinho para guardar dinheiro.'}
+      description={isEditing ? 'Atualize os dados da sua meta.' : 'Crie um pote para guardar e acompanhar seu dinheiro.'}
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4 mt-4">
@@ -109,39 +99,6 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
             {errors.general[0]}
           </div>
         )}
-
-        {/* Type selection */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Tipo</label>
-          <div className="grid grid-cols-2 gap-3">
-            {GOAL_TYPES.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => {
-                  setType(t.value)
-                  setIcon(t.icon)
-                }}
-                className={`flex items-center gap-3 rounded-xl p-3 text-left border transition-all ${
-                  type === t.value
-                    ? 'ring-1 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f] dark:hover:border-gray-600'
-                }`}
-                style={type === t.value ? {
-                  borderColor: 'var(--theme-accent, #f43f5e)',
-                  backgroundColor: 'var(--theme-accentLight, rgba(244, 63, 94, 0.05))',
-                  ringColor: 'var(--theme-primaryRing, rgba(244, 63, 94, 0.3))',
-                } : {}}
-              >
-                <span className="text-2xl">{t.icon}</span>
-                <div>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t.label}</span>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{t.description}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Title and amount */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -152,7 +109,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Fundo de emergência"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               maxLength={255}
               required
             />
@@ -167,7 +124,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
               placeholder="0,00"
               step="0.01"
               min="0.01"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               required
             />
             {errors.target_amount && <p className="text-xs text-red-500 mt-1">{errors.target_amount[0]}</p>}
@@ -223,7 +180,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
             placeholder="Para que é essa meta?"
             rows={2}
             maxLength={1000}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 resize-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 resize-none"
           />
         </div>
 

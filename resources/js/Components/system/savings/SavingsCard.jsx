@@ -1,13 +1,7 @@
 import React from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
-const TYPE_CONFIG = {
-  montante:  { icon: '💰', label: 'Montante', gradient: 'from-amber-500 to-yellow-600' },
-  porquinho: { icon: '🐷', label: 'Porquinho', gradient: 'from-pink-500 to-rose-600' },
-}
-
 export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithdraw }) {
-  const config = TYPE_CONFIG[goal.type] || TYPE_CONFIG.porquinho
   const progress = goal.progress || 0
   const isCompleted = goal.is_completed
 
@@ -23,8 +17,9 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
     >
       <div className="flex items-start gap-3 p-3 sm:p-4">
         {/* Icon */}
-        <div className={`flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${config.gradient} text-xl sm:text-2xl shadow-sm`}>
-          {goal.icon || config.icon}
+        <div className="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl text-xl sm:text-2xl shadow-sm"
+          style={{ backgroundColor: goal.color || 'var(--theme-accent, #6366f1)' }}>
+          {goal.icon || '💰'}
         </div>
 
         {/* Info */}
@@ -33,13 +28,12 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
               {goal.title}
             </h4>
-            <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
-              style={{
-                backgroundColor: isCompleted ? 'rgba(34, 197, 94, 0.15)' : 'var(--theme-accentLight, rgba(244, 63, 94, 0.1))',
-                color: isCompleted ? '#16a34a' : 'var(--theme-accent, #f43f5e)',
-              }}>
-              {isCompleted ? '✅ Concluída' : config.label}
-            </span>
+            {isCompleted && (
+              <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
+                style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)', color: '#16a34a' }}>
+                ✅ Concluída
+              </span>
+            )}
           </div>
 
           {goal.description && (
@@ -63,7 +57,7 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
                 className="h-full rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${progress}%`,
-                  backgroundColor: isCompleted ? '#22c55e' : 'var(--theme-accent, #f43f5e)',
+                  backgroundColor: isCompleted ? '#22c55e' : (goal.color || 'var(--theme-accent, #f43f5e)'),
                 }}
               />
             </div>
