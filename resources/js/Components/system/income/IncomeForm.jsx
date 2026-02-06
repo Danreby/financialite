@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Modal from '@/Components/common/Modal'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
@@ -38,7 +38,21 @@ export default function IncomeForm({
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
 
-  const resetForm = () => {
+  // Sincronizar estados quando o income prop mudar
+  useEffect(() => {
+    if (income) {
+      setTitle(income.title || '')
+      setDescription(income.description || '')
+      setAmount(income.amount ? String(income.amount) : '')
+      setType(income.type || 'salary')
+      setPaymentDayType(income.payment_day_type || 'fixed')
+      setPaymentDayValue(income.payment_day_value ? String(income.payment_day_value) : '1')
+      setBankUserId(income.bank_user_id ? String(income.bank_user_id) : '')
+      setIsActive(income.is_active ?? true)
+    }
+  }, [income])
+
+  const resetForm = useCallback(() => {
     if (!isEditing) {
       setTitle('')
       setDescription('')
@@ -50,12 +64,12 @@ export default function IncomeForm({
       setIsActive(true)
     }
     setErrors({})
-  }
+  }, [isEditing])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     resetForm()
     onClose?.()
-  }
+  }, [resetForm, onClose])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

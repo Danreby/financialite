@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Head } from '@inertiajs/react';
 import { toast } from 'react-toastify';
@@ -188,6 +188,24 @@ export default function Conta({ bankAccounts, categories }) {
 		}
 	};
 
+	const handleCancelConfirmModal = useCallback(() => {
+		if (saving) return;
+		setIsConfirmModalOpen(false);
+		setConfirmTarget({ type: null, id: null, name: '' });
+	}, [saving]);
+
+	const handleCancelEditBank = useCallback(() => {
+		if (saving) return;
+		setIsEditBankModalOpen(false);
+		setBankBeingEdited(null);
+	}, [saving]);
+
+	const handleCancelEditCategory = useCallback(() => {
+		if (saving) return;
+		setIsEditCategoryModalOpen(false);
+		setCategoryBeingEdited(null);
+	}, [saving]);
+
 	return (
 		<AuthenticatedLayout>
 			<Head title="Contas" />
@@ -352,11 +370,7 @@ export default function Conta({ bankAccounts, categories }) {
 					<div className="flex items-center justify-end gap-3 pt-2 text-xs sm:text-sm">
 						<SecondaryButton
 							type="button"
-							onClick={() => {
-								if (saving) return;
-								setIsEditBankModalOpen(false);
-								setBankBeingEdited(null);
-							}}
+							onClick={handleCancelEditBank}
 							className="rounded-lg px-4 py-2 font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 						>
 							Cancelar
@@ -370,11 +384,11 @@ export default function Conta({ bankAccounts, categories }) {
 
 			<Modal
 				isOpen={isEditCategoryModalOpen}
-				onClose={() => {
+				onClose={useCallback(() => {
 					if (saving) return;
 					setIsEditCategoryModalOpen(false);
 					setCategoryBeingEdited(null);
-				}}
+				}, [saving])}
 				maxWidth="lg"
 				title="Editar categoria"
 			>
@@ -442,11 +456,7 @@ export default function Conta({ bankAccounts, categories }) {
 					<div className="flex items-center justify-end gap-3 pt-2 text-xs sm:text-sm">
 						<SecondaryButton
 							type="button"
-							onClick={() => {
-								if (saving) return;
-								setIsEditCategoryModalOpen(false);
-								setCategoryBeingEdited(null);
-							}}
+							onClick={handleCancelEditCategory}
 							className="rounded-lg px-4 py-2 font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 						>
 							Cancelar
@@ -460,11 +470,11 @@ export default function Conta({ bankAccounts, categories }) {
 
 			<Modal
 				isOpen={isConfirmModalOpen}
-				onClose={() => {
+				onClose={useCallback(() => {
 					if (saving) return;
 					setIsConfirmModalOpen(false);
 					setConfirmTarget({ type: null, id: null, name: '' });
-				}}
+				}, [saving])}
 				maxWidth="sm"
 				title="Confirmar exclusão"
 			>
@@ -482,11 +492,7 @@ export default function Conta({ bankAccounts, categories }) {
 					<div className="flex items-center justify-end gap-3 pt-2 text-xs sm:text-sm">
 						<SecondaryButton
 							type="button"
-							onClick={() => {
-								if (saving) return;
-								setIsConfirmModalOpen(false);
-								setConfirmTarget({ type: null, id: null, name: '' });
-						}}
+							onClick={handleCancelConfirmModal}
 							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 						>
 							Cancelar

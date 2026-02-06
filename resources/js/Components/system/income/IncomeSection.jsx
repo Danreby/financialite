@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import IncomeCard from './IncomeCard'
@@ -21,6 +21,10 @@ export default function IncomeSection({
   const [editingIncome, setEditingIncome] = useState(null)
   const [deletingIncome, setDeletingIncome] = useState(null)
   const [deleting, setDeleting] = useState(false)
+
+  const handleCloseForm = useCallback(() => setShowForm(false), [])
+  const handleCloseEdit = useCallback(() => setEditingIncome(null), [])
+  const handleCloseDelete = useCallback(() => setDeletingIncome(null), [])
 
   const refreshTotal = (updatedIncomes) => {
     const total = updatedIncomes
@@ -125,7 +129,7 @@ export default function IncomeSection({
       {/* Form de criação */}
       <IncomeForm
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={handleCloseForm}
         onSuccess={handleCreated}
         bankAccounts={bankAccounts}
       />
@@ -134,7 +138,7 @@ export default function IncomeSection({
       {editingIncome && (
         <IncomeForm
           isOpen={!!editingIncome}
-          onClose={() => setEditingIncome(null)}
+          onClose={handleCloseEdit}
           onSuccess={handleUpdated}
           bankAccounts={bankAccounts}
           income={editingIncome}
@@ -144,13 +148,13 @@ export default function IncomeSection({
       {/* Modal de confirmação de exclusão */}
       <Modal
         isOpen={!!deletingIncome}
-        onClose={() => setDeletingIncome(null)}
+        onClose={handleCloseDelete}
         title="Remover renda"
         description="Tem certeza que deseja remover esta fonte de renda?"
         maxWidth="sm"
       >
         <div className="mt-4 flex justify-end gap-3">
-          <SecondaryButton onClick={() => setDeletingIncome(null)}>
+          <SecondaryButton onClick={handleCloseDelete}>
             Cancelar
           </SecondaryButton>
           <DangerButton onClick={handleDelete} disabled={deleting}>
