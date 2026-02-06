@@ -62,4 +62,13 @@ class NotificationController extends Controller
 
         return $this->success(['status' => 'ok']);
     }
+
+    public function unreadCount(): JsonResponse
+    {
+        $user = Auth::user();
+
+        $count = Notification::forUser($user->id)->unread()->count();
+
+        return $this->success(['unread_count' => $count]);
+    }
 }
