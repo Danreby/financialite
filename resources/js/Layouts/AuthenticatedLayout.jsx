@@ -4,9 +4,11 @@ import Sidebar from '@/Components/system/navigation/Sidebar'
 import Topbar from '@/Components/system/navigation/Topbar'
 import NotificationSidebar from '@/Components/system/notification/NotificationSidebar'
 import MobileNavOverlay from '@/Components/system/navigation/MobileNavOverlay'
+import { ThemeProvider } from '@/Contexts/ThemeContext'
 
 export default function AuthenticatedLayout({ children }) {
   const user = usePage().props.auth.user
+  const initialTheme = user?.theme || 'rose'
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') return true
     return window.innerWidth >= 1024
@@ -16,6 +18,7 @@ export default function AuthenticatedLayout({ children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   return (
+  <ThemeProvider initialTheme={initialTheme}>
 	<div className="h-screen flex overflow-hidden bg-gray-100 text-gray-900 dark:bg-[#070707] dark:text-gray-100">
     <div className="hidden lg:block">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
@@ -46,5 +49,6 @@ export default function AuthenticatedLayout({ children }) {
 	      user={user}
 	    />
     </div>
+  </ThemeProvider>
   )
 }
