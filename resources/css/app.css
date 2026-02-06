@@ -2,10 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+	:root {
+		--theme-primary: #7b1818;
+		--theme-primaryHover: #5c1212;
+		--theme-primaryLight: rgba(244, 63, 94, 0.15);
+		--theme-primaryRing: rgba(244, 63, 94, 0.5);
+		--theme-accent: #f43f5e;
+		--theme-accentHover: #e11d48;
+		--theme-accentLight: rgba(244, 63, 94, 0.1);
+		--theme-scrollbar: #7b1818;
+		--theme-scrollbarDark: #fb7185;
+		--theme-gradient: from-[#3a0f0f] to-transparent;
+	}
+}
+
 @layer utilities {
 	.scrollbar-custom {
 		scrollbar-width: thin;
-		scrollbar-color: #7b1818 transparent;
+		scrollbar-color: var(--theme-scrollbar, #7b1818) transparent;
 	}
 
 	.scrollbar-custom::-webkit-scrollbar {
@@ -17,17 +32,17 @@
 	}
 
 	.scrollbar-custom::-webkit-scrollbar-thumb {
-		background-color: #7b1818;
+		background-color: var(--theme-scrollbar, #7b1818);
 		border-radius: 9999px;
 		border: 2px solid transparent;
 		background-clip: content-box;
 	}
 
 	.dark .scrollbar-custom {
-		scrollbar-color: #fb7185 transparent;
+		scrollbar-color: var(--theme-scrollbarDark, #fb7185) transparent;
 	}
 
 	.dark .scrollbar-custom::-webkit-scrollbar-thumb {
-		background-color: #fb7185;
+		background-color: var(--theme-scrollbarDark, #fb7185);
 	}
 }

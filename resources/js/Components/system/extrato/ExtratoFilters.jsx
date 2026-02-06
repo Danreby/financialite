@@ -18,7 +18,6 @@ export default function ExtratoFilters({
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-[#0b0b0b]">
       <div className="flex flex-wrap items-end gap-3">
-        {/* Data início */}
         <div className="flex flex-col gap-1 min-w-[140px] flex-1 sm:flex-none">
           <label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300">
             Data início
@@ -31,7 +30,6 @@ export default function ExtratoFilters({
           />
         </div>
 
-        {/* Data fim */}
         <div className="flex flex-col gap-1 min-w-[140px] flex-1 sm:flex-none">
           <label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300">
             Data fim
@@ -44,7 +42,6 @@ export default function ExtratoFilters({
           />
         </div>
 
-        {/* Tipo */}
         <div className="flex flex-col gap-1 min-w-[120px] flex-1 sm:flex-none">
           <label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300">
             Tipo
@@ -60,7 +57,6 @@ export default function ExtratoFilters({
           </select>
         </div>
 
-        {/* Banco */}
         <div className="flex flex-col gap-1 min-w-[150px] flex-1 sm:flex-none">
           <label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300">
             Banco
@@ -77,7 +73,6 @@ export default function ExtratoFilters({
           </select>
         </div>
 
-        {/* Categoria */}
         <div className="flex flex-col gap-1 min-w-[150px] flex-1 sm:flex-none">
           <label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300">
             Categoria
@@ -94,7 +89,6 @@ export default function ExtratoFilters({
           </select>
         </div>
 
-        {/* Limpar */}
         <button
           type="button"
           onClick={onClear}
