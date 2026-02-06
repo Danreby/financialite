@@ -70,7 +70,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         const statsPayload = statsResponse.data || {}
 
         const currentMonthDebitTotal = Number(statsPayload.current_month_debit_total || 0)
-        const overdueCount = Number(statsPayload.overdue_count || 0)
+        const remainingMoney = Number(statsPayload.remaining_money || 0)
+        const totalMonthlyIncome = Number(statsPayload.total_monthly_income || 0)
 
         const monthlySummaryPayload = Array.isArray(statsPayload.monthly_summary)
           ? statsPayload.monthly_summary
@@ -107,9 +108,11 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           },
           {
             id: 4,
-            title: 'Faturas vencidas',
-            value: String(overdueCount),
-            delta: '',
+            title: 'Dinheiro restante',
+            value: formatCurrencyBRL(remainingMoney),
+            delta: totalMonthlyIncome > 0
+              ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
+              : 'Sem renda cadastrada',
           },
         ])
 
