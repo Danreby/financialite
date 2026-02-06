@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// Lista de ícones disponíveis organizados por categoria
 const ICON_CATEGORIES = {
   'Alimentação': [
     { name: 'utensils', label: 'Talheres', icon: '🍴' },
@@ -61,6 +60,7 @@ const ICON_CATEGORIES = {
   ],
   'Outros': [
     { name: 'shopping', label: 'Compras', icon: '🛒' },
+    { name: 'shopping-online', label: 'Compras Online', icon: '🛍️' },
     { name: 'phone', label: 'Telefone', icon: '📱' },
     { name: 'shirt', label: 'Roupa', icon: '👕' },
     { name: 'paw', label: 'Pet', icon: '🐾' },

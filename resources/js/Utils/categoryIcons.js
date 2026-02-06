@@ -1,4 +1,3 @@
-// Mapeamento de nomes de ícones para seus emojis
 export const ICON_MAP = {
   'utensils': '🍴',
   'coffee': '☕',
@@ -43,6 +42,7 @@ export const ICON_MAP = {
   'chart': '📊',
   'piggy': '🐷',
   'shopping': '🛒',
+  'shopping-online': '🛍️',
   'phone': '📱',
   'shirt': '👕',
   'paw': '🐾',
@@ -50,27 +50,25 @@ export const ICON_MAP = {
   'umbrella': '☂️',
 };
 
-// Função para obter o emoji de um ícone pelo nome
 export function getIconEmoji(iconName) {
   if (!iconName) return null;
   
-  // Se já é um emoji (caractere Unicode), retorna diretamente
   if (/\p{Emoji}/u.test(iconName)) {
     return iconName;
   }
   
-  // Caso contrário, busca no mapeamento
   return ICON_MAP[iconName] || null;
 }
 
-// Lista de ícones disponíveis para seleção
 export const AVAILABLE_ICONS = [
   { name: 'utensils', label: 'Talheres', icon: '🍴' },
-  { name: 'coffee', label: 'Café', icon: '☕' },
+  // { name: 'coffee', label: 'Café', icon: '☕' },
+  { name: 'piggy', label: 'Porquinho', icon: '🐷' },
   { name: 'pizza', label: 'Pizza', icon: '🍕' },
   { name: 'hamburger', label: 'Hambúrguer', icon: '🍔' },
   { name: 'car', label: 'Carro', icon: '🚗' },
-  { name: 'bus', label: 'Ônibus', icon: '🚌' },
+  // { name: 'bus', label: 'Ônibus', icon: '🚌' },
+  { name: 'fuel', label: 'Combustível', icon: '⛽' },
   { name: 'home', label: 'Casa', icon: '🏠' },
   { name: 'heart', label: 'Coração', icon: '❤️' },
   { name: 'medical', label: 'Médico', icon: '🏥' },
@@ -79,13 +77,11 @@ export const AVAILABLE_ICONS = [
   { name: 'music', label: 'Música', icon: '🎵' },
   { name: 'dollar', label: 'Dinheiro', icon: '💰' },
   { name: 'credit-card', label: 'Cartão', icon: '💳' },
-  { name: 'shopping', label: 'Compras', icon: '🛒' },
+  { name: 'shopping-online', label: 'Compras Online', icon: '🛍️' },
   { name: 'phone', label: 'Telefone', icon: '📱' },
   { name: 'shirt', label: 'Roupa', icon: '👕' },
-  { name: 'paw', label: 'Pet', icon: '🐾' },
 ];
 
-// Lista de cores disponíveis
 export const AVAILABLE_COLORS = [
   { name: 'Vermelho', hex: '#EF4444' },
   { name: 'Rosa', hex: '#EC4899' },
