@@ -13,7 +13,7 @@ import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
 import { formatCurrencyBRL } from "@/Lib/formatters";
 import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer";
 
-export default function Relatorio({ bankAccounts = [], categories = [] }) {
+export default function Relatorio({ bankAccounts = [], categories = [], incomes = [], totalMonthlyIncome = 0 }) {
 	const [selectedBankId, setSelectedBankId] = useState("");
 	const [selectedCategoryId, setSelectedCategoryId] = useState("");
 	const [stats, setStats] = useState({
@@ -259,12 +259,18 @@ export default function Relatorio({ bankAccounts = [], categories = [] }) {
 				</FadeInItem>
 			</FadeInContainer>
 
-			<FadeInContainer stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<FadeInContainer stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				<FadeInItem type="feature">
+					<StatCard title="Renda mensal total" value={formatCurrencyBRL(totalMonthlyIncome)} delta={`${incomes.filter(i => i.is_active).length} fonte(s) ativa(s)`} />
+				</FadeInItem>
 				<FadeInItem type="feature">
 					<StatCard title="Receitas pagas" value={formatCurrencyBRL(stats.total_income)} />
 				</FadeInItem>
 				<FadeInItem type="feature">
 					<StatCard title="Despesas pagas" value={formatCurrencyBRL(stats.total_expenses)} />
+				</FadeInItem>
+				<FadeInItem type="feature">
+					<StatCard title="Balanço líquido" value={formatCurrencyBRL(totalMonthlyIncome - stats.total_expenses - stats.current_month_debit_total)} />
 				</FadeInItem>
 				<FadeInItem type="feature">
 					<StatCard title="Receitas pendentes" value={formatCurrencyBRL(stats.pending_income)} />
