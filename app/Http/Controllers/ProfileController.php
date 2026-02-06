@@ -12,12 +12,14 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Services\NotificationService;
 use App\Services\IncomeService;
+use App\Contracts\Services\SavingsGoalServiceInterface;
 
 class ProfileController extends Controller
 {
     public function __construct(
         private NotificationService $notifications,
-        private IncomeService $incomeService
+        private IncomeService $incomeService,
+        private SavingsGoalServiceInterface $savingsService
     ) {
         $this->middleware('auth');
     }
@@ -52,12 +54,43 @@ class ProfileController extends Controller
 
         $totalMonthly = $this->incomeService->totalMonthlyIncome($user->id);
 
+        $savingsGoals = $this->savingsService->listForUser($user->id)
+            ->map(fn ($goal) => [
+                'id'             => $goal->id,
+                'title'          => $goal->title,
+                'description'    => $goal->description,
+                'target_amount'  => (float) $goal->target_amount,
+                'current_amount' => (float) $goal->current_amount,
+                'type'           => $goal->type,
+                'type_label'     => $goal->type_label,
+                'icon'           => $goal->icon,
+                'color'          => $goal->color,
+                'is_active'      => $goal->is_active,
+                'progress'       => $goal->progress,
+                'remaining'      => $goal->remaining,
+                'is_completed'   => $goal->is_completed,
+                'completed_at'   => $goal->completed_at?->toISOString(),
+            ]);
+
+        $savingsSummary = $this->savingsService->summaryForUser($user->id);
+
+        $userStats = [
+            'member_since'     => $user->created_at?->format('d/m/Y'),
+            'banks_count'      => $user->bankUsers()->count(),
+            'categories_count' => $user->categories()->count(),
+            'incomes_count'    => $user->incomes()->where('is_active', true)->count(),
+            'transactions_count' => $user->transacoes()->count(),
+        ];
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail'    => $request->user() instanceof MustVerifyEmail,
             'status'             => session('status'),
             'bankAccounts'       => $bankAccounts,
             'incomes'            => $incomes,
             'totalMonthlyIncome' => $totalMonthly,
+            'savingsGoals'       => $savingsGoals,
+            'savingsSummary'     => $savingsSummary,
+            'userStats'          => $userStats,
         ]);
     }
 
