@@ -4,8 +4,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import { motion } from 'framer-motion'
 import ProfileSettingsCard from '@/Components/system/settings/ProfileSettingsCard'
 import SecuritySettingsCard from '@/Components/system/settings/SecuritySettingsCard'
+import ThemeSettingsCard from '@/Components/system/settings/ThemeSettingsCard'
 
-export default function Config() {
+export default function Config({ userTheme = 'rose' }) {
   const { auth } = usePage().props
   const user = auth.user
 
@@ -36,8 +37,12 @@ export default function Config() {
         <motion.div variants={itemVariants} className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Configurações</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Gerencie suas informações pessoais e preferências de segurança
+            Gerencie suas informações pessoais, preferências de segurança e aparência
           </p>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <ThemeSettingsCard initialTheme={userTheme} />
         </motion.div>
 
         <motion.div variants={itemVariants}>
