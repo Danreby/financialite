@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from '@inertiajs/react'
+import axios from 'axios'
 import BareButton from '@/Components/common/buttons/BareButton'
 import BellIcon from '@/Components/common/icons/BellIcon'
 import SunIcon from '@/Components/common/icons/SunIcon'
@@ -13,6 +14,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
     return stored === 'dark' || (!stored && prefersDark)
   })
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const userMenuRef = useRef(null)
 
   useEffect(() => {
@@ -43,6 +45,21 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [userMenuOpen])
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await axios.get(route('notifications.unread-count'))
+        setUnreadCount(Number(response.data?.unread_count || 0))
+      } catch {
+        // Silently fail
+      }
+    }
+
+    fetchUnreadCount()
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const toggleTheme = () => setIsDark((prev) => !prev)
   const toggleUserMenu = () => setUserMenuOpen((prev) => !prev)
@@ -84,11 +101,20 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
 
         <BareButton
           type="button"
-          onClick={onToggleNotifications}
-          className="h-8 w-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-100 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+          onClick={() => {
+            onToggleNotifications()
+            setUnreadCount(0)
+          }}
+          className="relative h-8 w-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-100 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
           aria-label="Abrir notificações"
         >
           <BellIcon type={1} />
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: 'var(--theme-accent, #f43f5e)' }} />
+              <span className="relative inline-flex rounded-full h-3 w-3" style={{ backgroundColor: 'var(--theme-accent, #f43f5e)' }} />
+            </span>
+          )}
         </BareButton>
 
         <BareButton
