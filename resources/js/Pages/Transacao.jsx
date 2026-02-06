@@ -153,7 +153,7 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 				</FadeInItem>
 
 				<FadeInItem type="subtle">
-					<section className="rounded-2xl bg-white p-4 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-4 lg:p-4">
+					<section className="rounded-2xl bg-white p-4 shadow-md themed-card dark:bg-[#0b0b0b] sm:p-4 lg:p-4">
 					<TransactionFilters
 						searchTerm={searchTerm}
 						onSearchChange={setSearchTerm}

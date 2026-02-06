@@ -33,7 +33,7 @@ export default function TransactionFilters({
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="w-full sm:w-56 rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+            className="w-full sm:w-56 rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             placeholder="Buscar por título"
           />
           {months && months.length > 0 && (
@@ -72,7 +72,7 @@ export default function TransactionFilters({
                   className={
                     "rounded-lg px-2.5 py-1 text-[11px] sm:text-xs font-semibold transition " +
                     (isSelected
-                      ? "bg-rose-500 text-white shadow"
+                      ? "themed-pill-active shadow"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-[#111] dark:text-gray-200 dark:hover:bg-gray-800")
                   }
                 >
@@ -91,7 +91,7 @@ export default function TransactionFilters({
             <select
               value={selectedBankId}
               onChange={(e) => onBankChange?.(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               <option value="">Todos</option>
               {bankAccounts.map((account) => (
@@ -107,7 +107,7 @@ export default function TransactionFilters({
             <select
               value={selectedType}
               onChange={(e) => onTypeChange?.(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               <option value="">Débito e crédito</option>
               <option value="debit">Apenas débito</option>
@@ -120,7 +120,7 @@ export default function TransactionFilters({
             <select
               value={selectedStatus}
               onChange={(e) => onStatusChange?.(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               <option value="">Pendentes e pagas</option>
               <option value="unpaid">Apenas pendentes</option>
@@ -134,7 +134,7 @@ export default function TransactionFilters({
             <select
               value={recurringFilter}
               onChange={(e) => onRecurringChange?.(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               <option value="">Todas</option>
               <option value="recurring">Somente recorrentes</option>
@@ -147,7 +147,7 @@ export default function TransactionFilters({
             <select
               value={selectedCategoryId}
               onChange={(e) => onCategoryChange?.(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               <option value="">Todas</option>
               {categories.map((category) => (

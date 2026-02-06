@@ -46,7 +46,7 @@ export default function MobileNavOverlay({ isOpen, onClose, user }) {
         >
           <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-white/10">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#7b1818] to-transparent flex items-center justify-center text-sm font-semibold ring-1 ring-gray-200 dark:ring-white/20">
+              <div className="h-9 w-9 rounded-full themed-avatar flex items-center justify-center text-sm font-semibold ring-1 ring-gray-200 dark:ring-white/20">
                 {initials}
               </div>
               <div className="flex flex-col">

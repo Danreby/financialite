@@ -45,7 +45,7 @@ export default function FaturaMonthDropdownGrid({ months = [], value, onChange }
         type="button"
         ref={buttonRef}
         onClick={() => setOpen((prev) => !prev)}
-				className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] lg:text-xs 2xl:text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+				className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] lg:text-xs 2xl:text-xs shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
      >
         <span className="inline-flex flex-col text-left">
 					<span className="text-[11px] lg:text-xs 2xl:text-xs font-medium text-gray-900 dark:text-gray-100">
@@ -90,10 +90,9 @@ export default function FaturaMonthDropdownGrid({ months = [], value, onChange }
                     type="button"
                     onClick={() => handleSelect(month.month_key)}
                     className={classNames(
-                      'flex flex-col items-start rounded-xl border px-2.5 py-2 text-left transition-colors',
-                      'hover:border-rose-400 hover:bg-rose-50/60 dark:hover:border-rose-500/70 dark:hover:bg-rose-900/20',
+                      'flex flex-col items-start rounded-xl border px-2.5 py-2 text-left transition-colors themed-item-hover',
                       isSelected
-                        ? 'border-rose-500 bg-rose-50 dark:border-rose-500/80 dark:bg-rose-900/30'
+                        ? 'themed-selected'
                         : 'border-gray-200 bg-gray-50/60 dark:border-gray-800 dark:bg-[#050505]',
                     )}
                   >

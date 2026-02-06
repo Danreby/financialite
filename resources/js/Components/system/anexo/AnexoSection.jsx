@@ -93,8 +93,8 @@ export default function AnexoSection({
                 className="w-full flex items-center justify-between p-2 sm:p-2.5 md:p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg sm:rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
             >
                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                    <div className="p-1 sm:p-1.5 md:p-2 bg-rose-100 dark:bg-rose-900/40 rounded sm:rounded-md md:rounded-lg">
-                        <PaperclipIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-rose-600 dark:text-rose-400" />
+                    <div className="p-1 sm:p-1.5 md:p-2 bg-theme-accent-light rounded sm:rounded-md md:rounded-lg">
+                        <PaperclipIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-theme-accent" />
                     </div>
                     <div className="text-left">
                         <h3 className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight">

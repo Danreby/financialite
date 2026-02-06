@@ -12,7 +12,7 @@ export default function ReportsPeriodSelector({
   const safeValue = selectedKey || (hasPeriods ? periods[periods.length - 1]?.key : "");
 
   return (
-    <div className="rounded-2xl bg-white p-3 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-4">
+    <div className="rounded-2xl bg-white p-3 shadow-md themed-card dark:bg-[#0b0b0b] sm:p-3 lg:p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -32,7 +32,7 @@ export default function ReportsPeriodSelector({
           value={safeValue}
           onChange={(event) => onChange?.(event.target.value)}
           disabled={!hasPeriods || isLoading}
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[230px]"
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[230px]"
         >
           {hasPeriods ? (
             periods.map((period) => (

@@ -128,7 +128,7 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
             {loading ? (
               <div className="flex items-center justify-center py-16">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-theme-accent border-t-transparent" />
                   <span className="text-xs text-gray-500 dark:text-gray-400">Carregando extrato...</span>
                 </div>
               </div>

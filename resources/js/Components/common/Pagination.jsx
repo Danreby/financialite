@@ -56,7 +56,7 @@ export default function Pagination({ links = [] }) {
                 aria-label={isFirst ? 'Página anterior' : isLast ? 'Próxima página' : `Página ${safeLabel}`}
                 className={
                   isActive
-                    ? 'px-2.5 py-1 rounded border border-rose-500 bg-rose-500 text-white shadow-sm'
+                    ? 'px-2.5 py-1 rounded border border-theme-accent bg-theme-accent text-white shadow-sm'
                     : 'px-2.5 py-1 rounded border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-[#111] dark:text-gray-200 dark:hover:bg-gray-800'
                 }
               >

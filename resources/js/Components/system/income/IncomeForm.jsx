@@ -138,7 +138,7 @@ export default function IncomeForm({
                 onClick={() => setType(t.value)}
                 className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs font-medium transition-all border ${
                   type === t.value
-                    ? 'border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-500/60 ring-1 ring-rose-500/30'
+                    ? 'themed-selected border-theme-accent ring-1 ring-theme-accent/30'
                     : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-400 dark:hover:border-gray-600'
                 }`}
               >
@@ -159,7 +159,7 @@ export default function IncomeForm({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Salário CLT"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               maxLength={255}
               required
             />
@@ -175,7 +175,7 @@ export default function IncomeForm({
               placeholder="0,00"
               step="0.01"
               min="0.01"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               required
             />
             {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount[0]}</p>}
@@ -189,7 +189,7 @@ export default function IncomeForm({
             <select
               value={paymentDayType}
               onChange={(e) => setPaymentDayType(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               {PAYMENT_DAY_TYPES.map((pd) => (
                 <option key={pd.value} value={pd.value}>{pd.label}</option>
@@ -208,7 +208,7 @@ export default function IncomeForm({
               onChange={(e) => setPaymentDayValue(e.target.value)}
               min={1}
               max={paymentDayType === 'fixed' ? 31 : 25}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               required
             />
             {errors.payment_day_value && <p className="text-xs text-red-500 mt-1">{errors.payment_day_value[0]}</p>}
@@ -224,7 +224,7 @@ export default function IncomeForm({
             placeholder="Detalhes sobre esta renda..."
             rows={2}
             maxLength={1000}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 resize-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 resize-none"
           />
         </div>
 
@@ -235,7 +235,7 @@ export default function IncomeForm({
             <select
               value={bankUserId}
               onChange={(e) => setBankUserId(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               <option value="">Nenhuma</option>
               {bankAccounts.map((ba) => (
@@ -250,7 +250,7 @@ export default function IncomeForm({
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f]"
+                className="h-4 w-4 rounded border-gray-300 text-theme-accent focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f]"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Renda ativa</span>
             </label>

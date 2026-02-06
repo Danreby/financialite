@@ -86,7 +86,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
           <BareButton
             type="button"
             onClick={onOpenMobileNav}
-            className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 focus:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus:ring-offset-[#0b0b0b] md:hidden"
+            className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus:ring-offset-[#0b0b0b] md:hidden"
             aria-label="Abrir menu de navegação"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -141,7 +141,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
           <BareButton
             type="button"
             onClick={toggleUserMenu}
-            className="h-8 w-8 rounded-full bg-gradient-to-br from-[#3a0f0f] to-transparent flex items-center justify-center text-sm font-semibold text-white ring-1 ring-black/10 hover:ring-black/20 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="h-8 w-8 rounded-full themed-avatar flex items-center justify-center text-sm font-semibold text-white ring-1 ring-black/10 hover:ring-black/20 focus:outline-none focus:ring-2 focus:ring-theme-accent"
             aria-haspopup="true"
             aria-expanded={userMenuOpen}
           >

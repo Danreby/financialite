@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 export function FeatureCard({ icon, title, description, variants }) {
   return (
     <motion.div
-      className="group relative bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:ring-black/30 hover:shadow-lg hover:border-blue-500/20 dark:hover:border-blue-500/30 transition-all duration-300 overflow-hidden"
+      className="group relative bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 shadow-md themed-card hover:shadow-lg hover:border-blue-500/20 dark:hover:border-blue-500/30 transition-all duration-300 overflow-hidden"
       variants={variants}
       whileHover={{ y: -5 }}
     >
@@ -25,7 +25,7 @@ export function SocialCard({ icon, label, url, variants }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex flex-col items-center justify-center bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 text-center shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:ring-black/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
+      className="group relative flex flex-col items-center justify-center bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 text-center shadow-md themed-card hover:shadow-lg transition-all duration-300 overflow-hidden"
       variants={variants}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.98 }}
@@ -48,7 +48,7 @@ export function SocialCard({ icon, label, url, variants }) {
 export function TechCard({ icon, name, variants }) {
   return (
     <motion.div
-      className="flex flex-col items-center justify-center p-4 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border border-gray-50/90 dark:border-red-950/50 hover:shadow-md transition-shadow duration-300"
+      className="flex flex-col items-center justify-center p-4 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 themed-card hover:shadow-md transition-shadow duration-300"
       variants={variants}
       whileHover={{ y: -5 }}
     >

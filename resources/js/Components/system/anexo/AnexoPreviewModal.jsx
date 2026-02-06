@@ -60,7 +60,7 @@ export default function AnexoPreviewModal({
                             <button
                                 type="button"
                                 onClick={() => onDownload?.(anexo)}
-                                className="mt-3 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
+                                className="mt-3 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-theme-accent hover:text-theme-accent-hover"
                             >
                                 <DownloadIcon className="w-4 h-4" />
                                 Baixar arquivo
@@ -99,7 +99,7 @@ export default function AnexoPreviewModal({
                     <button
                         type="button"
                         onClick={() => onDownload?.(anexo)}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-theme-accent hover:bg-theme-accent-hover rounded-lg transition-colors"
                     >
                         <DownloadIcon className="w-4 h-4" />
                         Baixar

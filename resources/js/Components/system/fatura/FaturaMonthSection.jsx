@@ -60,7 +60,7 @@ export default function FaturaMonthSection({
             )}
 					<p className="mt-1 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
               Total de despesas do mês{}:
-              <span className="ml-1 font-semibold text-rose-600 dark:text-rose-400">
+              <span className="ml-1 font-semibold themed-amount">
                 {formatCurrency(total_spent)}
               </span>
             </p>
@@ -70,14 +70,14 @@ export default function FaturaMonthSection({
           <PrimaryButton
             type="button"
             onClick={() => setShowPayModal(true)}
-            className="shrink-0 rounded-full px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-wide focus:ring-rose-500 focus:ring-offset-2 dark:ring-offset-[#050505] w-full sm:w-auto"
+            className="shrink-0 rounded-full px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-wide focus:ring-theme-accent focus:ring-offset-2 dark:ring-offset-[#050505] w-full sm:w-auto"
           >
             Pagar
           </PrimaryButton>
         )}
       </div>
 
-      <div className="rounded-2xl bg-white border border-gray-50/90 dark:border-red-950/50 px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-sm ring-1 ring-black/5 dark:bg-[#080808] dark:ring-white/5 shadow-gray-500 dark:shadow-gray-900">
+      <div className="rounded-2xl bg-white themed-card px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-gray-500 dark:shadow-gray-900 dark:bg-[#080808]">
         {items.length === 0 ? (
 					<p className="px-3 py-2 text-xs sm:text-sm lg:text-base 2xl:text-sm text-gray-500 dark:text-gray-400">
             Nenhuma transação neste mês.
@@ -92,7 +92,7 @@ export default function FaturaMonthSection({
                   onClick={() => setSortField("date")}
 								className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] sm:text-[11px] 2xl:text-[11px] font-medium transition ${
                     sortField === "date"
-                      ? "border-[#7b1818] bg-[#7b1818] text-white shadow-sm dark:border-rose-500 dark:bg-rose-500"
+                      ? "themed-sort-active"
                       : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#050505] dark:text-gray-200 dark:hover:bg-gray-800"
                   }`}
                 >
@@ -103,7 +103,7 @@ export default function FaturaMonthSection({
                   onClick={() => setSortField("amount")}
 								className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] sm:text-[11px] 2xl:text-[11px] font-medium transition ${
                     sortField === "amount"
-                      ? "border-[#7b1818] bg-[#7b1818] text-white shadow-sm dark:border-rose-500 dark:bg-rose-500"
+                      ? "themed-sort-active"
                       : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#050505] dark:text-gray-200 dark:hover:bg-gray-800"
                   }`}
                 >

@@ -173,7 +173,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
             <select
               value={currentFilters.bank_user_id || ''}
               onChange={handleBankFilterChange}
-              className="min-w-[260px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="min-w-[260px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
               <option value="">Todos os bancos</option>
               {bankAccounts.map((account) => (
@@ -199,7 +199,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         </FadeInContainer>
 
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-          <FadeInItem className="lg:col-span-2 border dark:border-red-950/50 border-gray-50/90 rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl bg-white p-4 dark:bg-[#0b0b0b]">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
                 Transações recentes
@@ -270,7 +270,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         </FadeInContainer>
 
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-          <FadeInItem className="lg:col-span-2 border rounded-2xl dark:border-red-950/50 border-gray-50/90">
+          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl">
             <MonthlySummaryChart data={monthlySummary} />
           </FadeInItem>
 
@@ -316,7 +316,7 @@ function Transaction({ title, subtitle, value, negative, onClick, categoryName, 
           )}
         </div>
       </div>
-      <div className="text-sm lg:text-base font-semibold text-red-400">
+      <div className="text-sm lg:text-base font-semibold text-theme-accent">
         {value}
       </div>
     </div>

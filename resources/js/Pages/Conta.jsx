@@ -220,7 +220,7 @@ export default function Conta({ bankAccounts, categories }) {
 					</header>
 				</FadeInItem>
 
-				<FadeInItem type="subtle">				<section className="rounded-2xl bg-white p-3 sm:p-3 lg:p-3 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+				<FadeInItem type="subtle">				<section className="rounded-2xl bg-white p-3 sm:p-3 lg:p-3 shadow-md themed-card dark:bg-[#0b0b0b]">
 					<div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
 							Contas / bancos vinculados
@@ -251,7 +251,7 @@ export default function Conta({ bankAccounts, categories }) {
 										<SecondaryButton
 											type="button"
 											onClick={() => openEditBankModal(account)}
-											className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+											className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wide themed-outline-btn"
 										>
 											Alterar vencimento
 										</SecondaryButton>
@@ -277,7 +277,7 @@ export default function Conta({ bankAccounts, categories }) {
 			</FadeInItem>
 
 			<FadeInItem type="subtle">
-				<section className="rounded-2xl bg-white p-3 shadow-md border border-gray-50/90 dark:border-red-950/50 ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30 sm:p-3 lg:p-3">
+				<section className="rounded-2xl bg-white p-3 shadow-md themed-card dark:bg-[#0b0b0b] sm:p-3 lg:p-3">
 					<div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 						<h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">
 							Categorias
@@ -306,7 +306,7 @@ export default function Conta({ bankAccounts, categories }) {
 											<SecondaryButton
 												type="button"
 												onClick={() => openEditCategoryModal(category)}
-												className="rounded-full px-3.5 py-1.5 text-[11px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wide text-rose-600 border border-rose-500 hover:bg-rose-50 dark:border-rose-500/70 dark:text-rose-300 dark:hover:bg-rose-900/20"
+												className="rounded-full px-3.5 py-1.5 text-[11px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wide themed-outline-btn"
 											>
 												Renomear
 											</SecondaryButton>
@@ -419,7 +419,7 @@ export default function Conta({ bankAccounts, categories }) {
 										onClick={() => setCategoryIconInput(iconItem.name)}
 										className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all ${
 											categoryIconInput === iconItem.name
-												? 'border-rose-500 bg-rose-50 dark:bg-rose-900/20'
+												? 'themed-selected border-theme-accent'
 												: 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#0f0f0f] dark:hover:bg-gray-900/50'
 										}`}
 										title={iconItem.label}
@@ -442,7 +442,7 @@ export default function Conta({ bankAccounts, categories }) {
 										onClick={() => setCategoryColorInput(colorItem.hex)}
 										className={`w-full aspect-square rounded-lg border-2 transition-all ${
 											categoryColorInput === colorItem.hex
-												? 'border-rose-500 ring-2 ring-rose-500 ring-offset-2 dark:ring-offset-gray-900'
+												? 'border-theme-accent ring-2 ring-theme-accent ring-offset-2 dark:ring-offset-gray-900'
 												: 'border-gray-300 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-600'
 										}`}
 										title={colorItem.name}

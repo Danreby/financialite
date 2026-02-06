@@ -102,7 +102,7 @@ function TableContent({ transactions, onSelectTransaction }) {
                   {statusLabel}
                 </span>
               </td>
-              <td className="px-3 py-2 text-right text-rose-600 dark:text-rose-400 whitespace-nowrap">
+              <td className="px-3 py-2 text-right themed-amount whitespace-nowrap">
                 {formatCurrencyBRL(periodValue)}
               </td>
               <td className="px-3 py-2 text-right text-gray-900 dark:text-gray-100 whitespace-nowrap">
@@ -139,7 +139,7 @@ function SummaryPill({ label, value, tone, emphasize = false }) {
     tone === "credit"
       ? "text-emerald-600 dark:text-emerald-400"
       : tone === "debit"
-      ? "text-rose-600 dark:text-rose-400"
+      ? "themed-amount"
       : "text-gray-900 dark:text-gray-100";
 
   return (

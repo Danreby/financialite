@@ -125,7 +125,7 @@ export default function FaturaPayModal({
                 <span className="font-medium text-gray-600 dark:text-gray-300">
                   Total a pagar agora
                 </span>
-                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                <span className="font-semibold themed-amount">
                   {formatCurrency(totalToPay)}
                 </span>
               </div>

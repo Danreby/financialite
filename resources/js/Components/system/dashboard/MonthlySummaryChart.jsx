@@ -10,11 +10,13 @@ import {
   Filler,
 } from 'chart.js'
 import { formatCurrencyBRL } from '@/Lib/formatters'
+import useThemeColors from '@/Hooks/useThemeColors'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 
 export default function MonthlySummaryChart({ data = [] }) {
   const [mode, setMode] = React.useState('both')
+  const { colors: themeColors, chartColors } = useThemeColors()
 
   if (!data || data.length === 0) {
     return (
@@ -44,12 +46,12 @@ export default function MonthlySummaryChart({ data = [] }) {
         data: invoiceValues,
         tension: 0.35,
         fill: true,
-        borderColor: 'rgba(244, 63, 94, 1)',
-        backgroundColor: 'rgba(244, 63, 94, 0.15)',
+        borderColor: chartColors.primary,
+        backgroundColor: chartColors.primaryBg,
         pointRadius: 4,
         pointHoverRadius: 5,
         pointBackgroundColor: '#ffffff',
-        pointBorderColor: 'rgba(244, 63, 94, 1)',
+        pointBorderColor: chartColors.primaryBorder,
         pointBorderWidth: 2,
         hidden: !showInvoice,
       },
@@ -58,12 +60,12 @@ export default function MonthlySummaryChart({ data = [] }) {
         data: debitValues,
         tension: 0.35,
         fill: true,
-        borderColor: 'rgba(59, 130, 246, 1)',
-        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        borderColor: chartColors.secondary,
+        backgroundColor: chartColors.secondaryBg,
         pointRadius: 4,
         pointHoverRadius: 5,
         pointBackgroundColor: '#ffffff',
-        pointBorderColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: chartColors.secondary,
         pointBorderWidth: 2,
         hidden: !showDebit,
       },
@@ -116,7 +118,7 @@ export default function MonthlySummaryChart({ data = [] }) {
   }
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+    <div className="rounded-2xl bg-white p-4 themed-card dark:bg-[#0b0b0b]">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
           Gastos mensais
@@ -131,7 +133,7 @@ export default function MonthlySummaryChart({ data = [] }) {
               onClick={() => setMode('both')}
               className={`px-2 py-0.5 rounded-md border text-[11px] transition-colors ${
                 mode === 'both'
-                  ? 'bg-rose-500 text-white border-rose-500'
+                  ? 'themed-pill-active'
                   : 'bg-transparent text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-200 dark:hover:bg-gray-800'
               }`}
             >
@@ -142,7 +144,7 @@ export default function MonthlySummaryChart({ data = [] }) {
               onClick={() => setMode('invoice')}
               className={`px-2 py-0.5 rounded-md border text-[11px] transition-colors ${
                 mode === 'invoice'
-                  ? 'bg-rose-500 text-white border-rose-500'
+                  ? 'themed-pill-active'
                   : 'bg-transparent text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-200 dark:hover:bg-gray-800'
               }`}
             >
@@ -153,7 +155,7 @@ export default function MonthlySummaryChart({ data = [] }) {
               onClick={() => setMode('debit')}
               className={`px-2 py-0.5 rounded-md border text-[11px] transition-colors ${
                 mode === 'debit'
-                  ? 'bg-rose-500 text-white border-rose-500'
+                  ? 'themed-pill-active'
                   : 'bg-transparent text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-200 dark:hover:bg-gray-800'
               }`}
             >

@@ -123,7 +123,7 @@ export default function ColorPicker({ value, onChange, label = 'Cor', className 
                       whileTap={{ scale: 0.9 }}
                       className={`relative w-full aspect-square rounded-lg transition-all ${
                         value === color.hex
-                          ? 'ring-2 ring-offset-2 ring-rose-500 dark:ring-offset-gray-900'
+                          ? 'ring-2 ring-offset-2 ring-theme-accent dark:ring-offset-gray-900'
                           : 'hover:ring-2 hover:ring-offset-2 hover:ring-gray-400 dark:hover:ring-offset-gray-900'
                       }`}
                       style={{ backgroundColor: color.hex }}
@@ -158,7 +158,7 @@ export default function ColorPicker({ value, onChange, label = 'Cor', className 
                     whileTap={{ scale: 0.9 }}
                     className={`relative w-full aspect-square rounded-lg border-2 border-dashed transition-all ${
                       isCustomColor
-                        ? 'border-rose-500 bg-gradient-to-br from-rose-50 to-purple-50 dark:from-rose-900/20 dark:to-purple-900/20'
+                        ? 'border-theme-accent bg-gradient-to-br from-theme-accent-light to-purple-50 dark:from-theme-primary-light dark:to-purple-900/20'
                         : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-700'
                     }`}
                     title="Selecionar cor customizada"

@@ -176,7 +176,7 @@ export default function Modal({
                                     <BareButton
                                         type="button"
                                         onClick={() => onClose?.()}
-                                        className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+                                        className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-gray-50"
                                         aria-label="Fechar modal"
                                     >
                                         <svg
