@@ -61,18 +61,12 @@ export default function ExtratoTransactionRow({ transaction }) {
 
   return (
     <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-gray-50/80 dark:hover:bg-gray-900/30 transition">
-      {/* Indicador de tipo */}
       <div
-        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm ${
-          isDebit
-            ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-            : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-        }`}
+        className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
       >
-        {isDebit ? '↓' : '↑'}
+        ↓
       </div>
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -100,14 +94,11 @@ export default function ExtratoTransactionRow({ transaction }) {
         </div>
       </div>
 
-      {/* Valor e status */}
       <div className="flex flex-col items-end gap-1 flex-shrink-0">
         <span
-          className={`text-sm font-semibold ${
-            isDebit ? 'text-red-500 dark:text-red-400' : 'text-blue-500 dark:text-blue-400'
-          }`}
+          className='text-sm font-semibold text-red-500 dark:text-red-400'
         >
-          {isDebit ? '-' : '+'} {formatCurrency(displayValue)}
+          - {formatCurrency(displayValue)}
         </span>
         <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-medium ${statusInfo.className}`}>
           {statusInfo.label}

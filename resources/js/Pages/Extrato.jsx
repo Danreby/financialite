@@ -75,7 +75,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
       <Head title="Extrato" />
 
       <FadeInContainer type="container" stagger className="space-y-4 sm:space-y-6">
-        {/* Header */}
         <FadeInItem type="item">
           <div className="flex flex-col gap-1">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -87,7 +86,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
           </div>
         </FadeInItem>
 
-        {/* Filtros */}
         <FadeInItem type="item">
           <ExtratoFilters
             startDate={startDate}
@@ -106,19 +104,16 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
           />
         </FadeInItem>
 
-        {/* Rendas */}
         <FadeInItem type="item">
           <ExtratoIncomeBar incomes={incomes} />
         </FadeInItem>
 
-        {/* Summary */}
         {summary && (
           <FadeInItem type="item">
             <ExtratoSummary summary={summary} />
           </FadeInItem>
         )}
 
-        {/* Timeline de transações */}
         <FadeInItem type="item">
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-[#0b0b0b] overflow-hidden">
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
