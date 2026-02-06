@@ -15,6 +15,7 @@ use App\Contracts\Services\DashboardServiceInterface;
 use App\Contracts\Services\AuthServiceInterface;
 use App\Contracts\Services\IncomeServiceInterface;
 use App\Contracts\Services\ExtratoServiceInterface;
+use App\Contracts\Services\SavingsGoalServiceInterface;
 
 use App\Services\FaturaService;
 use App\Services\AnexoService;
@@ -27,6 +28,7 @@ use App\Services\FaturaDashboardService;
 use App\Services\Auth\AuthService;
 use App\Services\IncomeService;
 use App\Services\ExtratoService;
+use App\Services\SavingsGoalService;
 
 class ServiceBindingProvider extends ServiceProvider
 {
@@ -42,6 +44,7 @@ class ServiceBindingProvider extends ServiceProvider
         AuthServiceInterface::class => AuthService::class,
         IncomeServiceInterface::class => IncomeService::class,
         ExtratoServiceInterface::class => ExtratoService::class,
+        SavingsGoalServiceInterface::class => SavingsGoalService::class,
     ];
 
     public function register(): void
