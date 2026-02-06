@@ -15,15 +15,13 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('target_amount', 12, 2);
             $table->decimal('current_amount', 12, 2)->default(0);
-            $table->enum('type', ['montante', 'porquinho'])->default('porquinho');
-            $table->string('icon', 10)->default('🐷');
+            $table->string('icon', 10)->default('💰');
             $table->string('color', 20)->default('#f43f5e');
             $table->boolean('is_active')->default(true);
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['user_id', 'type']);
             $table->index(['user_id', 'is_active']);
         });
     }

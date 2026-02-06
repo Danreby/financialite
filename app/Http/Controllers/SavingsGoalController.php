@@ -39,8 +39,7 @@ class SavingsGoalController extends Controller
         try {
             $goal = $this->savingsService->createForUser($user, $data);
 
-            $typeLabel = SavingsGoal::TYPE_LABELS[$goal->type] ?? 'Meta';
-            $this->notifications->info($user, "{$typeLabel} criado", "\"{$goal->title}\" foi adicionado às suas metas.");
+            $this->notifications->info($user, 'Meta criada', "\"{$goal->title}\" foi adicionado às suas metas.");
 
             return $this->success($goal, 201);
         } catch (\Throwable $e) {

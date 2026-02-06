@@ -15,24 +15,11 @@ class SavingsGoal extends Model
 
     protected $table = 'savings_goals';
 
-    public const VALID_TYPES = ['montante', 'porquinho'];
-
-    public const TYPE_LABELS = [
-        'montante'  => 'Montante',
-        'porquinho' => 'Porquinho',
-    ];
-
-    public const DEFAULT_ICONS = [
-        'montante'  => '💰',
-        'porquinho' => '🐷',
-    ];
-
     protected $fillable = [
         'title',
         'description',
         'target_amount',
         'current_amount',
-        'type',
         'icon',
         'color',
         'is_active',
@@ -73,15 +60,6 @@ class SavingsGoal extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeOfType(Builder $query, string $type): Builder
-    {
-        if (in_array($type, self::VALID_TYPES, true)) {
-            return $query->where('type', $type);
-        }
-
-        return $query;
-    }
-
     public function scopeCompleted(Builder $query): Builder
     {
         return $query->whereNotNull('completed_at');
@@ -97,11 +75,6 @@ class SavingsGoal extends Model
     public function belongsToUser(int $userId): bool
     {
         return $this->user_id === $userId;
-    }
-
-    public function getTypeLabelAttribute(): string
-    {
-        return self::TYPE_LABELS[$this->type] ?? 'Outro';
     }
 
     public function getProgressAttribute(): float
@@ -150,10 +123,5 @@ class SavingsGoal extends Model
         $this->save();
 
         return $this;
-    }
-
-    public static function isValidType(string $type): bool
-    {
-        return in_array($type, self::VALID_TYPES, true);
     }
 }

@@ -65,21 +65,19 @@ class SavingsGoalService implements SavingsGoalServiceInterface
     {
         $goals = SavingsGoal::forUser($userId)->active()->get();
 
-        $totalMontante = $goals->where('type', 'montante')->sum('current_amount');
-        $totalPorquinho = $goals->where('type', 'porquinho')->sum('current_amount');
-        $totalTargetMontante = $goals->where('type', 'montante')->sum('target_amount');
-        $totalTargetPorquinho = $goals->where('type', 'porquinho')->sum('target_amount');
+        $totalSaved = (float) $goals->sum('current_amount');
+        $totalTarget = (float) $goals->sum('target_amount');
         $completedCount = $goals->whereNotNull('completed_at')->count();
         $activeCount = $goals->count();
+        $overallProgress = $totalTarget > 0 ? round(($totalSaved / $totalTarget) * 100, 1) : 0;
 
         return [
-            'total_saved'           => (float) ($totalMontante + $totalPorquinho),
-            'total_montante'        => (float) $totalMontante,
-            'total_porquinho'       => (float) $totalPorquinho,
-            'total_target_montante' => (float) $totalTargetMontante,
-            'total_target_porquinho'=> (float) $totalTargetPorquinho,
-            'completed_count'       => $completedCount,
-            'active_count'          => $activeCount,
+            'total_saved'      => $totalSaved,
+            'total_target'     => $totalTarget,
+            'overall_progress' => min($overallProgress, 100),
+            'completed_count'  => $completedCount,
+            'active_count'     => $activeCount,
+            'goals_count'      => $goals->count(),
         ];
     }
 }

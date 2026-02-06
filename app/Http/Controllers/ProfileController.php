@@ -61,8 +61,6 @@ class ProfileController extends Controller
                 'description'    => $goal->description,
                 'target_amount'  => (float) $goal->target_amount,
                 'current_amount' => (float) $goal->current_amount,
-                'type'           => $goal->type,
-                'type_label'     => $goal->type_label,
                 'icon'           => $goal->icon,
                 'color'          => $goal->color,
                 'is_active'      => $goal->is_active,
