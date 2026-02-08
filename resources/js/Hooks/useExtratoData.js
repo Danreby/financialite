@@ -1,0 +1,95 @@
+import { useState, useCallback, useEffect } from 'react'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { sanitizeFilterParams } from '@/Utils/security'
+
+/**
+ * Custom hook para gerenciar dados do extrato
+ * Encapsula lógica de fetching, filtragem e estado
+ * @param {Object} initialFilters - Filtros iniciais
+ * @returns {Object} Estado e métodos do extrato
+ */
+export function useExtratoData(initialFilters = {}) {
+  const [filters, setFilters] = useState(initialFilters)
+  const [transactions, setTransactions] = useState([])
+  const [incomes, setIncomes] = useState([])
+  const [summary, setSummary] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Fetch data with sanitized params
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Sanitize and validate filter params
+      const sanitizedParams = sanitizeFilterParams({
+        start_date: filters.startDate,
+        end_date: filters.endDate,
+        bank_user_id: filters.bankUserId,
+        category_id: filters.categoryId,
+        type: filters.type,
+      })
+
+      const response = await axios.get(route('extrato.data'), {
+        params: sanitizedParams,
+        timeout: 10000, // 10s timeout
+      })
+
+      const data = response.data || {}
+
+      setTransactions(data.transactions || [])
+      setIncomes(data.incomes || [])
+      setSummary(data.summary || null)
+    } catch (err) {
+      console.error('Erro ao carregar extrato:', err)
+      setError(err.response?.data?.message || 'Erro ao carregar extrato.')
+      toast.error('Erro ao carregar dados do extrato.')
+    } finally {
+      setLoading(false)
+    }
+  }, [filters])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Update filters
+  const updateFilters = useCallback((newFilters) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }))
+  }, [])
+
+  // Reset filters
+  const resetFilters = useCallback(() => {
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    
+    setFilters({
+      startDate: firstDay.toISOString().split('T')[0],
+      endDate: now.toISOString().split('T')[0],
+      bankUserId: '',
+      categoryId: '',
+      type: '',
+    })
+  }, [])
+
+  // Calculate total transactions count
+  const totalTransactions = transactions.reduce(
+    (sum, group) => sum + (group.transactions?.length || 0),
+    0
+  )
+
+  return {
+    transactions,
+    incomes,
+    summary,
+    loading,
+    error,
+    filters,
+    totalTransactions,
+    updateFilters,
+    resetFilters,
+    refetch: fetchData,
+  }
+}
