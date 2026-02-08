@@ -5,6 +5,7 @@ import EyeIcon from '@/Components/common/icons/EyeIcon';
 import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function UpdatePasswordForm({ className = '' }) {
     const passwordInput = useRef();
@@ -32,7 +33,10 @@ export default function UpdatePasswordForm({ className = '' }) {
 
         put(route('password.update'), {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                reset();
+                toast.success('Senha atualizada com sucesso!');
+            },
             onError: (errors) => {
                 if (errors.password) {
                     reset('password', 'password_confirmation');
@@ -43,6 +47,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                     reset('current_password');
                     currentPasswordInput.current.focus();
                 }
+                toast.error('Erro ao atualizar senha. Verifique os dados.');
             },
         });
     };

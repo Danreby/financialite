@@ -5,6 +5,7 @@ import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import { useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import Modal from '@/Components/common/Modal';
+import { toast } from 'react-toastify';
 
 export default function DeleteUserForm({ className = '' }) {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
@@ -32,7 +33,10 @@ export default function DeleteUserForm({ className = '' }) {
         destroy(route('profile.destroy'), {
             preserveScroll: true,
             onSuccess: () => closeModal(),
-            onError: () => passwordInput.current.focus(),
+            onError: () => {
+                passwordInput.current.focus();
+                toast.error('Erro ao excluir conta. Verifique sua senha.');
+            },
             onFinish: () => reset(),
         });
     };

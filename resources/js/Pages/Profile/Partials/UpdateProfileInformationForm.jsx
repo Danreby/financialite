@@ -2,7 +2,8 @@ import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import { Transition } from '@headlessui/react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage, router } from '@inertiajs/react';
+import { toast } from 'react-toastify';
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
@@ -20,7 +21,27 @@ export default function UpdateProfileInformation({
     const submit = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
+        patch(route('profile.update'), {
+            onSuccess: () => {
+                toast.success('Perfil atualizado com sucesso!');
+            },
+            onError: () => {
+                toast.error('Erro ao atualizar perfil. Verifique os dados.');
+            },
+        });
+    };
+
+    const resendVerification = (e) => {
+        e.preventDefault();
+        
+        router.post(route('verification.send'), {}, {
+            onSuccess: () => {
+                toast.success('E-mail de verificação enviado!');
+            },
+            onError: () => {
+                toast.error('Erro ao enviar e-mail de verificação.');
+            },
+        });
     };
 
     return (
@@ -72,14 +93,13 @@ export default function UpdateProfileInformation({
                     <div>
                         <p className="mt-2 text-sm text-gray-800 dark:text-gray-200">
                             Seu endereço de e-mail ainda não foi verificado.
-                            <Link
-                                href={route('verification.send')}
-                                method="post"
-                                as="button"
-                                className="rounded-md text-sm text-theme-accent underline hover:text-theme-accent-hover dark:text-theme-accent dark:hover:text-theme-accent-hover focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2"
+                            <button
+                                type="button"
+                                onClick={resendVerification}
+                                className="ml-1 rounded-md text-sm text-theme-accent underline hover:text-theme-accent-hover dark:text-theme-accent dark:hover:text-theme-accent-hover focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2"
                             >
                                 Clique aqui para reenviar o e-mail de verificação.
-                            </Link>
+                            </button>
                         </p>
 
                         {status === 'verification-link-sent' && (
