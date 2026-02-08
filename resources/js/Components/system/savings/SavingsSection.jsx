@@ -80,6 +80,7 @@ export default function SavingsSection({
       toast.success(type === 'deposit' ? 'Depósito realizado!' : 'Retirada realizada!')
     } catch (error) {
       toast.error(error.response?.data?.error || 'Erro na operação.')
+      throw error // Re-throw para que o modal possa tratar
     }
   }
 

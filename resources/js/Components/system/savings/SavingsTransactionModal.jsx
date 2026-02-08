@@ -6,7 +6,7 @@ import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
 const formatCurrency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0)
 
-export default function SavingsTransactionModal({ isOpen, onClose, onSuccess, goal, type = 'deposit' }) {
+export default function SavingsTransactionModal({ isOpen, onClose, onConfirm, goal, type = 'deposit' }) {
   const [amount, setAmount] = useState('')
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState(null)
@@ -18,6 +18,7 @@ export default function SavingsTransactionModal({ isOpen, onClose, onSuccess, go
   const handleClose = useCallback(() => {
     setAmount('')
     setError(null)
+    setProcessing(false)
     onClose?.()
   }, [onClose])
 
@@ -40,30 +41,15 @@ export default function SavingsTransactionModal({ isOpen, onClose, onSuccess, go
     setError(null)
 
     try {
-      const endpoint = isDeposit
-        ? route('savings.deposit', goal.id)
-        : route('savings.withdraw', goal.id)
-
-      const response = await window.axios.post(endpoint, { amount: parsedAmount })
-      const data = response.data
-
-      onSuccess?.({
-        ...data,
-        progress: data.target_amount > 0
-          ? Math.min(Math.round((data.current_amount / data.target_amount) * 100 * 10) / 10, 100)
-          : 0,
-        remaining: Math.max(data.target_amount - data.current_amount, 0),
-        is_completed: data.completed_at !== null,
-      })
+      await onConfirm?.(goal.id, parsedAmount, type)
       handleClose()
     } catch (err) {
       if (err.response?.status === 422) {
         const msgs = err.response.data.errors?.amount
         setError(msgs ? msgs[0] : 'Valor inválido.')
       } else {
-        setError('Erro ao processar. Tente novamente.')
+        setError(err.response?.data?.error || 'Erro ao processar. Tente novamente.')
       }
-    } finally {
       setProcessing(false)
     }
   }
