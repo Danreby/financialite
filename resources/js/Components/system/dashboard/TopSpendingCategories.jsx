@@ -1,9 +1,16 @@
 import React from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import TopSpendingPieChart from '@/Components/system/dashboard/TopSpendingPieChart'
+import LoadingOverlay from '@/Components/common/LoadingOverlay'
 import useThemeColors from '@/Hooks/useThemeColors'
 
-export default function TopSpendingCategories({ data = [], label = 'Mês vigente', recurringSpending = {}, nonRecurringSpending = {} }) {
+export default function TopSpendingCategories({
+  data = [],
+  label = 'Mês vigente',
+  recurringSpending = {},
+  nonRecurringSpending = {},
+  isLoading = false,
+}) {
   const { chartColors } = useThemeColors()
   const topSix = Array.isArray(data)
     ? [...data].sort((a, b) => Number(b.total || 0) - Number(a.total || 0)).slice(0, 6)
@@ -22,7 +29,9 @@ export default function TopSpendingCategories({ data = [], label = 'Mês vigente
   const colors = chartColors.palette
 
   return (
-    <div className="rounded-2xl themed-card bg-white p-4 dark:bg-[#0b0b0b]">
+    <div className="relative rounded-2xl themed-card bg-white p-4 dark:bg-[#0b0b0b] overflow-hidden">
+      <LoadingOverlay visible={isLoading} message="Carregando..." />
+
       <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
         Maiores Gastos — {label}
       </h2>

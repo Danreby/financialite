@@ -14,6 +14,7 @@ use App\Http\Requests\Fatura\FaturaStoreRequest;
 use App\Http\Requests\Fatura\FaturaUpdateRequest;
 use App\Http\Requests\Fatura\PayMonthRequest;
 use App\Http\Requests\Fatura\FaturaImportRequest;
+use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
@@ -255,5 +256,31 @@ class TransacaoController extends Controller
         );
 
         return $this->success($stats);
+    }
+
+    public function topSpendingByPeriod(PeriodSpendingRequest $request): JsonResponse
+    {
+        $this->authorize('viewAny', Transacao::class);
+
+        $user = $request->user();
+        $validated = $request->validated();
+
+        $bankUserId = $validated['bank_user_id'] ?? null;
+        $categoryId = $validated['category_id'] ?? null;
+
+        if ($bankUserId) {
+            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
+            $this->authorize('view', $selectedBankUser);
+        }
+
+        $data = $this->dashboardService->getTopSpendingByPeriod(
+            $user,
+            $validated['month_from'],
+            $validated['month_to'],
+            $bankUserId,
+            $categoryId,
+        );
+
+        return $this->success($data);
     }
 }

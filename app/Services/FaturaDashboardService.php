@@ -328,6 +328,122 @@ class FaturaDashboardService
         ];
     }
 
+    /**
+     * Get top spending categories for a custom month period.
+     * Returns aggregated spending by category, with recurring/non-recurring breakdown.
+     */
+    public function getTopSpendingByPeriod(
+        Authenticatable $user,
+        string $monthFrom,
+        string $monthTo,
+        ?int $bankUserId = null,
+        ?int $categoryId = null
+    ): array {
+        $startMonth = Carbon::createFromFormat('Y-m', $monthFrom)->startOfMonth();
+        $endMonth = Carbon::createFromFormat('Y-m', $monthTo)->endOfMonth();
+
+        $base = Transacao::forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->when($categoryId, function ($q, $categoryId) {
+                $q->where('category_id', $categoryId);
+            });
+
+        $debitEntries = (clone $base)
+            ->with('category')
+            ->where('type', 'debit')
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$startMonth, $endMonth])
+            ->get();
+
+        $creditEntries = (clone $base)
+            ->with(['category', 'bankUser'])
+            ->where('type', 'credit')
+            ->get()
+            ->filter(function (Transacao $transacao) use ($startMonth, $endMonth) {
+                $cursor = $startMonth->copy()->startOfMonth();
+                $limit = $endMonth->copy()->startOfMonth();
+
+                while ($cursor->lte($limit)) {
+                    if ($this->billing->faturaAppliesToMonth($transacao, $cursor)) {
+                        return true;
+                    }
+                    $cursor->addMonth();
+                }
+
+                return false;
+            });
+
+        $debitRows = $debitEntries->map(function (Transacao $transacao) {
+            return [
+                'category_id'    => $transacao->category_id,
+                'category_name'  => optional($transacao->category)->name,
+                'category_icon'  => optional($transacao->category)->icon,
+                'category_color' => optional($transacao->category)->color,
+                'amount'         => (float) $transacao->amount,
+                'is_recurring'   => $transacao->is_recurring,
+            ];
+        })->values()->all();
+
+        $creditRows = $creditEntries->map(function (Transacao $transacao) {
+            $installments = max((int) ($transacao->total_installments ?? 1), 1);
+            $installmentAmount = (float) $transacao->amount / $installments;
+
+            return [
+                'category_id'    => $transacao->category_id,
+                'category_name'  => optional($transacao->category)->name,
+                'category_icon'  => optional($transacao->category)->icon,
+                'category_color' => optional($transacao->category)->color,
+                'amount'         => $installmentAmount,
+                'is_recurring'   => $transacao->is_recurring,
+            ];
+        })->values()->all();
+
+        $allRows = collect($debitRows)->merge($creditRows);
+
+        $topSpendingCategories = $allRows
+            ->groupBy('category_id')
+            ->map(function ($items) {
+                $first = $items->first();
+
+                return [
+                    'category_id'    => $first['category_id'] ?? null,
+                    'category_name'  => $first['category_name'] ?? 'Sem categoria',
+                    'category_icon'  => $first['category_icon'] ?? null,
+                    'category_color' => $first['category_color'] ?? null,
+                    'total'          => (float) $items->sum('amount'),
+                ];
+            })
+            ->sortByDesc('total')
+            ->take(6)
+            ->values()
+            ->all();
+
+        $totalRecurring = $allRows->where('is_recurring', true)->sum('amount');
+        $totalNonRecurring = $allRows->where('is_recurring', false)->sum('amount');
+        $totalAmount = $totalRecurring + $totalNonRecurring;
+
+        $recurringPercentage = $totalAmount > 0 ? round(($totalRecurring / $totalAmount) * 100, 1) : 0;
+        $nonRecurringPercentage = $totalAmount > 0 ? round(($totalNonRecurring / $totalAmount) * 100, 1) : 0;
+
+        $locale = config('app.locale', 'pt_BR');
+        $fromLabel = ucfirst(Carbon::createFromFormat('Y-m', $monthFrom)->locale($locale)->translatedFormat('M Y'));
+        $toLabel = ucfirst(Carbon::createFromFormat('Y-m', $monthTo)->locale($locale)->translatedFormat('M Y'));
+        $periodLabel = $monthFrom === $monthTo ? $fromLabel : "{$fromLabel} — {$toLabel}";
+
+        return [
+            'top_spending_categories' => $topSpendingCategories,
+            'period_label' => $periodLabel,
+            'recurring_spending' => [
+                'total' => (float) $totalRecurring,
+                'percentage' => $recurringPercentage,
+            ],
+            'non_recurring_spending' => [
+                'total' => (float) $totalNonRecurring,
+                'percentage' => $nonRecurringPercentage,
+            ],
+        ];
+    }
+
     private function paidByMonthForUser(int $userId, ?int $bankUserId = null, bool $shouldFilterByBankUser = false)
     {
         $query = Fatura::where('user_id', $userId);

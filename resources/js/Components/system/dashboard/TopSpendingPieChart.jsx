@@ -2,6 +2,7 @@ import React from 'react'
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import CategoryBadge from '@/Components/common/CategoryBadge'
+import ScrollArea from '@/Components/common/ScrollArea'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -52,23 +53,23 @@ export default function TopSpendingPieChart({
   const nonRecurringPercentage = nonRecurringSpending?.percentage || 0
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[240px_1fr]">
-      <div className="h-52 lg:h-60 relative">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      <div className="h-48 w-full lg:h-52 lg:w-[200px] lg:flex-shrink-0 relative">
         <Doughnut data={chartData} options={options} />
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <div className="text-center">
             <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
-            <div className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
               {formatCurrencyBRL(total)}
             </div>
           </div>
         </div>
       </div>
-      <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
+      <ScrollArea maxHeightClassName="max-h-[280px]" className="flex-1 min-w-0 space-y-3 pr-1">
         <ul className="space-y-2">
           {items.map((item, index) => (
             <li key={item.category_id ?? 'none'} className="flex items-center justify-between gap-3 text-sm">
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                 <span
                   className="h-2.5 w-2.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: colors[index % colors.length] }}
@@ -116,7 +117,7 @@ export default function TopSpendingPieChart({
             </div>
           </div>
         )}
-      </div>
+      </ScrollArea>
     </div>
   )
 }

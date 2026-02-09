@@ -8,6 +8,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 	Route::prefix('transacoes')->name('transacoes.')->group(function () {
 		Route::get('/', [TransacaoController::class, 'index'])->name('index');
 		Route::get('/stats', [TransacaoController::class, 'stats'])->name('stats');
+		Route::get('/top-spending-by-period', [TransacaoController::class, 'topSpendingByPeriod'])
+			->middleware('action.limit:top_spending_period,30')
+			->name('top_spending_by_period');
 		Route::get('/export-data', [TransacaoController::class, 'exportData'])
 			->middleware('action.limit:export,10')
 			->name('export_data');
