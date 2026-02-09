@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import { Head } from '@inertiajs/react'
 import { toast } from 'react-toastify'
@@ -12,6 +12,7 @@ import { formatCurrencyBRL } from '@/Lib/formatters'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
 import ScrollArea from '@/Components/common/ScrollArea'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
+import usePeriodSpending from '@/Hooks/usePeriodSpending'
 
 function formatDateLabel(value) {
   if (!value) return ''
@@ -36,6 +37,35 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [selectedFaturaItem, setSelectedFaturaItem] = useState(null)
   const [recurringSpending, setRecurringSpending] = useState({ total: 0, percentage: 0 })
   const [nonRecurringSpending, setNonRecurringSpending] = useState({ total: 0, percentage: 0 })
+
+  const {
+    periodData,
+    periodLabel,
+    periodRecurring,
+    periodNonRecurring,
+    isLoading: isLoadingPeriod,
+    fetchPeriodSpending,
+    clearPeriod,
+  } = usePeriodSpending()
+
+  const handlePeriodChange = useCallback((period) => {
+    if (!period) {
+      clearPeriod()
+      return
+    }
+
+    fetchPeriodSpending({
+      monthFrom: period.monthFrom,
+      monthTo: period.monthTo,
+      bankUserId: currentFilters.bank_user_id,
+      categoryId: currentFilters.category_id,
+    })
+  }, [currentFilters, fetchPeriodSpending, clearPeriod])
+
+  const activeTopSpending = periodData ?? topSpendingCategories
+  const activeTopSpendingLabel = periodData ? periodLabel : topSpendingLabel
+  const activeRecurring = periodData ? periodRecurring : recurringSpending
+  const activeNonRecurring = periodData ? periodNonRecurring : nonRecurringSpending
 
   const [stats, setStats] = useState([
     { id: 1, title: 'Saldo Disponível', value: formatCurrencyBRL(0), delta: '+0%' },
@@ -160,7 +190,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
     <AuthenticatedLayout>
       <Head title="Dashboard" />
 
-      <FadeInContainer className="max-w-[1600px] mx-auto pb-6">
+      <FadeInContainer className="w-full max-w-[1440px] mx-auto pb-6">
         <FadeInItem className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
           <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
             Visão geral
@@ -186,7 +216,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </div>
         </FadeInItem>
 
-        <FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+        <FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {stats.map((stat) => (
             <FadeInItem key={stat.id} type="feature">
               <StatCard
@@ -198,8 +228,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           ))}
         </FadeInContainer>
 
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl bg-white p-4 dark:bg-[#0b0b0b]">
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl bg-white p-4 dark:bg-[#0b0b0b] overflow-hidden">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
                 Transações recentes
@@ -269,17 +299,22 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </FadeInItem>
         </FadeInContainer>
 
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl">
-            <MonthlySummaryChart data={monthlySummary} />
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl overflow-hidden">
+            <MonthlySummaryChart
+              data={monthlySummary}
+              onPeriodChange={handlePeriodChange}
+              isLoadingPeriod={isLoadingPeriod}
+            />
           </FadeInItem>
 
           <FadeInItem>
-            <TopSpendingCategories 
-              data={topSpendingCategories} 
-              label={topSpendingLabel}
-              recurringSpending={recurringSpending}
-              nonRecurringSpending={nonRecurringSpending}
+            <TopSpendingCategories
+              data={activeTopSpending}
+              label={activeTopSpendingLabel}
+              recurringSpending={activeRecurring}
+              nonRecurringSpending={activeNonRecurring}
+              isLoading={isLoadingPeriod}
             />
           </FadeInItem>
         </FadeInContainer>
