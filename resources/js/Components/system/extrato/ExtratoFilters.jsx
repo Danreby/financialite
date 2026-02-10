@@ -1,9 +1,5 @@
 import React, { useMemo } from 'react'
 
-/**
- * Filtros do extrato com contador de filtros ativos
- * Componente modular e reutilizável
- */
 export default function ExtratoFilters({
   startDate,
   endDate,
@@ -19,7 +15,6 @@ export default function ExtratoFilters({
   bankAccounts = [],
   categories = [],
 }) {
-  // Count active filters (excluindo datas padrão)
   const activeFiltersCount = useMemo(() => {
     let count = 0
     if (bankUserId) count++
@@ -30,7 +25,6 @@ export default function ExtratoFilters({
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-[#0b0b0b]">
-      {/* Header with filter count */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">

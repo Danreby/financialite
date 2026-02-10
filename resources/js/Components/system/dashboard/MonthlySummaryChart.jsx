@@ -18,19 +18,6 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
   const [mode, setMode] = React.useState('both')
   const { colors: themeColors, chartColors } = useThemeColors()
 
-  if (!data || data.length === 0) {
-    return (
-      <div className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
-        <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          Gastos mensais
-        </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Ainda não há dados suficientes para exibir o gráfico.
-        </p>
-      </div>
-    )
-  }
-
   const labels = data.map((item) => item.month_label)
   const invoiceValues = data.map((item) => Number(item.invoice_total || 0))
   const debitValues = data.map((item) => Number(item.debit_total || 0))
@@ -49,6 +36,19 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
       onMonthClick(clickedMonthKey)
     }
   }, [monthKeys, onMonthClick])
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+        <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          Gastos mensais
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Ainda não há dados suficientes para exibir o gráfico.
+        </p>
+      </div>
+    )
+  }
 
   const chartData = {
     labels,
