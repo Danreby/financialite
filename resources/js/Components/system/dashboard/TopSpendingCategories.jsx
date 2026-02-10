@@ -10,6 +10,8 @@ export default function TopSpendingCategories({
   recurringSpending = {},
   nonRecurringSpending = {},
   isLoading = false,
+  hasSelection = false,
+  onClearSelection,
 }) {
   const { chartColors } = useThemeColors()
   const topSix = Array.isArray(data)
@@ -32,9 +34,24 @@ export default function TopSpendingCategories({
     <div className="relative rounded-2xl themed-card bg-white p-4 dark:bg-[#0b0b0b] overflow-hidden">
       <LoadingOverlay visible={isLoading} message="Carregando..." />
 
-      <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
-        Maiores Gastos — {label}
-      </h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
+          Maiores Gastos — {label}
+        </h2>
+        {hasSelection && onClearSelection && (
+          <button
+            type="button"
+            onClick={onClearSelection}
+            className="text-xs px-2 py-1 rounded-md text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-1"
+            aria-label="Limpar seleção"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Limpar
+          </button>
+        )}
+      </div>
 
       {(!prepared || prepared.length === 0) && (
         <p className="text-sm text-gray-600 dark:text-gray-400">

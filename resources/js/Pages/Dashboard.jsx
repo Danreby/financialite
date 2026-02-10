@@ -12,7 +12,6 @@ import { formatCurrencyBRL } from '@/Lib/formatters'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
 import ScrollArea from '@/Components/common/ScrollArea'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
-import usePeriodSpending from '@/Hooks/usePeriodSpending'
 
 function formatDateLabel(value) {
   if (!value) return ''
@@ -38,34 +37,50 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [recurringSpending, setRecurringSpending] = useState({ total: 0, percentage: 0 })
   const [nonRecurringSpending, setNonRecurringSpending] = useState({ total: 0, percentage: 0 })
 
-  const {
-    periodData,
-    periodLabel,
-    periodRecurring,
-    periodNonRecurring,
-    isLoading: isLoadingPeriod,
-    fetchPeriodSpending,
-    clearPeriod,
-  } = usePeriodSpending()
+  const [selectedMonthKey, setSelectedMonthKey] = useState(null)
+  const [monthData, setMonthData] = useState(null)
+  const [isLoadingMonth, setIsLoadingMonth] = useState(false)
 
-  const handlePeriodChange = useCallback((period) => {
-    if (!period) {
-      clearPeriod()
+  const handleMonthClick = useCallback(async (monthKey) => {
+    if (selectedMonthKey === monthKey) {
+      setSelectedMonthKey(null)
+      setMonthData(null)
       return
     }
 
-    fetchPeriodSpending({
-      monthFrom: period.monthFrom,
-      monthTo: period.monthTo,
-      bankUserId: currentFilters.bank_user_id,
-      categoryId: currentFilters.category_id,
-    })
-  }, [currentFilters, fetchPeriodSpending, clearPeriod])
+    setSelectedMonthKey(monthKey)
+    setIsLoadingMonth(true)
 
-  const activeTopSpending = periodData ?? topSpendingCategories
-  const activeTopSpendingLabel = periodData ? periodLabel : topSpendingLabel
-  const activeRecurring = periodData ? periodRecurring : recurringSpending
-  const activeNonRecurring = periodData ? periodNonRecurring : nonRecurringSpending
+    try {
+      const params = {
+        month_from: monthKey,
+        month_to: monthKey,
+      }
+
+      if (currentFilters.bank_user_id) params.bank_user_id = currentFilters.bank_user_id
+      if (currentFilters.category_id) params.category_id = currentFilters.category_id
+
+      const response = await axios.get(route('transacoes.top_spending_by_period'), { params })
+      setMonthData(response.data || {})
+    } catch (err) {
+      console.error('Error fetching month data:', err)
+      toast.error('Erro ao carregar dados do mês.')
+      setSelectedMonthKey(null)
+      setMonthData(null)
+    } finally {
+      setIsLoadingMonth(false)
+    }
+  }, [selectedMonthKey, currentFilters])
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedMonthKey(null)
+    setMonthData(null)
+  }, [])
+
+  const activeTopSpending = monthData?.top_spending_categories ?? topSpendingCategories
+  const activeTopSpendingLabel = monthData?.period_label ?? topSpendingLabel
+  const activeRecurring = monthData?.recurring_spending ?? recurringSpending
+  const activeNonRecurring = monthData?.non_recurring_spending ?? nonRecurringSpending
 
   const [stats, setStats] = useState([
     { id: 1, title: 'Saldo Disponível', value: formatCurrencyBRL(0), delta: '+0%' },
@@ -303,8 +318,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           <FadeInItem className="lg:col-span-2 themed-card rounded-2xl overflow-hidden">
             <MonthlySummaryChart
               data={monthlySummary}
-              onPeriodChange={handlePeriodChange}
-              isLoadingPeriod={isLoadingPeriod}
+              onMonthClick={handleMonthClick}
+              selectedMonthKey={selectedMonthKey}
             />
           </FadeInItem>
 
@@ -314,7 +329,9 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               label={activeTopSpendingLabel}
               recurringSpending={activeRecurring}
               nonRecurringSpending={activeNonRecurring}
-              isLoading={isLoadingPeriod}
+              isLoading={isLoadingMonth}
+              hasSelection={!!selectedMonthKey}
+              onClearSelection={handleClearSelection}
             />
           </FadeInItem>
         </FadeInContainer>
