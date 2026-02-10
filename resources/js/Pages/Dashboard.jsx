@@ -42,13 +42,19 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [isLoadingMonth, setIsLoadingMonth] = useState(false)
 
   const handleMonthClick = useCallback(async (monthKey) => {
-    if (selectedMonthKey === monthKey) {
-      setSelectedMonthKey(null)
-      setMonthData(null)
-      return
-    }
+    let shouldFetchData = true
 
-    setSelectedMonthKey(monthKey)
+    setSelectedMonthKey((prevKey) => {
+      if (prevKey === monthKey) {
+        setMonthData(null)
+        shouldFetchData = false
+        return null
+      }
+      return monthKey
+    })
+
+    if (!shouldFetchData) return
+
     setIsLoadingMonth(true)
 
     try {
@@ -70,7 +76,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
     } finally {
       setIsLoadingMonth(false)
     }
-  }, [selectedMonthKey, currentFilters])
+  }, [currentFilters])
 
   const handleClearSelection = useCallback(() => {
     setSelectedMonthKey(null)
@@ -96,6 +102,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
       bank_user_id: value,
     }))
     setPage(1)
+    setSelectedMonthKey(null)
+    setMonthData(null)
   }
 
   useEffect(() => {
