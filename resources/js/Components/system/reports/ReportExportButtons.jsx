@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import BareButton from "@/Components/common/buttons/BareButton";
+import Tooltip from "@/Components/common/Tooltip";
 import ExportExcel from "@/Components/system/excel/ExportExcel";
 import DetailedExportExcel from "@/Components/system/excel/DetailedExportExcel";
 
-export default function TransactionsExportButton({ filters = {}, detailed = false }) {
+/**
+ * Componente que exibe botões para exportação simples e detalhada
+ */
+export default function ReportExportButtons({ filters = {} }) {
   const [exportData, setExportData] = useState([]);
 
   useEffect(() => {
@@ -67,23 +72,19 @@ export default function TransactionsExportButton({ filters = {}, detailed = fals
     [],
   );
 
-  // Se detailed for true, usa o componente de exportação detalhada
-  if (detailed) {
-    return (
+  return (
+    <div className="flex gap-2">
+      <ExportExcel
+        data={exportData}
+        header={header}
+        name="transacoes_faturas"
+        currencyColumns={["Valor"]}
+      />
+      
       <DetailedExportExcel
         data={exportData}
         name="relatorio_financeiro"
       />
-    );
-  }
-
-  // Caso contrário, usa o componente de exportação simples
-  return (
-    <ExportExcel
-      data={exportData}
-      header={header}
-      name="transacoes_faturas"
-      currencyColumns={["Valor"]}
-    />
+    </div>
   );
 }

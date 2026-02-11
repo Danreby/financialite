@@ -3,7 +3,7 @@ import { Head } from "@inertiajs/react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import TransactionsExportButton from "@/Components/system/transactions/TransactionsExportButton";
+import ReportExportButtons from "@/Components/system/reports/ReportExportButtons";
 import StatCard from "@/Components/system/dashboard/StatCard";
 import ReportsMonthlySummary from "@/Components/system/reports/ReportsMonthlySummary";
 import ReportsPeriodSelector from "@/Components/system/reports/ReportsPeriodSelector";
@@ -232,7 +232,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 						</div>
 
 						<div className="flex justify-end w-full sm:w-auto">
-							<TransactionsExportButton
+							<ReportExportButtons
 								filters={{
 									bank_user_id: selectedBankId || undefined,
 									category_id: selectedCategoryId || undefined,
