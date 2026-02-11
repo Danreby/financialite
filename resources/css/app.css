@@ -19,7 +19,6 @@
 }
 
 @layer components {
-	/* Themed focus for inputs and interactive elements */
 	.themed-focus {
 		@apply focus:outline-none;
 		&:focus {
@@ -29,7 +28,6 @@
 		}
 	}
 
-	/* Themed card border for dark mode */
 	.themed-card {
 		@apply border border-gray-50/90 shadow-md ring-1 ring-black/5 dark:ring-black/30;
 		&:is(.dark *) {
@@ -37,7 +35,6 @@
 		}
 	}
 
-	/* Themed select / input focus */
 	.themed-select {
 		@apply focus:outline-none;
 		&:focus {
@@ -47,36 +44,30 @@
 		}
 	}
 
-	/* Themed toggle switch ON state */
 	.themed-toggle-on {
 		background-color: var(--theme-primary, #7b1818);
 		box-shadow: 0 10px 15px -3px var(--theme-primaryRing, rgba(244, 63, 94, 0.4));
 	}
 
-	/* Themed active/selected pill */
 	.themed-pill-active {
 		background-color: var(--theme-accent, #f43f5e);
 		color: #fff;
 		border-color: var(--theme-accent, #f43f5e);
 	}
 
-	/* Themed ring for focus visible */
 	.themed-ring {
 		--tw-ring-color: var(--theme-accent, #f43f5e);
 	}
 
-	/* Themed radio checked styling */
 	.themed-radio:checked {
 		border-color: var(--theme-primary, #7b1818);
 		background-color: var(--theme-primary, #7b1818);
 	}
 
-	/* Themed gradient avatar */
 	.themed-avatar {
 		background: linear-gradient(to bottom right, var(--theme-primary, #7b1818), transparent);
 	}
 
-	/* Themed sort/order button (selected, uses primary) */
 	.themed-sort-active {
 		border-color: var(--theme-primary, #7b1818);
 		background-color: var(--theme-primary, #7b1818);
@@ -88,7 +79,6 @@
 		background-color: var(--theme-accent, #f43f5e);
 	}
 
-	/* Themed carousel gradient (unpaid state) */
 	.themed-carousel-unpaid {
 		--tw-gradient-from: var(--theme-accentLight, rgba(244,63,94,0.1));
 		--tw-gradient-to: transparent;
@@ -99,7 +89,6 @@
 		--tw-gradient-to: color-mix(in srgb, var(--theme-primary, #7b1818) 30%, #0b0b0b);
 	}
 
-	/* Themed selected item (dropdown grid, category form) */
 	.themed-selected {
 		border-color: var(--theme-accent, #f43f5e);
 		background-color: var(--theme-accentLight, rgba(244,63,94,0.1));
@@ -109,7 +98,6 @@
 		background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 15%, transparent);
 	}
 
-	/* Themed hover for dropdown items */
 	.themed-item-hover:hover {
 		border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 70%, transparent);
 		background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 8%, transparent);
@@ -119,7 +107,6 @@
 		background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 10%, transparent);
 	}
 
-	/* Themed text for amounts/totals */
 	.themed-amount {
 		color: var(--theme-accent, #f43f5e);
 	}
@@ -127,7 +114,6 @@
 		color: color-mix(in srgb, var(--theme-accent, #f43f5e) 85%, #fff);
 	}
 
-	/* Themed outline button (border + text) */
 	.themed-outline-btn {
 		border-color: var(--theme-accent, #f43f5e);
 		color: var(--theme-accent, #f43f5e);
@@ -143,7 +129,6 @@
 		background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 10%, transparent);
 	}
 
-	/* Themed unread notification border */
 	.themed-unread-border {
 		border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 30%, transparent);
 	}

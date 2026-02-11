@@ -7,7 +7,7 @@ export default function useThemeColors() {
   const colors = useMemo(() => themeConfig.colors, [themeConfig])
 
   const chartColors = useMemo(() => ({
-    primary: colors.accent,
+    primary: 'rgba(150, 20, 20, 1)',
     primaryBg: colors.primaryLight,
     primaryBorder: colors.accent,
     primaryPoint: colors.accent,
