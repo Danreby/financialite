@@ -18,7 +18,7 @@ export default function ReportsMonthlySummary({ items = [], onSelectPeriod }) {
   }
 
   return (
-    <div className="mt-2 rounded-2xl bg-white p-3 sm:p-3 lg:p-4 shadow-sm ring-1 ring-black/5 dark:bg-[#080808] dark:ring-white/5">
+    <div className="mt-2 rounded-2xl p-3 sm:p-3 lg:p-4 shadow-sm ring-1 themed-card">
       <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
         Resumo por mês / ano
       </h2>

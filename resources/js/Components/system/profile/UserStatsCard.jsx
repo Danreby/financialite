@@ -15,7 +15,8 @@ export default function UserStatsCard({ stats = {} }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
-      className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#0a0a0a]"
+      className="rounded-2xl border p-5 shadow-sm themed-card"
+      style={{ borderColor: 'rgba(0, 0, 0, 0.1)' }}
     >
       <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">
         📊 Estatísticas da Conta

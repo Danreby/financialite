@@ -39,10 +39,22 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
       initial={false}
       animate={{ width: isOpen ? 220 : 64 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="flex-shrink-0 h-screen bg-white border-r border-gray-200 mt-2 shadow-md ring-1 ring-black/5 dark:bg-gradient-to-b dark:from-[#070707] dark:to-[#0b0b0b] dark:border-gray-800 dark:ring-black/30"
-      style={{ minWidth: 64, width: isOpen ? 'fit-content' : 64 }}
+      className="flex-shrink-0 h-screen border-r shadow-md ring-1"
+      style={{ 
+        minWidth: 64, 
+        width: isOpen ? 'fit-content' : 64,
+        backgroundColor: 'var(--theme-bgSidebarLight)',
+        borderColor: 'rgba(0, 0, 0, 0.1)',
+        ringColor: 'rgba(0, 0, 0, 0.05)',
+      }}
       aria-expanded={isOpen}
     >
+      <style>{`
+        .dark aside {
+          background-color: var(--theme-bgSidebarDark) !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+      `}</style>
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between px-4 py-4">
           <div

@@ -12,7 +12,7 @@ export default function ReportsPeriodSelector({
   const safeValue = selectedKey || (hasPeriods ? periods[periods.length - 1]?.key : "");
 
   return (
-    <div className="rounded-2xl bg-white p-3 shadow-md themed-card dark:bg-[#0b0b0b] sm:p-3 lg:p-4">
+    <div className="rounded-2xl p-3 shadow-md themed-card sm:p-3 lg:p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">

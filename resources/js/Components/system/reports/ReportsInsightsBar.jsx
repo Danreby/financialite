@@ -21,7 +21,7 @@ export default function ReportsInsightsBar({ insights }) {
   ];
 
   return (
-    <div className="rounded-2xl bg-white p-3 shadow-md themed-card sm:p-3 lg:p-4 dark:bg-[#0b0b0b]">
+    <div className="rounded-2xl p-3 shadow-md themed-card sm:p-3 lg:p-4">
       <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Insights rápidos</h2>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {items.map((item) => (

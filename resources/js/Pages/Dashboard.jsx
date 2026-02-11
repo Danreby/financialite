@@ -252,7 +252,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         </FadeInContainer>
 
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
-          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl bg-white p-4 dark:bg-[#0b0b0b] overflow-hidden">
+          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl p-4 overflow-hidden">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
                 Transações recentes

@@ -166,7 +166,7 @@ export default function About() {
 			</FadeInItem>
 
 			<FadeInItem>
-				<section className="bg-white dark:bg-[#0b0b0b] rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
+				<section className="rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
 					<h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
 						Tecnologias Utilizadas
 					</h2>

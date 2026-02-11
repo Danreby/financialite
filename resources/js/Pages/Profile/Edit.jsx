@@ -47,7 +47,7 @@ export default function Edit({
                     <UserStatsCard stats={userStats} />
 
                     <div className="grid gap-6 lg:grid-cols-3">
-                        <div className="lg:col-span-2 rounded-2xl bg-white/95 p-6 themed-card dark:bg-[#0b0b0b]">
+                        <div className="lg:col-span-2 rounded-2xl p-6 themed-card">
                             <UpdateProfileInformationForm
                                 mustVerifyEmail={mustVerifyEmail}
                                 status={status}
@@ -55,13 +55,13 @@ export default function Edit({
                             />
                         </div>
 
-                        <div className="rounded-2xl bg-white/95 p-6 themed-card dark:bg-[#0b0b0b]">
+                        <div className="rounded-2xl p-6 themed-card">
                             <UpdatePasswordForm className="max-w-xl" />
                         </div>
                     </div>
 
                     {/* Seção de Rendas */}
-                    <div className="rounded-2xl bg-white/95 p-6 themed-card dark:bg-[#0b0b0b]">
+                    <div className="rounded-2xl p-6 themed-card">
                         <IncomeSection
                             incomes={incomes}
                             totalMonthlyIncome={totalMonthlyIncome}
@@ -70,14 +70,14 @@ export default function Edit({
                     </div>
 
                     {/* Seção de Metas de Economia */}
-                    <div className="rounded-2xl bg-white/95 p-6 themed-card dark:bg-[#0b0b0b]">
+                    <div className="rounded-2xl p-6 themed-card">
                         <SavingsSection
                             savingsGoals={savingsGoals}
                             savingsSummary={savingsSummary}
                         />
                     </div>
 
-                    <div className="rounded-2xl bg-white/95 p-6 themed-card dark:bg-[#0b0b0b]">
+                    <div className="rounded-2xl p-6 themed-card">
                         <DeleteUserForm className="max-w-xl" />
                     </div>
                 </div>

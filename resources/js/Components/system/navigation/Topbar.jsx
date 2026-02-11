@@ -80,7 +80,19 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
   })()
 
   return (
-    <div className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 bg-white text-gray-900 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:text-gray-100 dark:ring-black/30">
+    <div 
+      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-md ring-1"
+      style={{
+        backgroundColor: 'var(--theme-bgTopbarLight)',
+        ringColor: 'rgba(0, 0, 0, 0.05)',
+      }}
+    >
+      <style>{`
+        .dark .flex.items-center.justify-between {
+          background-color: var(--theme-bgTopbarDark) !important;
+          color: #f3f4f6 !important;
+        }
+      `}</style>
       <div className="flex items-center gap-3">
         {onOpenMobileNav && (
           <BareButton

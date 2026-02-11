@@ -27,7 +27,7 @@ export default function ReportsPeriodModal({ isOpen, onClose, period, onSelectTr
           />
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-sm ring-1 ring-black/5 dark:border-gray-800 dark:bg-[#080808] dark:ring-white/5">
+        <div className="rounded-2xl border shadow-sm ring-1 themed-card">
           <div className="flex items-center justify-between px-3 py-2 sm:px-4">
             <div>
               <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">Transações do período</h3>
