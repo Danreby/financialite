@@ -191,9 +191,8 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 						<h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-gray-100">
 							Relatórios
 						</h1>
-						<p className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-3xl">
-							Acompanhe todas as suas transações em faturas, veja um resumo financeiro por período,
-							filtre por conta e categoria e exporte um arquivo Excel completo.
+						<p className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-4xl">
+							Acompanhe todas as suas transações em faturas, veja um resumo financeiro por período, filtre por conta e categoria e exporte um arquivo Excel completo.
 						</p>
 					</header>
 				</FadeInItem>
