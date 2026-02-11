@@ -6,24 +6,30 @@ export default function useThemeColors() {
 
   const colors = useMemo(() => themeConfig.colors, [themeConfig])
 
-  const chartColors = useMemo(() => ({
-    primary: 'rgba(150, 20, 20, 1)',
-    primaryBg: colors.primaryLight,
-    primaryBorder: colors.accent,
-    primaryPoint: colors.accent,
-    secondary: 'rgba(59, 130, 246, 1)',
-    secondaryBg: 'rgba(59, 130, 246, 0.15)',
-    grid: 'rgba(148, 163, 184, 0.2)',
-    tick: '#6b7280',
-    palette: [
-      colors.accent,
-      'rgba(59, 130, 246, 0.85)',
-      'rgba(34, 197, 94, 0.85)',
-      'rgba(234, 179, 8, 0.85)',
-      'rgba(168, 85, 247, 0.85)',
-      'rgba(14, 116, 144, 0.85)',
-    ],
-  }), [colors])
+  const chartColors = useMemo(() => {
+    // Detectar se está em modo dark
+    const isDark = document.documentElement.classList.contains('dark')
+    
+    return {
+      primary: colors.primary,
+      primaryBg: isDark ? colors.primaryLight : `${colors.accent}30`,
+      primaryBorder: colors.accent,
+      primaryPoint: colors.accent,
+      secondary: isDark ? 'rgba(59, 130, 246, 1)' : '#2563eb',
+      secondaryBg: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.2)',
+      grid: 'rgba(148, 163, 184, 0.2)',
+      tick: '#6b7280',
+      // Paleta com cores sólidas para modo light e levemente transparentes para dark
+      palette: [
+        colors.accent,
+        isDark ? 'rgba(59, 130, 246, 0.85)' : '#3b82f6',
+        isDark ? 'rgba(34, 197, 94, 0.85)' : '#22c55e',
+        isDark ? 'rgba(234, 179, 8, 0.85)' : '#eab308',
+        isDark ? 'rgba(168, 85, 247, 0.85)' : '#a855f7',
+        isDark ? 'rgba(14, 116, 144, 0.85)' : '#0e7490',
+      ],
+    }
+  }, [colors])
 
   const cssVar = (token) => `var(--theme-${token})`
 

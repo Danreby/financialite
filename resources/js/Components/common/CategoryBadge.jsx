@@ -38,13 +38,18 @@ export default function CategoryBadge({
   const baseClasses = `inline-flex items-center rounded-full font-medium transition-colors ${sizeClasses[size] || sizeClasses.md}`
 
   if (hasColor) {
+    // Detectar modo dark para ajustar opacidade
+    const isDark = document.documentElement.classList.contains('dark')
+    const bgOpacity = isDark ? '15' : '25'
+    const borderOpacity = isDark ? '40' : '50'
+    
     return (
       <span
         className={`${baseClasses} ${className}`}
         style={{
-          backgroundColor: `${color}15`,
+          backgroundColor: `${color}${bgOpacity}`,
           color: color,
-          borderColor: `${color}40`,
+          borderColor: `${color}${borderOpacity}`,
           borderWidth: '1px',
         }}
       >
