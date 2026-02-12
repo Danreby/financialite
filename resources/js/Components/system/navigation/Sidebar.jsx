@@ -39,13 +39,13 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
       initial={false}
       animate={{ width: isOpen ? 220 : 64 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="flex-shrink-0 h-screen border-r shadow-md ring-1"
+      className="flex-shrink-0 h-screen border-r-2 shadow-lg"
       style={{ 
         minWidth: 64, 
         width: isOpen ? 'fit-content' : 64,
         backgroundColor: 'var(--theme-bgSidebarLight)',
-        borderColor: 'rgba(0, 0, 0, 0.1)',
-        ringColor: 'rgba(0, 0, 0, 0.05)',
+        borderColor: 'var(--theme-primary)',
+        boxShadow: '4px 0 12px -2px rgba(0, 0, 0, 0.1)',
       }}
       aria-expanded={isOpen}
     >
@@ -65,7 +65,11 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
             aria-label={isOpen ? 'Brand' : 'Abrir sidebar'}
             className={`flex items-center gap-3 ${isOpen ? 'opacity-100' : 'justify-center'} cursor-pointer`}
           >
-            <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center ring-1 ring-gray-200 dark:bg-[#0f0f0f] dark:ring-black/20">
+            <div className="h-10 w-10 rounded-lg flex items-center justify-center ring-1 transition-all duration-150"
+                 style={{
+                   backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 30%, var(--theme-bgCardLight))',
+                   ringColor: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)',
+                 }}>
               <img src="/favicon.ico" alt="" className="h-10 w-10" aria-hidden />
             </div>
 
@@ -94,17 +98,22 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
                 exit={{ opacity: 0, x: -6 }}
                 transition={{ duration: 0.18 }}
                 onClick={toggle}
-                className="p-2 rounded-md hover:bg-gray-100 focus:outline-none dark:hover:bg-gray-900/30"
+                className="p-2 rounded-lg transition-all duration-150"
+                style={{
+                  backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 15%, transparent)',
+                  color: 'var(--theme-primary)',
+                }}
                 aria-label="Fechar sidebar"
                 aria-pressed={isOpen}
                 type="button"
                 whileTap={{ scale: 0.95 }}
               >
                 <motion.svg
-                  className="h-5 w-5 text-gray-500 dark:text-gray-300"
+                  className="h-5 w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   aria-hidden
+                  style={{ color: 'inherit' }}
                 >
                   <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </motion.svg>
@@ -141,9 +150,14 @@ function NavItem({ type = 3, size = 16, color, open, href, label }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900/30 whitespace-nowrap"
+      className="themed-nav-item whitespace-nowrap"
     >
-      <div className="h-8 w-8 rounded-md bg-gray-100 flex items-center justify-center ring-1 ring-gray-200 dark:bg-[#0f0f0f] dark:ring-black/20" aria-hidden>
+      <div className="h-8 w-8 rounded-lg flex items-center justify-center ring-1 transition-all duration-150 dark:bg-[#0f0f0f] dark:ring-black/20"
+           style={{
+             backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 20%, var(--theme-bgCardLight))',
+             ringColor: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)',
+           }}
+           aria-hidden>
         <NavIcon type={type} size={size} color={color}/>
       </div>
 

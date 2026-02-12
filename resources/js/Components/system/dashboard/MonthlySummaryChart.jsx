@@ -39,7 +39,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
 
   if (!data || data.length === 0) {
     return (
-      <div className="rounded-2xl themed-card p-4 shadow-md ring-1 ring-black/5 dark:ring-black/30">
+      <div className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
         <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
           Gastos mensais
         </h2>
@@ -152,7 +152,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
   }
 
   return (
-    <div className="rounded-2xl themed-card p-4">
+    <div className="themed-card rounded-2xl p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
           Gastos mensais
@@ -161,37 +161,43 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
           <span className="text-[11px] uppercase tracking-wide text-gray-600 dark:text-gray-400">
             Últimos 6 meses
           </span>
-          <div className="inline-flex items-center gap-1 rounded-lg bg-gray-100 p-1 text-[11px] dark:bg-gray-900/50">
+          <div className="inline-flex items-center gap-1 rounded-lg p-1 text-[11px] transition-all duration-150"
+               style={{
+                 backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 15%, var(--theme-bgCardLight))',
+               }}>
             <button
               type="button"
               onClick={() => setMode('both')}
-              className={`px-2 py-0.5 rounded-md border text-[11px] transition-colors ${
+              className={`px-2 py-0.5 rounded-md border text-[11px] transition-all duration-150 ${
                 mode === 'both'
                   ? 'themed-pill-active'
-                  : 'bg-transparent text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-200 dark:hover:bg-gray-800'
+                  : 'bg-transparent border-transparent hover:bg-white/50 dark:hover:bg-gray-800'
               }`}
+              style={mode !== 'both' ? { color: 'var(--theme-primary)' } : {}}
             >
               Ambos
             </button>
             <button
               type="button"
               onClick={() => setMode('invoice')}
-              className={`px-2 py-0.5 rounded-md border text-[11px] transition-colors ${
+              className={`px-2 py-0.5 rounded-md border text-[11px] transition-all duration-150 ${
                 mode === 'invoice'
                   ? 'themed-pill-active'
-                  : 'bg-transparent text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-200 dark:hover:bg-gray-800'
+                  : 'bg-transparent border-transparent hover:bg-white/50 dark:hover:bg-gray-800'
               }`}
+              style={mode !== 'invoice' ? { color: 'var(--theme-primary)' } : {}}
             >
               Crédito
             </button>
             <button
               type="button"
               onClick={() => setMode('debit')}
-              className={`px-2 py-0.5 rounded-md border text-[11px] transition-colors ${
+              className={`px-2 py-0.5 rounded-md border text-[11px] transition-all duration-150 ${
                 mode === 'debit'
                   ? 'themed-pill-active'
-                  : 'bg-transparent text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-200 dark:hover:bg-gray-800'
+                  : 'bg-transparent border-transparent hover:bg-white/50 dark:hover:bg-gray-800'
               }`}
+              style={mode !== 'debit' ? { color: 'var(--theme-primary)' } : {}}
             >
               Débito
             </button>

@@ -38,7 +38,6 @@ export default function CategoryBadge({
   const baseClasses = `inline-flex items-center rounded-lg font-medium transition-colors ${sizeClasses[size] || sizeClasses.md}`
 
   if (hasColor) {
-    // Detectar modo dark para ajustar opacidade - cores mais firmes no light mode
     const isDark = document.documentElement.classList.contains('dark')
     const bgOpacity = isDark ? '30' : '90'
     const borderOpacity = isDark ? '50' : 'E6'
