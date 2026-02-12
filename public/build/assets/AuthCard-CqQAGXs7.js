@@ -1,5 +1,0 @@
-<<<<<<<< HEAD:public/build/assets/AuthCard-CqQAGXs7.js
-import{j as e}from"./app-C9JV9p_x.js";function d({children:r}){return e.jsxs("div",{className:"relative overflow-hidden rounded-2xl bg-white/95 text-gray-900 shadow-xl themed-card dark:bg-gradient-to-b dark:from-[#0b0b0b] dark:via-[#0b0b0b] dark:to-[#0f0f0f] dark:text-gray-100 sm:rounded-3xl",children:[e.jsx("div",{className:"absolute inset-0 pointer-events-none border border-black/5 mix-blend-overlay opacity-30 dark:border-black/10"}),e.jsx("div",{className:"relative",children:r})]})}export{d as A};
-========
-import{j as e}from"./app-Cxzkoeim.js";function d({children:r}){return e.jsxs("div",{className:"relative overflow-hidden rounded-2xl bg-white/95 text-gray-900 shadow-xl themed-card dark:bg-gradient-to-b dark:from-[#0b0b0b] dark:via-[#0b0b0b] dark:to-[#0f0f0f] dark:text-gray-100 sm:rounded-3xl",children:[e.jsx("div",{className:"absolute inset-0 pointer-events-none border border-black/5 mix-blend-overlay opacity-30 dark:border-black/10"}),e.jsx("div",{className:"relative",children:r})]})}export{d as A};
->>>>>>>> dac8e97d610629c2c5eb2f1ceed5b1cf4f25add6:public/build/assets/AuthCard-CfC6cffd.js
