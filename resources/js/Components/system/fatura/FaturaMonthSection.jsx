@@ -84,7 +84,7 @@ export default function FaturaMonthSection({
           </p>
         ) : (
           <>
-						<div className="flex items-center justify-between px-3 pt-3 pb-2 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
+						<div className="">
               <span className="font-semibold uppercase tracking-wide">Ordenar</span>
               <div className="flex items-center gap-2">
                 <BareButton

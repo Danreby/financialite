@@ -161,10 +161,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
           <span className="text-[11px] uppercase tracking-wide text-gray-600 dark:text-gray-400">
             Últimos 6 meses
           </span>
-          <div className="inline-flex items-center gap-1 rounded-lg p-1 text-[11px] transition-all duration-150"
-               style={{
-                 backgroundColor: 'var(--theme-primaryLight)',
-               }}>
+          <div className="inline-flex items-center gap-1 rounded-lg p-1 text-[11px] transition-all duration-150">
             <button
               type="button"
               onClick={() => setMode('both')}
