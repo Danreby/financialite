@@ -86,7 +86,7 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
             <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Valor total
             </p>
-            <p className="text-sm sm:text-base md:text-lg font-semibold themed-amount">
+            <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">
               {formatCurrency(rawAmountNumber)}
             </p>
           </div>
@@ -95,7 +95,7 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
             <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Valor do mês
             </p>
-            <p className="text-sm sm:text-base md:text-lg font-semibold themed-amount">
+            <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">
               {formatCurrency(installmentAmount)}
             </p>
           </div>

@@ -60,7 +60,7 @@ export default function FaturaMonthSection({
             )}
 					<p className="mt-1 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
               Total de despesas do mês{}:
-              <span className="ml-1 font-semibold themed-amount">
+              <span className="ml-1 font-semibold text-gray-900 dark:text-gray-100">
                 {formatCurrency(total_spent)}
               </span>
             </p>
@@ -77,7 +77,7 @@ export default function FaturaMonthSection({
         )}
       </div>
 
-      <div className="rounded-2xl bg-white  px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-gray-500 dark:shadow-gray-900 dark:bg-[#080808]">
+      <div className="rounded-2xl bg-white px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-sm dark:bg-[#0a0a0a]">
         {items.length === 0 ? (
 					<p className="px-3 py-2 text-xs sm:text-sm lg:text-base 2xl:text-sm text-gray-500 dark:text-gray-400">
             Nenhuma transação neste mês.
@@ -92,7 +92,7 @@ export default function FaturaMonthSection({
                   onClick={() => setSortField("date")}
 								className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] sm:text-[11px] 2xl:text-[11px] font-medium transition ${
                     sortField === "date"
-                      ? "themed-sort-active"
+                      ? "border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900"
                       : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#050505] dark:text-gray-200 dark:hover:bg-gray-800"
                   }`}
                 >
@@ -103,7 +103,7 @@ export default function FaturaMonthSection({
                   onClick={() => setSortField("amount")}
 								className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] sm:text-[11px] 2xl:text-[11px] font-medium transition ${
                     sortField === "amount"
-                      ? "themed-sort-active"
+                      ? "border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900"
                       : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#050505] dark:text-gray-200 dark:hover:bg-gray-800"
                   }`}
                 >

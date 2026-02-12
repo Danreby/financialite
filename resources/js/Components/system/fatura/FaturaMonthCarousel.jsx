@@ -131,7 +131,7 @@ export default function FaturaMonthCarousel({
             >
 				  {capitalizeFirst(formatMonthLabel(current.month_key, current.month_label))}
             </span>
-				<span className={`font-semibold text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "themed-amount"}`}>
+				<span className={`font-semibold text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"}`}>
               {formatCurrency(total_spent)}
             </span>
           </motion.div>
