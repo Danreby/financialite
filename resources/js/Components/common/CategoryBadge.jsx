@@ -18,9 +18,9 @@ export default function CategoryBadge({
   const hasIcon = showIcon && iconEmoji
 
   const sizeClasses = {
-    sm: 'text-[10px] px-2 py-0.5 gap-1',
-    md: 'text-xs px-2.5 py-1 gap-1.5',
-    lg: 'text-sm px-3 py-1.5 gap-2',
+    sm: 'text-[10px] px-2 py-1 gap-1',
+    md: 'text-xs px-2.5 py-2 gap-1.5',
+    lg: 'text-sm px-3 py-2 gap-2',
   }
 
   const iconSizeClasses = {
@@ -35,20 +35,20 @@ export default function CategoryBadge({
     lg: 'h-2.5 w-2.5',
   }
 
-  const baseClasses = `inline-flex items-center rounded-full font-medium transition-colors ${sizeClasses[size] || sizeClasses.md}`
+  const baseClasses = `inline-flex items-center rounded-lg font-medium transition-colors ${sizeClasses[size] || sizeClasses.md}`
 
   if (hasColor) {
-    // Detectar modo dark para ajustar opacidade
+    // Detectar modo dark para ajustar opacidade - cores mais firmes no light mode
     const isDark = document.documentElement.classList.contains('dark')
-    const bgOpacity = isDark ? '15' : '25'
-    const borderOpacity = isDark ? '40' : '50'
+    const bgOpacity = isDark ? '30' : '90'
+    const borderOpacity = isDark ? '50' : 'E6'
     
     return (
       <span
         className={`${baseClasses} ${className}`}
         style={{
           backgroundColor: `${color}${bgOpacity}`,
-          color: color,
+          color: isDark ? color : '#ffffff',
           borderColor: `${color}${borderOpacity}`,
           borderWidth: '1px',
         }}

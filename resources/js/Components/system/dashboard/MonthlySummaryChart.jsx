@@ -39,7 +39,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
 
   if (!data || data.length === 0) {
     return (
-      <div className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5 dark:bg-[#0b0b0b] dark:ring-black/30">
+      <div className="rounded-2xl themed-card p-4 shadow-md ring-1 ring-black/5 dark:ring-black/30">
         <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
           Gastos mensais
         </h2>
@@ -152,7 +152,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
   }
 
   return (
-    <div className="rounded-2xl bg-white p-4 themed-card dark:bg-[#0b0b0b]">
+    <div className="rounded-2xl themed-card p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
           Gastos mensais
