@@ -12,11 +12,11 @@ export default function useThemeColors() {
     
     return {
       primary: colors.primary,
-      primaryBg: isDark ? colors.primaryLight : `${colors.accent}30`,
+      primaryBg: isDark ? `${colors.primary}18` : `${colors.accent}08`,
       primaryBorder: colors.accent,
       primaryPoint: colors.accent,
       secondary: isDark ? 'rgba(59, 130, 246, 1)' : '#2563eb',
-      secondaryBg: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.2)',
+      secondaryBg: isDark ? 'rgba(59, 130, 246, 0.10)' : 'rgba(37, 99, 235, 0.05)',
       grid: 'rgba(148, 163, 184, 0.2)',
       tick: '#6b7280',
       // Paleta com cores sólidas para modo light e levemente transparentes para dark

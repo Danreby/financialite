@@ -52,7 +52,7 @@ export default function FaturaMonthSection({
 	<section className="space-y-3 sm:space-y-4 lg:space-y-5 2xl:space-y-5">
       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 flex justify-start items-center gap-3 sm:gap-4">
-          <div className="inline-flex flex-col items-start rounded-2xl sm:rounded-full px-4 py-2 sm:px-6 sm:py-3 bg-transparent">
+          <div className="inline-flex flex-col items-start px-4 py-2">
             {due_day && (
 						<p className="mt-0.5 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
                 Vencimento do cartão: todo dia <span className="font-semibold">{due_day}</span>
@@ -84,7 +84,7 @@ export default function FaturaMonthSection({
           </p>
         ) : (
           <>
-						<div className="flex items-center justify-between px-3 pt-1 pb-1 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
+						<div className="flex items-center justify-between px-3 pt-3 pb-2 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
               <span className="font-semibold uppercase tracking-wide">Ordenar</span>
               <div className="flex items-center gap-2">
                 <BareButton

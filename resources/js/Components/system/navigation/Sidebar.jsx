@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from '@inertiajs/react'
-import NavIcon from '@/Components/common/icons/NavIcon'
+import ThemedNavIcon from '@/Components/common/ThemedNavIcon'
 
 export default function Sidebar({ open: openProp = true, setOpen: setOpenProp }) {
   const [isOpen, setIsOpen] = useState(Boolean(openProp))
@@ -65,11 +65,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
             aria-label={isOpen ? 'Brand' : 'Abrir sidebar'}
             className={`flex items-center gap-3 ${isOpen ? 'opacity-100' : 'justify-center'} cursor-pointer`}
           >
-            <div className="h-10 w-10 rounded-lg flex items-center justify-center ring-1 transition-all duration-150"
-                 style={{
-                   backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 30%, var(--theme-bgCardLight))',
-                   ringColor: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)',
-                 }}>
+            <div className="h-10 w-10 rounded-lg flex items-center justify-center ring-1 transition-all duration-150 themed-icon-wrapper">
               <img src="/favicon.ico" alt="" className="h-10 w-10" aria-hidden />
             </div>
 
@@ -98,11 +94,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
                 exit={{ opacity: 0, x: -6 }}
                 transition={{ duration: 0.18 }}
                 onClick={toggle}
-                className="p-2 rounded-lg transition-all duration-150"
-                style={{
-                  backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 15%, transparent)',
-                  color: 'var(--theme-primary)',
-                }}
+                className="p-2 rounded-lg transition-all duration-150 themed-icon-wrapper"
                 aria-label="Fechar sidebar"
                 aria-pressed={isOpen}
                 type="button"
@@ -152,14 +144,7 @@ function NavItem({ type = 3, size = 16, color, open, href, label }) {
       href={href}
       className="themed-nav-item whitespace-nowrap"
     >
-      <div className="h-8 w-8 rounded-lg flex items-center justify-center ring-1 transition-all duration-150 dark:bg-[#0f0f0f] dark:ring-black/20"
-           style={{
-             backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 20%, var(--theme-bgCardLight))',
-             ringColor: 'color-mix(in srgb, var(--theme-primary) 15%, transparent)',
-           }}
-           aria-hidden>
-        <NavIcon type={type} size={size} color={color}/>
-      </div>
+      <ThemedNavIcon type={type} size={size} />
 
       <AnimatePresence initial={false}>
         {open && (

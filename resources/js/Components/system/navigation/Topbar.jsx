@@ -119,12 +119,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
             onToggleNotifications()
             setUnreadCount(0)
           }}
-          className="relative h-9 w-9 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all duration-150 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 20%, var(--theme-bgCardLight))',
-            borderColor: 'color-mix(in srgb, var(--theme-primary) 25%, transparent)',
-            color: 'var(--theme-primary)',
-          }}
+          className="relative h-9 w-9 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all duration-150 themed-topbar-btn"
           aria-label="Abrir notificações"
         >
           <BellIcon type={1} />
@@ -139,12 +134,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
         <BareButton
           type="button"
           onClick={toggleTheme}
-          className="h-9 px-3 rounded-lg text-xs font-semibold border-2 shadow-sm transition-all duration-150 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 20%, var(--theme-bgCardLight))',
-            borderColor: 'color-mix(in srgb, var(--theme-primary) 25%, transparent)',
-            color: 'var(--theme-primary)',
-          }}
+          className="h-9 px-3 rounded-lg text-xs font-semibold border-2 shadow-sm transition-all duration-150 themed-topbar-btn"
           aria-label="Alternar tema claro/escuro"
         >
           <AnimatePresence mode="wait" initial={false}>

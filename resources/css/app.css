@@ -218,14 +218,10 @@
 
 	.themed-card-title {
 		@apply inline-block px-3 py-1.5 rounded-lg font-semibold text-sm;
-		background-color: color-mix(in srgb, var(--theme-primaryLight) 30%, var(--theme-bgCardLight));
 		color: var(--theme-primary);
-		border: 1px solid color-mix(in srgb, var(--theme-primary) 20%, transparent);
 		
 		&:is(.dark *) {
-			background-color: color-mix(in srgb, var(--theme-accent) 10%, transparent);
 			color: color-mix(in srgb, var(--theme-accent) 90%, #fff);
-			border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
 		}
 	}
 
@@ -238,8 +234,16 @@
 			transform: translateX(2px);
 		}
 		
+		& svg {
+			color: var(--theme-primary);
+		}
+		
 		&:is(.dark *) {
-			color: #d1d5db;
+			color: color-mix(in srgb, var(--theme-accent) 85%, #fff);
+		}
+		
+		&:is(.dark *) svg {
+			color: var(--theme-accent);
 		}
 		
 		&:is(.dark *):hover {
@@ -362,6 +366,44 @@
 		
 		&:is(.dark *) {
 			border-color: rgba(255, 255, 255, 0.1);
+		}
+	}
+
+	.themed-icon-wrapper {
+		background-color: var(--theme-primaryLight);
+		ring-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
+		
+		& svg {
+			color: var(--theme-primary);
+		}
+		
+		&:is(.dark *) {
+			background-color: rgba(15, 15, 15, 0.5);
+			ring-color: rgba(0, 0, 0, 0.3);
+		}
+		
+		&:is(.dark *) svg {
+			color: var(--theme-accent);
+		}
+	}
+
+	.themed-topbar-btn {
+		background-color: var(--theme-primaryLight);
+		border-color: var(--theme-primary);
+		color: var(--theme-primary);
+		
+		& svg {
+			color: var(--theme-primary);
+		}
+		
+		&:is(.dark *) {
+			background-color: rgba(17, 17, 17, 0.6);
+			border-color: color-mix(in srgb, var(--theme-accent) 50%, transparent);
+			color: var(--theme-accent);
+		}
+		
+		&:is(.dark *) svg {
+			color: var(--theme-accent);
 		}
 	}
 }

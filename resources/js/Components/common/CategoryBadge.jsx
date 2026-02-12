@@ -39,16 +39,13 @@ export default function CategoryBadge({
 
   if (hasColor) {
     const isDark = document.documentElement.classList.contains('dark')
-    const bgOpacity = isDark ? '30' : '90'
-    const borderOpacity = isDark ? '50' : 'E6'
     
     return (
       <span
         className={`${baseClasses} ${className}`}
         style={{
-          backgroundColor: `${color}${bgOpacity}`,
-          color: isDark ? color : '#ffffff',
-          borderColor: `${color}${borderOpacity}`,
+          color: isDark ? color : color,
+          borderColor: `${color}${isDark ? '50' : 'CC'}`,
           borderWidth: '1px',
         }}
       >

@@ -163,7 +163,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
           </span>
           <div className="inline-flex items-center gap-1 rounded-lg p-1 text-[11px] transition-all duration-150"
                style={{
-                 backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 15%, var(--theme-bgCardLight))',
+                 backgroundColor: 'var(--theme-primaryLight)',
                }}>
             <button
               type="button"
@@ -171,7 +171,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
               className={`px-2 py-0.5 rounded-md border text-[11px] transition-all duration-150 ${
                 mode === 'both'
                   ? 'themed-pill-active'
-                  : 'bg-transparent border-transparent hover:bg-white/50 dark:hover:bg-gray-800'
+                  : 'bg-transparent border-transparent'
               }`}
               style={mode !== 'both' ? { color: 'var(--theme-primary)' } : {}}
             >
@@ -183,7 +183,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
               className={`px-2 py-0.5 rounded-md border text-[11px] transition-all duration-150 ${
                 mode === 'invoice'
                   ? 'themed-pill-active'
-                  : 'bg-transparent border-transparent hover:bg-white/50 dark:hover:bg-gray-800'
+                  : 'bg-transparent border-transparent'
               }`}
               style={mode !== 'invoice' ? { color: 'var(--theme-primary)' } : {}}
             >
@@ -195,7 +195,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
               className={`px-2 py-0.5 rounded-md border text-[11px] transition-all duration-150 ${
                 mode === 'debit'
                   ? 'themed-pill-active'
-                  : 'bg-transparent border-transparent hover:bg-white/50 dark:hover:bg-gray-800'
+                  : 'bg-transparent border-transparent'
               }`}
               style={mode !== 'debit' ? { color: 'var(--theme-primary)' } : {}}
             >
