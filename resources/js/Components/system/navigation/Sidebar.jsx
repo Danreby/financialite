@@ -39,13 +39,13 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
       initial={false}
       animate={{ width: isOpen ? 220 : 64 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="flex-shrink-0 h-screen border-r-2 shadow-lg"
+      className="flex-shrink-0 h-screen border-r shadow-lg"
       style={{ 
         minWidth: 64, 
         width: isOpen ? 'fit-content' : 64,
         backgroundColor: 'var(--theme-bgSidebarLight)',
-        borderColor: 'var(--theme-primary)',
-        boxShadow: '4px 0 12px -2px rgba(0, 0, 0, 0.1)',
+        borderColor: '#e5e5e5',
+        boxShadow: '1px 0 3px 0 rgba(0, 0, 0, 0.1), 1px 0 2px -1px rgba(0, 0, 0, 0.1)',
       }}
       aria-expanded={isOpen}
     >
@@ -53,6 +53,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
         .dark aside {
           background-color: var(--theme-bgSidebarDark) !important;
           border-color: rgba(255, 255, 255, 0.1) !important;
+          box-shadow: 1px 0 3px 0 rgba(0, 0, 0, 0.3) !important;
         }
       `}</style>
       <div className="h-full flex flex-col">

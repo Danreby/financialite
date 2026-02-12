@@ -81,11 +81,11 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
 
   return (
     <div 
-      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-lg border-b-2"
+      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-md border-b"
       style={{
         backgroundColor: 'var(--theme-bgTopbarLight)',
-        borderColor: 'var(--theme-primary)',
-        boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.1)',
+        borderColor: '#e5e5e5',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
       }}
     >
       <style>{`
@@ -93,6 +93,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
           background-color: var(--theme-bgTopbarDark) !important;
           color: #f3f4f6 !important;
           border-color: rgba(255, 255, 255, 0.1) !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
         }
       `}</style>
       <div className="flex items-center gap-3">

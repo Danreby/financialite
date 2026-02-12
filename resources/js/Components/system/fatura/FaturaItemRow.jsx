@@ -59,7 +59,7 @@ export default function FaturaItemRow({
 
   return (
     <div
-			className="flex items-center justify-between gap-3 px-2 sm:px-3 lg:px-3 2xl:px-3 py-1.5 lg:py-2 2xl:py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/60 transition cursor-pointer"
+			className="flex items-center justify-between gap-3 px-2 sm:px-3 lg:px-3 2xl:px-3 py-1.5 lg:py-2 2xl:py-2 rounded-xl transition cursor-pointer"
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}

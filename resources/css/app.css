@@ -4,25 +4,25 @@
 
 @layer base {
 	:root {
-		--theme-primary: #7b1818;
-		--theme-primaryHover: #5c1212;
-		--theme-primaryLight: rgba(244, 63, 94, 0.15);
-		--theme-primaryRing: rgba(244, 63, 94, 0.5);
+		--theme-primary: #be123c;
+		--theme-primaryHover: #9f1239;
+		--theme-primaryLight: #fda4af;
+		--theme-primaryRing: #fecdd3;
 		--theme-accent: #f43f5e;
 		--theme-accentHover: #e11d48;
-		--theme-accentLight: rgba(244, 63, 94, 0.1);
-		--theme-scrollbar: #7b1818;
+		--theme-accentLight: #ffe4e6;
+		--theme-scrollbar: #be123c;
 		--theme-scrollbarDark: #fb7185;
 		--theme-borderDark: rgba(69, 10, 10, 0.5);
 		--theme-gradient: from-[#3a0f0f] to-transparent;
-		--theme-bgPageLight: #fef2f2;
+		--theme-bgPageLight: #fafafa;
 		--theme-bgPageDark: #0a0404;
-		--theme-bgSidebarLight: #ffe4e6;
+		--theme-bgSidebarLight: #ffffff;
 		--theme-bgSidebarDark: #1a0606;
-		--theme-bgTopbarLight: #fff1f2;
+		--theme-bgTopbarLight: #ffffff;
 		--theme-bgTopbarDark: #140505;
 		--theme-bgCardLight: #ffffff;
-		--theme-bgCardLightHover: #fff5f5;
+		--theme-bgCardLightHover: #fef2f2;
 	}
 }
 
@@ -37,13 +37,13 @@
 	}
 
 	.themed-card {
-		@apply border shadow-lg ring-1 transition-shadow duration-200;
+		@apply border ring-1 transition-shadow duration-200;
 		background-color: var(--theme-bgCardLight);
-		border-color: var(--theme-primary);
+		border-color: #e5e5e5;
 		border-width: 1px;
 		border-style: solid;
-		box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.08);
-		ring-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
+		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+		ring-color: rgba(0, 0, 0, 0.05);
 		
 		&:is(.dark *) {
 			background-color: transparent;
@@ -54,20 +54,20 @@
 	}
 
 	.themed-card-hover {
-		@apply border shadow-lg ring-1 transition-all duration-200;
+		@apply border ring-1 transition-all duration-200;
 		background-color: var(--theme-bgCardLight);
-		border-color: var(--theme-primary);
+		border-color: #e5e5e5;
 		border-width: 1px;
 		border-style: solid;
-		box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.08);
-		ring-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
+		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+		ring-color: rgba(0, 0, 0, 0.05);
 		
 		&:hover {
 			background-color: var(--theme-bgCardLightHover);
 			border-color: var(--theme-accent);
-			box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.15), 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 			transform: translateY(-2px);
-			ring-color: color-mix(in srgb, var(--theme-accent) 25%, transparent);
+			ring-color: #fecdd3;
 		}
 		
 		&:is(.dark *) {
@@ -93,19 +93,20 @@
 	}
 
 	.themed-input {
-		@apply border shadow-sm transition-colors duration-150;
+		@apply border transition-all duration-150;
 		background-color: var(--theme-bgCardLight);
-		border-color: color-mix(in srgb, var(--theme-primary) 30%, transparent);
+		border-color: #d4d4d4;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 		
 		&:hover {
-			border-color: color-mix(in srgb, var(--theme-primary) 50%, transparent);
+			border-color: #a3a3a3;
 		}
 		
 		&:focus {
 			outline: none;
 			border-color: var(--theme-accent);
 			--tw-ring-color: var(--theme-accent);
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 20%, transparent);
+			box-shadow: 0 0 0 3px #fecdd3;
 		}
 		
 		&:is(.dark *) {
@@ -131,7 +132,7 @@
 		background-color: var(--theme-accent);
 		color: #fff;
 		border-color: var(--theme-accent);
-		box-shadow: 0 2px 8px -1px color-mix(in srgb, var(--theme-accent) 40%, transparent);
+		box-shadow: 0 2px 4px 0 rgba(244, 63, 94, 0.3), 0 1px 2px -1px rgba(244, 63, 94, 0.3);
 		font-weight: 600;
 	}
 	:is(.dark *) .themed-pill-active {
@@ -152,10 +153,10 @@
 	}
 
 	.themed-sort-active {
-		border-color: var(--theme-primary, #7b1818);
-		background-color: var(--theme-primary, #7b1818);
+		border-color: var(--theme-primary, #be123c);
+		background-color: var(--theme-primary, #be123c);
 		color: #fff;
-		box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+		box-shadow: 0 1px 3px 0 rgba(190, 18, 60, 0.3), 0 1px 2px -1px rgba(190, 18, 60, 0.3);
 	}
 	:is(.dark *) .themed-sort-active {
 		border-color: var(--theme-accent, #f43f5e);
@@ -174,7 +175,7 @@
 
 	.themed-selected {
 		border-color: var(--theme-accent, #f43f5e);
-		background-color: var(--theme-accentLight, rgba(244,63,94,0.1));
+		background-color: var(--theme-accentLight, #ffe4e6);
 	}
 	:is(.dark *) .themed-selected {
 		border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 80%, transparent);
@@ -202,7 +203,7 @@
 		color: var(--theme-accent, #f43f5e);
 	}
 	.themed-outline-btn:hover {
-		background-color: var(--theme-accentLight, rgba(244,63,94,0.1));
+		background-color: #ffe4e6;
 	}
 	:is(.dark *) .themed-outline-btn {
 		border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 70%, transparent);
@@ -230,7 +231,7 @@
 		color: var(--theme-primary);
 		
 		&:hover {
-			background-color: color-mix(in srgb, var(--theme-primaryLight) 40%, transparent);
+			background-color: #fef2f2;
 			transform: translateX(2px);
 		}
 		
@@ -256,12 +257,12 @@
 		background-color: var(--theme-accent);
 		color: #ffffff;
 		border: 1px solid var(--theme-accent);
-		box-shadow: 0 2px 8px -1px color-mix(in srgb, var(--theme-accent) 40%, transparent);
+		box-shadow: 0 2px 4px 0 rgba(244, 63, 94, 0.3), 0 1px 2px -1px rgba(244, 63, 94, 0.3);
 		
 		&:hover {
 			background-color: var(--theme-accentHover);
 			transform: translateY(-1px);
-			box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--theme-accent) 50%, transparent);
+			box-shadow: 0 4px 6px 0 rgba(244, 63, 94, 0.35), 0 2px 4px -1px rgba(244, 63, 94, 0.35);
 		}
 		
 		&:active {
@@ -271,15 +272,16 @@
 
 	.themed-button-secondary {
 		@apply px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-150;
-		background-color: color-mix(in srgb, var(--theme-primaryLight) 20%, var(--theme-bgCardLight));
+		background-color: #fef2f2;
 		color: var(--theme-primary);
-		border: 1px solid color-mix(in srgb, var(--theme-primary) 30%, transparent);
+		border: 1px solid #fda4af;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 		
 		&:hover {
-			background-color: color-mix(in srgb, var(--theme-primaryLight) 40%, var(--theme-bgCardLight));
+			background-color: #fecdd3;
 			border-color: var(--theme-accent);
 			transform: translateY(-1px);
-			box-shadow: 0 2px 8px -1px color-mix(in srgb, var(--theme-accent) 25%, transparent);
+			box-shadow: 0 2px 4px 0 rgba(244, 63, 94, 0.2);
 		}
 		
 		&:active {
@@ -300,14 +302,14 @@
 
 	.themed-stat-card {
 		@apply p-4 rounded-xl transition-all duration-200;
-		background: linear-gradient(135deg, var(--theme-bgCardLight), color-mix(in srgb, var(--theme-primaryLight) 15%, var(--theme-bgCardLight)));
-		border: 2px solid color-mix(in srgb, var(--theme-primary) 20%, transparent);
-		box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--theme-primary) 12%, rgba(0, 0, 0, 0.08));
+		background: linear-gradient(135deg, #ffffff, #fef2f2);
+		border: 1px solid #fda4af;
+		box-shadow: 0 2px 4px 0 rgba(190, 18, 60, 0.15), 0 1px 2px -1px rgba(190, 18, 60, 0.15);
 		
 		&:hover {
 			transform: translateY(-2px);
-			box-shadow: 0 8px 20px -4px color-mix(in srgb, var(--theme-primary) 18%, rgba(0, 0, 0, 0.12));
-			border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
+			box-shadow: 0 4px 6px 0 rgba(190, 18, 60, 0.2), 0 2px 4px -1px rgba(190, 18, 60, 0.2);
+			border-color: var(--theme-accent);
 		}
 		
 		&:is(.dark *) {
@@ -325,7 +327,7 @@
 	.themed-icon-box {
 		@apply h-10 w-10 rounded-lg flex items-center justify-center transition-all duration-150;
 		background: linear-gradient(135deg, var(--theme-accent), var(--theme-accentHover));
-		box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--theme-accent) 40%, transparent);
+		box-shadow: 0 2px 4px 0 rgba(244, 63, 94, 0.3), 0 1px 2px -1px rgba(244, 63, 94, 0.3);
 		
 		&:is(.dark *) {
 			box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.4);
@@ -334,9 +336,9 @@
 
 	.themed-badge {
 		@apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold;
-		background-color: color-mix(in srgb, var(--theme-primaryLight) 40%, var(--theme-bgCardLight));
+		background-color: #fef2f2;
 		color: var(--theme-primary);
-		border: 1px solid color-mix(in srgb, var(--theme-primary) 25%, transparent);
+		border: 1px solid #fecdd3;
 		
 		&:is(.dark *) {
 			background-color: color-mix(in srgb, var(--theme-accent) 15%, transparent);
@@ -362,7 +364,7 @@
 	}
 
 	.themed-divider {
-		border-color: color-mix(in srgb, var(--theme-primary) 20%, transparent);
+		border-color: #e5e5e5;
 		
 		&:is(.dark *) {
 			border-color: rgba(255, 255, 255, 0.1);
@@ -370,8 +372,8 @@
 	}
 
 	.themed-icon-wrapper {
-		background-color: var(--theme-primaryLight);
-		ring-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
+		background-color: #fef2f2;
+		ring-color: #fecdd3;
 		
 		& svg {
 			color: var(--theme-primary);
@@ -388,8 +390,8 @@
 	}
 
 	.themed-topbar-btn {
-		background-color: var(--theme-primaryLight);
-		border-color: var(--theme-primary);
+		background-color: #fef2f2;
+		border-color: #fda4af;
 		color: var(--theme-primary);
 		
 		& svg {
