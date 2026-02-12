@@ -19,7 +19,14 @@ export default function AuthenticatedLayout({ children }) {
 
   return (
   <ThemeProvider initialTheme={initialTheme}>
-	<div className="h-screen flex overflow-hidden bg-gray-50 text-gray-900 dark:bg-[#0a0a0a] dark:text-gray-100">
+	<div className="h-screen flex overflow-hidden text-gray-900 dark:text-gray-100" style={{
+		backgroundColor: 'var(--theme-bgPageLight)',
+	}}>
+		<style>{`
+			.dark .h-screen {
+				background-color: var(--theme-bgPageDark) !important;
+			}
+		`}</style>
     <div className="hidden lg:block">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
     </div>
@@ -33,7 +40,14 @@ export default function AuthenticatedLayout({ children }) {
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
 
-    		<main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 px-3 py-4 sm:px-4 lg:px-6 dark:bg-[#0a0a0a]">
+    		<main className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6" style={{
+				backgroundColor: 'var(--theme-bgPageLight)',
+			}}>
+				<style>{`
+					.dark main {
+						background-color: var(--theme-bgPageDark) !important;
+					}
+				`}</style>
           {children}
         </main>
       </div>

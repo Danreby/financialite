@@ -90,7 +90,7 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
 
       <div className="mt-1 flex items-center justify-between gap-3 sm:mt-0 sm:gap-4">
         <div className="flex flex-col items-end text-right">
-					<span className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
+					<span className="text-sm lg:text-base font-semibold themed-amount">
             -{formatCurrency(amount)}
           </span>
 					<span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">

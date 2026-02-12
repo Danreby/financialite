@@ -104,7 +104,7 @@ export default function ReportsTransactionRow({ transaction, onSelect }) {
       </div>
 
       <div className="flex flex-col items-end gap-1">
-        <span className={`text-sm sm:text-base font-semibold ${isCredit ? "text-amber-600 dark:text-amber-400" : "text-gray-900 dark:text-gray-100"}`}>
+        <span className={`text-sm sm:text-base font-semibold ${isCredit ? "text-amber-600 dark:text-amber-400" : "themed-amount"}`}>
           {formatCurrency(valueForPeriod)}
         </span>
         <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">

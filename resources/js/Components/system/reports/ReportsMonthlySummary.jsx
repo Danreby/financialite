@@ -50,7 +50,7 @@ export default function ReportsMonthlySummary({ items = [], onSelectPeriod }) {
                 <td className="py-1.5 px-3 text-right text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                   {formatCurrency(row.total_credit)}
                 </td>
-                <td className="py-1.5 px-3 text-right text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                <td className="py-1.5 px-3 text-right themed-amount whitespace-nowrap">
                   {formatCurrency(row.total_debit)}
                 </td>
                 <td className="py-1.5 pl-3 text-right text-gray-700 dark:text-gray-200 whitespace-nowrap">
