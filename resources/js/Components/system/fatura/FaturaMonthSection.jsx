@@ -77,7 +77,7 @@ export default function FaturaMonthSection({
         )}
       </div>
 
-      <div className="rounded-2xl bg-white themed-card px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-gray-500 dark:shadow-gray-900 dark:bg-[#080808]">
+      <div className="rounded-2xl bg-white  px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-gray-500 dark:shadow-gray-900 dark:bg-[#080808]">
         {items.length === 0 ? (
 					<p className="px-3 py-2 text-xs sm:text-sm lg:text-base 2xl:text-sm text-gray-500 dark:text-gray-400">
             Nenhuma transação neste mês.
