@@ -31,7 +31,7 @@ export default function TopSpendingCategories({
   const colors = chartColors.palette
 
   return (
-    <div className="relative rounded-2xl themed-card bg-white p-4 dark:bg-[#0b0b0b] overflow-hidden">
+    <div className="relative rounded-2xl themed-card p-4 overflow-hidden">
       <LoadingOverlay visible={isLoading} message="Carregando..." />
 
       <div className="flex items-center justify-between mb-3">

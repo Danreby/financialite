@@ -81,16 +81,18 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
 
   return (
     <div 
-      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-md ring-1"
+      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-lg border-b-2"
       style={{
         backgroundColor: 'var(--theme-bgTopbarLight)',
-        ringColor: 'rgba(0, 0, 0, 0.05)',
+        borderColor: 'var(--theme-primary)',
+        boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.1)',
       }}
     >
       <style>{`
         .dark .flex.items-center.justify-between {
           background-color: var(--theme-bgTopbarDark) !important;
           color: #f3f4f6 !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
         }
       `}</style>
       <div className="flex items-center gap-3">
@@ -117,7 +119,12 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
             onToggleNotifications()
             setUnreadCount(0)
           }}
-          className="relative h-8 w-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-100 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+          className="relative h-9 w-9 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all duration-150 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 20%, var(--theme-bgCardLight))',
+            borderColor: 'color-mix(in srgb, var(--theme-primary) 25%, transparent)',
+            color: 'var(--theme-primary)',
+          }}
           aria-label="Abrir notificações"
         >
           <BellIcon type={1} />
@@ -132,7 +139,12 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
         <BareButton
           type="button"
           onClick={toggleTheme}
-          className="h-8 px-3 rounded-full text-xs font-medium border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-100 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+          className="h-9 px-3 rounded-lg text-xs font-semibold border-2 shadow-sm transition-all duration-150 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-100"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--theme-primaryLight) 20%, var(--theme-bgCardLight))',
+            borderColor: 'color-mix(in srgb, var(--theme-primary) 25%, transparent)',
+            color: 'var(--theme-primary)',
+          }}
           aria-label="Alternar tema claro/escuro"
         >
           <AnimatePresence mode="wait" initial={false}>

@@ -30,7 +30,7 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
             </h4>
             {isCompleted && (
               <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
-                style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)', color: '#16a34a' }}>
+                style={{ backgroundColor: 'rgba(34, 197, 94, 0.25)', color: '#16a34a' }}>
                 ✅ Concluída
               </span>
             )}
