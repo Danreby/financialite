@@ -54,47 +54,24 @@ export default function TopSpendingPieChart({
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-      <div className="h-48 w-full lg:h-52 lg:w-[200px] lg:flex-shrink-0 relative">
-        <Doughnut data={chartData} options={options} />
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="text-center">
-            <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              {formatCurrencyBRL(total)}
+      <div className="flex flex-col gap-4 lg:w-[200px] lg:flex-shrink-0">
+        <div className="h-48 w-full lg:h-52 relative">
+          <Doughnut data={chartData} options={options} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div className="text-center">
+              <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {formatCurrencyBRL(total)}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <ScrollArea maxHeightClassName="max-h-[280px]" className="flex-1 min-w-0 space-y-3 pr-1">
-        <ul className="space-y-2">
-          {items.map((item, index) => (
-            <li key={item.category_id ?? 'none'} className="flex items-center justify-between gap-3 text-sm">
-              <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                <span
-                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: colors[index % colors.length] }}
-                  aria-hidden
-                />
-                <CategoryBadge
-                  name={item.category_name || 'Sem categoria'}
-                  icon={item.category_icon}
-                  color={item.category_color}
-                  size="sm"
-                />
-              </div>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 flex-shrink-0">
-                <span className="text-[11px] uppercase tracking-wide">{item.share || 0}%</span>
-                <span>{formatCurrencyBRL(item.total || 0)}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
 
         {(recurringPercentage > 0 || nonRecurringPercentage > 0) && (
-          <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
-            <div className="text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
+          <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+            {/* <div className="text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
               Tipo de gasto
-            </div>
+            </div> */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
@@ -117,6 +94,33 @@ export default function TopSpendingPieChart({
             </div>
           </div>
         )}
+      </div>
+
+      <ScrollArea maxHeightClassName="max-h-[280px]" className="flex-1 min-w-0 pr-1">
+        <ul className="space-y-2">
+          {items.map((item, index) => (
+            <li key={item.category_id ?? 'none'} className="flex items-center justify-between gap-3 text-sm">
+              <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                <span
+                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: colors[index % colors.length] }}
+                  aria-hidden
+                />
+                <CategoryBadge
+                  name={item.category_name || 'Sem categoria'}
+                  icon={item.category_icon}
+                  color={item.category_color}
+                  size="sm"
+                  className="max-w-[150px]"
+                />
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 flex-shrink-0">
+                <span className="text-[11px] uppercase tracking-wide">{item.share || 0}%</span>
+                <span>{formatCurrencyBRL(item.total || 0)}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
       </ScrollArea>
     </div>
   )

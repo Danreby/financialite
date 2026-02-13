@@ -101,7 +101,13 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       banks_count: new Set(),
       period_start: null,
       period_end: null,
+      recurring_amount: 0,
+      non_recurring_amount: 0,
+      overdue_count: 0,
+      overdue_amount: 0,
     };
+
+    const today = new Date();
 
     transactions.forEach(t => {
       const amount = parseFloat(t.amount) || 0;
@@ -113,11 +119,27 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
         summary.total_expenses += installmentAmount;
         if (t.status === 'pending') summary.pending_expenses += installmentAmount;
         if (t.status === 'paid') summary.paid_expenses += installmentAmount;
+        
+        // Identificar recorrentes vs não recorrentes
+        if (t.is_recurring) {
+          summary.recurring_amount += installmentAmount;
+        } else {
+          summary.non_recurring_amount += installmentAmount;
+        }
       } else if (t.type === 'debit') {
         summary.total_debit += amount;
         summary.total_income += amount;
         if (t.status === 'pending') summary.pending_income += amount;
         if (t.status === 'paid') summary.paid_income += amount;
+      }
+
+      // Verificar vencidos
+      if (t.status === 'pending' && t.due_date) {
+        const dueDate = new Date(t.due_date);
+        if (dueDate < today) {
+          summary.overdue_count++;
+          summary.overdue_amount += (t.type === 'credit' ? installmentAmount : amount);
+        }
       }
 
       // Contadores
@@ -142,6 +164,8 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       net_balance: summary.total_income - summary.total_expenses,
       average_income: summary.total_income / Math.max(summary.total_transactions, 1),
       average_expense: summary.total_expenses / Math.max(summary.total_transactions, 1),
+      recurring_percentage: summary.total_expenses > 0 ? (summary.recurring_amount / summary.total_expenses) * 100 : 0,
+      non_recurring_percentage: summary.total_expenses > 0 ? (summary.non_recurring_amount / summary.total_expenses) * 100 : 0,
     };
   };
 
@@ -267,6 +291,76 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       .map(([, value]) => value);
   };
 
+  // Função para obter top transações
+  const getTopTransactions = (transactions, limit = 10) => {
+    return [...transactions]
+      .map(t => ({
+        ...t,
+        display_amount: t.type === 'credit' ? (parseFloat(t.installment_amount) || parseFloat(t.amount) || 0) : (parseFloat(t.amount) || 0)
+      }))
+      .sort((a, b) => b.display_amount - a.display_amount)
+      .slice(0, limit);
+  };
+
+  // Função para análise de recorrentes
+  const analyzeRecurring = (transactions) => {
+    const recurring = transactions.filter(t => t.is_recurring);
+    const nonRecurring = transactions.filter(t => !t.is_recurring);
+
+    const recurringTotal = recurring.reduce((sum, t) => {
+      const amount = t.type === 'credit' ? (parseFloat(t.installment_amount) || parseFloat(t.amount) || 0) : (parseFloat(t.amount) || 0);
+      return sum + amount;
+    }, 0);
+
+    const nonRecurringTotal = nonRecurring.reduce((sum, t) => {
+      const amount = t.type === 'credit' ? (parseFloat(t.installment_amount) || parseFloat(t.amount) || 0) : (parseFloat(t.amount) || 0);
+      return sum + amount;
+    }, 0);
+
+    return {
+      recurring_count: recurring.length,
+      recurring_total: recurringTotal,
+      recurring_average: recurring.length > 0 ? recurringTotal / recurring.length : 0,
+      non_recurring_count: nonRecurring.length,
+      non_recurring_total: nonRecurringTotal,
+      non_recurring_average: nonRecurring.length > 0 ? nonRecurringTotal / nonRecurring.length : 0,
+      recurring_percentage: (recurringTotal + nonRecurringTotal) > 0 ? (recurringTotal / (recurringTotal + nonRecurringTotal)) * 100 : 0,
+    };
+  };
+
+  // Função para análise de tendências
+  const analyzeTrends = (monthlyData) => {
+    if (monthlyData.length < 2) return null;
+
+    const trends = [];
+    for (let i = 1; i < monthlyData.length; i++) {
+      const current = monthlyData[i];
+      const previous = monthlyData[i - 1];
+      
+      const growthRate = previous.total_amount > 0 
+        ? ((current.total_amount - previous.total_amount) / previous.total_amount) * 100 
+        : 0;
+
+      trends.push({
+        month: current.month,
+        amount: current.total_amount,
+        previous_amount: previous.total_amount,
+        growth_rate: growthRate,
+        variation: current.total_amount - previous.total_amount,
+      });
+    }
+
+    // Calcular média de crescimento
+    const avgGrowth = trends.reduce((sum, t) => sum + t.growth_rate, 0) / trends.length;
+    
+    return {
+      trends,
+      average_growth: avgGrowth,
+      highest_month: monthlyData.reduce((max, m) => m.total_amount > max.total_amount ? m : max, monthlyData[0]),
+      lowest_month: monthlyData.reduce((min, m) => m.total_amount < min.total_amount ? m : min, monthlyData[0]),
+    };
+  };
+
   // Criar aba de Resumo Executivo
   const createExecutiveSummarySheet = (summary, monthlyData) => {
     const data = [
@@ -304,6 +398,16 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       ['Ticket Médio de Receita', summary.average_income],
       ['Ticket Médio de Despesa', summary.average_expense],
       [],
+      ['ANÁLISE DE RECORRÊNCIA'],
+      ['Gastos Recorrentes', summary.recurring_amount],
+      ['Gastos Não Recorrentes', summary.non_recurring_amount],
+      ['% Recorrentes', summary.recurring_percentage / 100],
+      ['% Não Recorrentes', summary.non_recurring_percentage / 100],
+      [],
+      ['CONTAS VENCIDAS'],
+      ['Quantidade Vencida', summary.overdue_count],
+      ['Valor Total Vencido', summary.overdue_amount],
+      [],
       ['RESUMO MENSAL'],
       ['Mês', 'Total', 'Crédito', 'Débito', 'Pago', 'Pendente', 'Qtd Transações']
     ];
@@ -339,17 +443,18 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
     // Títulos de seções
-    ['A6', 'A13', 'A17', 'A21', 'A25', 'A28'].forEach(cell => {
+    ['A6', 'A13', 'A17', 'A21', 'A25', 'A28', 'A32', 'A37'].forEach(cell => {
       applyStyle(ws, cell, styles.subHeader);
     });
 
     // Cabeçalho da tabela mensal
-    ['A29', 'B29', 'C29', 'D29', 'E29', 'F29', 'G29'].forEach(cell => {
-      applyStyle(ws, cell, styles.header);
+    const headerRow = 41;
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+      applyStyle(ws, `${col}${headerRow}`, styles.header);
     });
 
     // Formatar valores monetários
-    const currencyRows = [14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27];
+    const currencyRows = [14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 33, 34, 39];
     currencyRows.forEach(row => {
       const cell = `B${row}`;
       if (ws[cell] && typeof ws[cell].v === 'number') {
@@ -357,8 +462,16 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       }
     });
 
+    // Formatar percentuais
+    [35, 36].forEach(row => {
+      const cell = `B${row}`;
+      if (ws[cell] && typeof ws[cell].v === 'number') {
+        applyStyle(ws, cell, styles.percentage);
+      }
+    });
+
     // Formatar tabela mensal
-    const monthlyStartRow = 30;
+    const monthlyStartRow = headerRow + 1;
     monthlyData.forEach((_, idx) => {
       const row = monthlyStartRow + idx;
       ['B', 'C', 'D', 'E', 'F'].forEach(col => {
@@ -723,6 +836,231 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     return ws;
   };
 
+  // Criar aba de Top Transações
+  const createTopTransactionsSheet = (topTransactions) => {
+    const headers = [
+      'Ranking',
+      'Título',
+      'Categoria',
+      'Banco',
+      'Valor',
+      'Data',
+      'Status',
+      'Tipo',
+      'Recorrente'
+    ];
+
+    const data = [headers];
+
+    topTransactions.forEach((t, idx) => {
+      data.push([
+        idx + 1,
+        t.title || '',
+        t.category?.name || 'Sem categoria',
+        t.bank_user?.bank?.name || 'Sem banco',
+        t.display_amount,
+        t.created_at_formatted || '',
+        t.status === 'paid' ? 'Pago' : t.status === 'pending' ? 'Pendente' : t.status || '',
+        t.type === 'credit' ? 'Crédito' : t.type === 'debit' ? 'Débito' : t.type || '',
+        t.is_recurring ? 'Sim' : 'Não'
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Larguras
+    ws['!cols'] = [
+      { wch: 8 },  // Ranking
+      { wch: 30 }, // Título
+      { wch: 20 }, // Categoria
+      { wch: 20 }, // Banco
+      { wch: 15 }, // Valor
+      { wch: 16 }, // Data
+      { wch: 10 }, // Status
+      { wch: 10 }, // Tipo
+      { wch: 10 }  // Recorrente
+    ];
+
+    // Estilizar cabeçalho
+    headers.forEach((_, idx) => {
+      const cell = XLSX.utils.encode_cell({ r: 0, c: idx });
+      applyStyle(ws, cell, styles.header);
+    });
+
+    // Estilizar dados
+    topTransactions.forEach((_, rowIdx) => {
+      const row = rowIdx + 1;
+      
+      // Valor monetário
+      const valueCell = XLSX.utils.encode_cell({ r: row, c: 4 });
+      if (ws[valueCell]) applyStyle(ws, valueCell, styles.currency);
+
+      // Linhas alternadas
+      if (rowIdx % 2 === 1) {
+        headers.forEach((_, colIdx) => {
+          const cell = XLSX.utils.encode_cell({ r: row, c: colIdx });
+          applyStyle(ws, cell, styles.alternateRow);
+        });
+      }
+
+      // Bordas
+      headers.forEach((_, colIdx) => {
+        const cell = XLSX.utils.encode_cell({ r: row, c: colIdx });
+        applyStyle(ws, cell, { border: styles.border });
+      });
+    });
+
+    return ws;
+  };
+
+  // Criar aba de Análise de Tendências
+  const createTrendsSheet = (trendsData) => {
+    if (!trendsData || !trendsData.trends) {
+      const ws = XLSX.utils.aoa_to_sheet([['Dados insuficientes para análise de tendências']]);
+      return ws;
+    }
+
+    const data = [
+      ['ANÁLISE DE TENDÊNCIAS'],
+      [],
+      ['Crescimento Médio:', trendsData.average_growth / 100],
+      ['Mês Maior Gasto:', trendsData.highest_month?.month || 'N/A', trendsData.highest_month?.total_amount || 0],
+      ['Mês Menor Gasto:', trendsData.lowest_month?.month || 'N/A', trendsData.lowest_month?.total_amount || 0],
+      [],
+      ['EVOLUÇÃO MENSAL'],
+      ['Mês', 'Valor Atual', 'Valor Anterior', 'Variação R$', 'Taxa de Crescimento']
+    ];
+
+    trendsData.trends.forEach(trend => {
+      data.push([
+        trend.month,
+        trend.amount,
+        trend.previous_amount,
+        trend.variation,
+        trend.growth_rate / 100
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Larguras
+    ws['!cols'] = [
+      { wch: 20 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 20 }
+    ];
+
+    // Estilos
+    applyStyle(ws, 'A1', { ...styles.title, alignment: { horizontal: "center" } });
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+
+    // Cabeçalho da tabela
+    ['A8', 'B8', 'C8', 'D8', 'E8'].forEach(cell => {
+      applyStyle(ws, cell, styles.header);
+    });
+
+    // Formatar valores
+    applyStyle(ws, 'B3', styles.percentage);
+    applyStyle(ws, 'C4', styles.currency);
+    applyStyle(ws, 'C5', styles.currency);
+
+    // Formatar dados da tabela
+    trendsData.trends.forEach((_, idx) => {
+      const row = 9 + idx;
+      ['B', 'C', 'D'].forEach(col => {
+        const cell = `${col}${row}`;
+        if (ws[cell]) applyStyle(ws, cell, styles.currency);
+      });
+
+      const percentCell = `E${row}`;
+      if (ws[percentCell]) applyStyle(ws, percentCell, styles.percentage);
+
+      // Linhas alternadas
+      if (idx % 2 === 1) {
+        ['A', 'B', 'C', 'D', 'E'].forEach(col => {
+          applyStyle(ws, `${col}${row}`, styles.alternateRow);
+        });
+      }
+    });
+
+    return ws;
+  };
+
+  // Criar aba de Análise de Recorrentes
+  const createRecurringAnalysisSheet = (recurringData) => {
+    const data = [
+      ['ANÁLISE DE GASTOS RECORRENTES VS NÃO RECORRENTES'],
+      [],
+      ['GASTOS RECORRENTES'],
+      ['Quantidade de Transações', recurringData.recurring_count],
+      ['Valor Total', recurringData.recurring_total],
+      ['Ticket Médio', recurringData.recurring_average],
+      ['Percentual do Total', recurringData.recurring_percentage / 100],
+      [],
+      ['GASTOS NÃO RECORRENTES'],
+      ['Quantidade de Transações', recurringData.non_recurring_count],
+      ['Valor Total', recurringData.non_recurring_total],
+      ['Ticket Médio', recurringData.non_recurring_average],
+      ['Percentual do Total', (100 - recurringData.recurring_percentage) / 100],
+      [],
+      ['COMPARATIVO'],
+      ['Métrica', 'Recorrentes', 'Não Recorrentes'],
+      ['Quantidade', recurringData.recurring_count, recurringData.non_recurring_count],
+      ['Valor Total', recurringData.recurring_total, recurringData.non_recurring_total],
+      ['Ticket Médio', recurringData.recurring_average, recurringData.non_recurring_average],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Larguras
+    ws['!cols'] = [
+      { wch: 30 },
+      { wch: 20 },
+      { wch: 20 }
+    ];
+
+    // Estilos
+    applyStyle(ws, 'A1', { ...styles.title, alignment: { horizontal: "center" } });
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
+
+    ['A3', 'A9', 'A15'].forEach(cell => {
+      applyStyle(ws, cell, styles.subHeader);
+    });
+
+    // Cabeçalho da tabela comparativa
+    ['A16', 'B16', 'C16'].forEach(cell => {
+      applyStyle(ws, cell, styles.header);
+    });
+
+    // Formatar valores
+    [5, 6, 11, 12, 18, 19].forEach(row => {
+      ['B', 'C'].forEach(col => {
+        const cell = `${col}${row}`;
+        if (ws[cell] && typeof ws[cell].v === 'number') {
+          applyStyle(ws, cell, styles.currency);
+        }
+      });
+    });
+
+    [7, 13].forEach(row => {
+      const cell = `B${row}`;
+      if (ws[cell]) applyStyle(ws, cell, styles.percentage);
+    });
+
+    // Linhas alternadas na tabela
+    [17, 18, 19].forEach((row, idx) => {
+      if (idx % 2 === 1) {
+        ['A', 'B', 'C'].forEach(col => {
+          applyStyle(ws, `${col}${row}`, styles.alternateRow);
+        });
+      }
+    });
+
+    return ws;
+  };
+
   const exportDetailedReport = async () => {
     try {
       if (!data || data.length === 0) {
@@ -735,6 +1073,9 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       const categoryData = groupByCategory(data);
       const bankData = groupByBank(data);
       const monthlyData = groupByMonth(data);
+      const topTransactions = getTopTransactions(data, 20);
+      const recurringData = analyzeRecurring(data);
+      const trendsData = analyzeTrends(monthlyData);
 
       // Criar workbook
       const workbook = XLSX.utils.book_new();
@@ -752,6 +1093,17 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       const bankSheet = createBankAnalysisSheet(bankData, summary.total_expenses);
       XLSX.utils.book_append_sheet(workbook, bankSheet, 'Análise por Banco');
 
+      const topSheet = createTopTransactionsSheet(topTransactions);
+      XLSX.utils.book_append_sheet(workbook, topSheet, 'Top 20 Transações');
+
+      const recurringSheet = createRecurringAnalysisSheet(recurringData);
+      XLSX.utils.book_append_sheet(workbook, recurringSheet, 'Recorrentes vs Não Recorr.');
+
+      if (trendsData) {
+        const trendsSheet = createTrendsSheet(trendsData);
+        XLSX.utils.book_append_sheet(workbook, trendsSheet, 'Tendências');
+      }
+
       // Gerar arquivo
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -767,7 +1119,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
   };
 
   return (
-    <Tooltip label="Exportar relatório detalhado com análises (4 abas)">
+    <Tooltip label="Exportar relatório detalhado e completo com 7 abas de análises">
       <BareButton className="btn-primary" onClick={exportDetailedReport}>
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
           <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5zM3 12v-2h2v2zm0 1h2v2H4a1 1 0 0 1-1-1zm3 2v-2h3v2zm4 0v-2h3v1a1 1 0 0 1-1 1zm3-3h-3v-2h3zm-7 0v-2h3v2z"/>

@@ -35,35 +35,53 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
   }
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isOpen ? 220 : 64 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="flex-shrink-0 h-screen border-r shadow-lg"
-      style={{ 
-        minWidth: 64, 
-        width: isOpen ? 'fit-content' : 64,
-        backgroundColor: 'var(--theme-bgSidebarLight)',
-        borderColor: '#e5e5e5',
-        boxShadow: '1px 0 3px 0 rgba(0, 0, 0, 0.1), 1px 0 2px -1px rgba(0, 0, 0, 0.1)',
-      }}
-      aria-expanded={isOpen}
-    >
-      <style>{`
-        .dark aside {
-          background-color: var(--theme-bgSidebarDark) !important;
-          border-color: rgba(255, 255, 255, 0.1) !important;
-          box-shadow: 1px 0 3px 0 rgba(0, 0, 0, 0.3) !important;
-        }
-      `}</style>
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+            onClick={toggle}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside
+        initial={false}
+        animate={{ 
+          x: isOpen ? 0 : -220,
+          opacity: isOpen ? 1 : 0
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="fixed left-0 top-0 h-screen border-r shadow-2xl z-40"
+        style={{ 
+          width: 220,
+          backgroundColor: 'var(--theme-bgSidebarLight)',
+          borderColor: '#e5e5e5',
+          boxShadow: '2px 0 10px 0 rgba(0, 0, 0, 0.15)',
+          pointerEvents: isOpen ? 'auto' : 'none',
+        }}
+        aria-expanded={isOpen}
+      >
+        <style>{`
+          .dark aside {
+            background-color: var(--theme-bgSidebarDark) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 2px 0 10px 0 rgba(0, 0, 0, 0.4) !important;
+          }
+        `}</style>
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between px-4 py-4">
           <div
             role="button"
             tabIndex={0}
-            onClick={openIfClosed}
+            onClick={isOpen ? toggle : openIfClosed}
             onKeyDown={onLogoKeyDown}
-            aria-label={isOpen ? 'Brand' : 'Abrir sidebar'}
+            aria-label={isOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
             className={`flex items-center gap-3 ${isOpen ? 'opacity-100' : 'justify-center'} cursor-pointer`}
           >
             <div className="h-10 w-10 rounded-lg flex items-center justify-center ring-1 transition-all duration-150 themed-icon-wrapper">
@@ -85,34 +103,6 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
               )}
             </AnimatePresence>
           </div>
-
-          <AnimatePresence initial={false}>
-            {isOpen && (
-              <motion.button
-                key="toggle-button"
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -6 }}
-                transition={{ duration: 0.18 }}
-                onClick={toggle}
-                className="p-2 rounded-lg transition-all duration-150 themed-icon-wrapper"
-                aria-label="Fechar sidebar"
-                aria-pressed={isOpen}
-                type="button"
-                whileTap={{ scale: 0.95 }}
-              >
-                <motion.svg
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden
-                  style={{ color: 'inherit' }}
-                >
-                  <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </motion.svg>
-              </motion.button>
-            )}
-          </AnimatePresence>
         </div>
 
         <nav className="mt-3 flex-1 px-2 space-y-1">
@@ -129,13 +119,24 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
           <NavItem type={1} open={isOpen} href={route('settings')} label="Configurações" />
         </nav>
 
-        <div className="px-3 py-4">
-          <div className={`text-xs text-gray-500 ${isOpen ? '' : 'text-center'} dark:text-gray-400`}>
-            © {new Date().getFullYear()} Finanças
-          </div>
-        </div>
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="px-3 py-4"
+            >
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                © {new Date().getFullYear()} Finanças
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.aside>
+    </>
   )
 }
 
@@ -144,6 +145,7 @@ function NavItem({ type = 3, size = 16, color, open, href, label }) {
     <Link
       href={href}
       className="themed-nav-item whitespace-nowrap"
+      title={!open ? label : undefined}
     >
       <ThemedNavIcon type={type} size={size} />
 

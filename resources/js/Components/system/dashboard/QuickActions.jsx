@@ -13,6 +13,25 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
   const [showImportModal, setShowImportModal] = useState(false);
   const [localBankAccounts, setLocalBankAccounts] = useState(bankAccounts);
   const [localCategories, setLocalCategories] = useState(categories);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document === 'undefined') return false;
+    return document.documentElement.classList.contains('dark');
+  });
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     setLocalBankAccounts(bankAccounts);
@@ -27,48 +46,48 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
       icon: '💸',
       title: 'Nova Transação',
       description: 'Registrar receita ou despesa',
-      gradient: 'from-rose-500 to-pink-600',
-      hoverGradient: 'hover:from-rose-600 hover:to-pink-700',
+      bgColorLight: '#bac4d1',
+      bgColorDark: '#2d415e',
       onClick: () => setShowFaturaForm(true),
     },
     {
       icon: '🏦',
       title: 'Adicionar Banco',
       description: 'Cadastrar nova conta',
-      gradient: 'from-amber-600 to-orange-700',
-      hoverGradient: 'hover:from-amber-700 hover:to-orange-800',
+      bgColorLight: '#bac4d1',
+      bgColorDark: '#2d415e',
       onClick: () => setShowBankForm(true),
     },
     {
       icon: '🏷️',
       title: 'Adicionar Categoria',
       description: 'Criar nova categoria',
-      gradient: 'from-teal-500 to-emerald-600',
-      hoverGradient: 'hover:from-teal-600 hover:to-emerald-700',
+      bgColorLight: '#bac4d1',
+      bgColorDark: '#2d415e',
       onClick: () => setShowCategoryForm(true),
     },
     {
       icon: '⏳',
       title: 'Transações Pendentes',
       description: 'Visualizar pendências',
-      gradient: 'from-gray-700 to-gray-900',
-      hoverGradient: 'hover:from-gray-800 hover:to-black',
+      bgColorLight: '#bac4d1',
+      bgColorDark: '#2d415e',
       onClick: () => router.visit(route('transactions.index')),
     },
     {
       icon: '💳',
       title: 'Faturas do Cartão',
       description: 'Gerenciar faturas',
-      gradient: 'from-blue-600 to-indigo-700',
-      hoverGradient: 'hover:from-blue-700 hover:to-indigo-800',
+      bgColorLight: '#bac4d1',
+      bgColorDark: '#2d415e',
       onClick: () => router.visit(route('transacoes.index')),
     },
     {
       icon: '📊',
       title: 'Importar Excel',
       description: 'Upload de faturas',
-      gradient: 'from-slate-600 to-slate-800',
-      hoverGradient: 'hover:from-slate-700 hover:to-slate-900',
+      bgColorLight: '#bac4d1',
+      bgColorDark: '#2d415e',
       onClick: () => setShowImportModal(true),
     },
   ];
@@ -83,18 +102,36 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
             <button
               key={index}
               onClick={action.onClick}
-              className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${action.gradient} ${action.hoverGradient} p-4 text-left shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-xl active:scale-[0.98]`}
+              className="group relative overflow-hidden rounded-xl p-4 text-left shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-xl active:scale-[0.98]"
+              style={{
+                backgroundColor: isDark ? action.bgColorDark : action.bgColorLight,
+              }}
             >
               <div className="relative z-10 flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white/20 text-2xl backdrop-blur-sm">
+                <div 
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-2xl backdrop-blur-sm"
+                  style={{
+                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+                  }}
+                >
                   {action.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-bold text-white mb-0.5 truncate">{action.title}</h4>
-                  <p className="text-[11px] text-white/80 truncate">{action.description}</p>
+                  <h4 
+                    className="text-sm font-bold mb-0.5 truncate"
+                    style={{ color: isDark ? '#ffffff' : '#000000' }}
+                  >
+                    {action.title}
+                  </h4>
+                  <p 
+                    className="text-[11px] truncate"
+                    style={{ color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)' }}
+                  >
+                    {action.description}
+                  </p>
                 </div>
               </div>
-              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300" />
+              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
             </button>
           ))}
         </div>

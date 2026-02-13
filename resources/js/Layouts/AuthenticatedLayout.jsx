@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePage } from '@inertiajs/react'
 import Sidebar from '@/Components/system/navigation/Sidebar'
 import Topbar from '@/Components/system/navigation/Topbar'
@@ -9,17 +9,20 @@ import { ThemeProvider } from '@/Contexts/ThemeContext'
 export default function AuthenticatedLayout({ children }) {
   const user = usePage().props.auth.user
   const initialTheme = user?.theme || 'rose'
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window === 'undefined') return true
-    return window.innerWidth >= 1024
-  })
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const { url } = usePage()
+
+  // Fechar sidebar ao navegar entre páginas
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [url])
 
   return (
   <ThemeProvider initialTheme={initialTheme}>
-	<div className="h-screen flex overflow-hidden text-gray-900 dark:text-gray-100" style={{
+	<div className="h-screen flex overflow-hidden text-gray-900 dark:text-gray-100 relative" style={{
 		backgroundColor: 'var(--theme-bgPageLight)',
 	}}>
 		<style>{`
@@ -31,7 +34,7 @@ export default function AuthenticatedLayout({ children }) {
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
     </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Topbar
           user={user}
           sidebarOpen={sidebarOpen}
@@ -40,9 +43,12 @@ export default function AuthenticatedLayout({ children }) {
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
 
-    		<main className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6" style={{
-				backgroundColor: 'var(--theme-bgPageLight)',
-			}}>
+    		<main 
+          className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6" 
+          style={{
+            backgroundColor: 'var(--theme-bgPageLight)',
+          }}
+        >
 				<style>{`
 					.dark main {
 						background-color: var(--theme-bgPageDark) !important;

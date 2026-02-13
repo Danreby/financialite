@@ -152,7 +152,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
   }
 
   return (
-    <div className="themed-card rounded-2xl p-4">
+    <div className="rounded-2xl p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
           Gastos mensais

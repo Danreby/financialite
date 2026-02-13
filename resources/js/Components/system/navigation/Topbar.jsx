@@ -81,7 +81,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
 
   return (
     <div 
-      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-md border-b"
+      className="topbar-container flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-md border-b"
       style={{
         backgroundColor: 'var(--theme-bgTopbarLight)',
         borderColor: '#e5e5e5',
@@ -89,7 +89,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
       }}
     >
       <style>{`
-        .dark .flex.items-center.justify-between {
+        .dark .topbar-container {
           background-color: var(--theme-bgTopbarDark) !important;
           color: #f3f4f6 !important;
           border-color: rgba(255, 255, 255, 0.1) !important;
@@ -97,6 +97,17 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
         }
       `}</style>
       <div className="flex items-center gap-3">
+        <BareButton
+          type="button"
+          onClick={() => setSidebarOpen((prev) => !prev)}
+          className="hidden lg:inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus:ring-offset-[#0b0b0b]"
+          aria-label="Abrir/Fechar menu de navegação"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </BareButton>
+
         {onOpenMobileNav && (
           <BareButton
             type="button"
