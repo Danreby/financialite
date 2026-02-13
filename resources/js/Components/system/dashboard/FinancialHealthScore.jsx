@@ -134,8 +134,8 @@ export default function FinancialHealthScore({
               key={factor.key}
               className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
             >
-              <div className={`p-2 rounded-lg bg-[var(--theme-accentLight)] dark:bg-[var(--theme-accent)]/20`}>
-                <FactorIcon className="w-4 h-4 text-[var(--theme-accent)]" />
+              <div className={`p-2 rounded-lg bg-transparent dark:bg-transparent border ${status.bgColor} ${status.color} flex items-center justify-center dark:border-gray-700`}>
+                <FactorIcon className="w-4 h-4 text-[var(--theme-accent)] dark:text-[var(--theme-accent)]" />
               </div>
               
               <div className="flex-1 min-w-0">

@@ -10,6 +10,7 @@ use App\Services\FaturaImportService;
 use App\Services\FaturaDashboardService;
 use App\Services\FaturaPaymentService;
 use App\Services\NotificationService;
+use App\Services\DashboardInsightsService;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
 use App\Http\Requests\Fatura\FaturaUpdateRequest;
 use App\Http\Requests\Fatura\PayMonthRequest;
@@ -29,7 +30,8 @@ class TransacaoController extends Controller
         private FaturaImportService $importService,
         private FaturaDashboardService $dashboardService,
         private FaturaPaymentService $paymentService,
-        private NotificationService $notifications
+        private NotificationService $notifications,
+        private DashboardInsightsService $insights
     )
     {
         $this->middleware('auth');
@@ -256,6 +258,23 @@ class TransacaoController extends Controller
         );
 
         return $this->success($stats);
+    }
+
+    public function getInsights(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Transacao::class);
+
+        $user = $request->user();
+        $bankUserId = $request->input('bank_user_id');
+        
+        if ($request->filled('bank_user_id')) {
+            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
+            $this->authorize('view', $selectedBankUser);
+        }
+
+        $insights = $this->insights->getInsights($user, $bankUserId);
+
+        return $this->success($insights);
     }
 
     public function topSpendingByPeriod(PeriodSpendingRequest $request): JsonResponse

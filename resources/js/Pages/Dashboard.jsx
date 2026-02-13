@@ -44,6 +44,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [selectedMonthKey, setSelectedMonthKey] = useState(null)
   const [monthData, setMonthData] = useState(null)
   const [isLoadingMonth, setIsLoadingMonth] = useState(false)
+  const [dashboardInsights, setDashboardInsights] = useState(null)
 
   const handleMonthClick = useCallback(async (monthKey) => {
     let shouldFetchData = true
@@ -113,9 +114,10 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   useEffect(() => {
     (async () => {
       try {
-        const [faturasResponse, statsResponse] = await Promise.all([
+        const [faturasResponse, statsResponse, insightsResponse] = await Promise.all([
           axios.get(route('transacoes.index'), { params: { ...currentFilters, page } }),
           axios.get(route('transacoes.stats'), { params: { ...currentFilters } }),
+          axios.get(route('transacoes.insights'), { params: { ...currentFilters } }),
         ])
 
         const payload = faturasResponse.data || {}
@@ -202,6 +204,9 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           total: Number(statsPayload.non_recurring_spending?.total || 0),
           percentage: Number(statsPayload.non_recurring_spending?.percentage || 0),
         })
+
+        // Set insights data
+        setDashboardInsights(insightsResponse.data || null)
       } catch (error) {
         console.error(error)
         if (error.response?.data?.message) {
@@ -217,7 +222,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
     <AuthenticatedLayout>
       <Head title="Dashboard" />
 
-      <FadeInContainer className="w-full max-w-[1440px] mx-auto pb-6">
+      <FadeInContainer className="w-full max-w-[1920px] mx-auto pb-6">
         <FadeInItem className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
           <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
             Visão geral
@@ -352,67 +357,28 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <FinancialHealthScore
-              score={75}
-              factors={{
-                savingsRate: 15,
-                budgetAdherence: 85,
-                debtRatio: 0.3,
-                emergencyFund: 4.5,
-                recurringControl: 90
+              score={dashboardInsights?.financial_health?.score ?? 0}
+              factors={dashboardInsights?.financial_health?.factors ?? {
+                savingsRate: 0,
+                budgetAdherence: 0,
+                debtRatio: 0,
+                emergencyFund: 0,
+                recurringControl: 0
               }}
             />
           </FadeInItem>
 
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <BudgetProgress
-              totalBudget={5000}
-              totalSpent={3750}
-              budgets={[
-                { categoryName: 'Alimentação', limit: 1500, spent: 1200 },
-                { categoryName: 'Transporte', limit: 800, spent: 650 },
-                { categoryName: 'Lazer', limit: 500, spent: 420 },
-                { categoryName: 'Saúde', limit: 600, spent: 580 },
-                { categoryName: 'Educação', limit: 400, spent: 300 },
-              ]}
+              totalBudget={dashboardInsights?.budget_progress?.total_budget ?? 0}
+              totalSpent={dashboardInsights?.budget_progress?.total_spent ?? 0}
+              budgets={dashboardInsights?.budget_progress?.budgets ?? []}
             />
           </FadeInItem>
 
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <UpcomingBills
-              bills={[
-                {
-                  date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-                  amount: 250.00,
-                  description: 'Internet',
-                  category: 'Utilidades',
-                  status: 'pending',
-                  recurring: true
-                },
-                {
-                  date: new Date(Date.now() + 172800000).toISOString().split('T')[0],
-                  amount: 1200.00,
-                  description: 'Aluguel',
-                  category: 'Moradia',
-                  status: 'pending',
-                  recurring: true
-                },
-                {
-                  date: new Date(Date.now() + 259200000).toISOString().split('T')[0],
-                  amount: 85.50,
-                  description: 'Academia',
-                  category: 'Saúde',
-                  status: 'pending',
-                  recurring: true
-                },
-                {
-                  date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-                  amount: 150.00,
-                  description: 'Energia Elétrica',
-                  category: 'Utilidades',
-                  status: 'pending',
-                  recurring: true
-                },
-              ]}
+              bills={dashboardInsights?.upcoming_bills ?? []}
               onBillClick={(bill) => {
                 console.log('Bill clicked:', bill)
               }}
@@ -421,15 +387,10 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <SpendingTrends
-              currentMonth={3750}
-              previousMonth={4200}
-              threeMonthAvg={3900}
-              categoryTrends={[
-                { categoryName: 'Alimentação', current: 1200, previous: 1400 },
-                { categoryName: 'Transporte', current: 650, previous: 580 },
-                { categoryName: 'Lazer', current: 420, previous: 550 },
-                { categoryName: 'Saúde', current: 580, previous: 600 },
-              ]}
+              currentMonth={dashboardInsights?.spending_trends?.current_month ?? 0}
+              previousMonth={dashboardInsights?.spending_trends?.previous_month ?? 0}
+              threeMonthAvg={dashboardInsights?.spending_trends?.three_month_avg ?? 0}
+              categoryTrends={dashboardInsights?.spending_trends?.category_trends ?? []}
             />
           </FadeInItem>
         </FadeInContainer>

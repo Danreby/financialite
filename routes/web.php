@@ -129,7 +129,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $user = request()->user();
         $theme = request()->input('theme');
 
-        $validThemes = ['rose', 'ocean', 'forest', 'sunset', 'lavender', 'midnight'];
+        $validThemes = ['rose', 'ocean', 'forest', 'gold', 'lavender', 'midnight'];
         if (!in_array($theme, $validThemes, true)) {
             return response()->json(['error' => 'Tema inválido.'], 422);
         }
