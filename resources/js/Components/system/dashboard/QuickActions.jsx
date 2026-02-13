@@ -46,48 +46,42 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
       icon: '💸',
       title: 'Nova Transação',
       description: 'Registrar receita ou despesa',
-      bgColorLight: '#bac4d1',
-      bgColorDark: '#2d415e',
+      useThemeColors: true,
       onClick: () => setShowFaturaForm(true),
     },
     {
       icon: '🏦',
       title: 'Adicionar Banco',
       description: 'Cadastrar nova conta',
-      bgColorLight: '#bac4d1',
-      bgColorDark: '#2d415e',
+      useThemeColors: true,
       onClick: () => setShowBankForm(true),
     },
     {
       icon: '🏷️',
       title: 'Adicionar Categoria',
       description: 'Criar nova categoria',
-      bgColorLight: '#bac4d1',
-      bgColorDark: '#2d415e',
+      useThemeColors: true,
       onClick: () => setShowCategoryForm(true),
     },
     {
       icon: '⏳',
       title: 'Transações Pendentes',
       description: 'Visualizar pendências',
-      bgColorLight: '#bac4d1',
-      bgColorDark: '#2d415e',
+      useThemeColors: true,
       onClick: () => router.visit(route('transactions.index')),
     },
     {
       icon: '💳',
       title: 'Faturas do Cartão',
       description: 'Gerenciar faturas',
-      bgColorLight: '#bac4d1',
-      bgColorDark: '#2d415e',
+      useThemeColors: true,
       onClick: () => router.visit(route('transacoes.index')),
     },
     {
       icon: '📊',
       title: 'Importar Excel',
       description: 'Upload de faturas',
-      bgColorLight: '#bac4d1',
-      bgColorDark: '#2d415e',
+      useThemeColors: true,
       onClick: () => setShowImportModal(true),
     },
   ];
@@ -102,8 +96,10 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
             <button
               key={index}
               onClick={action.onClick}
-              className="group relative overflow-hidden rounded-xl p-4 text-left shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-xl active:scale-[0.98]"
-              style={{
+              className={`group relative overflow-hidden rounded-xl p-4 text-left shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-xl active:scale-[0.98] ${
+                action.useThemeColors ? 'themed-button-primary' : ''
+              }`}
+              style={action.useThemeColors ? {} : {
                 backgroundColor: isDark ? action.bgColorDark : action.bgColorLight,
               }}
             >

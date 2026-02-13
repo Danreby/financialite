@@ -23,6 +23,10 @@
 		--theme-bgTopbarDark: #140505;
 		--theme-bgCardLight: #ffffff;
 		--theme-bgCardLightHover: #fef2f2;
+		--theme-bgButtonPrimary: #e6a3ae;
+		--theme-bgButtonPrimaryHover: #fda4af;
+		--theme-bgButtonPrimaryDark: #be123c;
+		--theme-bgButtonPrimaryDarkHover: #9f1239;
 	}
 }
 
@@ -33,6 +37,23 @@
 			border-color: var(--theme-accent, #f43f5e);
 			--tw-ring-color: var(--theme-accent, #f43f5e);
 			box-shadow: var(--tw-ring-inset, ) 0 0 0 calc(1px + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color);
+		}
+	}
+
+	.themed-button-primary {
+		background-color: var(--theme-bgButtonPrimary);
+		transition: background-color 0.2s ease-in-out;
+		
+		&:hover {
+			background-color: var(--theme-bgButtonPrimaryHover);
+		}
+		
+		&:is(.dark *) {
+			background-color: var(--theme-bgButtonPrimaryDark);
+			
+			&:hover {
+				background-color: var(--theme-bgButtonPrimaryDarkHover);
+			}
 		}
 	}
 
