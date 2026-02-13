@@ -1,0 +1,195 @@
+import React from 'react'
+import { Heart, Shield, TrendingUp, Target, AlertCircle, CheckCircle } from 'lucide-react'
+
+export default function FinancialHealthScore({ 
+  score = 0,
+  factors = {
+    savingsRate: 0,
+    budgetAdherence: 0,
+    debtRatio: 0,  
+    emergencyFund: 0, 
+    recurringControl: 0 
+  }
+}) {
+  const getScoreLevel = (score) => {
+    if (score >= 80) return { label: 'Excelente', color: 'text-green-500', bgColor: 'bg-green-100 dark:bg-green-900/30' }
+    if (score >= 60) return { label: 'Bom', color: 'text-blue-500', bgColor: 'bg-blue-100 dark:bg-blue-900/30' }
+    if (score >= 40) return { label: 'Regular', color: 'text-yellow-500', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30' }
+    return { label: 'Atenção', color: 'text-red-500', bgColor: 'bg-red-100 dark:bg-red-900/30' }
+  }
+
+  const scoreLevel = getScoreLevel(score)
+
+  const getFactorStatus = (value, thresholds) => {
+    if (value >= thresholds.good) return { icon: CheckCircle, color: 'text-green-500' }
+    if (value >= thresholds.ok) return { icon: AlertCircle, color: 'text-yellow-500' }
+    return { icon: AlertCircle, color: 'text-red-500' }
+  }
+
+  const factorConfigs = [
+    {
+      key: 'savingsRate',
+      label: 'Taxa de Poupança',
+      icon: TrendingUp,
+      value: factors.savingsRate,
+      format: (v) => `${v.toFixed(1)}%`,
+      thresholds: { good: 20, ok: 10 },
+      description: 'do seu salário é poupado',
+    },
+    {
+      key: 'budgetAdherence',
+      label: 'Adesão ao Orçamento',
+      icon: Target,
+      value: factors.budgetAdherence,
+      format: (v) => `${v.toFixed(0)}%`,
+      thresholds: { good: 80, ok: 60 },
+      description: 'das categorias dentro do limite',
+    },
+    {
+      key: 'emergencyFund',
+      label: 'Fundo de Emergência',
+      icon: Shield,
+      value: factors.emergencyFund,
+      format: (v) => `${v.toFixed(1)} meses`,
+      thresholds: { good: 6, ok: 3 },
+      description: 'de despesas cobertas',
+    },
+    {
+      key: 'recurringControl',
+      label: 'Controle de Recorrentes',
+      icon: Heart,
+      value: factors.recurringControl,
+      format: (v) => `${v.toFixed(0)}%`,
+      thresholds: { good: 80, ok: 60 },
+      description: 'das despesas recorrentes monitoradas',
+    },
+  ]
+
+  const radius = 70
+  const circumference = 2 * Math.PI * radius
+  const progress = (score / 100) * circumference
+
+  return (
+    <div className="themed-card rounded-xl p-6 h-full flex flex-col">
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <Heart className="w-5 h-5 text-[var(--theme-accent)]" />
+          Saúde Financeira
+        </h3>
+      </div>
+
+      <div className="flex flex-col items-center justify-center mb-6">
+        <div className="relative w-48 h-48">
+          <svg className="transform -rotate-90 w-48 h-48">
+            <circle
+              cx="96"
+              cy="96"
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="12"
+              fill="none"
+              className="text-gray-200 dark:text-gray-700"
+            />
+            <circle
+              cx="96"
+              cy="96"
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="12"
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference - progress}
+              strokeLinecap="round"
+              className="text-[var(--theme-accent)] transition-all duration-1000 ease-out"
+            />
+          </svg>
+          
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+              {score.toFixed(0)}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              de 100
+            </div>
+          </div>
+        </div>
+
+        <div className={`mt-4 px-4 py-2 rounded-full text-sm font-medium ${scoreLevel.bgColor} ${scoreLevel.color}`}>
+          {scoreLevel.label}
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-4">
+        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+          Fatores Avaliados
+        </div>
+        
+        {factorConfigs.map((factor) => {
+          const status = getFactorStatus(factor.value, factor.thresholds)
+          const FactorIcon = factor.icon
+          const StatusIcon = status.icon
+
+          return (
+            <div
+              key={factor.key}
+              className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+            >
+              <div className={`p-2 rounded-lg bg-[var(--theme-accentLight)] dark:bg-[var(--theme-accent)]/20`}>
+                <FactorIcon className="w-4 h-4 text-[var(--theme-accent)]" />
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {factor.label}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <StatusIcon className={`w-4 h-4 ${status.color}`} />
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      {factor.format(factor.value)}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {factor.description}
+                </p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+          Recomendações
+        </div>
+        <div className="space-y-2">
+          {score < 60 && factors.savingsRate < 10 && (
+            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+              <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+              <span>Tente poupar pelo menos 10% da sua renda mensal</span>
+            </div>
+          )}
+          {factors.emergencyFund < 3 && (
+            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+              <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+              <span>Construa um fundo de emergência para 3-6 meses de despesas</span>
+            </div>
+          )}
+          {factors.budgetAdherence < 70 && (
+            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+              <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+              <span>Revise seu orçamento e ajuste categorias conforme necessário</span>
+            </div>
+          )}
+          {score >= 80 && (
+            <div className="text-xs text-green-600 dark:text-green-400 flex items-start gap-2">
+              <CheckCircle className="w-3 h-3 mt-0.5" />
+              <span>Parabéns! Você está mantendo uma excelente saúde financeira</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

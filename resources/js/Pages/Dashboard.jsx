@@ -7,6 +7,10 @@ import StatCard from '@/Components/system/dashboard/StatCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
 import MonthlySummaryChart from '@/Components/system/dashboard/MonthlySummaryChart'
 import TopSpendingCategories from '@/Components/system/dashboard/TopSpendingCategories'
+import BudgetProgress from '@/Components/system/dashboard/BudgetProgress'
+import UpcomingBills from '@/Components/system/dashboard/UpcomingBills'
+import SpendingTrends from '@/Components/system/dashboard/SpendingTrends'
+import FinancialHealthScore from '@/Components/system/dashboard/FinancialHealthScore'
 import CategoryBadge from '@/Components/common/CategoryBadge'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
@@ -340,6 +344,92 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               isLoading={isLoadingMonth}
               hasSelection={!!selectedMonthKey}
               onClearSelection={handleClearSelection}
+            />
+          </FadeInItem>
+        </FadeInContainer>
+
+        {/* New Informative Components - Financial Insights */}
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+            <FinancialHealthScore
+              score={75}
+              factors={{
+                savingsRate: 15,
+                budgetAdherence: 85,
+                debtRatio: 0.3,
+                emergencyFund: 4.5,
+                recurringControl: 90
+              }}
+            />
+          </FadeInItem>
+
+          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+            <BudgetProgress
+              totalBudget={5000}
+              totalSpent={3750}
+              budgets={[
+                { categoryName: 'Alimentação', limit: 1500, spent: 1200 },
+                { categoryName: 'Transporte', limit: 800, spent: 650 },
+                { categoryName: 'Lazer', limit: 500, spent: 420 },
+                { categoryName: 'Saúde', limit: 600, spent: 580 },
+                { categoryName: 'Educação', limit: 400, spent: 300 },
+              ]}
+            />
+          </FadeInItem>
+
+          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+            <UpcomingBills
+              bills={[
+                {
+                  date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                  amount: 250.00,
+                  description: 'Internet',
+                  category: 'Utilidades',
+                  status: 'pending',
+                  recurring: true
+                },
+                {
+                  date: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+                  amount: 1200.00,
+                  description: 'Aluguel',
+                  category: 'Moradia',
+                  status: 'pending',
+                  recurring: true
+                },
+                {
+                  date: new Date(Date.now() + 259200000).toISOString().split('T')[0],
+                  amount: 85.50,
+                  description: 'Academia',
+                  category: 'Saúde',
+                  status: 'pending',
+                  recurring: true
+                },
+                {
+                  date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+                  amount: 150.00,
+                  description: 'Energia Elétrica',
+                  category: 'Utilidades',
+                  status: 'pending',
+                  recurring: true
+                },
+              ]}
+              onBillClick={(bill) => {
+                console.log('Bill clicked:', bill)
+              }}
+            />
+          </FadeInItem>
+
+          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+            <SpendingTrends
+              currentMonth={3750}
+              previousMonth={4200}
+              threeMonthAvg={3900}
+              categoryTrends={[
+                { categoryName: 'Alimentação', current: 1200, previous: 1400 },
+                { categoryName: 'Transporte', current: 650, previous: 580 },
+                { categoryName: 'Lazer', current: 420, previous: 550 },
+                { categoryName: 'Saúde', current: 580, previous: 600 },
+              ]}
             />
           </FadeInItem>
         </FadeInContainer>
