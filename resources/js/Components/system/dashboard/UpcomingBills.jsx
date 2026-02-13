@@ -12,7 +12,7 @@ export default function UpcomingBills({ bills = [], onBillClick = null }) {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
-    return new Intl.DateFormat('pt-BR', {
+    return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: 'short',
     }).format(date)
