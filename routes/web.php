@@ -163,4 +163,8 @@ require __DIR__.'/Anexo.php';
 
 require __DIR__.'/SavingsGoal.php';
 
+require __DIR__.'/Bill.php';
+
+require __DIR__.'/Budget.php';
+
 require __DIR__.'/auth.php';
