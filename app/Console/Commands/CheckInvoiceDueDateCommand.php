@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Fatura;
+use App\Models\User;
+use App\Services\NotificationService;
+use Carbon\Carbon;
+use Illuminate\Console\Command;
+
+class CheckInvoiceDueDateCommand extends Command
+{
+    protected $signature = 'invoices:check-due-date';
+    protected $description = 'Verifica faturas próximas do vencimento e envia notificações';
+
+    public function __construct(private NotificationService $notifications)
+    {
+        parent::__construct();
+    }
+
+    public function handle(): int
+    {
+        $this->info('Verificando faturas próximas do vencimento...');
+
+        $today = Carbon::today();
+        $oneDayFromNow = $today->copy()->addDay();
+        $twoDaysFromNow = $today->copy()->addDays(2);
+
+        // Buscar faturas não pagas com banco associado (que tem due_day)
+        $invoices = Fatura::with('user', 'bankUser.bank')
+            ->whereNull('paid_at')
+            ->whereHas('bankUser', function($q) {
+                $q->whereNotNull('due_day');
+            })
+            ->get();
+
+        $notified1Day = 0;
+        $notified2Days = 0;
+
+        foreach ($invoices as $invoice) {
+            if (!$invoice->bankUser || !$invoice->bankUser->due_day) {
+                continue;
+            }
+
+            // Calcular a data de vencimento baseado no month_key e due_day
+            // Se month_key for 2026-02, o vencimento seria no dia due_day de março (próximo mês)
+            $invoiceDate = Carbon::parse($invoice->month_key . '-01');
+            $dueDate = $invoiceDate->copy()->addMonth()->day(min($invoice->bankUser->due_day, $invoiceDate->copy()->addMonth()->daysInMonth));
+            
+            // Notificar 2 dias antes
+            if ($dueDate->isSameDay($twoDaysFromNow)) {
+                $bankName = $invoice->bankUser?->bank?->name ?? 'Cartão';
+                $monthLabel = $invoiceDate->translatedFormat('F/Y');
+                
+                $this->notifications->warning(
+                    $invoice->user,
+                    'Fatura vence em 2 dias',
+                    "A fatura do {$bankName} ({$monthLabel}) vence em " . $dueDate->format('d/m/Y') . 
+                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.'
+                );
+                $notified2Days++;
+                $this->line("  → Notificado: {$invoice->user->name} - {$bankName} {$monthLabel} (2 dias)");
+            }
+
+            // Notificar 1 dia antes
+            if ($dueDate->isSameDay($oneDayFromNow)) {
+                $bankName = $invoice->bankUser?->bank?->name ?? 'Cartão';
+                $monthLabel = $invoiceDate->translatedFormat('F/Y');
+                
+                $this->notifications->warning(
+                    $invoice->user,
+                    'Fatura vence amanhã',
+                    "A fatura do {$bankName} ({$monthLabel}) vence amanhã (" . $dueDate->format('d/m/Y') . ')' .
+                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.'
+                );
+                $notified1Day++;
+                $this->line("  → Notificado: {$invoice->user->name} - {$bankName} {$monthLabel} (1 dia)");
+            }
+        }
+
+        $this->info("Processo concluído:");
+        $this->info("  • {$notified2Days} notificações enviadas (2 dias antes)");
+        $this->info("  • {$notified1Day} notificações enviadas (1 dia antes)");
+
+        return self::SUCCESS;
+    }
+}
