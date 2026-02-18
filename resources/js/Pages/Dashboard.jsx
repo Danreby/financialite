@@ -14,6 +14,8 @@ import FinancialHealthScore from '@/Components/system/dashboard/FinancialHealthS
 import CategoryBadge from '@/Components/common/CategoryBadge'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
+import BillForm from '@/Components/system/BillForm'
+import BudgetForm from '@/Components/system/BudgetForm'
 import ScrollArea from '@/Components/common/ScrollArea'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
 
@@ -45,6 +47,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [monthData, setMonthData] = useState(null)
   const [isLoadingMonth, setIsLoadingMonth] = useState(false)
   const [dashboardInsights, setDashboardInsights] = useState(null)
+  const [showBillForm, setShowBillForm] = useState(false)
+  const [showBudgetForm, setShowBudgetForm] = useState(false)
 
   const handleMonthClick = useCallback(async (monthKey) => {
     let shouldFetchData = true
@@ -109,6 +113,16 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
     setPage(1)
     setSelectedMonthKey(null)
     setMonthData(null)
+  }
+
+  const handleBillSuccess = () => {
+    setShowBillForm(false)
+    setReloadKey((prev) => prev + 1) // Reload dashboard data
+  }
+
+  const handleBudgetSuccess = () => {
+    setShowBudgetForm(false)
+    setReloadKey((prev) => prev + 1) // Reload dashboard data
   }
 
   useEffect(() => {
@@ -353,7 +367,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </FadeInItem>
         </FadeInContainer>
 
-        {/* New Informative Components - Financial Insights */}
+        {/* Informative Components - Financial Insights (corrigido) */}
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <FinancialHealthScore
@@ -363,7 +377,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
                 budgetAdherence: 0,
                 debtRatio: 0,
                 emergencyFund: 0,
-                recurringControl: 0
+                recurringControl: 0,
+                paymentDiscipline: 0,
               }}
             />
           </FadeInItem>
@@ -373,6 +388,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               totalBudget={dashboardInsights?.budget_progress?.total_budget ?? 0}
               totalSpent={dashboardInsights?.budget_progress?.total_spent ?? 0}
               budgets={dashboardInsights?.budget_progress?.budgets ?? []}
+              onConfigureClick={() => setShowBudgetForm(true)}
             />
           </FadeInItem>
 
@@ -382,6 +398,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               onBillClick={(bill) => {
                 console.log('Bill clicked:', bill)
               }}
+              onAddClick={() => setShowBillForm(true)}
             />
           </FadeInItem>
 
@@ -399,6 +416,20 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           isOpen={!!selectedFaturaItem}
           onClose={() => setSelectedFaturaItem(null)}
           item={selectedFaturaItem}
+        />
+
+        <BillForm
+          isOpen={showBillForm}
+          onClose={() => setShowBillForm(false)}
+          onSuccess={handleBillSuccess}
+          categories={categories}
+        />
+
+        <BudgetForm
+          isOpen={showBudgetForm}
+          onClose={() => setShowBudgetForm(false)}
+          onSuccess={handleBudgetSuccess}
+          categories={categories}
         />
       </FadeInContainer>
     </AuthenticatedLayout>

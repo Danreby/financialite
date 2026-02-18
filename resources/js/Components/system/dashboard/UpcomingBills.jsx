@@ -1,8 +1,8 @@
 import React from 'react'
-import { Calendar, Clock, DollarSign, AlertTriangle } from 'lucide-react'
+import { Calendar, Clock, DollarSign, AlertTriangle, Plus } from 'lucide-react'
 import ScrollArea from '@/Components/common/ScrollArea'
 
-export default function UpcomingBills({ bills = [], onBillClick = null }) {
+export default function UpcomingBills({ bills = [], onBillClick = null, onAddClick = null }) {
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -89,12 +89,23 @@ export default function UpcomingBills({ bills = [], onBillClick = null }) {
             <Calendar className="w-5 h-5 text-[var(--theme-accent)]" />
             Próximas Contas
           </h3>
-          {overdueCount > 0 && (
-            <div className="flex items-center gap-1 text-red-500 text-xs font-medium bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full">
-              <AlertTriangle className="w-3 h-3" />
-              {overdueCount} atrasada{overdueCount > 1 ? 's' : ''}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {overdueCount > 0 && (
+              <div className="flex items-center gap-1 text-red-500 text-xs font-medium bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full">
+                <AlertTriangle className="w-3 h-3" />
+                {overdueCount} atrasada{overdueCount > 1 ? 's' : ''}
+              </div>
+            )}
+            {typeof onAddClick === 'function' && (
+              <button
+                onClick={onAddClick}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+                title="Adicionar conta"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
         
         {totalUpcoming > 0 && (

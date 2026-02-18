@@ -19,6 +19,11 @@ class NotificationService
         ]);
     }
 
+    public function success(Authenticatable|int $user, string $title, string $message): Notification
+    {
+        return $this->send($user, $title, $message, 'success');
+    }
+
     public function info(Authenticatable|int $user, string $title, string $message): Notification
     {
         return $this->send($user, $title, $message, 'info');

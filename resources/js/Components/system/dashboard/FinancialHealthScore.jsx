@@ -1,5 +1,5 @@
 import React from 'react'
-import { Heart, Shield, TrendingUp, Target, AlertCircle, CheckCircle } from 'lucide-react'
+import { Heart, Shield, TrendingUp, Target, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 
 export default function FinancialHealthScore({ 
   score = 0,
@@ -8,7 +8,8 @@ export default function FinancialHealthScore({
     budgetAdherence: 0,
     debtRatio: 0,  
     emergencyFund: 0, 
-    recurringControl: 0 
+    recurringControl: 0,
+    paymentDiscipline: 0
   }
 }) {
   const getScoreLevel = (score) => {
@@ -21,9 +22,9 @@ export default function FinancialHealthScore({
   const scoreLevel = getScoreLevel(score)
 
   const getFactorStatus = (value, thresholds) => {
-    if (value >= thresholds.good) return { icon: CheckCircle, color: 'text-green-500' }
-    if (value >= thresholds.ok) return { icon: AlertCircle, color: 'text-yellow-500' }
-    return { icon: AlertCircle, color: 'text-red-500' }
+    if (value >= thresholds.good) return { icon: CheckCircle, color: 'text-green-500', bgColor: 'bg-green-50 dark:bg-green-900/20' }
+    if (value >= thresholds.ok) return { icon: AlertCircle, color: 'text-yellow-500', bgColor: 'bg-yellow-50 dark:bg-yellow-900/20' }
+    return { icon: AlertCircle, color: 'text-red-500', bgColor: 'bg-red-50 dark:bg-red-900/20' }
   }
 
   const factorConfigs = [
@@ -62,6 +63,15 @@ export default function FinancialHealthScore({
       format: (v) => `${v.toFixed(0)}%`,
       thresholds: { good: 80, ok: 60 },
       description: 'das despesas recorrentes monitoradas',
+    },
+    {
+      key: 'paymentDiscipline',
+      label: 'Disciplina de Pagamentos',
+      icon: Clock,
+      value: factors.paymentDiscipline || 0,
+      format: (v) => `${v.toFixed(0)}%`,
+      thresholds: { good: 90, ok: 70 },
+      description: 'de pagamentos em dia',
     },
   ]
 

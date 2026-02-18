@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import { formatCurrency } from "@/Lib/formatters";
 
@@ -88,7 +89,7 @@ export default function FaturaMonthCarousel({
   
   return (
 	<div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-center sm:gap-3 lg:gap-4 2xl:gap-4">
-      <div className="flex justify-between sm:w-32 sm:justify-end">
+      <div className="hidden sm:flex justify-end sm:w-32">
         {prev && (
           <SecondaryButton
             type="button"
@@ -100,7 +101,20 @@ export default function FaturaMonthCarousel({
         )}
       </div>
 
-      <div className="flex-1 flex justify-center">
+      <div className="flex-1 flex justify-center items-center gap-2 sm:gap-0">
+        <button
+          onClick={handlePrev}
+          disabled={!canPrev}
+          className={`sm:hidden p-2 rounded-full transition-colors ${
+            canPrev
+              ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              : 'text-gray-300 dark:text-gray-700 cursor-not-allowed'
+          }`}
+          aria-label="Mês anterior"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
         <AnimatePresence custom={direction} initial={false} mode="wait">
           <motion.div
             key={current.month_key}
@@ -136,9 +150,22 @@ export default function FaturaMonthCarousel({
             </span>
           </motion.div>
         </AnimatePresence>
+
+        <button
+          onClick={handleNext}
+          disabled={!canNext}
+          className={`sm:hidden p-2 rounded-full transition-colors ${
+            canNext
+              ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              : 'text-gray-300 dark:text-gray-700 cursor-not-allowed'
+          }`}
+          aria-label="Próximo mês"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </div>
 
-      <div className="flex justify-between sm:w-32 sm:justify-start">
+      <div className="hidden sm:flex justify-start sm:w-32">
         {next && (
           <SecondaryButton
             type="button"
