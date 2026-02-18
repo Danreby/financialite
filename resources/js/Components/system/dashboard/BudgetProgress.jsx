@@ -1,7 +1,7 @@
 import React from 'react'
-import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, AlertCircle, Settings } from 'lucide-react'
 
-export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpent = 0 }) {
+export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpent = 0, onConfigureClick = null }) {
   const percentage = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0
   const remaining = Math.max(totalBudget - totalSpent, 0)
   const isOverBudget = totalSpent > totalBudget
@@ -35,12 +35,23 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Orçamento Mensal
         </h3>
-        {isOverBudget && (
-          <div className="flex items-center gap-1 text-red-500 text-sm">
-            <AlertCircle className="w-4 h-4" />
-            <span className="font-medium">Excedido</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {isOverBudget && (
+            <div className="flex items-center gap-1 text-red-500 text-sm">
+              <AlertCircle className="w-4 h-4" />
+              <span className="font-medium">Excedido</span>
+            </div>
+          )}
+          {typeof onConfigureClick === 'function' && (
+            <button
+              onClick={onConfigureClick}
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+              title="Configurar orçamento"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mb-6">
