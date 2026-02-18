@@ -49,6 +49,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [dashboardInsights, setDashboardInsights] = useState(null)
   const [showBillForm, setShowBillForm] = useState(false)
   const [showBudgetForm, setShowBudgetForm] = useState(false)
+  const [currentBudget, setCurrentBudget] = useState(null)
+  const [isLoadingBudget, setIsLoadingBudget] = useState(false)
 
   const handleMonthClick = useCallback(async (monthKey) => {
     let shouldFetchData = true
@@ -122,7 +124,25 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
   const handleBudgetSuccess = () => {
     setShowBudgetForm(false)
+    setCurrentBudget(null)
     setReloadKey((prev) => prev + 1) // Reload dashboard data
+  }
+
+  const handleOpenBudgetForm = async () => {
+    setIsLoadingBudget(true)
+    try {
+      const response = await axios.get(route('budgets.current'))
+      setCurrentBudget(response.data)
+    } catch (error) {
+      if (error.response?.status !== 404) {
+        console.error('Error loading budget:', error)
+        toast.error('Erro ao carregar orçamento atual.')
+      }
+      setCurrentBudget(null)
+    } finally {
+      setIsLoadingBudget(false)
+      setShowBudgetForm(true)
+    }
   }
 
   useEffect(() => {
@@ -388,7 +408,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               totalBudget={dashboardInsights?.budget_progress?.total_budget ?? 0}
               totalSpent={dashboardInsights?.budget_progress?.total_spent ?? 0}
               budgets={dashboardInsights?.budget_progress?.budgets ?? []}
-              onConfigureClick={() => setShowBudgetForm(true)}
+              onConfigureClick={handleOpenBudgetForm}
             />
           </FadeInItem>
 
@@ -427,9 +447,13 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
         <BudgetForm
           isOpen={showBudgetForm}
-          onClose={() => setShowBudgetForm(false)}
+          onClose={() => {
+            setShowBudgetForm(false)
+            setCurrentBudget(null)
+          }}
           onSuccess={handleBudgetSuccess}
           categories={categories}
+          budget={currentBudget}
         />
       </FadeInContainer>
     </AuthenticatedLayout>

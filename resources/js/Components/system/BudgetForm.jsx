@@ -29,6 +29,9 @@ export default function BudgetForm({
       } else {
         setCategoryLimits([]);
       }
+    } else {
+      // Reset when modal closes
+      setCategoryLimits([]);
     }
   }, [budget, isOpen]);
 
@@ -202,61 +205,66 @@ export default function BudgetForm({
             </div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-              {categoryLimits.map((categoryLimit, index) => (
-                <div 
-                  key={`category-limit-${index}`}
-                  className="flex flex-col sm:flex-row gap-3 p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg items-start sm:items-center"
-                >
-                  <div className="flex-1 w-full sm:w-auto">
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
-                      Categoria
-                    </label>
-                    <select
-                      value={categoryLimit.category_id}
-                      onChange={(e) => handleCategoryLimitChange(index, 'category_id', e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-                      required
-                    >
-                      <option value="">Selecione uma categoria</option>
-                      {categories
-                        .filter(cat => 
-                          !categoryLimits.some((cl, i) => i !== index && cl.category_id == cat.id)
-                        )
-                        .map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                  
-                  <div className="flex-1 w-full sm:w-auto">
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
-                      Limite (R$)
-                    </label>
-                    <input
-                      type="number"
-                      value={categoryLimit.limit}
-                      onChange={(e) => handleCategoryLimitChange(index, 'limit', e.target.value)}
-                      placeholder="R$ 0,00"
-                      step="0.01"
-                      min="0"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveCategoryLimit(index)}
-                    className="w-full sm:w-auto p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center gap-2 sm:gap-0"
-                    title="Remover"
+              {categoryLimits.map((categoryLimit, index) => {
+                const uniqueKey = `category-limit-${index}-${categoryLimit.category_id || 'new'}`;
+                return (
+                  <div 
+                    key={uniqueKey}
+                    className="flex flex-col sm:flex-row gap-3 p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg items-start sm:items-center"
                   >
-                    <Trash2 className="w-5 h-5" />
-                    <span className="text-sm sm:hidden">Remover</span>
-                  </button>
-                </div>
-              ))}
+                    <div className="flex-1 w-full sm:w-auto">
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
+                        Categoria
+                      </label>
+                      <select
+                        key={`select-${uniqueKey}`}
+                        value={categoryLimit.category_id}
+                        onChange={(e) => handleCategoryLimitChange(index, 'category_id', e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+                        required
+                      >
+                        <option value="">Selecione uma categoria</option>
+                        {categories
+                          .filter(cat => 
+                            !categoryLimits.some((cl, i) => i !== index && cl.category_id == cat.id)
+                          )
+                          .map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    
+                    <div className="flex-1 w-full sm:w-auto">
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
+                        Limite (R$)
+                      </label>
+                      <input
+                        key={`input-${uniqueKey}`}
+                        type="number"
+                        value={categoryLimit.limit}
+                        onChange={(e) => handleCategoryLimitChange(index, 'limit', e.target.value)}
+                        placeholder="R$ 0,00"
+                        step="0.01"
+                        min="0"
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCategoryLimit(index)}
+                      className="w-full sm:w-auto p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center gap-2 sm:gap-0"
+                      title="Remover"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                      <span className="text-sm sm:hidden">Remover</span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

@@ -26,7 +26,8 @@ export default function BillForm({
       setSelectedIcon(bill.icon || 'FileText');
       setSelectedColor(bill.color || '#3b82f6');
       setRecurrenceType(bill.recurrence_type || 'monthly');
-    } else {
+    } else if (isOpen) {
+      // Reset to defaults when opening without a bill
       setSelectedIcon('FileText');
       setSelectedColor('#3b82f6');
       setRecurrenceType('monthly');
@@ -83,6 +84,9 @@ export default function BillForm({
       }
 
       form.reset();
+      setSelectedIcon('FileText');
+      setSelectedColor('#3b82f6');
+      setRecurrenceType('monthly');
       setIsSubmitting(false);
       if (onSuccess) onSuccess();
       if (onClose) onClose();
@@ -103,6 +107,9 @@ export default function BillForm({
   };
 
   const handleClose = () => {
+    setSelectedIcon('FileText');
+    setSelectedColor('#3b82f6');
+    setRecurrenceType('monthly');
     if (onClose) onClose();
   };
 

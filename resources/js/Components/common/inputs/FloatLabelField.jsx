@@ -87,7 +87,7 @@ const FloatLabelField = forwardRef(
                         id={fieldId}
                         name={name || fieldId}
                         {...(InputComponent === 'input' ? { type } : {})}
-                        value={value}
+                        value={effectiveValue}
                         onChange={(event) => {
                             if (value === undefined) {
                                 setInternalValue(event.target.value);
