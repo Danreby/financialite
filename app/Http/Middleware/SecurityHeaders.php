@@ -21,11 +21,9 @@ class SecurityHeaders
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         
-        // Permite iframe apenas para preview de anexos
         if (!$request->is('anexos/*/preview')) {
             $response->headers->set('X-Frame-Options', 'DENY');
         } else {
-            // Para preview de anexos, permite apenas do mesmo domínio
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         }
         

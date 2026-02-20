@@ -15,6 +15,10 @@ use Illuminate\Support\Collection;
 
 class DashboardInsightsService
 {
+    public function __construct(
+        private BudgetCalculationService $budgetCalculationService
+    ) {}
+
     public function getInsights(Authenticatable $user, ?int $bankUserId = null): array
     {
         return [
@@ -40,19 +44,13 @@ class DashboardInsightsService
             $monthlyIncome = 5000;
         }
 
-        $debitSpending = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->where('type', 'debit')
-            ->sum('amount');
-
-        $currentInvoicePending = Fatura::where('user_id', $user->id)
-            ->where('month_key', $currentMonthKey)
-            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
-            ->whereNull('paid_at')
-            ->sum('total_paid');
-
-        $currentMonthSpending = $debitSpending + $currentInvoicePending;
+        $currentMonthSpending = $this->budgetCalculationService->calculateTotalMonthlySpending(
+            $user,
+            $bankUserId,
+            $monthStart,
+            $monthEnd,
+            $currentMonthKey
+        );
 
         $savingsRate = $monthlyIncome > 0 
             ? max(0, (($monthlyIncome - $currentMonthSpending) / $monthlyIncome) * 100) 
@@ -61,7 +59,15 @@ class DashboardInsightsService
         $budgetAdherence = $this->calculateBudgetAdherence($user, $bankUserId);
 
         $totalIncome = Income::forUser($user->id)->sum('amount');
+        
         $totalSpending = Transacao::forUser($user->id)->where('type', 'debit')->sum('amount');
+        
+        $unpaidInvoices = Fatura::where('user_id', $user->id)
+            ->whereNull('paid_at')
+            ->sum('total_paid');
+        
+        $totalSpending += $unpaidInvoices;
+        
         $totalBalance = $totalIncome - $totalSpending;
         
         $emergencyFund = $currentMonthSpending > 0 
@@ -122,6 +128,9 @@ class DashboardInsightsService
 
     private function calculateBudgetAdherence(Authenticatable $user, ?int $bankUserId): float
     {
+        $today = Carbon::today();
+        $monthStart = $today->copy()->startOfMonth();
+        $monthEnd = $today->copy()->endOfMonth();
         $currentMonth = Carbon::now()->format('Y-m');
         
         $budget = Budget::forUser($user->id)
@@ -133,12 +142,19 @@ class DashboardInsightsService
             return 50.0;
         }
 
-        $categorySpending = $budget->getCategorySpending();
+        $categorySpending = $this->budgetCalculationService->calculateCategorySpendingWithInvoice(
+            $user,
+            $bankUserId,
+            $monthStart,
+            $monthEnd,
+            $currentMonth
+        );
+
         $withinBudgetCount = 0;
         $totalCategories = $budget->categoryLimits->count();
 
         foreach ($budget->categoryLimits as $categoryLimit) {
-            $spent = $categorySpending[$categoryLimit->category_id]['total'] ?? 0;
+            $spent = $categorySpending->get($categoryLimit->category_id)['spent'] ?? 0;
             if ($spent <= $categoryLimit->limit) {
                 $withinBudgetCount++;
             }
@@ -171,53 +187,43 @@ class DashboardInsightsService
             $totalBudget = $budget->monthly_limit;
         }
 
-        $debitSpent = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->where('type', 'debit')
-            ->sum('amount');
+        $totalSpent = $this->budgetCalculationService->calculateTotalMonthlySpending(
+            $user,
+            $bankUserId,
+            $monthStart,
+            $monthEnd,
+            $currentMonth
+        );
 
-        $currentInvoicePending = Fatura::where('user_id', $user->id)
-            ->where('month_key', $currentMonth)
-            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
-            ->whereNull('paid_at')
-            ->sum('total_paid');
-
-        $totalSpent = $debitSpent + $currentInvoicePending;
-
-        $categorySpending = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->where('type', 'debit')
-            ->whereNotNull('category_id')
-            ->selectRaw('category_id, SUM(amount) as spent')
-            ->groupBy('category_id')
-            ->get()
-            ->keyBy('category_id');
+        $categorySpending = $this->budgetCalculationService->calculateCategorySpendingWithInvoice(
+            $user,
+            $bankUserId,
+            $monthStart,
+            $monthEnd,
+            $currentMonth
+        );
 
         $budgets = [];
         
         if ($budget && $budget->categoryLimits->isNotEmpty()) {
-            $budgets = $budget->categoryLimits->map(function ($categoryLimit) use ($categorySpending) {
-                $spent = $categorySpending->get($categoryLimit->category_id)?->spent ?? 0;
-
-                return [
-                    'categoryName' => $categoryLimit->category?->name ?? 'Sem categoria',
-                    'limit' => round($categoryLimit->limit, 2),
-                    'spent' => round($spent, 2),
-                ];
-            })->values()->all();
+            $categories = Category::forUser($user->id)->get()->keyBy('id');
+            
+            $budgets = $this->budgetCalculationService->formatCategoryBudgets(
+                $categorySpending,
+                $budget->categoryLimits,
+                $categories
+            );
         } else {
             $categories = Category::forUser($user->id)->get()->keyBy('id');
             
             $budgets = $categorySpending->map(function ($item) use ($categories, $totalBudget) {
-                $category = $categories->get($item->category_id);
+                $category = $categories->get($item['category_id']);
                 $categoryBudget = $totalBudget * 0.15;
 
                 return [
                     'categoryName' => $category?->name ?? 'Sem categoria',
                     'limit' => round($categoryBudget, 2),
-                    'spent' => round($item->spent, 2),
+                    'spent' => round($item['spent'], 2),
                 ];
             })->values()->all();
         }

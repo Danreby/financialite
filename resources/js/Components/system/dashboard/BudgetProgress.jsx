@@ -30,9 +30,9 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
   }
 
   return (
-    <div className="themed-card rounded-xl p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+    <div className="themed-card rounded-xl p-4 sm:p-6 h-full flex flex-col">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
           Orçamento Mensal
         </h3>
         <div className="flex items-center gap-2">
@@ -54,9 +54,9 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
         </div>
       </div>
 
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0 mb-2">
+          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             Orçamento Total
           </div>
           <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -64,7 +64,7 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
           </div>
         </div>
         
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-3 overflow-hidden">
           <div
             className={`h-full transition-all duration-500 ${
               isOverBudget ? 'bg-red-500' : 'bg-[var(--theme-accent)]'
@@ -96,7 +96,7 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
       </div>
 
       {budgets.length > 0 && (
-        <div className="flex-1 space-y-4 overflow-y-auto">
+        <div className="flex-1 space-y-3 sm:space-y-4 overflow-y-auto">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
             Por Categoria
           </div>
@@ -105,8 +105,8 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
             
             return (
               <div key={index} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 dark:text-gray-300 truncate max-w-[150px]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0 text-sm">
+                  <span className="text-gray-700 dark:text-gray-300 truncate max-w-full sm:max-w-[150px]">
                     {budget.categoryName || 'Sem categoria'}
                   </span>
                   <span className={`text-xs font-medium ${getStatusColor(budget.spent, budget.limit)}`}>
@@ -129,9 +129,9 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
       )}
 
       {budgets.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
-            <TrendingUp className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-6">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
+            <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 dark:text-gray-600" />
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
             Nenhum orçamento definido

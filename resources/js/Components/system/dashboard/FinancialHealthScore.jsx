@@ -80,20 +80,20 @@ export default function FinancialHealthScore({
   const progress = (score / 100) * circumference
 
   return (
-    <div className="themed-card rounded-xl p-6 h-full flex flex-col">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <Heart className="w-5 h-5 text-[var(--theme-accent)]" />
+    <div className="themed-card rounded-xl p-4 sm:p-6 h-full flex flex-col">
+      <div className="mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accent)]" />
           Saúde Financeira
         </h3>
       </div>
 
-      <div className="flex flex-col items-center justify-center mb-6">
-        <div className="relative w-48 h-48">
-          <svg className="transform -rotate-90 w-48 h-48">
+      <div className="flex flex-col items-center justify-center mb-4 sm:mb-6">
+        <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48">
+          <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
             <circle
-              cx="96"
-              cy="96"
+              cx="100"
+              cy="100"
               r={radius}
               stroke="currentColor"
               strokeWidth="12"
@@ -101,8 +101,8 @@ export default function FinancialHealthScore({
               className="text-gray-200 dark:text-gray-700"
             />
             <circle
-              cx="96"
-              cy="96"
+              cx="100"
+              cy="100"
               r={radius}
               stroke="currentColor"
               strokeWidth="12"
@@ -115,10 +115,10 @@ export default function FinancialHealthScore({
           </svg>
           
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">
               {score.toFixed(0)}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               de 100
             </div>
           </div>
@@ -129,8 +129,8 @@ export default function FinancialHealthScore({
         </div>
       </div>
 
-      <div className="flex-1 space-y-4">
-        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+      <div className="flex-1 space-y-3 sm:space-y-4">
+        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 sm:mb-3">
           Fatores Avaliados
         </div>
         
@@ -142,20 +142,20 @@ export default function FinancialHealthScore({
           return (
             <div
               key={factor.key}
-              className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+              className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
             >
-              <div className={`p-2 rounded-lg bg-transparent dark:bg-transparent border ${status.bgColor} ${status.color} flex items-center justify-center dark:border-gray-700`}>
-                <FactorIcon className="w-4 h-4 text-[var(--theme-accent)] dark:text-[var(--theme-accent)]" />
+              <div className={`p-1.5 sm:p-2 rounded-lg bg-transparent dark:bg-transparent border ${status.bgColor} ${status.color} flex items-center justify-center dark:border-gray-700 flex-shrink-0`}>
+                <FactorIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[var(--theme-accent)] dark:text-[var(--theme-accent)]" />
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0 mb-1">
+                  <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
                     {factor.label}
                   </span>
                   <div className="flex items-center gap-1">
-                    <StatusIcon className={`w-4 h-4 ${status.color}`} />
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <StatusIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${status.color}`} />
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">
                       {factor.format(factor.value)}
                     </span>
                   </div>
