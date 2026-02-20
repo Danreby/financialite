@@ -198,6 +198,16 @@
 		border-color: var(--theme-accent, #f43f5e);
 		background-color: var(--theme-accentLight, #ffe4e6);
 	}
+
+	.themed-highlight-box {
+		background-color: var(--theme-accentLight, #ffe4e6);
+		border: 1px solid color-mix(in srgb, var(--theme-accent, #f43f5e) 20%, transparent);
+
+		&:is(.dark *) {
+			background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 8%, transparent);
+			border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 25%, transparent);
+		}
+	}
 	:is(.dark *) .themed-selected {
 		border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 80%, transparent);
 		background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 15%, transparent);

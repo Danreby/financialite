@@ -83,17 +83,17 @@ class BillPaymentService
             'title' => $bill->title,
             'description' => $bill->description 
                 ? "Pagamento de conta: {$bill->description}" 
-                : "Pagamento de conta",
+                : "Pagamento de conta: {$bill->title}",
             'amount' => $amount,
             'type' => 'debit',
             'status' => 'paid',
             'paid_date' => $paidDate,
-            'total_installments' => null,
-            'current_installment' => null,
+            'total_installments' => 1,
+            'current_installment' => 1,
             'is_recurring' => $bill->recurrence_type !== 'none',
             'user_id' => $user->id,
-            'bank_user_id' => null,
-            'category_id' => null,
+            'bank_user_id' => $bill->bank_user_id ?? null,
+            'category_id' => $bill->category_id ?? null,
         ]);
     }
 

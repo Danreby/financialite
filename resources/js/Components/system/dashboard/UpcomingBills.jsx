@@ -119,8 +119,8 @@ export default function UpcomingBills({
         </div>
 
         {totalUpcoming > 0 && (
-          <div className="bg-[var(--theme-accentLight)] dark:bg-[var(--theme-accent)]/20 rounded-lg p-3">
-            <div className="text-xs text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)] mb-1">
+          <div className="themed-highlight-box rounded-lg p-3">
+            <div className="text-xs text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)] mb-1 font-medium">
               A pagar nos próximos dias
             </div>
             <div className="text-2xl font-bold text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)]">
@@ -131,7 +131,7 @@ export default function UpcomingBills({
       </div>
 
       {unpaidBills.length > 0 ? (
-        <ScrollArea className="flex-1 -mx-6 px-6">
+        <ScrollArea maxHeightClassName="" className="flex-1 -mx-6 px-6">
           <div className="space-y-3">
             {unpaidBills.map((bill) => {
               const statusInfo = getStatusInfo(bill)

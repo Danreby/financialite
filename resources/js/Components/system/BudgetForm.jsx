@@ -84,6 +84,15 @@ export default function BudgetForm({
       return;
     }
 
+    const hasEmptyLimit = categoryLimits.some(cl =>
+      cl.category_id && (!cl.limit || cl.limit === '' || parseFloat(cl.limit) < 0)
+    );
+
+    if (hasEmptyLimit) {
+      toast.error("Preencha o limite para todas as categorias adicionadas.");
+      return;
+    }
+
     const validCategoryLimits = categoryLimits.filter(cl => {
       return cl.category_id && cl.limit && parseFloat(cl.limit) >= 0;
     });
@@ -269,7 +278,7 @@ export default function BudgetForm({
                       </label>
                       <input
                         type="number"
-                        value={categoryLimit.limit}
+                        defaultValue={categoryLimit.limit}
                         onChange={(e) => handleCategoryLimitChange(index, 'limit', e.target.value)}
                         placeholder="R$ 0,00"
                         step="0.01"

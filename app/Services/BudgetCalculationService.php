@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Transacao;
 use App\Models\Fatura;
+use App\Models\BankUser;
 use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -11,6 +12,58 @@ use Illuminate\Support\Collection;
 
 class BudgetCalculationService
 {
+    private ?array $cachedEffectiveGroup = null;
+    private ?string $cachedGroupKey = null;
+
+    public function __construct(
+        private FaturaBillingService $billing
+    ) {}
+
+    /**
+     * Get the effective credit group for the current billing month.
+     * Uses the same billing-cycle-aware approach as FaturaDashboardService
+     * to ensure budget card matches "Total Mensal".
+     */
+    private function getEffectiveCreditGroup(
+        Authenticatable $user,
+        ?int $bankUserId
+    ): ?array {
+        $cacheKey = $user->id . '-' . ($bankUserId ?? 'null');
+
+        if ($this->cachedGroupKey === $cacheKey) {
+            return $this->cachedEffectiveGroup;
+        }
+
+        $selectedBankUser = $bankUserId
+            ? BankUser::forUser($user->id)->find($bankUserId)
+            : null;
+
+        $allCreditTransactions = Transacao::with(['bankUser.bank', 'category'])
+            ->forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->where('type', 'credit')
+            ->notStatus('paid')
+            ->get();
+
+        if ($allCreditTransactions->isEmpty()) {
+            $this->cachedGroupKey = $cacheKey;
+            $this->cachedEffectiveGroup = null;
+            return null;
+        }
+
+        $paidByMonth = Fatura::where('user_id', $user->id)
+            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
+            ->pluck('total_paid', 'month_key');
+
+        $monthlyGroups = $this->billing->groupFaturasByMonth($allCreditTransactions, $paidByMonth);
+        $currentMonthKey = $this->billing->resolveCurrentBillingMonthKey($selectedBankUser);
+        $effective = $this->billing->resolveEffectiveGroup($monthlyGroups, $currentMonthKey);
+
+        $this->cachedGroupKey = $cacheKey;
+        $this->cachedEffectiveGroup = $effective['group'];
+
+        return $this->cachedEffectiveGroup;
+    }
     public function calculateCategorySpendingWithInvoice(
         Authenticatable $user,
         ?int $bankUserId,
@@ -57,22 +110,9 @@ class BudgetCalculationService
         ?int $bankUserId,
         string $currentMonth
     ): float {
-        $invoices = Fatura::where('user_id', $user->id)
-            ->where('month_key', $currentMonth)
-            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
-            ->whereNull('paid_at')
-            ->with('transacoes')
-            ->get();
+        $effectiveGroup = $this->getEffectiveCreditGroup($user, $bankUserId);
 
-        $total = 0.0;
-
-        foreach ($invoices as $invoice) {
-            foreach ($invoice->transacoes as $transaction) {
-                $total += $this->calculateInstallmentAmount($transaction);
-            }
-        }
-
-        return $total;
+        return $this->billing->calculatePendingBillFromGroup($effectiveGroup);
     }
 
     private function getDebitCategorySpending(
@@ -97,32 +137,28 @@ class BudgetCalculationService
         ?int $bankUserId,
         string $currentMonth
     ): Collection {
-        $invoices = Fatura::where('user_id', $user->id)
-            ->where('month_key', $currentMonth)
-            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
-            ->whereNull('paid_at')
-            ->with(['transacoes' => function ($query) {
-                $query->where('type', 'credit')
-                    ->whereNotNull('category_id');
-            }])
-            ->get();
+        $effectiveGroup = $this->getEffectiveCreditGroup($user, $bankUserId);
+
+        if (!$effectiveGroup || ($effectiveGroup['is_paid'] ?? false)) {
+            return collect();
+        }
 
         $categorySpending = [];
 
-        foreach ($invoices as $invoice) {
-            foreach ($invoice->transacoes as $transaction) {
-                if (!$transaction->category_id) {
-                    continue;
-                }
-
-                $installmentAmount = $this->calculateInstallmentAmount($transaction);
-
-                if (!isset($categorySpending[$transaction->category_id])) {
-                    $categorySpending[$transaction->category_id] = 0;
-                }
-
-                $categorySpending[$transaction->category_id] += $installmentAmount;
+        foreach ($effectiveGroup['items'] ?? [] as $item) {
+            $categoryId = $item['category_id'] ?? null;
+            if (!$categoryId) {
+                continue;
             }
+
+            $totalInstallments = max((int) ($item['total_installments'] ?? 1), 1);
+            $installmentAmount = (float) ($item['amount'] ?? 0) / $totalInstallments;
+
+            if (!isset($categorySpending[$categoryId])) {
+                $categorySpending[$categoryId] = 0;
+            }
+
+            $categorySpending[$categoryId] += $installmentAmount;
         }
 
         return collect($categorySpending)->map(function ($spent, $categoryId) {
@@ -223,31 +259,34 @@ class BudgetCalculationService
             ->get()
             ->keyBy('category_id');
 
-        $invoiceMonthKeys = $this->getMonthKeysBetween($periodStart, $periodEnd);
-
-        $invoices = Fatura::where('user_id', $user->id)
-            ->whereIn('month_key', $invoiceMonthKeys)
-            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
-            ->with(['transacoes' => function ($query) {
-                $query->where('type', 'credit')
-                    ->whereNotNull('category_id');
-            }])
+        $allCreditTransactions = Transacao::with(['bankUser.bank'])
+            ->forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->where('type', 'credit')
+            ->whereNotNull('category_id')
+            ->notStatus('paid')
             ->get();
 
         $creditByCategory = [];
+        $monthKeys = $this->getMonthKeysBetween($periodStart, $periodEnd);
 
-        foreach ($invoices as $invoice) {
-            foreach ($invoice->transacoes as $transaction) {
-                $categoryId = $transaction->category_id;
-                if (!$categoryId) continue;
+        foreach ($allCreditTransactions as $transaction) {
+            $categoryId = $transaction->category_id;
+            if (!$categoryId) continue;
 
-                $installmentAmount = $this->calculateInstallmentAmount($transaction);
+            foreach ($monthKeys as $monthKey) {
+                $targetMonth = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
+                
+                if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
+                    $totalInstallments = max((int) ($transaction->total_installments ?? 1), 1);
+                    $installmentAmount = (float) $transaction->amount / $totalInstallments;
 
-                if (!isset($creditByCategory[$categoryId])) {
-                    $creditByCategory[$categoryId] = 0;
+                    if (!isset($creditByCategory[$categoryId])) {
+                        $creditByCategory[$categoryId] = 0;
+                    }
+
+                    $creditByCategory[$categoryId] += $installmentAmount;
                 }
-
-                $creditByCategory[$categoryId] += $installmentAmount;
             }
         }
 
@@ -264,19 +303,29 @@ class BudgetCalculationService
         Carbon $periodStart,
         Carbon $periodEnd
     ): float {
-        $invoiceMonthKeys = $this->getMonthKeysBetween($periodStart, $periodEnd);
-
-        $invoices = Fatura::where('user_id', $user->id)
-            ->whereIn('month_key', $invoiceMonthKeys)
-            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
-            ->with('transacoes')
+        $allCreditTransactions = Transacao::with(['bankUser.bank'])
+            ->forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->where('type', 'credit')
+            ->notStatus('paid')
             ->get();
 
-        $total = 0.0;
+        if ($allCreditTransactions->isEmpty()) {
+            return 0.0;
+        }
 
-        foreach ($invoices as $invoice) {
-            foreach ($invoice->transacoes as $transaction) {
-                $total += $this->calculateInstallmentAmount($transaction);
+        $total = 0.0;
+        $monthKeys = $this->getMonthKeysBetween($periodStart, $periodEnd);
+
+        foreach ($allCreditTransactions as $transaction) {
+            foreach ($monthKeys as $monthKey) {
+                $targetMonth = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
+                
+                if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
+                    $totalInstallments = max((int) ($transaction->total_installments ?? 1), 1);
+                    $installmentAmount = (float) $transaction->amount / $totalInstallments;
+                    $total += $installmentAmount;
+                }
             }
         }
 
