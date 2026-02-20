@@ -124,8 +124,7 @@ export default function SpendingTrends({
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             Por Categoria
           </div>
-          <div className="space-y-3 max-h-[300px] overflow-y-auto">
-            <ScrollArea className='max-h-[300px]'>
+          <ScrollArea className="space-y-3 max-h-[300px]">
               {categoryTrends.map((trend, index) => {
                 const trendInfo = calculateChange(trend.current, trend.previous)
                 const TrendIcon = getTrendIcon(trendInfo.direction)
@@ -151,8 +150,7 @@ export default function SpendingTrends({
                   </div>
                 )
               })}
-            </ScrollArea>
-          </div>
+          </ScrollArea>
         </div>
       )}
 
