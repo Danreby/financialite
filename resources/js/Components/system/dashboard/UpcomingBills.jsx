@@ -130,10 +130,10 @@ export default function UpcomingBills({
         )}
       </div>
 
-      {bills.length > 0 ? (
+      {unpaidBills.length > 0 ? (
         <ScrollArea className="flex-1 -mx-6 px-6">
           <div className="space-y-3">
-            {bills.map((bill) => {
+            {unpaidBills.map((bill) => {
               const statusInfo = getStatusInfo(bill)
               const StatusIcon = statusInfo.icon
               const billDate = bill.date || bill.due_date

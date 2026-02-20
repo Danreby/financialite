@@ -7,6 +7,7 @@ use App\Http\Requests\Bill\BillUpdateRequest;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Services\NotificationService;
+use App\Services\BillPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +15,10 @@ use Carbon\Carbon;
 
 class BillController extends Controller
 {
-    public function __construct(private NotificationService $notifications)
-    {
+    public function __construct(
+        private NotificationService $notifications,
+        private BillPaymentService $billPaymentService
+    ) {
         $this->middleware('auth');
     }
 
@@ -156,7 +159,7 @@ class BillController extends Controller
     {
         $this->authorize('update', $bill);
 
-        $request->validate([
+        $validated = $request->validate([
             'due_date' => ['required', 'date'],
             'paid_date' => ['nullable', 'date'],
             'amount_paid' => ['nullable', 'numeric', 'min:0'],
@@ -164,27 +167,12 @@ class BillController extends Controller
         ]);
 
         $user = $request->user();
-        $amountPaid = $request->input('amount_paid') ?? $bill->amount ?? 0;
 
-        $payment = DB::transaction(function () use ($bill, $request, $user, $amountPaid) {
-            $payment = BillPayment::updateOrCreate(
-                [
-                    'bill_id' => $bill->id,
-                    'due_date' => $request->input('due_date'),
-                ],
-                [
-                    'paid_date' => $request->input('paid_date', now()),
-                    'amount_due' => $bill->amount ?? $amountPaid,
-                    'amount_paid' => $amountPaid,
-                    'status' => 'paid',
-                    'notes' => $request->input('notes'),
-                ]
-            );
-
-            $this->notifications->success($user, 'Pagamento registrado', 'O pagamento da conta foi registrado com sucesso.');
-
-            return $payment;
-        });
+        $payment = $this->billPaymentService->markBillAsPaid(
+            $bill,
+            $user,
+            $validated
+        );
 
         return $this->success($payment);
     }
@@ -194,15 +182,9 @@ class BillController extends Controller
         $this->authorize('update', $bill);
 
         $user = $request->user();
-        $newStatus = $bill->status === 'active' ? 'inactive' : 'active';
 
-        DB::transaction(function () use ($bill, $newStatus, $user) {
-            $bill->update(['status' => $newStatus]);
+        $bill = $this->billPaymentService->toggleBillStatus($bill, $user);
 
-            $label = $newStatus === 'active' ? 'ativada' : 'desativada';
-            $this->notifications->info($user, 'Conta ' . $label, 'A conta foi ' . $label . ' com sucesso.');
-        });
-
-        return $this->success($bill->fresh());
+        return $this->success($bill);
     }
 }
