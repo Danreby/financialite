@@ -1,5 +1,6 @@
 import React from 'react'
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import ScrollArea from '@/Components/common/ScrollArea'
 
 export default function SpendingTrends({ 
   currentMonth = 0, 
@@ -124,31 +125,33 @@ export default function SpendingTrends({
             Por Categoria
           </div>
           <div className="space-y-3 max-h-[300px] overflow-y-auto">
-            {categoryTrends.map((trend, index) => {
-              const trendInfo = calculateChange(trend.current, trend.previous)
-              const TrendIcon = getTrendIcon(trendInfo.direction)
+            <ScrollArea className='max-h-[300px]'>
+              {categoryTrends.map((trend, index) => {
+                const trendInfo = calculateChange(trend.current, trend.previous)
+                const TrendIcon = getTrendIcon(trendInfo.direction)
 
-              return (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                      {trend.categoryName || 'Sem categoria'}
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {trend.categoryName || 'Sem categoria'}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {formatCurrency(trend.current)}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {formatCurrency(trend.current)}
+                    
+                    <div className={`ml-3 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTrendBgColor(trendInfo.direction)} ${getTrendColor(trendInfo.direction)}`}>
+                      <TrendIcon className="w-3 h-3" />
+                      {Math.abs(trendInfo.percentage).toFixed(0)}%
                     </div>
                   </div>
-                  
-                  <div className={`ml-3 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTrendBgColor(trendInfo.direction)} ${getTrendColor(trendInfo.direction)}`}>
-                    <TrendIcon className="w-3 h-3" />
-                    {Math.abs(trendInfo.percentage).toFixed(0)}%
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </ScrollArea>
           </div>
         </div>
       )}
