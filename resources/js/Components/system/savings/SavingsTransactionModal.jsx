@@ -65,7 +65,6 @@ export default function SavingsTransactionModal({ isOpen, onClose, onConfirm, go
       maxWidth="sm"
     >
       <div className="mt-4 space-y-4">
-        {/* Goal summary */}
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-[#0f0f0f]">
           <div className="flex items-center gap-3">
             <span className="text-2xl">{goal.icon || '💰'}</span>
@@ -79,7 +78,6 @@ export default function SavingsTransactionModal({ isOpen, onClose, onConfirm, go
             </div>
           </div>
 
-          {/* Progress bar */}
           <div className="mt-2.5">
             <div className="w-full h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
               <div
@@ -128,7 +126,6 @@ export default function SavingsTransactionModal({ isOpen, onClose, onConfirm, go
             )}
           </div>
 
-          {/* Quick amount buttons */}
           <div className="flex flex-wrap gap-2">
             {(isDeposit ? [50, 100, 200, 500] : [50, 100, maxWithdraw]).map((val) => (
               val > 0 && (

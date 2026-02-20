@@ -120,10 +120,10 @@ export default function UpcomingBills({
 
         {totalUpcoming > 0 && (
           <div className="bg-[var(--theme-accentLight)] dark:bg-[var(--theme-accent)]/20 rounded-lg p-3">
-            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+            <div className="text-xs text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)] mb-1">
               A pagar nos próximos dias
             </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="text-2xl font-bold text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)]">
               {formatCurrency(totalUpcoming)}
             </div>
           </div>

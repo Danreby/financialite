@@ -60,13 +60,15 @@ class DashboardInsightsService
 
         $totalIncome = Income::forUser($user->id)->sum('amount');
         
-        $totalSpending = Transacao::forUser($user->id)->where('type', 'debit')->sum('amount');
+        $totalDebitSpending = Transacao::forUser($user->id)->where('type', 'debit')->sum('amount');
         
-        $unpaidInvoices = Fatura::where('user_id', $user->id)
-            ->whereNull('paid_at')
-            ->sum('total_paid');
+        $unpaidInvoiceTotal = $this->budgetCalculationService->calculatePendingInvoiceTotal(
+            $user,
+            $bankUserId,
+            $currentMonthKey
+        );
         
-        $totalSpending += $unpaidInvoices;
+        $totalSpending = $totalDebitSpending + $unpaidInvoiceTotal;
         
         $totalBalance = $totalIncome - $totalSpending;
         
@@ -340,57 +342,54 @@ class DashboardInsightsService
         $previousMonthStart = $today->copy()->subMonth()->startOfMonth();
         $previousMonthEnd = $today->copy()->subMonth()->endOfMonth();
 
-        $threeMonthsAgo = $today->copy()->subMonths(3)->startOfMonth();
+        $threeMonthsAgoStart = $today->copy()->subMonths(3)->startOfMonth();
 
-        $currentMonth = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])
-            ->where('type', 'debit')
-            ->sum('amount');
+        $currentMonth = $this->budgetCalculationService->calculateInstallmentAwareSpending(
+            $user,
+            $bankUserId,
+            $currentMonthStart,
+            $currentMonthEnd
+        );
 
-        $previousMonth = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$previousMonthStart, $previousMonthEnd])
-            ->where('type', 'debit')
-            ->sum('amount');
+        $previousMonth = $this->budgetCalculationService->calculateInstallmentAwareSpending(
+            $user,
+            $bankUserId,
+            $previousMonthStart,
+            $previousMonthEnd
+        );
 
-        $threeMonthTotal = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$threeMonthsAgo, $currentMonthEnd])
-            ->where('type', 'debit')
-            ->sum('amount');
+        $threeMonthTotal = $this->budgetCalculationService->calculateInstallmentAwareSpending(
+            $user,
+            $bankUserId,
+            $threeMonthsAgoStart,
+            $currentMonthEnd
+        );
 
         $threeMonthAvg = $threeMonthTotal / 3;
 
-        $currentCategorySpending = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])
-            ->where('type', 'debit')
-            ->whereNotNull('category_id')
-            ->selectRaw('category_id, SUM(amount) as current')
-            ->groupBy('category_id')
-            ->get()
-            ->keyBy('category_id');
+        $currentCategorySpending = $this->budgetCalculationService->calculateInstallmentAwareCategorySpending(
+            $user,
+            $bankUserId,
+            $currentMonthStart,
+            $currentMonthEnd
+        );
 
-        $previousCategorySpending = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$previousMonthStart, $previousMonthEnd])
-            ->where('type', 'debit')
-            ->whereNotNull('category_id')
-            ->selectRaw('category_id, SUM(amount) as previous')
-            ->groupBy('category_id')
-            ->get()
-            ->keyBy('category_id');
+        $previousCategorySpending = $this->budgetCalculationService->calculateInstallmentAwareCategorySpending(
+            $user,
+            $bankUserId,
+            $previousMonthStart,
+            $previousMonthEnd
+        );
 
         $categories = Category::forUser($user->id)->get()->keyBy('id');
 
-        $allCategoryIds = collect($currentCategorySpending->keys())
+        $allCategoryIds = $currentCategorySpending->keys()
             ->merge($previousCategorySpending->keys())
             ->unique();
 
         $categoryTrends = $allCategoryIds->map(function ($categoryId) use ($currentCategorySpending, $previousCategorySpending, $categories) {
-            $current = $currentCategorySpending->get($categoryId)?->current ?? 0;
-            $previous = $previousCategorySpending->get($categoryId)?->previous ?? 0;
+            $current = $currentCategorySpending->get($categoryId)['spent'] ?? 0;
+            $previous = $previousCategorySpending->get($categoryId)['spent'] ?? 0;
             $category = $categories->get($categoryId);
 
             return [

@@ -47,13 +47,32 @@ class BudgetCalculationService
             ->where('type', 'debit')
             ->sum('amount');
 
-        $currentInvoiceTotal = Fatura::where('user_id', $user->id)
+        $pendingInvoiceTotal = $this->calculatePendingInvoiceTotal($user, $bankUserId, $currentMonth);
+
+        return (float) ($debitSpent + $pendingInvoiceTotal);
+    }
+
+    public function calculatePendingInvoiceTotal(
+        Authenticatable $user,
+        ?int $bankUserId,
+        string $currentMonth
+    ): float {
+        $invoices = Fatura::where('user_id', $user->id)
             ->where('month_key', $currentMonth)
             ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
             ->whereNull('paid_at')
-            ->sum('total_paid');
+            ->with('transacoes')
+            ->get();
 
-        return (float) ($debitSpent + $currentInvoiceTotal);
+        $total = 0.0;
+
+        foreach ($invoices as $invoice) {
+            foreach ($invoice->transacoes as $transaction) {
+                $total += $this->calculateInstallmentAmount($transaction);
+            }
+        }
+
+        return $total;
     }
 
     private function getDebitCategorySpending(
@@ -164,5 +183,116 @@ class BudgetCalculationService
                 'spent' => round($spent, 2),
             ];
         })->values()->all();
+    }
+
+    public function calculateInstallmentAwareSpending(
+        Authenticatable $user,
+        ?int $bankUserId,
+        Carbon $periodStart,
+        Carbon $periodEnd
+    ): float {
+        $debitTotal = Transacao::forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->whereBetween('created_at', [$periodStart, $periodEnd])
+            ->where('type', 'debit')
+            ->sum('amount');
+
+        $creditTotal = $this->calculateCreditInstallmentSpending(
+            $user,
+            $bankUserId,
+            $periodStart,
+            $periodEnd
+        );
+
+        return (float) ($debitTotal + $creditTotal);
+    }
+
+    public function calculateInstallmentAwareCategorySpending(
+        Authenticatable $user,
+        ?int $bankUserId,
+        Carbon $periodStart,
+        Carbon $periodEnd
+    ): Collection {
+        $debitSpending = Transacao::forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->whereBetween('created_at', [$periodStart, $periodEnd])
+            ->where('type', 'debit')
+            ->whereNotNull('category_id')
+            ->selectRaw('category_id, SUM(amount) as spent')
+            ->groupBy('category_id')
+            ->get()
+            ->keyBy('category_id');
+
+        $invoiceMonthKeys = $this->getMonthKeysBetween($periodStart, $periodEnd);
+
+        $invoices = Fatura::where('user_id', $user->id)
+            ->whereIn('month_key', $invoiceMonthKeys)
+            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
+            ->with(['transacoes' => function ($query) {
+                $query->where('type', 'credit')
+                    ->whereNotNull('category_id');
+            }])
+            ->get();
+
+        $creditByCategory = [];
+
+        foreach ($invoices as $invoice) {
+            foreach ($invoice->transacoes as $transaction) {
+                $categoryId = $transaction->category_id;
+                if (!$categoryId) continue;
+
+                $installmentAmount = $this->calculateInstallmentAmount($transaction);
+
+                if (!isset($creditByCategory[$categoryId])) {
+                    $creditByCategory[$categoryId] = 0;
+                }
+
+                $creditByCategory[$categoryId] += $installmentAmount;
+            }
+        }
+
+        $creditSpending = collect($creditByCategory)->map(function ($spent, $categoryId) {
+            return (object) ['category_id' => $categoryId, 'spent' => $spent];
+        })->keyBy('category_id');
+
+        return $this->mergeCategorySpending($debitSpending, $creditSpending);
+    }
+
+    private function calculateCreditInstallmentSpending(
+        Authenticatable $user,
+        ?int $bankUserId,
+        Carbon $periodStart,
+        Carbon $periodEnd
+    ): float {
+        $invoiceMonthKeys = $this->getMonthKeysBetween($periodStart, $periodEnd);
+
+        $invoices = Fatura::where('user_id', $user->id)
+            ->whereIn('month_key', $invoiceMonthKeys)
+            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
+            ->with('transacoes')
+            ->get();
+
+        $total = 0.0;
+
+        foreach ($invoices as $invoice) {
+            foreach ($invoice->transacoes as $transaction) {
+                $total += $this->calculateInstallmentAmount($transaction);
+            }
+        }
+
+        return $total;
+    }
+
+    private function getMonthKeysBetween(Carbon $start, Carbon $end): array
+    {
+        $monthKeys = [];
+        $current = $start->copy()->startOfMonth();
+
+        while ($current->lte($end)) {
+            $monthKeys[] = $current->format('Y-m');
+            $current->addMonth();
+        }
+
+        return $monthKeys;
     }
 }

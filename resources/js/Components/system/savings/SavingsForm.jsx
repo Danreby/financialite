@@ -100,7 +100,6 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
           </div>
         )}
 
-        {/* Title and amount */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Título</label>
@@ -131,7 +130,6 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
           </div>
         </div>
 
-        {/* Icon and color */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Ícone</label>
@@ -171,7 +169,6 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
           </div>
         </div>
 
-        {/* Description */}
         <div>
           <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Descrição (opcional)</label>
           <textarea
@@ -184,7 +181,6 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
           />
         </div>
 
-        {/* Buttons */}
         <div className="flex justify-end gap-3 pt-2">
           <SecondaryButton type="button" onClick={handleClose}>Cancelar</SecondaryButton>
           <PrimaryButton type="submit" disabled={saving} className="text-white">
