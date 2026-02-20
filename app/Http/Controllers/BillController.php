@@ -164,8 +164,9 @@ class BillController extends Controller
         ]);
 
         $user = $request->user();
+        $amountPaid = $request->input('amount_paid') ?? $bill->amount ?? 0;
 
-        $payment = DB::transaction(function () use ($bill, $request, $user) {
+        $payment = DB::transaction(function () use ($bill, $request, $user, $amountPaid) {
             $payment = BillPayment::updateOrCreate(
                 [
                     'bill_id' => $bill->id,
@@ -173,8 +174,8 @@ class BillController extends Controller
                 ],
                 [
                     'paid_date' => $request->input('paid_date', now()),
-                    'amount_due' => $bill->amount,
-                    'amount_paid' => $request->input('amount_paid', $bill->amount),
+                    'amount_due' => $bill->amount ?? $amountPaid,
+                    'amount_paid' => $amountPaid,
                     'status' => 'paid',
                     'notes' => $request->input('notes'),
                 ]
@@ -186,5 +187,22 @@ class BillController extends Controller
         });
 
         return $this->success($payment);
+    }
+
+    public function toggleStatus(Request $request, Bill $bill): JsonResponse
+    {
+        $this->authorize('update', $bill);
+
+        $user = $request->user();
+        $newStatus = $bill->status === 'active' ? 'inactive' : 'active';
+
+        DB::transaction(function () use ($bill, $newStatus, $user) {
+            $bill->update(['status' => $newStatus]);
+
+            $label = $newStatus === 'active' ? 'ativada' : 'desativada';
+            $this->notifications->info($user, 'Conta ' . $label, 'A conta foi ' . $label . ' com sucesso.');
+        });
+
+        return $this->success($bill->fresh());
     }
 }

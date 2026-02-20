@@ -232,7 +232,8 @@ class DashboardInsightsService
     private function getUpcomingBills(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();
-        $next30Days = $today->copy()->addDays(30);
+        $currentMonth = Carbon::now();
+        $nextMonth = $currentMonth->copy()->addMonth();
 
         $activeBills = Bill::forUser($user->id)
             ->active()
@@ -242,82 +243,85 @@ class DashboardInsightsService
         $upcomingBills = [];
 
         foreach ($activeBills as $bill) {
-            $nextDueDate = $bill->getNextDueDate();
-            
-            if ($nextDueDate && $nextDueDate->lte($next30Days)) {
+            $currentMonthDue = $bill->getDueDateForMonth($currentMonth);
+
+            if ($currentMonthDue) {
                 $payment = BillPayment::where('bill_id', $bill->id)
-                    ->whereDate('due_date', $nextDueDate->format('Y-m-d'))
+                    ->whereDate('due_date', $currentMonthDue->format('Y-m-d'))
                     ->first();
 
-                $status = $payment ? $payment->status : 'pending';
-                
-                if (!$payment && $nextDueDate->lt($today)) {
-                    $status = 'overdue';
+                $isPaid = $payment && $payment->status === 'paid';
+                $isOverdue = !$isPaid && $currentMonthDue->lt($today);
+
+                $upcomingBills[] = $this->formatBillEntry(
+                    $bill,
+                    $currentMonthDue,
+                    $isPaid ? 'paid' : ($isOverdue ? 'overdue' : 'pending'),
+                    $isOverdue,
+                    !$isPaid,
+                    $isPaid ? (float) ($payment->amount_paid ?? $bill->amount ?? 0) : null
+                );
+
+                if ($isPaid && $bill->recurrence_type !== 'none') {
+                    $nextMonthDue = $bill->getDueDateForMonth($nextMonth);
+                    if ($nextMonthDue) {
+                        $nextPayment = BillPayment::where('bill_id', $bill->id)
+                            ->whereDate('due_date', $nextMonthDue->format('Y-m-d'))
+                            ->first();
+                        $nextIsPaid = $nextPayment && $nextPayment->status === 'paid';
+
+                        $upcomingBills[] = $this->formatBillEntry(
+                            $bill,
+                            $nextMonthDue,
+                            $nextIsPaid ? 'paid' : 'pending',
+                            false,
+                            !$nextIsPaid
+                        );
+                    }
                 }
-
-                $upcomingBills[] = [
-                    'id' => $bill->id,
-                    'date' => $nextDueDate->format('Y-m-d'),
-                    'amount' => (float) $bill->amount,
-                    'description' => $bill->title,
-                    'category' => $bill->category?->name,
-                    'status' => $status === 'paid' ? 'paid' : 'pending',
-                    'recurring' => $bill->recurrence_type !== 'none',
-                    'color' => $bill->color,
-                    'icon' => $bill->icon,
-                ];
             }
         }
 
-        $lastMonthStart = $today->copy()->subMonth()->startOfMonth();
-        $lastMonthEnd = $today->copy()->subMonth()->endOfMonth();
+        usort($upcomingBills, function ($a, $b) {
+            if ($a['is_overdue'] && !$b['is_overdue']) return -1;
+            if (!$a['is_overdue'] && $b['is_overdue']) return 1;
+            if ($a['status'] === 'paid' && $b['status'] !== 'paid') return 1;
+            if ($a['status'] !== 'paid' && $b['status'] === 'paid') return -1;
+            return strcmp($a['date'], $b['date']);
+        });
 
-        $recurringTransactions = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
-            ->where('type', 'debit')
-            ->where('is_recurring', true)
-            ->with('category')
-            ->get();
+        return array_slice($upcomingBills, 0, 15);
+    }
 
-        foreach ($recurringTransactions as $transaction) {
-            $existingBill = collect($upcomingBills)->first(function($bill) use ($transaction) {
-                return strtolower($bill['description']) === strtolower($transaction->title);
-            });
-
-            if ($existingBill) {
-                continue;
-            }
-
-            $dayOfMonth = Carbon::parse($transaction->created_at)->day;
-            $upcomingDate = $today->copy()->day(min($dayOfMonth, $today->daysInMonth));
-            
-            if ($upcomingDate->lt($today)) {
-                $upcomingDate->addMonth()->day(min($dayOfMonth, $upcomingDate->daysInMonth));
-            }
-
-            $alreadyPaid = Transacao::forUser($transaction->user_id)
-                ->where('title', $transaction->title)
-                ->whereBetween('created_at', [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()])
-                ->exists();
-
-            if ($upcomingDate->lte($next30Days)) {
-                $upcomingBills[] = [
-                    'date' => $upcomingDate->format('Y-m-d'),
-                    'amount' => (float) $transaction->amount,
-                    'description' => $transaction->title,
-                    'category' => $transaction->category?->name,
-                    'status' => $alreadyPaid ? 'paid' : 'pending',
-                    'recurring' => true,
-                    'color' => $transaction->category?->color ?? '#3b82f6',
-                    'icon' => $transaction->category?->icon ?? 'FileText',
-                ];
-            }
-        }
-
-        usort($upcomingBills, fn($a, $b) => strcmp($a['date'], $b['date']));
-        
-        return array_slice($upcomingBills, 0, 10);
+    private function formatBillEntry(
+        Bill $bill,
+        Carbon $dueDate,
+        string $status,
+        bool $isOverdue,
+        bool $canPay,
+        ?float $paidAmount = null
+    ): array {
+        return [
+            'id' => $bill->id,
+            'title' => $bill->title,
+            'description' => $bill->description,
+            'amount' => $paidAmount ?? (float) ($bill->amount ?? 0),
+            'due_day' => $bill->due_day,
+            'due_date' => $dueDate->format('Y-m-d'),
+            'date' => $dueDate->format('Y-m-d'),
+            'recurrence_type' => $bill->recurrence_type,
+            'color' => $bill->color,
+            'icon' => $bill->icon,
+            'status' => $status,
+            'bill_status' => $bill->status,
+            'category_id' => $bill->category_id,
+            'category_name' => $bill->category?->name,
+            'category' => $bill->category?->name,
+            'can_pay' => $canPay,
+            'is_overdue' => $isOverdue,
+            'recurring' => $bill->recurrence_type !== 'none',
+            'start_date' => $bill->start_date?->format('Y-m-d'),
+        ];
     }
 
     private function getSpendingTrends(Authenticatable $user, ?int $bankUserId): array

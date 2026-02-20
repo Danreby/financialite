@@ -132,4 +132,37 @@ class Bill extends Model
 
         return $dueDate;
     }
+
+    public function getDueDateForMonth(\Carbon\Carbon $month): ?\Carbon\Carbon
+    {
+        if ($this->status !== 'active') {
+            return null;
+        }
+
+        if ($this->recurrence_type === 'none') {
+            if ($this->start_date && $this->start_date->format('Y-m') === $month->format('Y-m')) {
+                return $this->start_date;
+            }
+            return null;
+        }
+
+        if ($this->recurrence_type === 'yearly') {
+            $startMonth = $this->start_date ? $this->start_date->month : 1;
+            if ($month->month !== $startMonth) {
+                return null;
+            }
+        }
+
+        $dueDate = $month->copy()->startOfMonth()->day(min($this->due_day, $month->daysInMonth));
+
+        if ($this->start_date && $dueDate->lt($this->start_date)) {
+            return null;
+        }
+
+        if ($this->end_date && $dueDate->gt($this->end_date)) {
+            return null;
+        }
+
+        return $dueDate;
+    }
 }
