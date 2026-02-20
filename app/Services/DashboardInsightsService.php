@@ -250,9 +250,14 @@ class DashboardInsightsService
             ->get();
 
         $upcomingBills = [];
-        $addedBills = []; // Track bill_id + date to avoid duplicates
+        $processedBillIds = []; // Track which bills we've already added
 
         foreach ($activeBills as $bill) {
+            // Skip if we already found an unpaid occurrence for this bill
+            if (isset($processedBillIds[$bill->id])) {
+                continue;
+            }
+
             // Check current month
             $currentMonthDue = $bill->getDueDateForMonth($currentMonth);
             if ($currentMonthDue) {
@@ -262,22 +267,23 @@ class DashboardInsightsService
 
                 $isPaid = $payment && $payment->status === 'paid';
                 $isOverdue = !$isPaid && $currentMonthDue->lt($today);
-                $billKey = $bill->id . '-' . $currentMonthDue->format('Y-m-d');
 
-                if (!isset($addedBills[$billKey])) {
+                // If not paid, add this occurrence and mark as processed
+                if (!$isPaid) {
                     $upcomingBills[] = $this->formatBillEntry(
                         $bill,
                         $currentMonthDue,
-                        $isPaid ? 'paid' : ($isOverdue ? 'overdue' : 'pending'),
+                        $isOverdue ? 'overdue' : 'pending',
                         $isOverdue,
-                        !$isPaid,
-                        $isPaid ? (float) ($payment->amount_paid ?? $bill->amount ?? 0) : null
+                        true,
+                        null
                     );
-                    $addedBills[$billKey] = true;
+                    $processedBillIds[$bill->id] = true;
+                    continue;
                 }
             }
 
-            // Check next month for recurring bills
+            // If current month is paid or doesn't exist, check next month for recurring bills
             if ($bill->recurrence_type !== 'none') {
                 $nextMonthDue = $bill->getDueDateForMonth($nextMonth);
                 if ($nextMonthDue) {
@@ -285,61 +291,50 @@ class DashboardInsightsService
                         ->whereDate('due_date', $nextMonthDue->format('Y-m-d'))
                         ->first();
                     $nextIsPaid = $nextPayment && $nextPayment->status === 'paid';
-                    $billKey = $bill->id . '-' . $nextMonthDue->format('Y-m-d');
 
-                    if (!isset($addedBills[$billKey])) {
+                    if (!$nextIsPaid) {
                         $upcomingBills[] = $this->formatBillEntry(
                             $bill,
                             $nextMonthDue,
-                            $nextIsPaid ? 'paid' : 'pending',
+                            'pending',
                             false,
-                            !$nextIsPaid
+                            true
                         );
-                        $addedBills[$billKey] = true;
+                        $processedBillIds[$bill->id] = true;
+                        continue;
                     }
                 }
 
-                // Check month after next for recurring bills
+                // If next month is also paid, check month after next
                 $monthAfterNextDue = $bill->getDueDateForMonth($monthAfterNext);
                 if ($monthAfterNextDue) {
                     $monthAfterNextPayment = BillPayment::where('bill_id', $bill->id)
                         ->whereDate('due_date', $monthAfterNextDue->format('Y-m-d'))
                         ->first();
                     $monthAfterNextIsPaid = $monthAfterNextPayment && $monthAfterNextPayment->status === 'paid';
-                    $billKey = $bill->id . '-' . $monthAfterNextDue->format('Y-m-d');
 
-                    if (!isset($addedBills[$billKey])) {
+                    if (!$monthAfterNextIsPaid) {
                         $upcomingBills[] = $this->formatBillEntry(
                             $bill,
                             $monthAfterNextDue,
-                            $monthAfterNextIsPaid ? 'paid' : 'pending',
+                            'pending',
                             false,
-                            !$monthAfterNextIsPaid
+                            true
                         );
-                        $addedBills[$billKey] = true;
+                        $processedBillIds[$bill->id] = true;
                     }
                 }
             }
         }
 
-        // Sort: overdue first, then unpaid by date, then paid by date
+        // Sort: overdue first, then by date (earliest first)
         usort($upcomingBills, function ($a, $b) {
-            // Overdue bills come first
             if ($a['is_overdue'] && !$b['is_overdue']) return -1;
             if (!$a['is_overdue'] && $b['is_overdue']) return 1;
-            
-            // Then unpaid bills come before paid
-            if ($a['status'] === 'paid' && $b['status'] !== 'paid') return 1;
-            if ($a['status'] !== 'paid' && $b['status'] === 'paid') return -1;
-            
-            // Within same status, sort by date (earliest first)
             return strcmp($a['date'], $b['date']);
         });
 
-        // Filter to show only unpaid bills (optional: remove this filter to show all)
-        $unpaidBills = array_filter($upcomingBills, fn($bill) => $bill['status'] !== 'paid');
-
-        return array_slice($unpaidBills, 0, 15);
+        return array_slice($upcomingBills, 0, 15);
     }
 
     private function formatBillEntry(
