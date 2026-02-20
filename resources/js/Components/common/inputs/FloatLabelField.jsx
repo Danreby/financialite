@@ -10,6 +10,7 @@ const FloatLabelField = forwardRef(
             type = 'text',
             label,
             value,
+            defaultValue: defaultValueProp,
             onChange,
             error,
             helperText,
@@ -27,7 +28,7 @@ const FloatLabelField = forwardRef(
         const internalRef = useRef(null);
         const [isFocused, setIsFocused] = useState(false);
         const [internalValue, setInternalValue] = useState(
-            inputProps?.defaultValue ?? '',
+            defaultValueProp ?? inputProps?.defaultValue ?? '',
         );
 
         const InputComponent = as === 'textarea' ? 'textarea' : 'input';
@@ -72,7 +73,8 @@ const FloatLabelField = forwardRef(
             }
         };
 
-        const resolvedInputProps = { ...inputProps };
+        const { defaultValue: _stripDefaultValue, ...cleanInputProps } = inputProps;
+        const resolvedInputProps = { ...cleanInputProps };
 
         if (InputComponent === 'textarea' || type === 'text') {
             if (resolvedInputProps.maxLength === undefined) {
