@@ -39,13 +39,22 @@ class BudgetController extends Controller
         $user = $request->user();
         $currentMonth = now()->format('Y-m');
 
+        $monthlyIncome = (float) \App\Models\Income::forUser($user->id)
+            ->where('is_active', true)
+            ->sum('amount');
+
+        $recommendedLimit = $monthlyIncome > 0 ? round($monthlyIncome * 0.8, 2) : null;
+
         $budget = Budget::forUser($user->id)
             ->forMonth($currentMonth)
             ->with(['categoryLimits.category:id,name,color,icon'])
             ->first();
 
         if (!$budget) {
-            return $this->success(null);
+            return $this->success([
+                'monthly_income' => $monthlyIncome,
+                'recommended_limit' => $recommendedLimit,
+            ]);
         }
 
         // Get current spending
@@ -59,6 +68,8 @@ class BudgetController extends Controller
         $budgetData['percentage'] = $budget->monthly_limit > 0 
             ? min(100, ($totalSpent / $budget->monthly_limit) * 100) 
             : 0;
+        $budgetData['monthly_income'] = $monthlyIncome;
+        $budgetData['recommended_limit'] = $recommendedLimit;
 
         // Add spending to category limits
         if (isset($budgetData['category_limits'])) {

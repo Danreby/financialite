@@ -16,6 +16,7 @@ import { formatCurrencyBRL } from '@/Lib/formatters'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
 import BillForm from '@/Components/system/BillForm'
 import BudgetForm from '@/Components/system/BudgetForm'
+import BillPaymentForm from '@/Components/system/BillPaymentForm'
 import ScrollArea from '@/Components/common/ScrollArea'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
 
@@ -51,6 +52,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [showBudgetForm, setShowBudgetForm] = useState(false)
   const [currentBudget, setCurrentBudget] = useState(null)
   const [isLoadingBudget, setIsLoadingBudget] = useState(false)
+  const [editingBill, setEditingBill] = useState(null)
+  const [payingBill, setPayingBill] = useState(null)
 
   const handleMonthClick = useCallback(async (monthKey) => {
     let shouldFetchData = true
@@ -119,13 +122,38 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
   const handleBillSuccess = () => {
     setShowBillForm(false)
-    setReloadKey((prev) => prev + 1) // Reload dashboard data
+    setEditingBill(null)
+    setReloadKey((prev) => prev + 1)
   }
 
   const handleBudgetSuccess = () => {
     setShowBudgetForm(false)
     setCurrentBudget(null)
-    setReloadKey((prev) => prev + 1) // Reload dashboard data
+    setReloadKey((prev) => prev + 1)
+  }
+
+  const handleBillPayClick = (bill) => {
+    setPayingBill(bill)
+  }
+
+  const handleBillEditClick = (bill) => {
+    setEditingBill(bill)
+    setShowBillForm(true)
+  }
+
+  const handleBillToggle = async (bill) => {
+    try {
+      await axios.patch(route('bills.toggle', bill.id))
+      toast.success('Status da conta alterado com sucesso.')
+      setReloadKey((prev) => prev + 1)
+    } catch (error) {
+      toast.error('Erro ao alterar status da conta.')
+    }
+  }
+
+  const handlePaymentSuccess = () => {
+    setPayingBill(null)
+    setReloadKey((prev) => prev + 1)
   }
 
   const handleOpenBudgetForm = async () => {
@@ -415,10 +443,13 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <UpcomingBills
               bills={dashboardInsights?.upcoming_bills ?? []}
-              onBillClick={(bill) => {
-                console.log('Bill clicked:', bill)
+              onPayClick={handleBillPayClick}
+              onEditClick={handleBillEditClick}
+              onAddClick={() => {
+                setEditingBill(null)
+                setShowBillForm(true)
               }}
-              onAddClick={() => setShowBillForm(true)}
+              onToggleClick={handleBillToggle}
             />
           </FadeInItem>
 
@@ -440,9 +471,20 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
         <BillForm
           isOpen={showBillForm}
-          onClose={() => setShowBillForm(false)}
+          onClose={() => {
+            setShowBillForm(false)
+            setEditingBill(null)
+          }}
           onSuccess={handleBillSuccess}
           categories={categories}
+          bill={editingBill}
+        />
+
+        <BillPaymentForm
+          isOpen={!!payingBill}
+          onClose={() => setPayingBill(null)}
+          onSuccess={handlePaymentSuccess}
+          bill={payingBill}
         />
 
         <BudgetForm

@@ -5,7 +5,7 @@ import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
-import { Plus, Trash2, AlertCircle } from "lucide-react";
+import { Plus, Trash2, AlertCircle, Lightbulb } from "lucide-react";
 
 export default function BudgetForm({ 
   isOpen, 
@@ -17,11 +17,22 @@ export default function BudgetForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryLimits, setCategoryLimits] = useState([]);
 
+  const isEditing = !!budget?.id;
+
+  const formatCurrency = (value) => {
+    if (!value && value !== 0) return "R$ 0,00";
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
   useEffect(() => {
     if (isOpen) {
       if (budget?.category_limits) {
         setCategoryLimits(
-          budget.category_limits.map(cl => ({
+          budget.category_limits.map((cl, i) => ({
+            _uid: `existing-${cl.category_id}-${i}`,
             category_id: cl.category_id,
             limit: cl.limit
           }))
@@ -30,24 +41,31 @@ export default function BudgetForm({
         setCategoryLimits([]);
       }
     } else {
-      // Reset when modal closes
       setCategoryLimits([]);
     }
   }, [budget, isOpen]);
 
   const handleAddCategoryLimit = () => {
-    setCategoryLimits([...categoryLimits, { category_id: '', limit: '' }]);
+    setCategoryLimits(prev => [
+      ...prev,
+      {
+        _uid: `new-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        category_id: '',
+        limit: ''
+      }
+    ]);
   };
 
   const handleRemoveCategoryLimit = (index) => {
-    const newLimits = categoryLimits.filter((_, i) => i !== index);
-    setCategoryLimits(newLimits);
+    setCategoryLimits(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleCategoryLimitChange = (index, field, value) => {
-    const newLimits = [...categoryLimits];
-    newLimits[index][field] = value;
-    setCategoryLimits(newLimits);
+    setCategoryLimits(prev =>
+      prev.map((cl, i) =>
+        i === index ? { ...cl, [field]: value } : cl
+      )
+    );
   };
 
   const handleSubmit = async (event) => {
@@ -92,7 +110,7 @@ export default function BudgetForm({
         })),
       };
 
-      if (budget) {
+      if (isEditing) {
         await axios.put(route("budgets.update", budget.id), payload);
         toast.success("Orçamento atualizado com sucesso.");
       } else {
@@ -122,7 +140,7 @@ export default function BudgetForm({
         return;
       }
 
-      toast.error(budget ? "Erro ao atualizar orçamento." : "Erro ao criar orçamento.");
+      toast.error(isEditing ? "Erro ao atualizar orçamento." : "Erro ao criar orçamento.");
     }
   };
 
@@ -140,7 +158,7 @@ export default function BudgetForm({
       isOpen={isOpen}
       onClose={handleClose}
       maxWidth="3xl"
-      title={budget ? "Editar Orçamento Mensal" : "Configurar Orçamento Mensal"}
+      title={isEditing ? "Editar Orçamento Mensal" : "Configurar Orçamento Mensal"}
     >
       <form className="space-y-6" onSubmit={handleSubmit} noValidate>
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
@@ -154,14 +172,14 @@ export default function BudgetForm({
         </div>
 
         {/* Monthly Limit Field */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <FloatLabelField
             key={`monthly_limit-${budget?.id || 'new'}`}
             id="monthly_limit"
             name="monthly_limit"
             type="number"
             label="Limite mensal total"
-            defaultValue={budget?.monthly_limit}
+            defaultValue={budget?.monthly_limit ?? ''}
             inputProps={{
               step: '0.01',
               min: '0',
@@ -170,6 +188,20 @@ export default function BudgetForm({
             }}
             isRequired
           />
+
+          {budget?.recommended_limit && (
+            <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+              <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-amber-800 dark:text-amber-200">
+                <p className="font-medium">Recomendação baseada na sua renda</p>
+                <p className="mt-1">
+                  Com base no seu salário de {formatCurrency(budget.monthly_income)}, recomendamos
+                  um limite de <strong>{formatCurrency(budget.recommended_limit)}</strong> (80% da sua renda),
+                  reservando 20% para poupança e investimentos.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Category Limits Section */}
@@ -205,11 +237,9 @@ export default function BudgetForm({
             </div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-              {categoryLimits.map((categoryLimit, index) => {
-                const uniqueKey = `category-limit-${index}-${categoryLimit.category_id || 'new'}`;
-                return (
+              {categoryLimits.map((categoryLimit, index) => (
                   <div 
-                    key={uniqueKey}
+                    key={categoryLimit._uid}
                     className="flex flex-col sm:flex-row gap-3 p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg items-start sm:items-center"
                   >
                     <div className="flex-1 w-full sm:w-auto">
@@ -217,7 +247,6 @@ export default function BudgetForm({
                         Categoria
                       </label>
                       <select
-                        key={`select-${uniqueKey}`}
                         value={categoryLimit.category_id}
                         onChange={(e) => handleCategoryLimitChange(index, 'category_id', e.target.value)}
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
@@ -241,7 +270,6 @@ export default function BudgetForm({
                         Limite (R$)
                       </label>
                       <input
-                        key={`input-${uniqueKey}`}
                         type="number"
                         value={categoryLimit.limit}
                         onChange={(e) => handleCategoryLimitChange(index, 'limit', e.target.value)}
@@ -263,8 +291,7 @@ export default function BudgetForm({
                       <span className="text-sm sm:hidden">Remover</span>
                     </button>
                   </div>
-                );
-              })}
+              ))}
             </div>
           )}
         </div>
@@ -274,7 +301,7 @@ export default function BudgetForm({
             Cancelar
           </SecondaryButton>
           <PrimaryButton type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-            {isSubmitting ? "Salvando..." : budget ? "Atualizar Orçamento" : "Criar Orçamento"}
+            {isSubmitting ? "Salvando..." : isEditing ? "Atualizar Orçamento" : "Criar Orçamento"}
           </PrimaryButton>
         </div>
       </form>
