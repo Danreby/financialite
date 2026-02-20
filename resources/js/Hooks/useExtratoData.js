@@ -3,12 +3,6 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { sanitizeFilterParams } from '@/Utils/security'
 
-/**
- * Custom hook para gerenciar dados do extrato
- * Encapsula lógica de fetching, filtragem e estado
- * @param {Object} initialFilters - Filtros iniciais
- * @returns {Object} Estado e métodos do extrato
- */
 export function useExtratoData(initialFilters = {}) {
   const [filters, setFilters] = useState(initialFilters)
   const [transactions, setTransactions] = useState([])
@@ -17,13 +11,11 @@ export function useExtratoData(initialFilters = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Fetch data with sanitized params
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
 
     try {
-      // Sanitize and validate filter params
       const sanitizedParams = sanitizeFilterParams({
         start_date: filters.startDate,
         end_date: filters.endDate,
@@ -34,7 +26,7 @@ export function useExtratoData(initialFilters = {}) {
 
       const response = await axios.get(route('extrato.data'), {
         params: sanitizedParams,
-        timeout: 10000, // 10s timeout
+        timeout: 10000,
       })
 
       const data = response.data || {}
@@ -55,12 +47,10 @@ export function useExtratoData(initialFilters = {}) {
     fetchData()
   }, [fetchData])
 
-  // Update filters
   const updateFilters = useCallback((newFilters) => {
     setFilters((prev) => ({ ...prev, ...newFilters }))
   }, [])
 
-  // Reset filters
   const resetFilters = useCallback(() => {
     const now = new Date()
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -74,7 +64,6 @@ export function useExtratoData(initialFilters = {}) {
     })
   }, [])
 
-  // Calculate total transactions count
   const totalTransactions = transactions.reduce(
     (sum, group) => sum + (group.transactions?.length || 0),
     0

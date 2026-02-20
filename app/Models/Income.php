@@ -54,8 +54,6 @@ class Income extends Model
         'deleted_at'        => 'datetime',
     ];
 
-    // ── Relationships ──────────────────────────────────────
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -65,8 +63,6 @@ class Income extends Model
     {
         return $this->belongsTo(BankUser::class, 'bank_user_id');
     }
-
-    // ── Scopes ─────────────────────────────────────────────
 
     public function scopeForUser(Builder $query, int $userId): Builder
     {
@@ -95,8 +91,6 @@ class Income extends Model
 
         return $query;
     }
-
-    // ── Helpers ────────────────────────────────────────────
 
     public function belongsToUser(int $userId): bool
     {

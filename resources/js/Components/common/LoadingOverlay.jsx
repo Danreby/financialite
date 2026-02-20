@@ -1,12 +1,5 @@
 import React from 'react'
 
-/**
- * Lightweight loading overlay that can be placed inside any container.
- * Shows a centered spinner with an optional message.
- *
- * @param {boolean} visible - Whether the overlay is visible
- * @param {string} message - Optional message below the spinner
- */
 export default function LoadingOverlay({ visible = false, message = '' }) {
   if (!visible) return null
 

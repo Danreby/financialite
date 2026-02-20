@@ -34,9 +34,6 @@ class Budget extends Model
         return $this->hasMany(BudgetCategory::class);
     }
 
-    /**
-     * Scopes
-     */
     public function scopeForUser(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
@@ -58,9 +55,6 @@ class Budget extends Model
         return $query->where('month_year', $currentMonth);
     }
 
-    /**
-     * Get or create budget for current month
-     */
     public static function getOrCreateForCurrentMonth(int $userId, float $defaultLimit = 5000): self
     {
         $currentMonth = now()->format('Y-m');
@@ -77,9 +71,6 @@ class Budget extends Model
         );
     }
 
-    /**
-     * Get spending for this budget
-     */
     public function getCurrentSpending(): float
     {
         $startDate = \Carbon\Carbon::parse($this->month_year . '-01')->startOfMonth();
@@ -91,9 +82,6 @@ class Budget extends Model
             ->sum('amount');
     }
 
-    /**
-     * Get spending by category for this budget
-     */
     public function getCategorySpending(): array
     {
         $startDate = \Carbon\Carbon::parse($this->month_year . '-01')->startOfMonth();

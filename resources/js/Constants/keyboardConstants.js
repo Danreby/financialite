@@ -1,7 +1,3 @@
-/**
- * Constantes reutilizáveis para manipulação de teclado
- */
-
 export const NUMERIC_NAVIGATION_KEYS = [
 	"Backspace",
 	"Tab",

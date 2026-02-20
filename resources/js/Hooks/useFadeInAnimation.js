@@ -1,7 +1,3 @@
-/**
- * Hook customizado para fornecer variantes de animação fade-in reutilizáveis
- * Baseado na implementação da página About
- */
 export function useFadeInAnimation() {
 	const containerVariants = {
 		hidden: { opacity: 0 },

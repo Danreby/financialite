@@ -11,28 +11,7 @@ import ExtratoPeriodBadge from '@/Components/system/extrato/ExtratoPeriodBadge'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
 import { useExtratoData } from '@/Hooks/useExtratoData'
 
-/**
- * Página de Extrato - Refatorada com Clean Architecture
- * 
- * Responsabilidades:
- * - Orquestração de componentes de apresentação
- * - Delegação de lógica de negócio para hooks customizados
- * - Composição de UI modular e reutilizável
- * 
- * Princípios aplicados:
- * - Separation of Concerns (SoC)
- * - Single Responsibility Principle (SRP)
- * - Dependency Injection
- * - Presentation/Container Pattern
- * 
- * Segurança:
- * - Validação e sanitização via hook useExtratoData
- * - Proteção XSS via sanitização de inputs
- * - Timeout em requisições
- * - Error boundaries implícitas
- */
 export default function Extrato({ bankAccounts = [], categories = [] }) {
-  // Initialize date filters
   const now = new Date()
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
   const initialFilters = {
@@ -43,7 +22,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
     type: '',
   }
 
-  // Use custom hook for data management (Clean Architecture - Use Case layer)
   const {
     transactions,
     incomes,
@@ -55,7 +33,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
     resetFilters,
   } = useExtratoData(initialFilters)
 
-  // Check if filters are active (for UX feedback)
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       filters.bankUserId ||
@@ -66,7 +43,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
     )
   }, [filters, initialFilters])
 
-  // Filter handlers (Clean Architecture - Interface Adapters)
   const handleFilterChange = (key, value) => {
     updateFilters({ [key]: value })
   }
@@ -76,7 +52,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
       <Head title="Extrato" />
 
       <FadeInContainer type="container" stagger className="space-y-4 sm:space-y-6">
-        {/* Page Header */}
         <FadeInItem type="item">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex flex-col gap-1">
@@ -88,12 +63,10 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
               </p>
             </div>
             
-            {/* Period Badge */}
             <ExtratoPeriodBadge startDate={filters.startDate} endDate={filters.endDate} />
           </div>
         </FadeInItem>
 
-        {/* Filters */}
         <FadeInItem type="item">
           <ExtratoFilters
             startDate={filters.startDate}
@@ -112,31 +85,26 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
           />
         </FadeInItem>
 
-        {/* Loading State */}
         {loading && (
           <FadeInItem type="item">
             <ExtratoLoadingState />
           </FadeInItem>
         )}
 
-        {/* Loaded Content */}
         {!loading && (
           <>
-            {/* Income Bar */}
             {incomes.length > 0 && (
               <FadeInItem type="item">
                 <ExtratoIncomeBar incomes={incomes} />
               </FadeInItem>
             )}
 
-            {/* Summary Cards */}
             {summary && (
               <FadeInItem type="item">
                 <ExtratoSummary summary={summary} />
               </FadeInItem>
             )}
 
-            {/* Actions Bar */}
             <FadeInItem type="item">
               <ExtratoActionsBar
                 transactionCount={totalTransactions}
@@ -144,7 +112,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
               />
             </FadeInItem>
 
-            {/* Transactions List */}
             <FadeInItem type="item">
               <ExtratoTransactionsContainer
                 transactions={transactions}

@@ -41,14 +41,10 @@ class SavingsGoal extends Model
         'deleted_at'     => 'datetime',
     ];
 
-    // ── Relationships ──────────────────────────────────────
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-
-    // ── Scopes ─────────────────────────────────────────────
 
     public function scopeForUser(Builder $query, int $userId): Builder
     {
@@ -69,8 +65,6 @@ class SavingsGoal extends Model
     {
         return $query->whereNull('completed_at');
     }
-
-    // ── Helpers ────────────────────────────────────────────
 
     public function belongsToUser(int $userId): bool
     {

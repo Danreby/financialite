@@ -15,7 +15,6 @@ export default function AuthenticatedLayout({ children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const { url } = usePage()
 
-  // Fechar sidebar ao navegar entre páginas
   useEffect(() => {
     setSidebarOpen(false)
   }, [url])

@@ -171,7 +171,6 @@ export default function BudgetForm({
           </div>
         </div>
 
-        {/* Monthly Limit Field */}
         <div className="space-y-3">
           <FloatLabelField
             key={`monthly_limit-${budget?.id || 'new'}`}
@@ -195,7 +194,7 @@ export default function BudgetForm({
               <div className="text-xs text-amber-800 dark:text-amber-200">
                 <p className="font-medium">Recomendação baseada na sua renda</p>
                 <p className="mt-1">
-                  Com base no seu salário de {formatCurrency(budget.monthly_income)}, recomendamos
+                  Com base no seu salário de {formatCurrency(budget.monthly_income)}, é recomendado
                   um limite de <strong>{formatCurrency(budget.recommended_limit)}</strong> (80% da sua renda),
                   reservando 20% para poupança e investimentos.
                 </p>
@@ -204,7 +203,6 @@ export default function BudgetForm({
           )}
         </div>
 
-        {/* Category Limits Section */}
         <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>

@@ -7,7 +7,6 @@ export default function useThemeColors() {
   const colors = useMemo(() => themeConfig.colors, [themeConfig])
 
   const chartColors = useMemo(() => {
-    // Detectar se está em modo dark
     const isDark = document.documentElement.classList.contains('dark')
     
     return {
@@ -19,7 +18,6 @@ export default function useThemeColors() {
       secondaryBg: isDark ? 'rgba(59, 130, 246, 0.10)' : 'rgba(37, 99, 235, 0.05)',
       grid: 'rgba(148, 163, 184, 0.2)',
       tick: '#6b7280',
-      // Paleta com cores sólidas para modo light e levemente transparentes para dark
       palette: [
         colors.accent,
         isDark ? 'rgba(59, 130, 246, 0.85)' : '#3b82f6',

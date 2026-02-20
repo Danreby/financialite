@@ -36,9 +36,6 @@ class Bill extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Relationships
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

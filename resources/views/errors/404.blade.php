@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Página não encontrada - {{ config('app.name', 'Financialite') }}</title>
 
-    <!-- Fonte padrão do app (Figtree, mesma de app.blade.php) -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
@@ -24,7 +23,7 @@
                     document.documentElement.classList.remove('dark');
                 }
             } catch (e) {
-                // silenciosamente ignora qualquer erro de acesso ao localStorage
+                //
             }
         })();
     </script>
