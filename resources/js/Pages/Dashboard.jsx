@@ -415,7 +415,6 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </FadeInItem>
         </FadeInContainer>
 
-        {/* Informative Components - Financial Insights (corrigido) */}
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <FinancialHealthScore

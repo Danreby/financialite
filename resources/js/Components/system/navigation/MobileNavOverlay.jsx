@@ -97,7 +97,7 @@ export default function MobileNavOverlay({ isOpen, onClose, user }) {
           </motion.nav>
 
           <div className="px-4 pb-5 pt-3 border-t border-gray-200 dark:border-white/10 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-300">
-            <span>© {new Date().getFullYear()} Finanças</span>
+            {/* <span>© {new Date().getFullYear()} Finanças</span> */}
             <Link
               href={route('logout')}
               method="post"
