@@ -6,194 +6,234 @@ import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer
 import { useFadeInAnimation } from '@/Hooks/useFadeInAnimation'
 
 export default function About() {
-	const { featureVariants } = useFadeInAnimation()
+  const { featureVariants } = useFadeInAnimation()
 
-	const features = [
-		{
-			icon: '📊',
-			title: 'Acompanhe Faturas',
-			description: 'Controle suas faturas mês a mês com pagamentos organizados',
-		},
-		{
-			icon: '💳',
-			title: 'Registre Transações',
-			description: 'Compras em crédito, débito, recorrentes e parceladas',
-		},
-		{
-			icon: '🏦',
-			title: 'Organize Contas',
-			description: 'Gerencie contas bancárias e categorias para relatórios claros',
-		},
-		{
-			icon: '📈',
-			title: 'Painel Visual',
-			description: 'Visão geral completa de suas finanças mensais',
-		},
-		{
-			icon: '📥',
-			title: 'Exporte Dados',
-			description: 'Baixe planilhas Excel com dados das próximas faturas',
-		},
-		{
-			icon: '⚡',
-			title: 'Interface Rápida',
-			description: 'Aplicação leve e responsiva para qualquer dispositivo',
-		},
-	]
+  const features = [
+    {
+      icon: '📊',
+      title: 'Acompanhe Faturas',
+      description: 'Controle suas faturas mês a mês com pagamentos organizados',
+    },
+    {
+      icon: '💳',
+      title: 'Registre Transações',
+      description: 'Compras em crédito, débito, recorrentes e parceladas',
+    },
+    {
+      icon: '🏦',
+      title: 'Organize Contas',
+      description: 'Gerencie contas bancárias e categorias para relatórios claros',
+    },
+    {
+      icon: '📈',
+      title: 'Painel Visual',
+      description: 'Visão geral completa de suas finanças mensais',
+    },
+    {
+      icon: '📥',
+      title: 'Exporte Dados',
+      description: 'Baixe planilhas Excel com dados das próximas faturas',
+    },
+    {
+      icon: '⚡',
+      title: 'Interface Rápida',
+      description: 'Aplicação leve e responsiva para qualquer dispositivo',
+    },
+  ]
 
-	const socialLinks = [
-		{
-			label: 'Portfólio',
-			url: 'https://danreby.github.io/danreby-portifolio/',
-			icon: '🌐',
-		},
-		{
-			label: 'GitHub',
-			url: 'https://github.com/Danreby',
-			icon: '💻',
-		},
-		{
-			label: 'LinkedIn',
-			url: 'https://www.linkedin.com/in/bernardo-rolim-aa6802213/',
-			icon: '🔗',
-		},
-	]
+  const socialLinks = [
+    {
+      label: 'Portfólio',
+      url: 'https://danreby.github.io/danreby-portifolio/',
+      icon: '🌐',
+    },
+    {
+      label: 'GitHub',
+      url: 'https://github.com/Danreby',
+      icon: '💻',
+    },
+    {
+      label: 'LinkedIn',
+      url: 'https://www.linkedin.com/in/bernardo-rolim-aa6802213/',
+      icon: '🔗',
+    },
+  ]
 
-	return (
-		<AuthenticatedLayout>
-			<Head title="Sobre" />
-			<FadeInContainer className="w-full max-w-6xl mx-auto space-y-12 sm:space-y-14 px-3 sm:px-4 lg:px-6">
-				<FadeInItem>
-					<header className="pt-1 sm:pt-2 space-y-4">
-						<FadeInItem
-							className="mb-3"
-							initial={{ opacity: 0, y: -20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.1, duration: 0.6 }}
-						>
-							<span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-2xl shadow-md text-white">
-								💰
-							</span>
-						</FadeInItem>
-						<h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-gray-900 dark:text-gray-100">
-							Financialite
-						</h1>
-						<p className="mt-1 text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
-							Seu gerenciador financeiro pessoal inteligente e moderno
-						</p>
-						<p className="mt-4 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
-							Desenvolvido por{' '}
-							<a
-								href="https://danreby.github.io/danreby-portifolio/"
-								className="font-semibold text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								Bernardo Santos Rolim
-							</a>
-							, um desenvolvedor full-stack apaixonado por aplicações web modernas. Uma ferramenta simples
-							e eficiente para o gerenciamento de faturas, transações e despesas.
-						</p>
-					</header>
-				</FadeInItem>
+  return (
+    <AuthenticatedLayout>
+      <Head title="Sobre" />
+      <FadeInContainer className="w-full max-w-6xl mx-auto space-y-12 sm:space-y-14 px-3 sm:px-4 lg:px-6">
+        <FadeInItem>
+          <header className="pt-1 sm:pt-2 space-y-4">
+            <FadeInItem
+              className="mb-3"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+            >
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-2xl shadow-md text-white">
+                💰
+              </span>
+            </FadeInItem>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-gray-900 dark:text-gray-100">
+              Financialite
+            </h1>
+            <p className="mt-1 text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
+              Seu gerenciador financeiro pessoal inteligente e moderno
+            </p>
+            <p className="mt-4 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
+              Desenvolvido por{' '}
+              <a
+                href="https://danreby.github.io/danreby-portifolio/"
+                className="font-semibold text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Bernardo Santos Rolim
+              </a>
+              , um desenvolvedor full-stack apaixonado por aplicações web modernas. Uma ferramenta simples
+              e eficiente para o gerenciamento de faturas, transações e despesas.
+            </p>
+          </header>
+        </FadeInItem>
 
-				<FadeInItem>
-					<section className="mb-4">
-						<h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-							Recursos Disponíveis
-						</h2>
-						<FadeInContainer stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-							{features.map((feature, index) => (
-								<FadeInItem key={index} type="feature">
-									<FeatureCard
-										icon={feature.icon}
-										title={feature.title}
-										description={feature.description}
-										variants={featureVariants}
-									/>
-								</FadeInItem>
-							))}
-						</FadeInContainer>
-					</section>
-				</FadeInItem>
+        <FadeInItem>
+          <section className="mb-4">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Recursos Disponíveis
+            </h2>
+            <FadeInContainer stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {features.map((feature, index) => (
+                <FadeInItem key={index} type="feature">
+                  <FeatureCard
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    variants={featureVariants}
+                  />
+                </FadeInItem>
+              ))}
+            </FadeInContainer>
+          </section>
+        </FadeInItem>
 
-				<FadeInItem>
-					<section className="mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-3xl p-6 sm:p-8 lg:p-10 ring-1 ring-blue-200/50 dark:ring-blue-800/30">
-					<h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-						Sobre o Projeto
-					</h2>
-					<div className="space-y-4 text-gray-700 dark:text-gray-300 leading-relaxed">
-						<p className="text-base sm:text-lg">
-							Financialite é uma aplicação em constante evolução, desenvolvida com as tecnologias
-							mais modernas para garantir uma experiência de usuário excepcional. Novos recursos são
-							adicionados regularmente, refinando fluxos conforme o uso diário. É possivel analisar o codigo acessando o{' '}
-							<a href="https://github.com/Danreby/financialite" target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-							repositório
-							</a> no GitHub.
-						</p>
-						<p className="text-base sm:text-lg">
-							<span className="font-semibold text-blue-600 dark:text-blue-400">100% Pessoal:</span>{' '}
-							Este projeto não será monetizado, não contém anúncios e seus dados estão seguros. É
-							desenvolvido puramente para fins pessoais e não comerciais.
-						</p>
-						<p className="text-base sm:text-lg">
-							<span className="font-semibold text-green-600 dark:text-green-400">Código Aberto:</span>{' '}
-							Sinta-se à vontade para explorar o repositório, contribuir com sugestões ou reportar
-							bugs através do GitHub.
-						</p>
-					</div>
-				</section>
-			</FadeInItem>
+        <FadeInItem>
+          <section className="mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-3xl p-6 sm:p-8 lg:p-10 ring-1 ring-blue-200/50 dark:ring-blue-800/30">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Sobre o Projeto
+            </h2>
+            <div className="space-y-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p className="text-base sm:text-lg">
+                Financialite é uma aplicação em constante evolução, desenvolvida com as tecnologias
+                mais modernas para garantir uma experiência de usuário excepcional. Novos recursos são
+                adicionados regularmente, refinando fluxos conforme o uso diário. É possivel analisar o código acessando o{' '}
+                <a
+                  href="https://github.com/Danreby/financialite"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                >
+                  repositório
+                </a>{' '}
+                no GitHub.
+              </p>
+              <p className="text-base sm:text-lg">
+                <span className="font-semibold text-blue-600 dark:text-blue-400">100% Pessoal:</span>{' '}
+                Este projeto não será monetizado, não contém anúncios e seus dados estão seguros. É
+                desenvolvido puramente para fins pessoais e não comerciais.
+              </p>
+              <p className="text-base sm:text-lg">
+                <span className="font-semibold text-green-600 dark:text-green-400">Código Aberto:</span>{' '}
+                Sinta-se à vontade para explorar o repositório, contribuir com sugestões ou reportar
+                bugs através do GitHub.
+              </p>
+              <p className="text-base sm:text-lg">
+                <span className="font-semibold text-red-600 dark:text-red-400">Doações:</span>{' '}
+                Sinta-se à vontade para apoiar o projeto através de doações, contribuindo para a manutenção e desenvolvimento contínuo da aplicação.
+              </p>
+            </div>
+          </section>
+        </FadeInItem>
 
-			<FadeInItem>
-				<section className="mb-4">
-					<h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-						Conecte-se Comigo
-					</h2>
-					<FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-						{socialLinks.map((link, index) => (
-							<FadeInItem key={index} type="feature">
-								<SocialCard
-									icon={link.icon}
-									label={link.label}
-									url={link.url}
-									variants={featureVariants}
-								/>
-							</FadeInItem>
-						))}
-					</FadeInContainer>
-				</section>
-			</FadeInItem>
+        <FadeInItem>
+          <section className="rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              QR Code (LivePix)
+            </h2>
 
-			<FadeInItem>
-				<section className="rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
-					<h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-						Tecnologias Utilizadas
-					</h2>
-					<FadeInContainer stagger className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-						{[
-							{ name: 'Laravel', icon: '🚀' },
-							{ name: 'React', icon: '⚛️' },
-							{ name: 'Tailwind CSS', icon: '🎨' },
-							{ name: 'Inertia.js', icon: '🔗' },
-							{ name: 'MySQL', icon: '🗄️' },
-							{ name: 'Vite', icon: '⚡' },
-							{ name: 'Framer Motion', icon: '✨' },
-							{ name: 'JavaScript', icon: '📝' },
-						].map((tech, index) => (
-							<FadeInItem key={index} type="feature">
-								<TechCard
-									icon={tech.icon}
-									name={tech.name}
-									variants={featureVariants}
-								/>
-							</FadeInItem>
-						))}
-					</FadeInContainer>
-				</section>
-			</FadeInItem>
-		</FadeInContainer>
-	</AuthenticatedLayout>
-)
+            <div className="w-full rounded-lg overflow-hidden border dark:border-gray-800">
+              <iframe
+                src="https://widget.livepix.gg/embed/640ac0aa-59b7-4e4a-b3df-cad657ba9252"
+                title="LivePix QR Code"
+                className="w-full h-[420px] sm:h-[360px] md:h-[420px]"
+                style={{ border: 0 }}
+                loading="lazy"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+              />
+            </div>
+
+            <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+              Caso o qr code não seja exibido corretamente, abra em nova aba:{' '}
+              <a
+                href="https://widget.livepix.gg/embed/640ac0aa-59b7-4e4a-b3df-cad657ba9252"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                Abrir LivePix em nova aba
+              </a>
+            </div>
+          </section>
+        </FadeInItem>
+
+        <FadeInItem>
+          <section className="mb-4">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Conecte-se Comigo
+            </h2>
+            <FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {socialLinks.map((link, index) => (
+                <FadeInItem key={index} type="feature">
+                  <SocialCard
+                    icon={link.icon}
+                    label={link.label}
+                    url={link.url}
+                    variants={featureVariants}
+                  />
+                </FadeInItem>
+              ))}
+            </FadeInContainer>
+          </section>
+        </FadeInItem>
+
+        <FadeInItem>
+          <section className="rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Tecnologias Utilizadas
+            </h2>
+            <FadeInContainer stagger className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[
+                { name: 'Laravel', icon: '🚀' },
+                { name: 'React', icon: '⚛️' },
+                { name: 'Tailwind CSS', icon: '🎨' },
+                { name: 'Inertia.js', icon: '🔗' },
+                { name: 'MySQL', icon: '🗄️' },
+                { name: 'Vite', icon: '⚡' },
+                { name: 'Framer Motion', icon: '✨' },
+                { name: 'JavaScript', icon: '📝' },
+              ].map((tech, index) => (
+                <FadeInItem key={index} type="feature">
+                  <TechCard
+                    icon={tech.icon}
+                    name={tech.name}
+                    variants={featureVariants}
+                  />
+                </FadeInItem>
+              ))}
+            </FadeInContainer>
+          </section>
+        </FadeInItem>
+      </FadeInContainer>
+    </AuthenticatedLayout>
+  )
 }
-

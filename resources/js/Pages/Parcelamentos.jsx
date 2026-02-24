@@ -206,11 +206,10 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
           </div>
         </FadeInItem>
 
-        {/* List */}
         <FadeInItem type="subtle">
           {filtered.length > 0 ? (
             <div className="rounded-2xl shadow-md themed-card overflow-hidden">
-              <ScrollArea maxHeightClassName="max-h-[600px] sm:max-h-[700px]">
+              <ScrollArea maxHeightClassName="max-h-[400px] sm:max-h-[530px]">
                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
                   <AnimatePresence mode="popLayout" initial={false}>
                     {filtered.map((tx) => (
@@ -256,9 +255,7 @@ function InstallmentRow({ tx }) {
       exit={{ opacity: 0 }}
       className={`p-3 sm:p-4 transition-colors ${isLate ? 'bg-red-50/50 dark:bg-red-900/10' : isDone ? 'bg-emerald-50/30 dark:bg-emerald-900/5' : ''}`}
     >
-      {/* Top row */}
       <div className="flex items-start gap-3">
-        {/* Icon */}
         <div className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-sm font-semibold ${
           isDone ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
           : isLate ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
@@ -267,7 +264,6 @@ function InstallmentRow({ tx }) {
           {isDone ? '✅' : isLate ? '⚠️' : '🔄'}
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
             <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{tx.title}</span>
@@ -279,7 +275,6 @@ function InstallmentRow({ tx }) {
             </span>
           </div>
 
-          {/* Meta row */}
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 mb-2">
             {tx.bank_name && <span>💳 {tx.bank_name}</span>}
             {tx.category_name && (
@@ -293,7 +288,6 @@ function InstallmentRow({ tx }) {
             <span>🗓 {formatShortDate(tx.created_at)}</span>
           </div>
 
-          {/* Progress bar */}
           <div className="mb-2">
             <div className="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">
               <span>{tx.current_installment} paga(s)</span>
@@ -307,7 +301,6 @@ function InstallmentRow({ tx }) {
             </div>
           </div>
 
-          {/* Key figures */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <InfoChip label="Parcela" value={formatCurrencyBRL(tx.installment_amount ?? 0)} />
             <InfoChip label="Total" value={formatCurrencyBRL(tx.amount ?? 0)} />
@@ -316,7 +309,6 @@ function InstallmentRow({ tx }) {
           </div>
         </div>
 
-        {/* Expand toggle */}
         <button
           type="button"
           onClick={() => setExpanded((p) => !p)}
@@ -336,7 +328,6 @@ function InstallmentRow({ tx }) {
         </button>
       </div>
 
-      {/* Expanded details */}
       <AnimatePresence>
         {expanded && (
           <motion.div
