@@ -1,7 +1,33 @@
 import { motion } from 'framer-motion';
 
+const CARD_GRADIENTS = [
+	'from-indigo-500 to-purple-600',
+	'from-emerald-500 to-teal-600',
+	'from-rose-500 to-pink-600',
+	'from-amber-500 to-orange-600',
+	'from-sky-500 to-blue-600',
+	'from-violet-500 to-fuchsia-600',
+	'from-cyan-500 to-emerald-600',
+	'from-red-500 to-rose-600',
+];
+
+function getCardGradient(id) {
+	return CARD_GRADIENTS[(id || 0) % CARD_GRADIENTS.length];
+}
+
+function getCardInitials(name) {
+	if (!name) return '??';
+	const words = name.trim().split(/\s+/);
+	if (words.length >= 2) {
+		return (words[0][0] + words[1][0]).toUpperCase();
+	}
+	return name.slice(0, 2).toUpperCase();
+}
+
 export default function CardItem({ account, onEdit, onDelete, saving }) {
 	const dueLabel = account.due_day ? `Dia ${account.due_day}` : null;
+	const gradient = getCardGradient(account.card_id || account.id);
+	const initials = getCardInitials(account.name);
 
 	return (
 		<motion.div
@@ -12,8 +38,9 @@ export default function CardItem({ account, onEdit, onDelete, saving }) {
 			transition={{ duration: 0.2 }}
 			className="group flex items-center gap-3 rounded-xl border border-gray-200/70 bg-white p-3 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:bg-gray-900/80"
 		>
-			<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20 flex-shrink-0">
-				<span className="text-lg">💳</span>
+			<div className={`relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} flex-shrink-0 shadow-sm`}>
+				<span className="text-xs font-bold text-white tracking-wide">{initials}</span>
+				<div className="absolute bottom-0.5 right-0.5 h-2 w-3 rounded-sm bg-white/30" />
 			</div>
 
 			<div className="flex-1 min-w-0">
