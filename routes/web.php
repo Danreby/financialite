@@ -63,15 +63,91 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     ];
                 });
 
-            $categories = Category::forUser($user->id)
-                ->orderBy('name')
-                ->paginate(5, ['id', 'name', 'icon', 'color'], 'categories_page');
-
             return Inertia::render('Cartoes', [
                 'bankAccounts' => $bankAccounts,
-                'categories' => $categories,
             ]);
     })->name('accounts.index');
+
+    Route::get('/categorias', function () {
+        $user = request()->user();
+
+        $categories = Category::forUser($user->id)
+            ->orderBy('name')
+            ->paginate(20, ['id', 'name', 'icon', 'color'], 'categories_page');
+
+        return Inertia::render('Categorias', [
+            'categories' => $categories,
+        ]);
+    })->name('categorias.index');
+
+    Route::get('/parcelamentos', function () {
+        $user = request()->user();
+
+        $bankAccounts = CardUser::with('card')
+            ->forUser($user->id)
+            ->get()
+            ->map(fn ($cu) => [
+                'id'   => $cu->id,
+                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
+            ]);
+
+        $categories = Category::forUser($user->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon', 'color']);
+
+        $txs = Transacao::with(['bankUser.card', 'category'])
+            ->where('user_id', $user->id)
+            ->where('total_installments', '>', 1)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $installments = $txs->map(function ($tx) {
+            $totalInstallments  = (int) ($tx->total_installments ?? 1);
+            $currentInstallment = (int) ($tx->current_installment ?? 0);
+            $remaining          = max($totalInstallments - $currentInstallment, 0);
+            $amount             = (float) $tx->amount;
+            $installmentAmount  = $totalInstallments > 0
+                ? round($amount / $totalInstallments, 2)
+                : $amount;
+
+            $createdAt = \Carbon\Carbon::parse($tx->created_at);
+            $dueDay    = $tx->bankUser?->due_day ?? 1;
+
+            $firstBillingMonth = $createdAt->day <= $dueDay
+                ? $createdAt->copy()->startOfMonth()
+                : $createdAt->copy()->addMonth()->startOfMonth();
+
+            $completionDate = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
+
+            return [
+                'id'                     => $tx->id,
+                'title'                  => $tx->title,
+                'description'            => $tx->description,
+                'amount'                 => $amount,
+                'installment_amount'     => $installmentAmount,
+                'total_installments'     => $totalInstallments,
+                'current_installment'    => $currentInstallment,
+                'remaining_installments' => $remaining,
+                'status'                 => $tx->status ?? 'unpaid',
+                'created_at'             => $tx->created_at,
+                'first_billing_month'    => $firstBillingMonth->format('Y-m'),
+                'completion_month'       => $completionDate->format('Y-m'),
+                'bank_user_id'           => $tx->bankUser?->id,
+                'bank_name'              => $tx->bankUser?->card?->name,
+                'category_id'            => $tx->category?->id,
+                'category_name'          => $tx->category?->name,
+                'category_icon'          => $tx->category?->icon,
+                'category_color'         => $tx->category?->color,
+                'type'                   => $tx->type ?? 'credit',
+            ];
+        });
+
+        return Inertia::render('Parcelamentos', [
+            'installments' => $installments,
+            'bankAccounts' => $bankAccounts,
+            'categories'   => $categories,
+        ]);
+    })->name('parcelamentos.index');
 
     Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])
         ->name('transactions.index');

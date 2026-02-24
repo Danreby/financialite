@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
+import { getIconEmoji } from '@/Utils/categoryIcons'
 
 export default function ReportsCategoryBreakdown({ transactions = [] }) {
   const breakdown = useMemo(() => {
@@ -9,7 +10,7 @@ export default function ReportsCategoryBreakdown({ transactions = [] }) {
 
     for (const tx of transactions) {
       const catName = tx.category_name || 'Sem categoria'
-      const catIcon = tx.category_icon || '📁'
+      const catIcon = getIconEmoji(tx.category_icon) || '📁'
       const catColor = tx.category_color || '#6b7280'
       const value = tx.type === 'credit'
         ? (tx.installment_amount ?? tx.amount)

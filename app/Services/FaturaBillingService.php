@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Transacao;
 use Carbon\Carbon;
@@ -32,14 +31,14 @@ class FaturaBillingService
         return $createdAt->copy()->addMonth()->format('Y-m');
     }
 
-    public function resolveCurrentBillingMonthKey(?BankUser $bankUser = null): string
+    public function resolveCurrentBillingMonthKey(?CardUser $cardUser = null): string
     {
         $today = Carbon::today();
 
-        if (!$bankUser || !$bankUser->due_day) {
+        if (!$cardUser || !$cardUser->due_day) {
             $candidate = $today->copy();
         } else {
-            $cutoffDay = min((int) $bankUser->due_day, 28);
+            $cutoffDay = min((int) $cardUser->due_day, 28);
             $day = (int) $today->format('d');
 
             $candidate = $day <= $cutoffDay
