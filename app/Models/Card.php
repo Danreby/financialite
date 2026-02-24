@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
-class Bank extends Model
+class Card extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'banks';
+    protected $table = 'cards';
 
     protected $fillable = [
         'name',
@@ -31,7 +31,7 @@ class Bank extends Model
 
     public function scopeForUser(Builder $query, int $userId): Builder
     {
-        return $query->whereHas('bankUsers', function (Builder $sub) use ($userId) {
+        return $query->whereHas('cardUsers', function (Builder $sub) use ($userId) {
             $sub->where('user_id', $userId);
         });
     }
@@ -43,17 +43,17 @@ class Bank extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'bank_user', 'bank_id', 'user_id')->withTimestamps();
+        return $this->belongsToMany(User::class, 'card_user', 'card_id', 'user_id')->withTimestamps();
     }
 
-    public function bankUsers(): HasMany
+    public function cardUsers(): HasMany
     {
-        return $this->hasMany(CardUser::class, 'bank_id');
+        return $this->hasMany(CardUser::class, 'card_id');
     }
 
     public function faturas(): HasManyThrough
     {
-        return $this->hasManyThrough(Fatura::class, CardUser::class, 'bank_id', 'bank_user_id');
+        return $this->hasManyThrough(Fatura::class, CardUser::class, 'card_id', 'bank_user_id');
     }
 
     public function belongsToUser(int $userId): bool

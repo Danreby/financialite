@@ -6,7 +6,7 @@ use App\Contracts\Services\IncomeServiceInterface;
 use App\Http\Requests\Income\IncomeStoreRequest;
 use App\Http\Requests\Income\IncomeUpdateRequest;
 use App\Models\Income;
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -50,13 +50,13 @@ class IncomeController extends Controller
         $data = $this->normalizeInsertData($request->validated());
 
         if (!empty($data['bank_user_id'])) {
-            $bankUser = BankUser::forUser($user->id)->findOrFail($data['bank_user_id']);
+            $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             $this->authorize('view', $bankUser);
         }
 
         try {
             $income = $this->incomeService->createForUser($user, $data);
-            $income->load('bankUser.bank');
+            $income->load('bankUser.card');
 
             $this->notifications->info($user, 'Renda cadastrada', "A renda \"{$income->title}\" foi adicionada.");
 
@@ -75,13 +75,13 @@ class IncomeController extends Controller
         $data = $this->normalizeInsertData($request->validated());
 
         if (!empty($data['bank_user_id'])) {
-            $bankUser = BankUser::forUser($user->id)->findOrFail($data['bank_user_id']);
+            $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             $this->authorize('view', $bankUser);
         }
 
         try {
             $income = $this->incomeService->updateForUser($income, $data);
-            $income->load('bankUser.bank');
+            $income->load('bankUser.card');
 
             return $this->success($income);
         } catch (\Throwable $e) {

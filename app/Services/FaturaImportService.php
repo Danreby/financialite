@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Transacao;
 use App\Security\Contracts\SanitizerInterface;
@@ -169,16 +169,16 @@ class FaturaImportService
             return null;
         }
 
-        $bankUser = BankUser::with('bank')
+        $bankUser = CardUser::with('card')
             ->forUser($userId)
-            ->whereHas('bank', function ($q) use ($bankUserName) {
+            ->whereHas('card', function ($q) use ($bankUserName) {
                 $q->where('name', $bankUserName);
             })
             ->first();
 
         if (!$bankUser) {
             throw new DomainException(
-                'Conta não encontrada para o nome informado na linha ' . ($index + 2) . ': ' . $bankUserName
+                'Cartão não encontrado para o nome informado na linha ' . ($index + 2) . ': ' . $bankUserName
             );
         }
 

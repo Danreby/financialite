@@ -13,7 +13,7 @@ class IncomeService implements IncomeServiceInterface
     public function listForUser(int $userId): Collection
     {
         return Income::forUser($userId)
-            ->with('bankUser.bank')
+            ->with('bankUser.card')
             ->orderByDesc('is_active')
             ->orderBy('title')
             ->get();

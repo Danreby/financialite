@@ -8,6 +8,7 @@ use App\Http\Requests\Bank\BankUpdateRequest;
 use App\Http\Requests\Bank\UpdateBankDueDayRequest;
 use App\Models\Bank;
 use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -54,7 +55,7 @@ class BankController extends Controller
         $bank = DB::transaction(function () use ($data, $user) {
             $bank = Bank::create($data);
 
-            BankUser::create([
+            CardUser::create([
                 'bank_id' => $bank->id,
                 'user_id' => $user->id,
             ]);
@@ -94,7 +95,7 @@ class BankController extends Controller
         $this->authorize('delete', $bank);
         
         DB::transaction(function () use ($user, $bank) {
-            BankUser::forUser($user->id)
+            CardUser::forUser($user->id)
                 ->forBank($bank->id)
                 ->delete();
 
@@ -135,13 +136,13 @@ class BankController extends Controller
 
     public function attachToUser(AttachBankToUserRequest $request): JsonResponse
     {
-        $this->authorize('create', BankUser::class);
+        $this->authorize('create', CardUser::class);
 
         $user = $request->user();
 
         $data = $this->normalizeInsertData($request->validated());
 
-        $exists = BankUser::forUser($user->id)
+        $exists = CardUser::forUser($user->id)
             ->forBank($data['bank_id'])
             ->first();
 
@@ -156,7 +157,7 @@ class BankController extends Controller
         }
 
         $bankUser = DB::transaction(function () use ($data, $user) {
-            $bankUser = BankUser::create([
+            $bankUser = CardUser::create([
                 'user_id' => $user->id,
                 'bank_id' => $data['bank_id'],
                 'due_day' => $data['due_day'] ?? null,

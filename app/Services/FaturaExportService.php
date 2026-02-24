@@ -13,7 +13,7 @@ class FaturaExportService
 
     public function exportForUser(int $userId, ?int $bankUserId = null, ?int $categoryId = null): Collection
     {
-        $query = Transacao::with(['bankUser.bank', 'category'])
+        $query = Transacao::with(['bankUser.card', 'category'])
             ->forUser($userId)
             ->forBankUser($bankUserId)
             ->when($categoryId, function ($q, $categoryId) {
@@ -62,7 +62,7 @@ class FaturaExportService
             'bank_user' => [
                 'id' => $fatura->bankUser->id ?? null,
                 'bank' => [
-                    'name' => optional($fatura->bankUser->bank ?? null)->name ?? null,
+                    'name' => optional($fatura->bankUser->card ?? null)->name ?? null,
                 ],
             ],
             'category' => [

@@ -3,15 +3,15 @@
 namespace App\Providers;
 
 use App\Models\Anexo;
-use App\Models\Bank;
-use App\Models\BankUser;
+use App\Models\Card;
+use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Income;
 use App\Models\Notification;
 use App\Models\Transacao;
 use App\Policies\AnexoPolicy;
-use App\Policies\BankPolicy;
-use App\Policies\BankUserPolicy;
+use App\Policies\CardPolicy;
+use App\Policies\CardUserPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\IncomePolicy;
 use App\Policies\NotificationPolicy;
@@ -29,10 +29,10 @@ class SecurityServiceProvider extends ServiceProvider
         Anexo::class => AnexoPolicy::class,
         Transacao::class => TransacaoPolicy::class,
         Category::class => CategoryPolicy::class,
-        BankUser::class => BankUserPolicy::class,
+        CardUser::class => CardUserPolicy::class,
         Income::class => IncomePolicy::class,
         Notification::class => NotificationPolicy::class,
-        Bank::class => BankPolicy::class,
+        Card::class => CardPolicy::class,
     ];
 
     public function register(): void

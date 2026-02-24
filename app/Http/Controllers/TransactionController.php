@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transacao;
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -58,7 +58,7 @@ class TransactionController extends Controller
         $search = trim((string) $request->get('search', ''));
         $search = e($search);
 
-        $transactions = Transacao::with(['bankUser.bank', 'category'])
+        $transactions = Transacao::with(['bankUser.card', 'category'])
             ->withCount('anexos')
             ->forUser($user->id)
             ->filter($filters)
@@ -98,7 +98,7 @@ class TransactionController extends Controller
                     'current_installment' => $transacao->current_installment,
                     'is_recurring' => (bool) $transacao->is_recurring,
                     'bank_user_id' => $transacao->bank_user_id,
-                    'bank_name' => optional($transacao->bankUser->bank ?? null)->name ?? null,
+                    'bank_name' => optional($transacao->bankUser->card ?? null)->name ?? null,
                     'category_id' => $transacao->category_id,
                     'category_name' => $transacao->category->name ?? null,
                     'category_icon' => $transacao->category->icon ?? null,
@@ -107,13 +107,13 @@ class TransactionController extends Controller
                 ];
             });
 
-        $bankAccounts = BankUser::with('bank')
+        $bankAccounts = CardUser::with('card')
             ->forUser($user->id)
             ->get()
-            ->map(function ($bankUser) {
+            ->map(function ($cardUser) {
                 return [
-                    'id' => $bankUser->id,
-                    'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
+                    'id' => $cardUser->id,
+                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
                 ];
             })
             ->sortBy('name')

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\Transacao;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -14,9 +14,9 @@ class FaturaPaymentService
     {
     }
 
-    public function payMonthForUser(Authenticatable $user, string $monthKey, ?BankUser $bankUser): float
+    public function payMonthForUser(Authenticatable $user, string $monthKey, ?CardUser $cardUser): float
     {
-        $bankUserId = $bankUser?->id;
+        $bankUserId = $cardUser?->id;
 
         $query = Transacao::with('bankUser')
             ->forUser($user->id)
