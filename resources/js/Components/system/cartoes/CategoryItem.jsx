@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
-import CategoryBadge from '@/Components/common/CategoryBadge';
+import { getIconEmoji } from '@/Utils/categoryIcons';
 
 export default function CategoryItem({ category, onEdit, onDelete, saving }) {
+	const resolvedIcon = getIconEmoji(category.icon) || '🏷️';
+
 	return (
 		<motion.div
 			layout
@@ -11,7 +13,14 @@ export default function CategoryItem({ category, onEdit, onDelete, saving }) {
 			transition={{ duration: 0.2 }}
 			className="group flex items-center gap-3 rounded-xl border border-gray-200/70 bg-white p-3 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:bg-gray-900/80"
 		>
-			<CategoryBadge icon={category.icon} color={category.color} size="md" />
+			<div
+				className="flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0"
+				style={{
+					backgroundColor: category.color ? `${category.color}18` : 'var(--theme-accent-light, rgba(99,102,241,0.1))',
+				}}
+			>
+				<span className="text-lg">{resolvedIcon}</span>
+			</div>
 
 			<div className="flex-1 min-w-0">
 				<p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">

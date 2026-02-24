@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { formatCurrency, formatDueDay, getNextDueInfo } from '@/Utils/bills';
+import { getIconEmoji } from '@/Utils/categoryIcons';
 
 const STATUS_MAP = {
 	active: { label: 'Ativa', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -42,7 +43,7 @@ export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, savi
 						}}
 					>
 						{bill.category?.icon ? (
-							<span>{bill.category.icon}</span>
+						<span>{getIconEmoji(bill.category.icon) || bill.category.icon}</span>
 						) : (
 							<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
 								<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
