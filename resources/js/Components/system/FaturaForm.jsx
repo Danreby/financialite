@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "../common/Modal";
@@ -15,7 +15,6 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
   const [selectedBankId, setSelectedBankId] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
 
-  // Reset all controlled state whenever the modal opens
   useEffect(() => {
     if (isOpen) {
       setIsRecurring(false);
