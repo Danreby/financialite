@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Bank;
+use App\Models\Card;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -60,7 +61,7 @@ class MoreBanksSeeder extends Seeder
         ];
 
         foreach ($banks as $bankData) {
-            Bank::create($bankData);
+            Card::create($bankData);
         }
     }
 }
