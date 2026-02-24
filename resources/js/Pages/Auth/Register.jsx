@@ -26,6 +26,7 @@ export default function Register() {
   const { data, setData, post, processing, errors, reset } = useForm({
     name: '',
     email: '',
+    phone: '',
     password: '',
     password_confirmation: '',
   })
@@ -102,6 +103,27 @@ export default function Register() {
               error={errors.email}
               autoComplete="username"
               type="email"
+            />
+
+            <FormField
+              id="phone"
+              label="Telefone (opcional)"
+              value={data.phone}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^\d]/g, '').slice(0, 11)
+                let formatted = raw
+                if (raw.length > 6) {
+                  formatted = `(${raw.slice(0, 2)}) ${raw.slice(2, 7)}-${raw.slice(7)}`
+                } else if (raw.length > 2) {
+                  formatted = `(${raw.slice(0, 2)}) ${raw.slice(2)}`
+                } else if (raw.length > 0) {
+                  formatted = `(${raw}`
+                }
+                setData('phone', formatted)
+              }}
+              error={errors.phone}
+              autoComplete="tel"
+              type="tel"
             />
 
             <FormField
