@@ -12,6 +12,19 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
   const [isRecurring, setIsRecurring] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [type, setType] = useState("");
+  const [selectedBankId, setSelectedBankId] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+
+  // Reset all controlled state whenever the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsRecurring(false);
+      setIsSubmitting(false);
+      setType("");
+      setSelectedBankId("");
+      setSelectedCategoryId("");
+    }
+  }, [isOpen]);
 
   const handleNumericKeyDown = useNumericInput();
   const handleDecimalKeyDown = useDecimalInput();
@@ -54,9 +67,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title")?.toString().trim();
     const amount = formData.get("amount")?.toString().trim();
-    const submittedType = formData.get("type")?.toString().trim();
-    const bankUserId = formData.get("bank_user_id")?.toString().trim();
-    const categoryId = formData.get("category_id")?.toString().trim();
+    const submittedType = type;
     const formElement = e.currentTarget;
 
     toast.dismiss();
@@ -98,8 +109,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       type: submittedType,
       total_installments: totalInstallments,
       is_recurring: effectiveRecurring ? 1 : 0,
-      bank_user_id: bankUserId || null,
-      category_id: categoryId || null,
+      bank_user_id: selectedBankId || null,
+      category_id: selectedCategoryId || null,
     };
 
     axios
@@ -109,6 +120,9 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
         toast.success("Transação criada com sucesso.");
 		formElement.reset();
         setIsRecurring(false);
+        setType("");
+        setSelectedBankId("");
+        setSelectedCategoryId("");
         setIsSubmitting(false);
         if (onSuccess) onSuccess(response.data || {});
         if (onClose) onClose();
@@ -291,14 +305,12 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
               value={type === "debit" ? 0 : isRecurring ? 1 : 0}
             />
           </div>
-          <div className="flex Numericl gap-1 md:col-span-2">
-            {/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Categoria
-            </label> */}
+          <div className="flex flex-col gap-1 md:col-span-2">
             <select
               name="category_id"
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
               className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              defaultValue=""
             >
               <option value="">Selecione uma categoria</option>
               {categories.map((category) => (
@@ -309,15 +321,13 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             </select>
           </div>
           <div className="flex flex-col gap-1 md:col-span-2">
-            {/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Conta / Banco
-            </label> */}
             <select
               name="bank_user_id"
+              value={selectedBankId}
+              onChange={(e) => setSelectedBankId(e.target.value)}
               className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              defaultValue=""
             >
-              <option value="">Selecione um banco</option>
+              <option value="">Selecione um cartão</option>
               {bankAccounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.name}

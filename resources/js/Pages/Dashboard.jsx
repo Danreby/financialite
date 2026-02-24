@@ -432,7 +432,11 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </FadeInItem>
 
           <FadeInItem>
-            <QuickActions bankAccounts={bankAccounts} categories={categories} />
+            <QuickActions
+              bankAccounts={bankAccounts}
+              categories={categories}
+              onTransactionCreated={() => setReloadKey((prev) => prev + 1)}
+            />
           </FadeInItem>
         </FadeInContainer>
 

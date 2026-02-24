@@ -69,7 +69,7 @@ class FaturaStoreRequest extends FormRequest
             'bank_user_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('bank_user', 'id')->where(function ($query) use ($userId) {
+                Rule::exists('card_user', 'id')->where(function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 }),
             ],

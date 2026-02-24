@@ -20,7 +20,7 @@ class PayMonthRequest extends FormRequest
             'month' => 'required|date_format:Y-m',
             'bank_user_id' => [
                 'nullable',
-                Rule::exists('bank_user', 'id')->where(function ($query) use ($userId) {
+                Rule::exists('card_user', 'id')->where(function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 }),
             ],

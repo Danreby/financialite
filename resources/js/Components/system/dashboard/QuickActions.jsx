@@ -6,7 +6,7 @@ import CardForm from '@/Components/system/CardForm';
 import CategoryForm from '@/Components/system/CategoryForm';
 import FaturaImportModal from '@/Components/system/fatura/import/FaturaImportModal';
 
-export default function QuickActions({ bankAccounts = [], categories = [] }) {
+export default function QuickActions({ bankAccounts = [], categories = [], onTransactionCreated }) {
   const [showFaturaForm, setShowFaturaForm] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
@@ -138,6 +138,10 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
         onClose={() => setShowFaturaForm(false)}
         bankAccounts={localBankAccounts}
         categories={localCategories}
+        onSuccess={() => {
+          setShowFaturaForm(false);
+          if (onTransactionCreated) onTransactionCreated();
+        }}
       />
 
       <CardForm
