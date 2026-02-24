@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import ScrollArea from "@/Components/common/ScrollArea";
+import Autocomplete from "@/Components/common/inputs/Autocomplete";
 import { formatCurrency } from "@/Lib/formatters";
 
 export default function FaturaPayModal({
@@ -14,12 +15,31 @@ export default function FaturaPayModal({
   monthLabel,
   items = [],
   bankUserId = null,
+  bankAccounts = [],
   onPaid,
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState(bankUserId || "");
 
-  const pendingItems = useMemo(
-    () => items.filter((item) => item.status !== "paid"),
+  const cardOptions = useMemo(
+    () => bankAccounts.map((acc) => ({ value: String(acc.id), label: acc.name })),
+    [bankAccounts]
+  );
+
+  const handleCardSelect = useCallback((value) => {
+    setSelectedCardId(value);
+  }, []);
+
+  const pendingItems = useMemo(() => {
+    const pending = items.filter((item) => item.status !== "paid");
+    if (!selectedCardId) return pending;
+    return pending.filter(
+      (item) => String(item.bank_user_id) === String(selectedCardId)
+    );
+  }, [items, selectedCardId]);
+
+  const allPendingCount = useMemo(
+    () => items.filter((item) => item.status !== "paid").length,
     [items]
   );
 
@@ -40,8 +60,8 @@ export default function FaturaPayModal({
       const payload = {
         month: monthKey,
       };
-      if (bankUserId) {
-        payload.bank_user_id = bankUserId;
+      if (selectedCardId) {
+        payload.bank_user_id = selectedCardId;
       }
 
       await axios.post(route("transacoes.pay_month"), payload);
@@ -78,7 +98,38 @@ export default function FaturaPayModal({
           <>
             <p className="text-gray-600 dark:text-gray-300">
               Você está prestes a registrar o pagamento das pendências deste mês.
+              {!selectedCardId && " Selecione um cartão para pagar apenas as transações dele, ou deixe vazio para pagar tudo."}
             </p>
+
+            {/* Card selector */}
+            {cardOptions.length > 0 && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-3 dark:border-gray-800 dark:bg-gray-900/30">
+                <label className="text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1.5 block">
+                  💳 Cartão
+                </label>
+                <Autocomplete
+                  options={cardOptions}
+                  value={selectedCardId}
+                  onChange={handleCardSelect}
+                  placeholder="Todos os cartões"
+                  name="pay_card_id"
+                />
+                {selectedCardId && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCardId("")}
+                    className="mt-1.5 text-[10px] sm:text-[11px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                  >
+                    Limpar seleção (pagar todas)
+                  </button>
+                )}
+                {selectedCardId && (
+                  <p className="mt-1 text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400">
+                    Mostrando {pendingItems.length} de {allPendingCount} pendências
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4 text-xs sm:text-sm shadow-sm dark:border-gray-800 dark:bg-[#050505]">
               <p className="mb-2 text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">

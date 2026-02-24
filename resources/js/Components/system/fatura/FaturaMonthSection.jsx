@@ -14,6 +14,7 @@ export default function FaturaMonthSection({
   items = [],
   month_key,
   bankUserId = null,
+  bankAccounts = [],
   onPaid,
   is_paid = false,
   due_day = null,
@@ -152,6 +153,7 @@ export default function FaturaMonthSection({
         monthLabel={month_label}
         items={items}
         bankUserId={bankUserId}
+        bankAccounts={bankAccounts}
         onPaid={onPaid}
       />
       <FaturaDetailModal

@@ -33,6 +33,7 @@ class CheckUpcomingBillsCommand extends Command
 
         $notified1Day = 0;
         $notified2Days = 0;
+        $notifiedToday = 0;
 
         foreach ($bills as $bill) {
             $nextDueDate = $bill->getNextDueDate();
@@ -64,11 +65,24 @@ class CheckUpcomingBillsCommand extends Command
                 $notified1Day++;
                 $this->line("  → Notificado: {$bill->user->name} - {$bill->title} (1 dia)");
             }
+
+            // Notificar no dia do vencimento
+            if ($nextDueDate->isSameDay($today)) {
+                $this->notifications->error(
+                    $bill->user,
+                    'Conta vence hoje',
+                    "A conta \"{$bill->title}\" vence HOJE (" . $nextDueDate->format('d/m/Y') . ')' .
+                    ($bill->amount ? " no valor de R$ " . number_format($bill->amount, 2, ',', '.') : '') . '. Não se esqueça de pagar!'
+                );
+                $notifiedToday++;
+                $this->line("  → Notificado: {$bill->user->name} - {$bill->title} (HOJE)");
+            }
         }
 
         $this->info("Processo concluído:");
         $this->info("  • {$notified2Days} notificações enviadas (2 dias antes)");
         $this->info("  • {$notified1Day} notificações enviadas (1 dia antes)");
+        $this->info("  • {$notifiedToday} notificações enviadas (vence hoje)");
 
         return self::SUCCESS;
     }

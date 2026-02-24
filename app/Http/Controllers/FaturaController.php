@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transacao;
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Services\FaturaService;
 use App\Services\FaturaExportService;
 use App\Services\FaturaImportService;
@@ -43,7 +43,7 @@ class FaturaController extends Controller
         $categoryId = $request->input('category_id');
 
         if ($request->filled('bank_user_id')) {
-            BankUser::forUser($user->id)->findOrFail($bankUserId);
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $faturas = $this->exportService->exportForUser($user->id, $bankUserId, $categoryId);
@@ -87,7 +87,7 @@ class FaturaController extends Controller
         $selectedBankUser = null;
 
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
+            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $filters = [
@@ -116,7 +116,7 @@ class FaturaController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $fatura = Transacao::with(['bankUser.bank', 'user'])->findOrFail($id);
+        $fatura = Transacao::with(['bankUser.card', 'user'])->findOrFail($id);
 
         $this->authorize('view', $fatura);
 
@@ -131,16 +131,16 @@ class FaturaController extends Controller
         $data = $this->normalizeInsertData($request->validated());
 
         if (!empty($data['bank_user_id'])) {
-            $bankUser = BankUser::with('bank')
+            $cardUser = CardUser::with('card')
                 ->forUser($user->id)
                 ->findOrFail($data['bank_user_id']);
             
-            $this->authorize('view', $bankUser);
+            $this->authorize('view', $cardUser);
         }
 
         try {
             $fatura = $this->faturaService->createForUser($user, $data);
-            $fatura->load(['bankUser.bank', 'user']);
+            $fatura->load(['bankUser.card', 'user']);
             return $this->success($fatura, 201);
         } catch (\Throwable $e) {
             report($e);
@@ -160,13 +160,13 @@ class FaturaController extends Controller
         $data = $this->normalizeInsertData($request->validated());
 
         if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
-            $bankUser = BankUser::forUser($user->id)->findOrFail($data['bank_user_id']);
+            $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             $this->authorize('view', $bankUser);
         }
 
         try {
             $fatura = $this->faturaService->updateForUser($fatura, $data);
-            $fatura->load(['bankUser.bank', 'user']);
+            $fatura->load(['bankUser.card', 'user']);
             return $this->success($fatura);
         } catch (\Throwable $e) {
             report($e);
@@ -210,7 +210,7 @@ class FaturaController extends Controller
         $bankUser = null;
 
         if ($bankUserId) {
-            $bankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
+            $bankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
             $this->authorize('view', $bankUser);
         }
 
@@ -243,7 +243,7 @@ class FaturaController extends Controller
         $categoryId = $request->input('category_id');
         
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
+            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
             $this->authorize('view', $selectedBankUser);
         }
 
