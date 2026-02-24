@@ -84,7 +84,7 @@ export default function Conta({ bankAccounts, categories }) {
 
 		setSaving(true);
 		try {
-			await axios.patch(route('banks.update-due-day', bankBeingEdited.id), { due_day: parsed });
+			await axios.patch(route('cards.update-due-day', bankBeingEdited.id), { due_day: parsed });
 			setLocalBankAccounts((prev) =>
 				prev.map((acc) => (acc.id === bankBeingEdited.id ? { ...acc, due_day: parsed } : acc)),
 			);
@@ -164,7 +164,7 @@ export default function Conta({ bankAccounts, categories }) {
 		setSaving(true);
 		try {
 			if (confirmTarget.type === 'bank') {
-				await axios.delete(route('banks.destroy', confirmTarget.id));
+				await axios.delete(route('cards.destroy', confirmTarget.id));
 				setLocalBankAccounts((prev) => prev.filter((acc) => acc.bank_id !== confirmTarget.id));
 				toast.success('Conta removida com sucesso.');
 			}
