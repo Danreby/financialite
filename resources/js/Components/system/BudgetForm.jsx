@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "@/Components/common/Modal";
@@ -19,6 +19,9 @@ export default function BudgetForm({
 
   const isEditing = !!budget?.id;
 
+  const inputRefs = useRef({});
+  const focusedInputUid = useRef(null);
+
   const formatCurrency = (value) => {
     if (!value && value !== 0) return "R$ 0,00";
     return new Intl.NumberFormat("pt-BR", {
@@ -31,10 +34,10 @@ export default function BudgetForm({
     if (isOpen) {
       if (budget?.category_limits) {
         setCategoryLimits(
-          budget.category_limits.map((cl, i) => ({
-            _uid: `existing-${cl.category_id}-${i}`,
-            category_id: cl.category_id,
-            limit: cl.limit
+          budget.category_limits.map((cl) => ({
+            _uid: cl.id ? `existing-${cl.id}` : `existing-${cl.category_id}`,
+            category_id: String(cl.category_id ?? ""),
+            limit: cl.limit != null ? String(cl.limit) : "",
           }))
         );
       } else {
@@ -43,7 +46,27 @@ export default function BudgetForm({
     } else {
       setCategoryLimits([]);
     }
+    if (!isOpen) {
+      inputRefs.current = {};
+      focusedInputUid.current = null;
+    }
   }, [budget, isOpen]);
+
+  useEffect(() => {
+    const uid = focusedInputUid.current;
+    if (uid) {
+      const el = inputRefs.current[uid];
+      if (el) {
+        try {
+          el.focus();
+          const len = el.value?.length ?? 0;
+          el.setSelectionRange(len, len);
+        } catch (e) {
+          //
+        }
+      }
+    }
+  }, [categoryLimits]);
 
   const handleAddCategoryLimit = () => {
     setCategoryLimits(prev => [
@@ -61,9 +84,10 @@ export default function BudgetForm({
   };
 
   const handleCategoryLimitChange = (index, field, value) => {
+    const stringVal = value == null ? "" : String(value);
     setCategoryLimits(prev =>
       prev.map((cl, i) =>
-        i === index ? { ...cl, [field]: value } : cl
+        i === index ? { ...cl, [field]: stringVal } : cl
       )
     );
   };
@@ -114,7 +138,7 @@ export default function BudgetForm({
         month_year: monthYear,
         is_active: true,
         category_limits: validCategoryLimits.map(cl => ({
-          category_id: parseInt(cl.category_id),
+          category_id: parseInt(cl.category_id, 10),
           limit: parseFloat(cl.limit),
         })),
       };
@@ -155,11 +179,13 @@ export default function BudgetForm({
 
   const handleClose = () => {
     setCategoryLimits([]);
+    inputRefs.current = {};
+    focusedInputUid.current = null;
     if (onClose) onClose();
   };
 
   const availableCategories = categories.filter(cat => 
-    !categoryLimits.some(cl => cl.category_id == cat.id)
+    !categoryLimits.some(cl => cl.category_id == String(cat.id))
   );
 
   return (
@@ -262,10 +288,10 @@ export default function BudgetForm({
                         <option value="">Selecione uma categoria</option>
                         {categories
                           .filter(cat => 
-                            !categoryLimits.some((cl, i) => i !== index && cl.category_id == cat.id)
+                            !categoryLimits.some((cl, i) => i !== index && cl.category_id == String(cat.id))
                           )
                           .map((category) => (
-                            <option key={category.id} value={category.id}>
+                            <option key={category.id} value={String(category.id)}>
                               {category.name}
                             </option>
                           ))}
@@ -284,6 +310,20 @@ export default function BudgetForm({
                         step="0.01"
                         min="0"
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+                        
+                        ref={(el) => {
+                          if (el) {
+                            inputRefs.current[categoryLimit._uid] = el;
+                          } else {
+                            delete inputRefs.current[categoryLimit._uid];
+                          }
+                        }}
+                        onFocus={() => { focusedInputUid.current = categoryLimit._uid; }}
+                        onBlur={() => {
+                          if (focusedInputUid.current === categoryLimit._uid) {
+                            focusedInputUid.current = null;
+                          }
+                        }}
                         required
                       />
                     </div>

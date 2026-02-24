@@ -102,12 +102,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const activeRecurring = monthData?.recurring_spending ?? recurringSpending
   const activeNonRecurring = monthData?.non_recurring_spending ?? nonRecurringSpending
 
-  const [stats, setStats] = useState([
-    { id: 1, title: 'Saldo Disponível', value: formatCurrencyBRL(0), delta: '+0%' },
-    { id: 2, title: 'Gastos do mês', value: formatCurrencyBRL(0), delta: '+0%' },
-    { id: 3, title: 'Receitas do mês', value: formatCurrencyBRL(0), delta: '+0%' },
-    { id: 4, title: 'Contas ativas', value: '0', delta: '+0' },
-  ])
+  const [stats, setStats] = useState([])
 
   const handleBankFilterChange = (event) => {
     const value = event.target.value || undefined
@@ -235,6 +230,14 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
               : 'Sem renda cadastrada',
           },
+          {
+            id: 5,
+            title: 'Dinheiro restante',
+            value: formatCurrencyBRL(remainingMoney),
+            delta: totalMonthlyIncome > 0
+              ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
+              : 'Sem renda cadastrada',
+          },
         ])
 
         setMonthlySummary(monthlySummaryPayload)
@@ -267,7 +270,6 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           percentage: Number(statsPayload.non_recurring_spending?.percentage || 0),
         })
 
-        // Set insights data
         setDashboardInsights(insightsResponse.data || null)
       } catch (error) {
         console.error(error)

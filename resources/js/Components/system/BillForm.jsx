@@ -27,7 +27,6 @@ export default function BillForm({
       setSelectedColor(bill.color || '#3b82f6');
       setRecurrenceType(bill.recurrence_type || 'monthly');
     } else if (isOpen) {
-      // Reset to defaults when opening without a bill
       setSelectedIcon('FileText');
       setSelectedColor('#3b82f6');
       setRecurrenceType('monthly');

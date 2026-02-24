@@ -196,6 +196,7 @@ class FaturaBillingService
                         'current_installment' => $fatura->current_installment,
                         'display_installment' => $this->resolveInstallmentNumberForMonth($fatura, $entry['month_key']),
                         'is_recurring' => (bool) $fatura->is_recurring,
+                        'bank_user_id' => $fatura->bank_user_id,
                         'bank_name' => optional($fatura->bankUser->card ?? null)->name ?? null,
                         'category_id' => $fatura->category_id ?? null,
                         'category_name' => $fatura->category->name ?? null,

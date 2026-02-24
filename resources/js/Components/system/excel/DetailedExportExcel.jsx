@@ -3,10 +3,7 @@ import { saveAs } from 'file-saver';
 import BareButton from '@/Components/common/buttons/BareButton';
 import Tooltip from '@/Components/common/Tooltip';
 
-/**
- * Componente para exportar relatório detalhado de transações em formato Excel
- * com múltiplas abas: Resumo Executivo, Transações, Análise por Categoria e Análise por Banco
- */
+
 export default function DetailedExportExcel({ data, name = "relatorio_financeiro" }) {
 
   // Estilos reutilizáveis
@@ -1104,7 +1101,6 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
         XLSX.utils.book_append_sheet(workbook, trendsSheet, 'Tendências');
       }
 
-      // Gerar arquivo
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 

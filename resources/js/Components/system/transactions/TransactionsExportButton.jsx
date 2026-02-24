@@ -67,7 +67,6 @@ export default function TransactionsExportButton({ filters = {}, detailed = fals
     [],
   );
 
-  // Se detailed for true, usa o componente de exportação detalhada
   if (detailed) {
     return (
       <DetailedExportExcel
@@ -77,7 +76,6 @@ export default function TransactionsExportButton({ filters = {}, detailed = fals
     );
   }
 
-  // Caso contrário, usa o componente de exportação simples
   return (
     <ExportExcel
       data={exportData}
