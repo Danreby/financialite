@@ -69,7 +69,7 @@ function TableContent({ transactions, onSelectTransaction }) {
           <th className="px-3 py-2 text-left">Status</th>
           <th className="px-3 py-2 text-right">Valor período</th>
           <th className="px-3 py-2 text-right">Valor total</th>
-          <th className="px-3 py-2 text-left">Banco</th>
+          <th className="px-3 py-2 text-left">Cartão</th>
           <th className="px-3 py-2 text-left">Categoria</th>
           <th className="px-3 py-2 text-left">Data</th>
         </tr>

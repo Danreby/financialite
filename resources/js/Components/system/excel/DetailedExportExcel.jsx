@@ -98,7 +98,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       recurring_count: 0,
       installments_count: 0,
       categories_count: new Set(),
-      banks_count: new Set(),
+      cards_count: new Set(),
       period_start: null,
       period_end: null,
       recurring_amount: 0,
@@ -147,7 +147,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       if (t.total_installments && t.total_installments > 1) summary.installments_count++;
       
       if (t.category?.name) summary.categories_count.add(t.category.name);
-      if (t.bank_user?.bank?.name) summary.banks_count.add(t.bank_user.bank.name);
+      if (t.bank_user?.card?.name) summary.cards_count.add(t.bank_user.card.name);
 
       // Período
       if (t.created_at) {
@@ -160,7 +160,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     return {
       ...summary,
       categories_count: summary.categories_count.size,
-      banks_count: summary.banks_count.size,
+      cards_count: summary.cards_count.size,
       net_balance: summary.total_income - summary.total_expenses,
       average_income: summary.total_income / Math.max(summary.total_transactions, 1),
       average_expense: summary.total_expenses / Math.max(summary.total_transactions, 1),
@@ -214,7 +214,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     const grouped = {};
 
     transactions.forEach(t => {
-      const bankName = t.bank_user?.bank?.name || 'Sem banco';
+      const bankName = t.bank_user?.card?.name || 'Sem cartão';
       if (!grouped[bankName]) {
         grouped[bankName] = {
           bank: bankName,
@@ -375,7 +375,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       ['VISÃO GERAL'],
       ['Total de Transações', summary.total_transactions],
       ['Total de Categorias', summary.categories_count],
-      ['Total de Bancos', summary.banks_count],
+      ['Total de Cartões', summary.cards_count],
       ['Transações Recorrentes', summary.recurring_count],
       ['Transações Parceladas', summary.installments_count],
       [],
@@ -528,7 +528,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
         t.current_installment || '',
         t.total_installments || '',
         t.is_recurring ? 'Sim' : 'Não',
-        t.bank_user?.bank?.name || '',
+        t.bank_user?.card?.name || '',
         t.category?.name || '',
         t.invoice_month_label || t.month_label || ''
       ]);
@@ -857,7 +857,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
         idx + 1,
         t.title || '',
         t.category?.name || 'Sem categoria',
-        t.bank_user?.bank?.name || 'Sem banco',
+        t.bank_user?.card?.name || 'Sem cartão',
         t.display_amount,
         t.created_at_formatted || '',
         t.status === 'paid' ? 'Pago' : t.status === 'pending' ? 'Pendente' : t.status || '',

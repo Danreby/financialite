@@ -109,14 +109,14 @@ export default function ExtratoFilters({
             htmlFor="filter-bank"
             className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300"
           >
-            🏦 Banco
+            💳 Cartão
           </label>
           <select
             id="filter-bank"
             value={bankUserId}
             onChange={(e) => onBankChange(e.target.value)}
             className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-            aria-label="Filtrar por banco"
+            aria-label="Filtrar por cartão"
           >
             <option value="">Todos</option>
             {bankAccounts.map((ba) => (
