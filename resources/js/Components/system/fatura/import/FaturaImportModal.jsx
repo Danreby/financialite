@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import * as XLSX from "xlsx-js-style";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -8,6 +8,73 @@ import FaturaImportFileInput from "@/Components/system/fatura/import/FaturaImpor
 import FaturaImportPreview from "@/Components/system/fatura/import/FaturaImportPreview";
 import FaturaImportActions from "@/Components/system/fatura/import/FaturaImportActions";
 
+/**
+ * Maps normalized column headers (PT or EN) → API keys expected by the backend.
+ * Supports Portuguese template headers and English legacy headers for backward
+ * compatibility.
+ */
+const COLUMN_MAP = Object.freeze({
+  // Portuguese (primary — matches the template)
+  titulo: "title",
+  descricao: "description",
+  valor: "amount",
+  tipo: "type",
+  status: "status",
+  parcelas_totais: "total_installments",
+  parcela_atual: "current_installment",
+  recorrente: "is_recurring",
+  nome_cartao: "bank_user_name",
+  nome_categoria: "category_name",
+  // English (backward compatibility)
+  title: "title",
+  description: "description",
+  amount: "amount",
+  type: "type",
+  total_installments: "total_installments",
+  current_installment: "current_installment",
+  is_recurring: "is_recurring",
+  bank_user_name: "bank_user_name",
+  category_name: "category_name",
+});
+
+/** API keys that every row must have. */
+const REQUIRED_API_KEYS = ["title", "amount", "type"];
+
+/** Reverse map: API key → Portuguese display label (for user-facing messages). */
+const API_KEY_LABELS = Object.freeze({
+  title: "titulo",
+  amount: "valor",
+  type: "tipo",
+});
+
+/**
+ * Normalize a raw header string for lookup in COLUMN_MAP.
+ * Lowercases, strips accents, collapses whitespace → underscore.
+ */
+function normalizeHeaderKey(raw) {
+  return String(raw || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "_");
+}
+
+/**
+ * Convert a row keyed by original (display) headers into a row keyed by API
+ * keys, using COLUMN_MAP for resolution. Unknown columns are silently dropped.
+ */
+function mapRowToApiKeys(row, originalHeaders) {
+  const mapped = {};
+  originalHeaders.forEach((header) => {
+    const apiKey = COLUMN_MAP[normalizeHeaderKey(header)];
+    if (apiKey) {
+      mapped[apiKey] = row[header];
+    }
+  });
+  return mapped;
+}
+
 export default function FaturaImportModal({ isOpen, onClose, onImported }) {
   const [fileName, setFileName] = useState("");
   const [rows, setRows] = useState([]);
@@ -16,16 +83,16 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
 
   const templateHeader = useMemo(
     () => ({
-      title: { name: "title" },
-      description: { name: "description" },
-      amount: { name: "amount" },
-      type: { name: "type" },
+      title: { name: "titulo" },
+      description: { name: "descricao" },
+      amount: { name: "valor" },
+      type: { name: "tipo" },
       status: { name: "status" },
-      total_installments: { name: "total_installments" },
-      current_installment: { name: "current_installment" },
-      is_recurring: { name: "is_recurring" },
-      bank_user_name: { name: "bank_user_name" },
-      category_name: { name: "category_name" },
+      total_installments: { name: "parcelas_totais" },
+      current_installment: { name: "parcela_atual" },
+      is_recurring: { name: "recorrente" },
+      bank_user_name: { name: "nome_cartao" },
+      category_name: { name: "nome_categoria" },
     }),
     []
   );
@@ -41,27 +108,27 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
         total_installments: 1,
         current_installment: 1,
         is_recurring: false,
-        bank_user_name: "Nome da conta (opcional)",
+        bank_user_name: "Nome do cartão (opcional)",
         category_name: "Nome da categoria (opcional)",
       },
     ],
     []
   );
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setFileName("");
     setRows([]);
     setHeaders([]);
     setIsLoading(false);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (isLoading) return;
     resetState();
     onClose?.();
-  };
+  }, [isLoading, resetState, onClose]);
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = useCallback(async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -102,28 +169,53 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
           }
 
           const [headerRow, ...dataRows] = sheetData;
-          const normalizedHeaders = headerRow.map((h) => String(h || "").trim());
+          const originalHeaders = headerRow.map((h) =>
+            String(h || "").trim()
+          );
 
-          if (!normalizedHeaders.includes("title") || !normalizedHeaders.includes("amount") || !normalizedHeaders.includes("type")) {
-            toast.error("O arquivo deve conter pelo menos as colunas: title, amount e type.");
+          // Resolve which API keys the file headers correspond to
+          const resolvedApiKeys = originalHeaders.map(
+            (h) => COLUMN_MAP[normalizeHeaderKey(h)]
+          );
+          const detectedKeys = new Set(resolvedApiKeys.filter(Boolean));
+          const missingRequired = REQUIRED_API_KEYS.filter(
+            (k) => !detectedKeys.has(k)
+          );
+
+          if (missingRequired.length > 0) {
+            const labels = missingRequired.map(
+              (k) => API_KEY_LABELS[k] || k
+            );
+            toast.error(
+              `Colunas obrigatórias não encontradas: ${labels.join(", ")}.`
+            );
             setIsLoading(false);
             return;
           }
 
           const parsedRows = dataRows
-            .filter((row) => row.some((cell) => cell !== null && cell !== undefined && String(cell).trim() !== ""))
+            .filter((row) =>
+              row.some(
+                (cell) =>
+                  cell !== null &&
+                  cell !== undefined &&
+                  String(cell).trim() !== ""
+              )
+            )
             .map((row) => {
               const obj = {};
-              normalizedHeaders.forEach((header, index) => {
+              originalHeaders.forEach((header, index) => {
                 obj[header] = row[index];
               });
               return obj;
             });
 
-          setHeaders(normalizedHeaders);
+          setHeaders(originalHeaders);
           setRows(parsedRows);
           setIsLoading(false);
-          toast.success("Arquivo carregado. Revise os dados antes de confirmar.");
+          toast.success(
+            "Arquivo carregado. Revise os dados antes de confirmar."
+          );
         } catch (error) {
           console.error(error);
           toast.error("Não foi possível ler o arquivo Excel.");
@@ -142,9 +234,9 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
       toast.error("Erro ao processar o arquivo.");
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handleConfirmImport = async () => {
+  const handleConfirmImport = useCallback(async () => {
     if (!rows || rows.length === 0) {
       toast.error("Nenhum dado para importar.");
       return;
@@ -154,8 +246,11 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
     toast.dismiss();
 
     try {
+      // Map display-keyed rows → API-keyed rows before sending
+      const apiRows = rows.map((row) => mapRowToApiKeys(row, headers));
+
       const response = await axios.post(route("transacoes.import"), {
-        rows,
+        rows: apiRows,
       });
 
       const payload = response.data || {};
@@ -180,7 +275,7 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [rows, headers, resetState, onClose, onImported]);
 
   const hasPreview = headers.length > 0 && rows.length > 0;
   const previewRows = hasPreview ? rows.slice(0, 10) : [];
