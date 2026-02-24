@@ -250,7 +250,61 @@ class FaturaDashboardService
         $stats['total_monthly_income'] = $totalMonthlyIncome;
         $stats['remaining_money'] = $remainingMoney;
 
+        $stats['next_card_due_date'] = $this->calculateNextCardDueDateInfo($user, $bankUserId);
+
         return $stats;
+    }
+
+    private function calculateNextCardDueDateInfo(Authenticatable $user, ?int $bankUserId): array
+    {
+        $today = Carbon::today();
+
+        $cardQuery = CardUser::with('card')
+            ->forUser($user->id)
+            ->whereNotNull('due_day')
+            ->whereHas('transacoes', function ($q) {
+                $q->where('type', 'credit')->where('status', '!=', 'paid');
+            });
+
+        if ($bankUserId) {
+            $cardQuery->where('id', $bankUserId);
+        }
+
+        $cards = $cardQuery->get();
+
+        if ($cards->isEmpty()) {
+            return ['cards' => [], 'nearest' => null];
+        }
+
+        $results = $cards->map(function (CardUser $cardUser) use ($today) {
+            $dueDay = (int) $cardUser->due_day;
+
+            $candidateDay = min($dueDay, (int) $today->copy()->endOfMonth()->format('d'));
+            $thisMonthDue = $today->copy()->setDay($candidateDay);
+
+            if ($thisMonthDue->lt($today)) {
+                $nextMonth = $today->copy()->addMonthNoOverflow();
+                $candidateDay = min($dueDay, (int) $nextMonth->endOfMonth()->format('d'));
+                $nextDue = $nextMonth->setDay($candidateDay);
+            } else {
+                $nextDue = $thisMonthDue;
+            }
+
+            $daysUntilDue = (int) $today->diffInDays($nextDue);
+
+            return [
+                'card_id'        => $cardUser->id,
+                'card_name'      => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                'due_day'        => $dueDay,
+                'days_until_due' => $daysUntilDue,
+                'next_due_date'  => $nextDue->toDateString(),
+            ];
+        })->sortBy('days_until_due')->values()->all();
+
+        return [
+            'cards'   => $results,
+            'nearest' => $results[0] ?? null,
+        ];
     }
 
     public function buildDashboardMonthlySummary(

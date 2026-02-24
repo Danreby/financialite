@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import { Head } from '@inertiajs/react'
 import { toast } from 'react-toastify'
+import { CreditCard, ArrowDownLeft, Wallet, Banknote, CalendarClock } from 'lucide-react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import StatCard from '@/Components/system/dashboard/StatCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
@@ -203,24 +204,68 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
         const totalMonthlySpent = currentMonthPendingBill + currentMonthDebitTotal
 
+        const nextDueInfo = statsPayload.next_card_due_date ?? null
+        const nearestDue = nextDueInfo?.nearest ?? null
+
+        const buildDueDateCard = () => {
+          if (!nearestDue) {
+            return {
+              id: 5,
+              title: 'Próximo vencimento',
+              value: '—',
+              delta: 'Nenhum cartão pendente',
+              deltaVariant: 'neutral',
+              icon: CalendarClock,
+            }
+          }
+
+          const days = nearestDue.days_until_due
+          const value =
+            days === 0
+              ? 'Hoje'
+              : days === 1
+              ? 'Amanhã'
+              : `${days} dias`
+
+          const allCards = nextDueInfo?.cards ?? []
+          const delta = allCards.length > 1
+            ? `${nearestDue.card_name} +${allCards.length - 1}`
+            : nearestDue.card_name
+
+          const deltaVariant =
+            days === 0 ? 'danger' : days <= 3 ? 'warning' : 'neutral'
+
+          return {
+            id: 5,
+            title: 'Próximo vencimento',
+            value,
+            delta,
+            deltaVariant,
+            icon: 5,
+          }
+        }
+
         setStats([
           {
             id: 1,
-            title: 'Fatura atual pendente',
+            title: 'Fatura Atual',
             value: formatCurrencyBRL(currentMonthPendingBill),
             delta: currentMonthLabel,
+            icon: 1,
           },
           {
             id: 2,
             title: 'Transações no débito',
             value: formatCurrencyBRL(currentMonthDebitTotal),
             delta: '',
+            icon: 4,
           },
           {
             id: 3,
             title: 'Total Mensal',
             value: formatCurrencyBRL(totalMonthlySpent),
             delta: '',
+            icon: 3,
           },
           {
             id: 4,
@@ -229,15 +274,9 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
             delta: totalMonthlyIncome > 0
               ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
               : 'Sem renda cadastrada',
+            icon: 2,
           },
-          {
-            id: 5,
-            title: 'Dinheiro restante',
-            value: formatCurrencyBRL(remainingMoney),
-            delta: totalMonthlyIncome > 0
-              ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
-              : 'Sem renda cadastrada',
-          },
+          buildDueDateCard(),
         ])
 
         setMonthlySummary(monthlySummaryPayload)
@@ -312,13 +351,15 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           </div>
         </FadeInItem>
 
-        <FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        <FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
           {stats.map((stat) => (
             <FadeInItem key={stat.id} type="feature">
               <StatCard
                 title={stat.title}
                 value={stat.value}
                 delta={stat.delta}
+                icon={stat.icon}
+                deltaVariant={stat.deltaVariant}
               />
             </FadeInItem>
           ))}
