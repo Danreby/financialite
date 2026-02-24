@@ -12,12 +12,13 @@ export default function FaturaImportIntro({ templateRows, templateHeader }) {
           linha com os seguintes nomes:
         </p>
         <p className="rounded-md bg-gray-50 px-3 py-2 text-xs font-mono text-gray-700 dark:bg-gray-900 dark:text-gray-200">
-          Titulo, Descrição, Valor, Tipo, Status, Parcelas Totais, Parcela Atual, Recorrente, Nome do banco, Nome da categoria
+          titulo, descricao, valor, tipo, status, parcelas_totais, parcela_atual, recorrente, nome_cartao, nome_categoria
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Campos de conta e categoria são opcionais, mas quando
-          preenchidos devem usar o <strong>nome exato</strong> das
-          contas e categorias já cadastradas para garantir a
+          Os campos <strong>nome_cartao</strong> e{" "}
+          <strong>nome_categoria</strong> são opcionais, mas quando
+          preenchidos devem usar o <strong>nome exato</strong> dos
+          cartões e categorias já cadastradas para garantir a
           vinculação correta.
         </p>
       </div>
@@ -31,7 +32,7 @@ export default function FaturaImportIntro({ templateRows, templateHeader }) {
             data={templateRows}
             header={templateHeader}
             name="modelo_importacao_faturas"
-            currencyColumns={["amount"]}
+            currencyColumns={["valor"]}
           />
         </div>
         <p className="mt-2 text-[11px] text-gray-700 dark:text-gray-300">

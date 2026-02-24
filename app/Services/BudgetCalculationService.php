@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Transacao;
 use App\Models\Fatura;
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -35,10 +35,10 @@ class BudgetCalculationService
         }
 
         $selectedBankUser = $bankUserId
-            ? BankUser::forUser($user->id)->find($bankUserId)
+            ? CardUser::forUser($user->id)->find($bankUserId)
             : null;
 
-        $allCreditTransactions = Transacao::with(['bankUser.bank', 'category'])
+        $allCreditTransactions = Transacao::with(['bankUser.card', 'category'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->where('type', 'credit')
@@ -259,7 +259,7 @@ class BudgetCalculationService
             ->get()
             ->keyBy('category_id');
 
-        $allCreditTransactions = Transacao::with(['bankUser.bank'])
+        $allCreditTransactions = Transacao::with(['bankUser.card'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->where('type', 'credit')
@@ -303,7 +303,7 @@ class BudgetCalculationService
         Carbon $periodStart,
         Carbon $periodEnd
     ): float {
-        $allCreditTransactions = Transacao::with(['bankUser.bank'])
+        $allCreditTransactions = Transacao::with(['bankUser.card'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->where('type', 'credit')

@@ -48,12 +48,12 @@ class Bank extends Model
 
     public function bankUsers(): HasMany
     {
-        return $this->hasMany(BankUser::class, 'bank_id');
+        return $this->hasMany(CardUser::class, 'bank_id');
     }
 
     public function faturas(): HasManyThrough
     {
-        return $this->hasManyThrough(Fatura::class, BankUser::class, 'bank_id', 'bank_user_id');
+        return $this->hasManyThrough(Fatura::class, CardUser::class, 'bank_id', 'bank_user_id');
     }
 
     public function belongsToUser(int $userId): bool

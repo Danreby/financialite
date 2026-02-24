@@ -62,7 +62,7 @@ class Transacao extends Model
 
     public function bankUser(): BelongsTo
     {
-        return $this->belongsTo(BankUser::class, 'bank_user_id');
+        return $this->belongsTo(CardUser::class, 'bank_user_id');
     }
 
     public function category(): BelongsTo
@@ -83,7 +83,7 @@ class Transacao extends Model
 
     public function getBankAttribute()
     {
-        return $this->bankUser?->bank;
+        return $this->bankUser?->card;
     }
 
     public function scopeForUser(Builder $query, int $userId): Builder

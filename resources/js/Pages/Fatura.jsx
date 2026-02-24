@@ -158,7 +158,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 		toast.dismiss();
 
 		try {
-			await axios.patch(route('banks.update-due-day', selectedAccount.id), {
+			await axios.patch(route('cards.update-due-day', selectedAccount.id), {
 				due_day: parsed,
 			});
 
@@ -270,6 +270,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 									{...selectedGroup}
 									month_key={selectedGroup.month_key}
 									bankUserId={selectedBankId || null}
+									bankAccounts={bankAccounts}
 									due_day={selectedAccount?.due_day ?? null}
 									onPaid={handlePaidMonth}
 									isCurrentPending={

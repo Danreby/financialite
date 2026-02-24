@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -195,7 +196,7 @@ class FaturaBillingService
                         'current_installment' => $fatura->current_installment,
                         'display_installment' => $this->resolveInstallmentNumberForMonth($fatura, $entry['month_key']),
                         'is_recurring' => (bool) $fatura->is_recurring,
-                        'bank_name' => optional($fatura->bankUser->bank ?? null)->name ?? null,
+                        'bank_name' => optional($fatura->bankUser->card ?? null)->name ?? null,
                         'category_id' => $fatura->category_id ?? null,
                         'category_name' => $fatura->category->name ?? null,
                         'category_icon' => $fatura->category->icon ?? null,

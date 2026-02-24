@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 
 const STAT_ITEMS = [
   { key: 'member_since', label: 'Membro desde', icon: '📅', format: (v) => v || '—' },
-  { key: 'banks_count', label: 'Bancos', icon: '🏦', format: (v) => String(v ?? 0) },
+  { key: 'cards_count', label: 'Cartões', icon: '💳', format: (v) => String(v ?? 0) },
   { key: 'categories_count', label: 'Categorias', icon: '📂', format: (v) => String(v ?? 0) },
   { key: 'incomes_count', label: 'Rendas', icon: '💵', format: (v) => String(v ?? 0) },
   { key: 'transactions_count', label: 'Transações', icon: '💳', format: (v) => String(v ?? 0) },

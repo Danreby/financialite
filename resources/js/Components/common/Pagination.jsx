@@ -15,11 +15,11 @@ function decodeHtmlEntities(html) {
     .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(code))
 }
 
-export default function Pagination({ links = [] }) {
+export default function Pagination({ links = [], className = '' }) {
   if (!links || links.length <= 1) return null
 
   return (
-    <nav className="mt-4 flex justify-center" aria-label="Navegação de páginas">
+    <nav className={`mt-4 flex justify-center ${className}`} aria-label="Navegação de páginas">
       <ul className="inline-flex items-center gap-1 text-xs">
         {links.map((link, index) => {
           const key = `${link.label ?? index}-${index}`

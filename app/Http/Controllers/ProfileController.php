@@ -28,12 +28,12 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $bankAccounts = \App\Models\BankUser::with('bank')
+        $bankAccounts = \App\Models\CardUser::with('card')
             ->forUser($user->id)
             ->get()
-            ->map(fn ($bu) => [
-                'id'   => $bu->id,
-                'name' => $bu->bank?->name ?? ('Conta #' . $bu->id),
+            ->map(fn ($cu) => [
+                'id'   => $cu->id,
+                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
             ]);
 
         $incomes = $this->incomeService->listForUser($user->id)
@@ -48,7 +48,7 @@ class ProfileController extends Controller
                 'payment_day_value' => $income->payment_day_value,
                 'payment_day_label' => $income->payment_day_label,
                 'is_active'         => $income->is_active,
-                'bank_name'         => optional($income->bankUser?->bank)->name,
+                'bank_name'         => optional($income->bankUser?->card)->name,
                 'bank_user_id'      => $income->bank_user_id,
             ]);
 

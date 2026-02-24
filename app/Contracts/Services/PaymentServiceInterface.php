@@ -2,7 +2,7 @@
 
 namespace App\Contracts\Services;
 
-use App\Models\BankUser;
+use App\Models\CardUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 interface PaymentServiceInterface
@@ -10,7 +10,7 @@ interface PaymentServiceInterface
     public function payMonthForUser(
         Authenticatable $user,
         string $monthKey,
-        ?BankUser $bankUser
+        ?CardUser $cardUser
     ): PaymentResult;
 }
 

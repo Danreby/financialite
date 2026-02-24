@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Fatura;
 use App\Models\Income;
@@ -24,10 +24,10 @@ class FaturaDashboardService
         $selectedBankUser = null;
 
         if ($bankUserId) {
-            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
+            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
-        $baseQuery = Transacao::with(['bankUser.bank', 'user', 'category'])
+        $baseQuery = Transacao::with(['bankUser.card', 'user', 'category'])
             ->withCount('anexos')
             ->forUser($user->id)
             ->filter($filters)
@@ -50,14 +50,14 @@ class FaturaDashboardService
         $effective = $this->billing->resolveEffectiveGroup($monthlyGroups, $currentMonthKey);
         $effectiveMonthKey = $effective['month_key'];
 
-        $bankAccounts = BankUser::with('bank')
+        $bankAccounts = CardUser::with('card')
             ->forUser($user->id)
             ->get()
-            ->map(function ($bankUser) {
+            ->map(function ($cardUser) {
                 return [
-                    'id' => $bankUser->id,
-                    'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
-                    'due_day' => $bankUser->due_day,
+                    'id' => $cardUser->id,
+                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                    'due_day' => $cardUser->due_day,
                 ];
             });
 
@@ -79,7 +79,7 @@ class FaturaDashboardService
         $selectedBankUser = null;
 
         if ($bankUserId) {
-            $selectedBankUser = BankUser::forUser($user->id)->findOrFail($bankUserId);
+            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $base = Transacao::forUser($user->id)

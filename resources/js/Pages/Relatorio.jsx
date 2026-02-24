@@ -9,6 +9,8 @@ import ReportsMonthlySummary from "@/Components/system/reports/ReportsMonthlySum
 import ReportsPeriodSelector from "@/Components/system/reports/ReportsPeriodSelector";
 import ReportsPeriodModal from "@/Components/system/reports/ReportsPeriodModal";
 import ReportsInsightsBar from "@/Components/system/reports/ReportsInsightsBar";
+import ReportsCategoryBreakdown from "@/Components/system/reports/ReportsCategoryBreakdown";
+import ReportsCardBreakdown from "@/Components/system/reports/ReportsCardBreakdown";
 import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
 import { formatCurrencyBRL } from "@/Lib/formatters";
 import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer";
@@ -30,6 +32,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 	const [selectedTransaction, setSelectedTransaction] = useState(null);
 	const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [allTransactions, setAllTransactions] = useState([]);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -71,7 +74,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 						...item,
 						period_key: periodKey,
 						period_label: periodLabel,
-						bank_name: item.bank_user?.bank?.name || "Sem banco",
+						bank_name: item.bank_user?.card?.name || "Sem cartão",
 						category_name: item.category?.name || "Sem categoria",
 						category_icon: item.category?.icon || null,
 						category_color: item.category?.color || null,
@@ -112,6 +115,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				const sortedGroups = Object.values(grouped).sort((a, b) => (a.key || "").localeCompare(b.key || ""));
 
 				setPeriodGroups(sortedGroups);
+				setAllTransactions(normalized);
 				setMonthlySummary(
 					sortedGroups.map((group) => ({
 						year_month: group.key,
@@ -158,13 +162,24 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		const averageTicket = totalCount > 0 ? totalAmount / totalCount : 0;
 		const topExpense = [...periodGroups].sort((a, b) => (b.total_amount || 0) - (a.total_amount || 0))[0];
 
+		const savingsRate = totalMonthlyIncome > 0
+			? ((totalMonthlyIncome - (stats.total_expenses || 0)) / totalMonthlyIncome) * 100
+			: 0;
+
+		const monthlyAvg = periodGroups.length > 0
+			? totalAmount / periodGroups.length
+			: 0;
+
 		return {
 			netBalance: (stats.total_income || 0) - (stats.total_expenses || 0),
 			averageTicket,
 			topExpenseLabel: topExpense?.label || "",
 			topExpenseValue: topExpense?.total_amount || 0,
+			savingsRate: Math.max(savingsRate, 0),
+			monthlyAvg,
+			totalTransactions: totalCount,
 		};
-	}, [periodGroups, stats.total_expenses, stats.total_income]);
+	}, [periodGroups, stats.total_expenses, stats.total_income, totalMonthlyIncome]);
 
 	const handleOpenPeriodModal = (key) => {
 		const resolved = key || selectedPeriodKey || periodGroups[periodGroups.length - 1]?.key || "";
@@ -192,7 +207,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							Relatórios
 						</h1>
 						<p className="text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-4xl">
-							Acompanhe todas as suas transações em faturas, veja um resumo financeiro por período, filtre por conta e categoria e exporte um arquivo Excel completo.
+							Acompanhe todas as suas transações em faturas, veja um resumo financeiro por período, filtre por cartão e categoria e exporte um arquivo Excel completo.
 						</p>
 					</header>
 				</FadeInItem>
@@ -201,12 +216,16 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 					<div className="flex flex-col gap-2 text-xs sm:text-sm sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
 							<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+								<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
+									💳 Cartão
+								</label>
 								<select
 									value={selectedBankId}
 									onChange={(e) => setSelectedBankId(e.target.value)}
 									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
+									aria-label="Filtrar por cartão"
 								>
-									<option value="">Todos</option>
+									<option value="">Todos os cartões</option>
 									{bankAccounts.map((account) => (
 										<option key={account.id} value={account.id}>
 											{account.name}
@@ -216,12 +235,16 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							</div>
 
 							<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+								<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
+									📂 Categoria
+								</label>
 								<select
 									value={selectedCategoryId}
 									onChange={(e) => setSelectedCategoryId(e.target.value)}
 									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
+									aria-label="Filtrar por categoria"
 								>
-									<option value="">Todas</option>
+									<option value="">Todas as categorias</option>
 									{categories.map((category) => (
 										<option key={category.id} value={category.id}>
 											{category.name}
@@ -288,7 +311,20 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				</FadeInItem>
 			</FadeInContainer>
 
-			<FadeInItem type="subtle">				<section className="space-y-3">
+			{/* Category & Card Breakdowns */}
+			{!isLoading && allTransactions.length > 0 && (
+				<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+					<FadeInItem type="feature">
+						<ReportsCategoryBreakdown transactions={allTransactions} />
+					</FadeInItem>
+					<FadeInItem type="feature">
+						<ReportsCardBreakdown transactions={allTransactions} />
+					</FadeInItem>
+				</FadeInContainer>
+			)}
+
+			<FadeInItem type="subtle">
+				<section className="space-y-3">
 					<div className="flex items-center justify-between gap-2">
 						<h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
 							Resumo por mês / ano

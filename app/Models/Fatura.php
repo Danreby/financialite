@@ -43,7 +43,7 @@ class Fatura extends Model
 
     public function bankUser(): BelongsTo
     {
-        return $this->belongsTo(BankUser::class);
+        return $this->belongsTo(CardUser::class);
     }
 
     public function transacoes(): BelongsToMany

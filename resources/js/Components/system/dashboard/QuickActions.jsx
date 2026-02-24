@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import FaturaForm from '@/Components/system/FaturaForm';
-import BankForm from '@/Components/system/BankForm';
+import CardForm from '@/Components/system/CardForm';
 import CategoryForm from '@/Components/system/CategoryForm';
 import FaturaImportModal from '@/Components/system/fatura/import/FaturaImportModal';
 
 export default function QuickActions({ bankAccounts = [], categories = [] }) {
   const [showFaturaForm, setShowFaturaForm] = useState(false);
-  const [showBankForm, setShowBankForm] = useState(false);
+  const [showCardForm, setShowCardForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [localBankAccounts, setLocalBankAccounts] = useState(bankAccounts);
@@ -51,10 +51,10 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
     },
     {
       icon: '🏦',
-      title: 'Adicionar Banco',
-      description: 'Cadastrar nova conta',
+      title: 'Adicionar Cartão',
+      description: 'Cadastrar novo cartão',
       useThemeColors: true,
-      onClick: () => setShowBankForm(true),
+      onClick: () => setShowCardForm(true),
     },
     {
       icon: '🏷️',
@@ -140,17 +140,17 @@ export default function QuickActions({ bankAccounts = [], categories = [] }) {
         categories={localCategories}
       />
 
-      <BankForm
-        isOpen={showBankForm}
-        onClose={() => setShowBankForm(false)}
-        onSuccess={(bankUser) => {
-          if (!bankUser || !bankUser.id) return;
-          const name = bankUser.bank?.name || `Conta #${bankUser.id}`;
+      <CardForm
+        isOpen={showCardForm}
+        onClose={() => setShowCardForm(false)}
+        onSuccess={(cardUser) => {
+          if (!cardUser || !cardUser.id) return;
+          const name = cardUser.card?.name || `Cartão #${cardUser.id}`;
           setLocalBankAccounts((prev) => {
-            if (prev.some((acc) => acc.id === bankUser.id)) {
+            if (prev.some((acc) => acc.id === cardUser.id)) {
               return prev;
             }
-            return [...prev, { id: bankUser.id, name }];
+            return [...prev, { id: cardUser.id, name }];
           });
         }}
       />

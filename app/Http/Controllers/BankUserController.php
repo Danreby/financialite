@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BankUser\BankUserStoreRequest;
 use App\Models\Bank;
 use App\Models\BankUser;
+use App\Models\CardUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -18,11 +19,11 @@ class BankUserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', BankUser::class);
+        $this->authorize('viewAny', CardUser::class);
 
         $user = $request->user();
 
-        $bankUsers = BankUser::with('bank')
+        $bankUsers = CardUser::with('bank')
             ->forUser($user->id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -34,7 +35,7 @@ class BankUserController extends Controller
     {
         $user = $request->user();
 
-        $bankUser = BankUser::with('bank')
+        $bankUser = CardUser::with('bank')
             ->forUser($user->id)
             ->findOrFail($id);
 
@@ -45,13 +46,13 @@ class BankUserController extends Controller
 
     public function store(BankUserStoreRequest $request): JsonResponse
     {
-        $this->authorize('create', BankUser::class);
+        $this->authorize('create', CardUser::class);
 
         $user = $request->user();
 
         $data = $this->normalizeInsertData($request->validated());
 
-        $existing = BankUser::forUser($user->id)
+        $existing = CardUser::forUser($user->id)
             ->where('bank_id', $data['bank_id'])
             ->first();
 
@@ -60,7 +61,7 @@ class BankUserController extends Controller
         }
 
         $bankUser = DB::transaction(function () use ($data, $user) {
-            return BankUser::create([
+            return CardUser::create([
                 'user_id' => $user->id,
                 'bank_id' => $data['bank_id'],
             ]);
@@ -75,7 +76,7 @@ class BankUserController extends Controller
     {
         $user = $request->user();
 
-        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
+        $bankUser = CardUser::forUser($user->id)->findOrFail($id);
 
         $this->authorize('delete', $bankUser);
 
@@ -88,18 +89,18 @@ class BankUserController extends Controller
 
     public function stats(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', BankUser::class);
+        $this->authorize('viewAny', CardUser::class);
 
         $user = $request->user();
 
-        $stats = BankUser::with('bank')
+        $stats = CardUser::with('bank')
             ->forUser($user->id)
             ->get()
             ->map(function ($bankUser) {
                 return [
                     'bank_user_id' => $bankUser->id,
                     'bank_id' => $bankUser->bank_id,
-                    'bank_name' => $bankUser->bank->name,
+                    'bank_name' => $bankUser->card->name,
                     'total_faturas' => $bankUser->transacoes()->count(),
                     'paid_faturas' => $bankUser->transacoes()->where('status', 'paid')->count(),
                     'unpaid_faturas' => $bankUser->transacoes()->where('status', 'unpaid')->count(),

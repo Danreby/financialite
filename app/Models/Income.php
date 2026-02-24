@@ -61,7 +61,7 @@ class Income extends Model
 
     public function bankUser(): BelongsTo
     {
-        return $this->belongsTo(BankUser::class, 'bank_user_id');
+        return $this->belongsTo(CardUser::class, 'bank_user_id');
     }
 
     public function scopeForUser(Builder $query, int $userId): Builder

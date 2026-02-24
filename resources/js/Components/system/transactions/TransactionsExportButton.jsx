@@ -61,7 +61,7 @@ export default function TransactionsExportButton({ filters = {}, detailed = fals
       total_installments: { name: "Parcelas Totais" },
       current_installment: { name: "Parcela Atual" },
       is_recurring: { name: "Recorrente" },
-      "bank_user.bank.name": { name: "Banco" },
+      "bank_user.card.name": { name: "Cartão" },
       "category.name": { name: "Categoria" },
     }),
     [],

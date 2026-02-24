@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\BankController;
+use App\Http\Controllers\CardController;
 use App\Http\Controllers\TransacaoController;
 use App\Http\Controllers\NotificationController;
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Transacao;
 use Illuminate\Foundation\Application;
@@ -21,14 +21,14 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $user = request()->user();
 
-    $bankAccounts = BankUser::with('bank')
+    $bankAccounts = CardUser::with('card')
         ->forUser($user->id)
         ->get()
-        ->map(function ($bankUser) {
+        ->map(function ($cardUser) {
             return [
-                'id' => $bankUser->id,
-                'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
-                'due_day' => $bankUser->due_day,
+                'id' => $cardUser->id,
+                'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                'due_day' => $cardUser->due_day,
             ];
         });
 
@@ -50,16 +50,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/accounts', function () {
             $user = request()->user();
 
-            $bankAccounts = BankUser::with('bank')
+            $bankAccounts = CardUser::with('card')
                 ->forUser($user->id)
                 ->orderBy('id')
                 ->paginate(10, ['*'], 'accounts_page')
-                ->through(function ($bankUser) {
+                ->through(function ($cardUser) {
                     return [
-                        'id' => $bankUser->id,
-                        'bank_id' => $bankUser->bank_id,
-                        'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
-                        'due_day' => $bankUser->due_day,
+                        'id' => $cardUser->id,
+                        'card_id' => $cardUser->card_id,
+                        'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                        'due_day' => $cardUser->due_day,
                     ];
                 });
 
@@ -67,7 +67,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->orderBy('name')
                 ->paginate(5, ['id', 'name', 'icon', 'color'], 'categories_page');
 
-            return Inertia::render('Conta', [
+            return Inertia::render('Cartoes', [
                 'bankAccounts' => $bankAccounts,
                 'categories' => $categories,
             ]);
@@ -76,16 +76,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])
         ->name('transactions.index');
 
+    Route::get('/contas', function () {
+        $user = request()->user();
+
+        $bills = \App\Models\Bill::forUser($user->id)
+            ->with(['category:id,name,color,icon'])
+            ->orderBy('due_day')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $categories = Category::forUser($user->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon', 'color']);
+
+        return Inertia::render('Contas', [
+            'bills' => $bills,
+            'categories' => $categories,
+        ]);
+    })->name('contas.index');
+
     Route::get('/reports', function () {
         $user = request()->user();
 
-        $bankAccounts = BankUser::with('bank')
+        $bankAccounts = CardUser::with('card')
             ->forUser($user->id)
             ->get()
-            ->map(function ($bankUser) {
+            ->map(function ($cardUser) {
                 return [
-                    'id' => $bankUser->id,
-                    'name' => $bankUser->bank?->name ?? ('Conta #' . $bankUser->id),
+                    'id' => $cardUser->id,
+                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
                 ];
             });
 
@@ -103,7 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'type'       => $income->type,
                 'type_label' => $income->type_label,
                 'is_active'  => $income->is_active,
-                'bank_name'  => optional($income->bankUser?->bank)->name,
+                'bank_name'  => optional($income->bankUser?->card)->name,
             ]);
 
         return Inertia::render('Relatorio', [
@@ -139,10 +158,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return response()->json(['theme' => $theme]);
     })->name('settings.theme');
 
-    Route::get('/banks/list', [BankController::class, 'list'])->name('banks.list');
-    Route::post('/banks/attach', [BankController::class, 'attachToUser'])->name('banks.attach');
-    Route::patch('/banks/user/{bankUser}/due-day', [BankController::class, 'updateDueDay'])
-        ->name('banks.update-due-day');
+    Route::get('/cards/list', [CardController::class, 'list'])->name('cards.list');
+    Route::post('/cards/attach', [CardController::class, 'attachToUser'])->name('cards.attach');
+    Route::patch('/cards/user/{cardUser}/due-day', [CardController::class, 'updateDueDay'])
+        ->name('cards.update-due-day');
+    Route::delete('/cards/{card}', [CardController::class, 'destroy'])->name('cards.destroy');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])

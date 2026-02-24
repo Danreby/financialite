@@ -16,6 +16,7 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            phone: user.phone || '',
         });
 
     const submit = (e) => {
@@ -87,6 +88,32 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.email} />
+                </div>
+
+                <div>
+                    <FloatLabelField
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        label="Telefone (opcional)"
+                        value={data.phone}
+                        onChange={(e) => {
+                            const raw = e.target.value.replace(/[^\d]/g, '').slice(0, 11);
+                            let formatted = raw;
+                            if (raw.length > 6) {
+                                formatted = `(${raw.slice(0, 2)}) ${raw.slice(2, 7)}-${raw.slice(7)}`;
+                            } else if (raw.length > 2) {
+                                formatted = `(${raw.slice(0, 2)}) ${raw.slice(2)}`;
+                            } else if (raw.length > 0) {
+                                formatted = `(${raw}`;
+                            }
+                            setData('phone', formatted);
+                        }}
+                        error={errors.phone}
+                        inputProps={{ autoComplete: 'tel' }}
+                    />
+
+                    <InputError className="mt-2" message={errors.phone} />
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (

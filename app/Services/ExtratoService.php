@@ -62,7 +62,7 @@ class ExtratoService implements ExtratoServiceInterface
         ?string $type,
         ?int $categoryId
     ): \Illuminate\Support\Collection {
-        return Transacao::with(['bankUser.bank', 'category'])
+        return Transacao::with(['bankUser.card', 'category'])
             ->forUser($userId)
             ->forBankUser($bankUserId)
             ->when($type && in_array($type, Transacao::VALID_TYPES, true), fn ($q) => $q->where('type', $type))
@@ -78,7 +78,7 @@ class ExtratoService implements ExtratoServiceInterface
         return Income::forUser($userId)
             ->active()
             ->forBankUser($bankUserId)
-            ->with('bankUser.bank')
+            ->with('bankUser.card')
             ->orderBy('title')
             ->get()
             ->map(fn (Income $income) => [
@@ -92,7 +92,7 @@ class ExtratoService implements ExtratoServiceInterface
                 'payment_day_value' => $income->payment_day_value,
                 'payment_day_label' => $income->payment_day_label,
                 'is_active'         => $income->is_active,
-                'bank_name'         => optional($income->bankUser?->bank)->name,
+                'bank_name'         => optional($income->bankUser?->card)->name,
             ]);
     }
 
@@ -115,7 +115,7 @@ class ExtratoService implements ExtratoServiceInterface
             'current_installment' => $t->current_installment,
             'created_at'          => $t->created_at?->toIso8601String(),
             'paid_date'           => $t->paid_date?->toIso8601String(),
-            'bank_name'           => optional($t->bankUser?->bank)->name,
+            'bank_name'           => optional($t->bankUser?->card)->name,
             'category_name'       => optional($t->category)->name,
             'category_icon'       => optional($t->category)->icon,
             'category_color'      => optional($t->category)->color,

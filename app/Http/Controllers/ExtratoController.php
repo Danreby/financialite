@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Services\ExtratoServiceInterface;
-use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,12 +22,12 @@ class ExtratoController extends Controller
     {
         $user = $request->user();
 
-        $bankAccounts = BankUser::with('bank')
+        $bankAccounts = CardUser::with('card')
             ->forUser($user->id)
             ->get()
-            ->map(fn ($bu) => [
-                'id'   => $bu->id,
-                'name' => $bu->bank?->name ?? ('Conta #' . $bu->id),
+            ->map(fn ($cu) => [
+                'id'   => $cu->id,
+                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
             ]);
 
         $categories = Category::forUser($user->id)
@@ -53,7 +53,7 @@ class ExtratoController extends Controller
         $user = $request->user();
 
         if ($request->filled('bank_user_id')) {
-            BankUser::forUser($user->id)->findOrFail($request->input('bank_user_id'));
+            CardUser::forUser($user->id)->findOrFail($request->input('bank_user_id'));
         }
 
         if ($request->filled('category_id')) {
