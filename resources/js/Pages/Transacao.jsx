@@ -146,9 +146,9 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 						<h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
 							Transações
 						</h1>
-						<p className="text-xs sm:text-sm lg:text-sm text-gray-600 dark:text-gray-300">
+						{/* <p className="text-xs sm:text-sm lg:text-sm text-gray-600 dark:text-gray-300">
 							Visualize, edite ou remova transações que ainda não foram pagas.
-						</p>
+						</p> */}
 					</header>
 				</FadeInItem>
 
