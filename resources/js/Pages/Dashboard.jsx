@@ -336,7 +336,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
                 recentFaturas.slice(0, 5).map((fatura) => {
                   const isDebit = fatura.type === 'debit'
                   const labelDate = formatDateLabel(fatura.created_at)
-                  const bankName = fatura.bank_user?.bank?.name
+                  const bankName = fatura.bank_user?.card?.name
                   const category = fatura.category
                   const categoryName = category?.name
                   const categoryIcon = category?.icon

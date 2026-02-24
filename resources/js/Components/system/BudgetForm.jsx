@@ -278,7 +278,7 @@ export default function BudgetForm({
                       </label>
                       <input
                         type="number"
-                        defaultValue={categoryLimit.limit}
+                        value={categoryLimit.limit}
                         onChange={(e) => handleCategoryLimitChange(index, 'limit', e.target.value)}
                         placeholder="R$ 0,00"
                         step="0.01"
