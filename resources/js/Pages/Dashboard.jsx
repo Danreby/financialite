@@ -237,7 +237,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
 
           return {
             id: 5,
-            title: 'Próximo vencimento',
+            title: 'Próximo vencimento em',
             value,
             delta,
             deltaVariant,
@@ -265,7 +265,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
             title: 'Total Mensal',
             value: formatCurrencyBRL(totalMonthlySpent),
             delta: '',
-            icon: 3,
+            icon: 2,
           },
           {
             id: 4,
@@ -274,7 +274,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
             delta: totalMonthlyIncome > 0
               ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
               : 'Sem renda cadastrada',
-            icon: 2,
+            icon: 3,
           },
           buildDueDateCard(),
         ])
@@ -366,6 +366,14 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         </FadeInContainer>
 
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+          <FadeInItem>
+            <QuickActions
+              bankAccounts={bankAccounts}
+              categories={categories}
+              onTransactionCreated={() => setReloadKey((prev) => prev + 1)}
+            />
+          </FadeInItem>
+          
           <FadeInItem className="lg:col-span-2 themed-card rounded-2xl p-4 overflow-hidden">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
@@ -429,14 +437,6 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
                 </p>
               )}
             </ScrollArea>
-          </FadeInItem>
-
-          <FadeInItem>
-            <QuickActions
-              bankAccounts={bankAccounts}
-              categories={categories}
-              onTransactionCreated={() => setReloadKey((prev) => prev + 1)}
-            />
           </FadeInItem>
         </FadeInContainer>
 
