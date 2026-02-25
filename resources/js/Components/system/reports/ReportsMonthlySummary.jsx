@@ -23,7 +23,7 @@ export default function ReportsMonthlySummary({ items = [], onSelectPeriod }) {
         Resumo por mês / ano
       </h2>
       <div className="overflow-x-auto">
-        <div className="max-h-[320px] md:max-h-[360px] lg:max-h-[400px] 2xl:max-h-[400px] overflow-y-auto">
+        <div className="max-h-[320px] md:max-h-[360px] lg:max-h-[400px] 2xl:max-h-[400px] overflow-y-auto scrollbar-custom">
           <table className="min-w-full text-xs sm:text-sm">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-800 text-[11px] sm:text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">

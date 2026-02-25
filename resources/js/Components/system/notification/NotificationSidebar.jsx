@@ -102,7 +102,7 @@ export default function NotificationSidebar({ open, onClose }) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 text-lg text-gray-800 dark:text-gray-100">
+        <div className="flex-1 overflow-y-auto scrollbar-custom px-4 py-3 space-y-2 text-lg text-gray-800 dark:text-gray-100">
           {(!notifications || notifications.length === 0) && (
             <p className="text-lg text-gray-500 dark:text-gray-400">Nenhuma notificação por enquanto.</p>
           )}

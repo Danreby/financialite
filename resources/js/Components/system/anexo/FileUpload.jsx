@@ -266,7 +266,7 @@ export default function FileUpload({
                             </button>
                         </div>
 
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                        <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-custom">
                             {selectedFiles.map((item) => (
                                 <motion.div
                                     key={item.id}

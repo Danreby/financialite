@@ -48,7 +48,7 @@ export default function ExtratoCategoryBreakdown({ transactions = [] }) {
         </span>
       </div>
 
-      <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+      <div className="space-y-2.5 max-h-[320px] overflow-y-auto scrollbar-custom pr-1">
         {breakdown.map((item) => {
           const pct = totalAll > 0 ? ((item.total / totalAll) * 100).toFixed(1) : '0.0'
           return (

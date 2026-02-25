@@ -340,7 +340,7 @@ export default function CompactFileUpload({
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="space-y-1 p-1 sm:p-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg max-h-24 sm:max-h-40 overflow-y-auto">
+                        <div className="space-y-1 p-1 sm:p-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg max-h-24 sm:max-h-40 overflow-y-auto scrollbar-custom">
                             {selectedFiles.map((item) => (
                                 <motion.div
                                     key={item.id}

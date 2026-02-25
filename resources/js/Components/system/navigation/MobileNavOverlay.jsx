@@ -81,7 +81,7 @@ export default function MobileNavOverlay({ isOpen, onClose, user }) {
           </div>
 
           <motion.nav
-            className="flex-1 overflow-y-auto px-4 py-6 flex flex-col items-center justify-center space-y-3"
+            className="flex-1 overflow-y-auto scrollbar-custom px-4 py-6 flex flex-col items-center justify-center space-y-3"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}

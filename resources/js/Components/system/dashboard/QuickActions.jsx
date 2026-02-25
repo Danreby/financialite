@@ -91,7 +91,7 @@ export default function QuickActions({ bankAccounts = [], categories = [], onTra
       <div className="rounded-2xl themed-card p-4">
         <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-4 dark:text-gray-100">Ações rápidas</h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto scrollbar-custom pr-1">
           {actions.map((action, index) => (
             <button
               key={index}

@@ -124,7 +124,7 @@ export default function AnexoSection({
                 <div className="space-y-2 sm:space-y-3">
                     {anexos.length > 0 && (
                         <>
-                            <div className="max-h-[200px] sm:max-h-[300px] md:max-h-[400px] overflow-y-auto">
+                            <div className="max-h-[200px] sm:max-h-[300px] md:max-h-[400px] overflow-y-auto scrollbar-custom">
                                 <AnexoList
                                     anexos={anexos}
                                     loading={loading}

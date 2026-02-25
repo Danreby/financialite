@@ -243,7 +243,7 @@ export default function BudgetForm({
               </p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-custom pr-1">
               {categoryLimits.map((categoryLimit, index) => (
                   <div 
                     key={categoryLimit._uid}

@@ -173,7 +173,7 @@ export default function IconPicker({ value, onChange, label = 'Ícone', classNam
                 </div>
               )}
 
-              <div className="p-4 max-h-80 overflow-y-auto scrollbar-thin">
+              <div className="p-4 max-h-80 overflow-y-auto scrollbar-custom">
                 {filteredIcons && filteredIcons.length > 0 ? (
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     {filteredIcons.map((icon) => (

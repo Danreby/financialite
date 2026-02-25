@@ -197,7 +197,7 @@ export default function Modal({
                             </div>
                         )}
 
-                        <div className="px-2.5 py-3 sm:px-4 sm:py-5 md:p-6 overflow-y-auto flex-1">{children}</div>
+                        <div className="px-2.5 py-3 sm:px-4 sm:py-5 md:p-6 overflow-y-auto scrollbar-custom flex-1">{children}</div>
                     </motion.div>
                 </motion.div>
             )}

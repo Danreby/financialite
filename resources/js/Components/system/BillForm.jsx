@@ -243,7 +243,7 @@ export default function BillForm({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Ícone
                 </label>
-                <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 max-h-48 overflow-y-auto p-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg">
+                <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 max-h-48 overflow-y-auto scrollbar-custom p-2 bg-gray-50 dark:bg-gray-900/30 rounded-lg">
                 {AVAILABLE_ICONS.map((iconItem) => (
                     <button
                     key={iconItem.name}

@@ -96,7 +96,7 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
       </div>
 
       {budgets.length > 0 && (
-        <div className="flex-1 space-y-3 sm:space-y-4 overflow-y-auto">
+        <div className="flex-1 space-y-3 sm:space-y-4 overflow-y-auto scrollbar-custom">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
             Por Categoria
           </div>
