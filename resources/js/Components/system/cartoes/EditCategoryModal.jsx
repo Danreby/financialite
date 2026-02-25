@@ -3,6 +3,11 @@ import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 import { AVAILABLE_ICONS, AVAILABLE_COLORS } from '@/Utils/categoryIcons';
 
+const TYPE_OPTIONS = [
+	{ value: 'expense', label: 'Despesa', emoji: '📉' },
+	{ value: 'income', label: 'Receita', emoji: '📈' },
+];
+
 export default function EditCategoryModal({
 	isOpen,
 	onClose,
@@ -12,6 +17,8 @@ export default function EditCategoryModal({
 	onIconChange,
 	colorInput,
 	onColorChange,
+	typeInput,
+	onTypeChange,
 	onSubmit,
 	saving,
 }) {
@@ -30,6 +37,28 @@ export default function EditCategoryModal({
 						placeholder="Ex: Mercado, Lazer, Shopping"
 						autoFocus
 					/>
+				</div>
+
+				<div>
+					<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+						Tipo
+					</label>
+					<div className="flex gap-2">
+						{TYPE_OPTIONS.map((opt) => (
+							<button
+								key={opt.value}
+								type="button"
+								onClick={() => onTypeChange?.(opt.value)}
+								className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-medium transition-all ${
+									typeInput === opt.value
+										? 'themed-selected border-theme-accent'
+										: 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f] dark:hover:border-gray-600'
+								}`}
+							>
+								<span>{opt.emoji}</span> {opt.label}
+							</button>
+						))}
+					</div>
 				</div>
 
 				<div className="space-y-4">

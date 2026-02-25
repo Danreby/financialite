@@ -31,11 +31,13 @@ export default function Categorias({ categories }) {
 	const [categoryNameInput, setCategoryNameInput] = useState('');
 	const [categoryIconInput, setCategoryIconInput] = useState(null);
 	const [categoryColorInput, setCategoryColorInput] = useState(null);
+	const [categoryTypeInput, setCategoryTypeInput] = useState('expense');
 
 	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 	const [confirmTarget, setConfirmTarget] = useState({ type: null, id: null, name: '' });
 
 	const [searchQuery, setSearchQuery] = useState('');
+	const [typeFilter, setTypeFilter] = useState('all');
 
 	useEffect(() => {
 		const next = Array.isArray(categories?.data)
@@ -47,10 +49,19 @@ export default function Categorias({ categories }) {
 	}, [categories]);
 
 	const filteredCategories = useMemo(() => {
-		if (!searchQuery.trim()) return localCategories;
-		const q = searchQuery.toLowerCase();
-		return localCategories.filter((cat) => cat.name?.toLowerCase().includes(q));
-	}, [localCategories, searchQuery]);
+		let filtered = localCategories;
+		if (typeFilter !== 'all') {
+			filtered = filtered.filter((cat) => cat.type === typeFilter);
+		}
+		if (searchQuery.trim()) {
+			const q = searchQuery.toLowerCase();
+			filtered = filtered.filter((cat) => cat.name?.toLowerCase().includes(q));
+		}
+		return filtered;
+	}, [localCategories, searchQuery, typeFilter]);
+
+	const incomeCount = useMemo(() => localCategories.filter((c) => c.type === 'income').length, [localCategories]);
+	const expenseCount = useMemo(() => localCategories.filter((c) => c.type === 'expense').length, [localCategories]);
 
 	const iconDistribution = useMemo(() => {
 		const counts = {};
@@ -66,6 +77,7 @@ export default function Categorias({ categories }) {
 		setCategoryNameInput(category.name || '');
 		setCategoryIconInput(category.icon || null);
 		setCategoryColorInput(category.color || null);
+		setCategoryTypeInput(category.type || 'expense');
 		setIsEditCategoryModalOpen(true);
 	};
 
@@ -81,7 +93,7 @@ export default function Categorias({ categories }) {
 
 		setSaving(true);
 		try {
-			const payload = { name };
+			const payload = { name, type: categoryTypeInput };
 			if (categoryIconInput) payload.icon = categoryIconInput;
 			if (categoryColorInput) payload.color = categoryColorInput;
 
@@ -142,7 +154,7 @@ export default function Categorias({ categories }) {
 		if (!category || !category.id || !category.name) return;
 		setLocalCategories((prev) => {
 			if (prev.some((c) => c.id === category.id)) return prev;
-			return [...prev, { id: category.id, name: category.name, icon: category.icon, color: category.color }];
+			return [...prev, { id: category.id, name: category.name, icon: category.icon, color: category.color, type: category.type || 'expense' }];
 		});
 	};
 
@@ -187,20 +199,43 @@ export default function Categorias({ categories }) {
 							icon="🏷️"
 						/>
 						<StatMini
-							label="Com ícone"
-							value={localCategories.filter((c) => c.icon).length}
-							icon="✨"
+							label="Despesas"
+							value={expenseCount}
+							icon="📉"
 						/>
 						<StatMini
-							label="Com cor"
-							value={localCategories.filter((c) => c.color).length}
-							icon="🎨"
+							label="Receitas"
+							value={incomeCount}
+							icon="📈"
 						/>
 						<StatMini
 							label="Ícones únicos"
 							value={Object.keys(iconDistribution).length}
 							icon="🔢"
 						/>
+					</div>
+				</FadeInItem>
+
+				<FadeInItem type="subtle">
+					<div className="flex gap-2">
+						{[
+							{ value: 'all', label: 'Todas' },
+							{ value: 'expense', label: 'Despesas' },
+							{ value: 'income', label: 'Receitas' },
+						].map((tab) => (
+							<button
+								key={tab.value}
+								type="button"
+								onClick={() => setTypeFilter(tab.value)}
+								className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${
+									typeFilter === tab.value
+										? 'bg-theme-accent text-white shadow-sm'
+										: 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+								}`}
+							>
+								{tab.label}
+							</button>
+						))}
 					</div>
 				</FadeInItem>
 
@@ -314,6 +349,8 @@ export default function Categorias({ categories }) {
 				onIconChange={setCategoryIconInput}
 				colorInput={categoryColorInput}
 				onColorChange={setCategoryColorInput}
+				typeInput={categoryTypeInput}
+				onTypeChange={setCategoryTypeInput}
 				onSubmit={handleSubmitEditCategory}
 				saving={saving}
 			/>
