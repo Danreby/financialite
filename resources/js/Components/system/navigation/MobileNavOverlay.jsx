@@ -8,6 +8,7 @@ const links = [
   { href: () => route('transacoes.index'), label: 'Fatura' },
   { href: () => route('accounts.index'), label: 'Cartões' },
   { href: () => route('categorias.index'), label: 'Categorias' },
+  { href: () => route('bancos.index'), label: 'Bancos' },
   { href: () => route('parcelamentos.index'), label: 'Parcelamentos' },
   { href: () => route('transactions.index'), label: 'Transações' },
   { href: () => route('contas.index'), label: 'Contas' },
