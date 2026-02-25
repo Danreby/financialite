@@ -421,9 +421,13 @@
 	}
 
 	.themed-topbar-btn {
-		background-color: #fef2f2;
-		border-color: #fda4af;
+		background-color: var(--theme-accentLight, #ffe4e6);
+		border-color: var(--theme-primaryLight, #fda4af);
 		color: var(--theme-primary);
+
+		&:hover {
+			background-color: color-mix(in srgb, var(--theme-accentLight, #ffe4e6) 75%, var(--theme-accent, #f43f5e) 25%);
+		}
 		
 		& svg {
 			color: var(--theme-primary);
@@ -434,9 +438,50 @@
 			border-color: color-mix(in srgb, var(--theme-accent) 50%, transparent);
 			color: var(--theme-accent);
 		}
+
+		&:is(.dark *):hover {
+			background-color: color-mix(in srgb, var(--theme-accent) 12%, rgba(17, 17, 17, 0.8));
+		}
 		
 		&:is(.dark *) svg {
 			color: var(--theme-accent);
+		}
+	}
+
+	.themed-modal-panel {
+		background-color: var(--theme-bgCardLight, #ffffff);
+
+		&:is(.dark *) {
+			background-color: #0c0c0c;
+			border-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
+		}
+	}
+
+	.themed-modal-header {
+		background-color: color-mix(in srgb, var(--theme-accentLight, #ffe4e6) 35%, #ffffff);
+		border-bottom-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 12%, #e5e5e5);
+
+		&:is(.dark *) {
+			background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 5%, #070707);
+			border-bottom-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
+		}
+	}
+
+	.themed-section-highlight {
+		background: linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--theme-accentLight, #ffe4e6) 55%, #ffffff),
+			color-mix(in srgb, var(--theme-primaryLight, #fda4af) 25%, #ffffff)
+		);
+		border: 1px solid color-mix(in srgb, var(--theme-accent, #f43f5e) 15%, transparent);
+
+		&:is(.dark *) {
+			background: linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--theme-primary, #be123c) 10%, transparent),
+				color-mix(in srgb, var(--theme-accent, #f43f5e) 5%, transparent)
+			);
+			border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 15%, transparent);
 		}
 	}
 }

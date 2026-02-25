@@ -71,7 +71,10 @@ export default function About() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.6 }}
             >
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-2xl shadow-md text-white">
+              <span
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-2xl shadow-md text-white"
+                style={{ background: 'linear-gradient(to bottom right, var(--theme-primary), var(--theme-accent))' }}
+              >
                 💰
               </span>
             </FadeInItem>
@@ -118,7 +121,7 @@ export default function About() {
         </FadeInItem>
 
         <FadeInItem>
-          <section className="mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-3xl p-6 sm:p-8 lg:p-10 ring-1 ring-blue-200/50 dark:ring-blue-800/30">
+          <section className="mb-4 themed-section-highlight rounded-3xl p-6 sm:p-8 lg:p-10">
             <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Sobre o Projeto
             </h2>
