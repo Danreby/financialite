@@ -15,8 +15,21 @@ class Card extends Model
 
     protected $table = 'cards';
 
+    public const VALID_BRANDS = ['visa', 'mastercard', 'elo', 'hipercard', 'american_express', 'diners_club'];
+
+    public const BRAND_LABELS = [
+        'visa'             => 'Visa',
+        'mastercard'       => 'Mastercard',
+        'elo'              => 'Elo',
+        'hipercard'        => 'Hipercard',
+        'american_express' => 'American Express',
+        'diners_club'      => 'Diners Club',
+    ];
+
     protected $fillable = [
         'name',
+        'brand',
+        'description',
     ];
 
     protected $hidden = [
