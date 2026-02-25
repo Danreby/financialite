@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Bank extends Model
 {
@@ -48,12 +47,7 @@ class Bank extends Model
 
     public function bankUsers(): HasMany
     {
-        return $this->hasMany(CardUser::class, 'bank_id');
-    }
-
-    public function faturas(): HasManyThrough
-    {
-        return $this->hasManyThrough(Fatura::class, CardUser::class, 'bank_id', 'bank_user_id');
+        return $this->hasMany(BankUser::class, 'bank_id');
     }
 
     public function belongsToUser(int $userId): bool

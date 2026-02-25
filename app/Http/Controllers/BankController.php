@@ -2,47 +2,76 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Bank\AttachBankToUserRequest;
+use App\Contracts\Services\BankAccountServiceInterface;
+use App\Contracts\Services\BankTransferServiceInterface;
 use App\Http\Requests\Bank\BankStoreRequest;
 use App\Http\Requests\Bank\BankUpdateRequest;
-use App\Http\Requests\Bank\UpdateBankDueDayRequest;
+use App\Http\Requests\Bank\BankTransferRequest;
 use App\Models\Bank;
 use App\Models\BankUser;
-use App\Models\CardUser;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class BankController extends Controller
 {
-    public function __construct(private NotificationService $notifications)
-    {
+    public function __construct(
+        private BankAccountServiceInterface $bankAccountService,
+        private BankTransferServiceInterface $bankTransferService,
+        private NotificationService $notifications,
+    ) {
         $this->middleware('auth');
+    }
+
+    public function page(Request $request): Response
+    {
+        $user = $request->user();
+        $stats = $this->bankAccountService->getStats($user->id);
+        $transfers = $this->bankTransferService->listForUser($user->id, 15);
+
+        return Inertia::render('Bancos', [
+            'stats'     => $stats,
+            'transfers' => $transfers->map(fn ($t) => [
+                'id'          => $t->id,
+                'from_bank'   => $t->fromBankUser?->bank?->name ?? '—',
+                'to_bank'     => $t->toBankUser?->bank?->name ?? '—',
+                'amount'      => (float) $t->amount,
+                'description' => $t->description,
+                'created_at'  => $t->created_at?->toIso8601String(),
+            ]),
+        ]);
     }
 
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Bank::class);
 
-        $user = $request->user();
-        
-        $banks = Bank::forUser($user->id)
-            ->ordered()
-            ->paginate(20);
-            
-        return $this->success($banks);
+        $accounts = $this->bankAccountService->listForUser($request->user()->id);
+
+        return $this->success($accounts->load('bank'));
+    }
+
+    public function stats(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Bank::class);
+
+        $stats = $this->bankAccountService->getStats($request->user()->id);
+
+        return $this->success($stats);
     }
 
     public function show(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        
-        $bank = Bank::forUser($user->id)->findOrFail($id);
-        
-        $this->authorize('view', $bank);
-        
-        return $this->success($bank);
+
+        $bankUser = BankUser::with('bank')->forUser($user->id)->findOrFail($id);
+        $this->authorize('view', $bankUser);
+
+        $detail = $this->bankAccountService->getBankDetail($user->id, $id);
+
+        return $this->success($detail);
     }
 
     public function store(BankStoreRequest $request): JsonResponse
@@ -50,124 +79,97 @@ class BankController extends Controller
         $this->authorize('create', Bank::class);
 
         $user = $request->user();
-        
-        $data = $this->normalizeInsertData($request->validated());
-        $bank = DB::transaction(function () use ($data, $user) {
-            $bank = Bank::create($data);
+        $data = $request->validated();
 
-            CardUser::create([
-                'bank_id' => $bank->id,
-                'user_id' => $user->id,
-            ]);
+        try {
+            $bankUser = $this->bankAccountService->createForUser($user, $data);
+            $bankUser->load('bank');
 
-            $this->notifications->info($user, 'Banco adicionado', 'Um novo banco foi vinculado à sua conta.');
+            $this->notifications->info($user, 'Banco adicionado', "Conta do banco \"{$bankUser->bank->name}\" foi vinculada.");
 
-            return $bank;
-        });
-
-        return $this->success($bank, 201);
+            return $this->success($bankUser, 201);
+        } catch (\Throwable $e) {
+            report($e);
+            return $this->serverError('Erro ao adicionar banco.');
+        }
     }
 
     public function update(BankUpdateRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
-        
-        $bank = Bank::forUser($user->id)->findOrFail($id);
+        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
 
-        $this->authorize('update', $bank);
+        $this->authorize('update', $bankUser);
 
         $data = $request->validated();
-        DB::transaction(function () use ($bank, $data, $user) {
-            $bank->update($data);
 
-            $this->notifications->info($user, 'Banco atualizado', 'As informações do banco foram atualizadas.');
-        });
+        try {
+            $bankUser = $this->bankAccountService->updateBalance($bankUser, (float) $data['balance']);
+            $bankUser->load('bank');
 
-        return $this->success($bank);
+            $this->notifications->info($user, 'Saldo atualizado', 'O saldo da conta bancária foi atualizado.');
+
+            return $this->success($bankUser);
+        } catch (\Throwable $e) {
+            report($e);
+            return $this->serverError('Erro ao atualizar saldo.');
+        }
     }
 
     public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        
-        $bank = $user->banks()->findOrFail($id);
-        
-        $this->authorize('delete', $bank);
-        
-        DB::transaction(function () use ($user, $bank) {
-            CardUser::forUser($user->id)
-                ->forBank($bank->id)
-                ->delete();
+        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
 
-            $bank->delete();
+        $this->authorize('delete', $bankUser);
 
-            $this->notifications->info($user, 'Banco removido', 'Um banco foi desvinculado da sua conta.');
-        });
+        try {
+            $this->bankAccountService->deleteForUser($bankUser);
 
-        return $this->success(['message' => 'Banco removido.']);
+            $this->notifications->info($user, 'Banco removido', 'Uma conta bancária foi removida.');
+
+            return $this->success(['message' => 'Conta bancária removida.']);
+        } catch (\Throwable $e) {
+            report($e);
+            return $this->serverError('Erro ao remover conta bancária.');
+        }
     }
 
-    public function list(Request $request): JsonResponse
+    public function transfer(BankTransferRequest $request): JsonResponse
     {
-        $banks = Bank::ordered()->get(['id', 'name']);
-        return $this->success($banks);
-    }
-
-    public function updateDueDay(UpdateBankDueDayRequest $request, BankUser $bankUser): JsonResponse
-    {
-        $this->authorize('update', $bankUser);
-
         $user = $request->user();
         $data = $request->validated();
 
-        DB::transaction(function () use ($bankUser, $data, $user) {
-            $bankUser->due_day = $data['due_day'];
-            $bankUser->save();
+        try {
+            $transfer = $this->bankTransferService->transfer($user, $data);
+            $transfer->load(['fromBankUser.bank', 'toBankUser.bank']);
 
-            $this->notifications->info($user, 'Vencimento atualizado', 'O dia de vencimento da fatura foi atualizado.');
-        });
+            $this->notifications->info(
+                $user,
+                'Transferência realizada',
+                "Transferência de R$ " . number_format($transfer->amount, 2, ',', '.') . " realizada com sucesso."
+            );
 
-        return $this->success([
-            'message' => 'Dia de vencimento atualizado com sucesso.',
-            'bank_user_id' => $bankUser->id,
-            'due_day' => $data['due_day'],
-        ]);
+            return $this->success($transfer, 201);
+        } catch (\Throwable $e) {
+            report($e);
+            return $this->serverError('Erro ao realizar transferência.');
+        }
     }
 
-    public function attachToUser(AttachBankToUserRequest $request): JsonResponse
+    public function transfers(Request $request): JsonResponse
     {
-        $this->authorize('create', CardUser::class);
+        $this->authorize('viewAny', Bank::class);
 
-        $user = $request->user();
+        $transfers = $this->bankTransferService->listForUser($request->user()->id);
 
-        $data = $this->normalizeInsertData($request->validated());
-
-        $exists = CardUser::forUser($user->id)
-            ->forBank($data['bank_id'])
-            ->first();
-
-        if ($exists) {
-            $this->notifications->warning($user, 'Banco já vinculado', 'Tentativa de vincular um banco que já está associado à sua conta.');
-
-            return $this->success([
-                'already_attached' => true,
-                'message' => 'Este banco já está vinculado ao usuário.',
-                'bank_user' => $exists->load('bank'),
-            ]);
-        }
-
-        $bankUser = DB::transaction(function () use ($data, $user) {
-            $bankUser = CardUser::create([
-                'user_id' => $user->id,
-                'bank_id' => $data['bank_id'],
-                'due_day' => $data['due_day'] ?? null,
-            ]);
-
-            $this->notifications->info($user, 'Conta vinculada', 'Uma conta de banco foi vinculada com sucesso.');
-
-            return $bankUser;
-        });
-
-        return $this->success($bankUser->load('bank'), 201);
+        return $this->success($transfers->map(fn ($t) => [
+            'id'          => $t->id,
+            'from_bank'   => $t->fromBankUser?->bank?->name ?? '—',
+            'to_bank'     => $t->toBankUser?->bank?->name ?? '—',
+            'amount'      => (float) $t->amount,
+            'description' => $t->description,
+            'created_at'  => $t->created_at?->toIso8601String(),
+        ]));
     }
 }
