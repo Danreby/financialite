@@ -38,7 +38,7 @@ export default function ExtratoCategoryBreakdown({ transactions = [] }) {
   const totalAll = breakdown.reduce((s, i) => s + i.total, 0)
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-[#0b0b0b]">
+    <div className="rounded-xl p-3 sm:p-4 shadow-sm themed-card">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">
           Gastos por categoria

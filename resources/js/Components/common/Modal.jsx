@@ -140,7 +140,7 @@ export default function Modal({
 
                     <motion.div
                         ref={modalRef}
-                        className={`relative w-full transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col ${widthClass}`}
+                        className={`relative w-full transform overflow-hidden rounded-lg themed-modal-panel shadow-xl transition-all sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col ${widthClass}`}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby={title ? 'modal-title' : undefined}
@@ -152,7 +152,7 @@ export default function Modal({
                         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                     >
                         {(title || onClose) && (
-                            <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 dark:bg-gray-900 px-2.5 py-2 sm:px-4 sm:py-3 flex-shrink-0">
+                            <div className="flex items-center justify-between border-b themed-modal-header px-2.5 py-2 sm:px-4 sm:py-3 flex-shrink-0">
                                 <div>
                                     {title && (
                                         <h2
@@ -176,7 +176,7 @@ export default function Modal({
                                     <BareButton
                                         type="button"
                                         onClick={() => onClose?.()}
-                                        className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-gray-50"
+                                        className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-1"
                                         aria-label="Fechar modal"
                                     >
                                         <svg

@@ -21,7 +21,7 @@ export default function ExtratoTransactionsContainer({
   const isEmpty = transactions.length === 0
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-[#0b0b0b] overflow-hidden">
+    <div className="rounded-2xl shadow-sm themed-card overflow-hidden">
       {/* Header */}
       <ExtratoTransactionsHeader count={totalCount} />
 

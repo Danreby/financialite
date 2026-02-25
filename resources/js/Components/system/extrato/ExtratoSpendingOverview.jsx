@@ -47,7 +47,7 @@ export default function ExtratoSpendingOverview({ summary, transactions = [] }) 
     : 0
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-[#0b0b0b]">
+    <div className="rounded-xl p-3 sm:p-4 shadow-sm themed-card">
       <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
         Visão geral do período
       </h3>

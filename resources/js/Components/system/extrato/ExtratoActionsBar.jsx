@@ -9,7 +9,7 @@ import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
  */
 export default function ExtratoActionsBar({ transactionCount = 0, onExport }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/30">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3 themed-card">
       {/* Info */}
       <div className="flex items-center gap-2">
         <span className="text-lg">📊</span>
