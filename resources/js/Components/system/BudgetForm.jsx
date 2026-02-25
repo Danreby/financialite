@@ -7,10 +7,128 @@ import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 import { Plus, Trash2, AlertCircle, Lightbulb } from "lucide-react";
 
-export default function BudgetForm({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
+const MAX_VALUE = 1000000000;
+const MAX_CHARS = 10; 
+
+function CategoryLimitRow({
+  index,
+  categoryLimit,
+  categories,
+  onChange, 
+  onRemove,
+  categoryLimitsAll,
+  max = MAX_VALUE
+}) {
+  const [localLimit, setLocalLimit] = React.useState(
+    categoryLimit.limit ?? ''
+  );
+
+  React.useEffect(() => {
+    setLocalLimit(categoryLimit.limit ?? '');
+  }, [categoryLimit.limit, categoryLimit._uid]);
+
+  const handleBlur = () => {
+    const raw = (localLimit ?? '').toString().trim();
+    const num = raw === '' ? NaN : parseFloat(raw);
+
+    if (!Number.isNaN(num)) {
+      if (num > max) {
+        const clamped = String(max);
+        setLocalLimit(clamped);
+        onChange(index, 'limit', clamped);
+        toast.warn(`O valor máximo permitido por categoria é ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(max)}.`);
+        return;
+      }
+      onChange(index, 'limit', String(num));
+    } else {
+      onChange(index, 'limit', '');
+    }
+  };
+
+  const handleSelectChange = (e) => {
+    onChange(index, 'category_id', e.target.value);
+  };
+
+  return (
+    <div
+      className="flex flex-col sm:flex-row gap-3 p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg items-start sm:items-center"
+    >
+      <div className="flex-1 w-full sm:w-auto">
+        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
+          Categoria
+        </label>
+        <select
+          value={categoryLimit.category_id}
+          onChange={handleSelectChange}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+          required
+        >
+          <option value="">Selecione uma categoria</option>
+          {categories
+            .filter(cat =>
+              !categoryLimitsAll.some((cl, i) => i !== index && cl.category_id == cat.id)
+            )
+            .map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+        </select>
+      </div>
+
+      <div className="flex-1 w-full sm:w-auto">
+        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
+          Limite (R$)
+        </label>
+
+        <input
+          type="text"
+          inputMode="decimal"
+          value={localLimit}
+          onChange={(e) => {
+            let v = String(e.target.value || '');
+            if (v.length > MAX_CHARS) v = v.slice(0, MAX_CHARS);
+            setLocalLimit(v);
+          }}
+          onBlur={handleBlur}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.currentTarget.blur();
+            }
+          }}
+          onPaste={(e) => {
+            const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+            e.preventDefault();
+            const before = localLimit || '';
+            const combined = (before + paste).slice(0, MAX_CHARS);
+            setLocalLimit(combined);
+          }}
+          placeholder="R$ 0,00"
+          step="0.01"
+          min="0"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+          required
+        />
+        <p className="text-[10px] text-gray-400 mt-1">Máx. {MAX_CHARS} caracteres</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className="w-full sm:w-auto p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center gap-2 sm:gap-0"
+        title="Remover"
+      >
+        <Trash2 className="w-5 h-5" />
+        <span className="text-sm sm:hidden">Remover</span>
+      </button>
+    </div>
+  );
+}
+
+export default function BudgetForm({
+  isOpen,
+  onClose,
+  onSuccess,
   categories = [],
   budget = null
 }) {
@@ -74,18 +192,24 @@ export default function BudgetForm({
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    
-    const monthlyLimit = formData.get("monthly_limit")?.toString().trim();
+
+    const monthlyLimitRaw = formData.get("monthly_limit")?.toString().trim();
+    const monthlyLimitNum = monthlyLimitRaw === '' ? NaN : parseFloat(monthlyLimitRaw);
 
     toast.dismiss();
 
-    if (!monthlyLimit || parseFloat(monthlyLimit) < 0) {
+    if (Number.isNaN(monthlyLimitNum) || monthlyLimitNum < 0) {
       toast.error("Informe um limite mensal válido.");
       return;
     }
 
+    if (monthlyLimitNum > MAX_VALUE) {
+      toast.error(`O limite mensal não pode exceder ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(MAX_VALUE)}.`);
+      return;
+    }
+
     const hasEmptyLimit = categoryLimits.some(cl =>
-      cl.category_id && (!cl.limit || cl.limit === '' || parseFloat(cl.limit) < 0)
+      cl.category_id && (!cl.limit || cl.limit === '' || Number.isNaN(parseFloat(cl.limit)) || parseFloat(cl.limit) < 0)
     );
 
     if (hasEmptyLimit) {
@@ -94,8 +218,17 @@ export default function BudgetForm({
     }
 
     const validCategoryLimits = categoryLimits.filter(cl => {
-      return cl.category_id && cl.limit && parseFloat(cl.limit) >= 0;
+      const num = parseFloat(cl.limit);
+      return cl.category_id && cl.limit !== '' && !Number.isNaN(num) && num >= 0 && num <= MAX_VALUE;
     });
+
+    const invalidOverMax = categoryLimits.some(cl =>
+      cl.limit && !Number.isNaN(parseFloat(cl.limit)) && parseFloat(cl.limit) > MAX_VALUE
+    );
+    if (invalidOverMax) {
+      toast.error(`Cada limite de categoria não pode exceder ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(MAX_VALUE)}.`);
+      return;
+    }
 
     const categoryIds = validCategoryLimits.map(cl => cl.category_id);
     const uniqueCategoryIds = new Set(categoryIds);
@@ -108,9 +241,9 @@ export default function BudgetForm({
 
     try {
       const monthYear = budget?.month_year || new Date().toISOString().slice(0, 7);
-      
+
       const payload = {
-        monthly_limit: parseFloat(monthlyLimit),
+        monthly_limit: parseFloat(monthlyLimitNum),
         month_year: monthYear,
         is_active: true,
         category_limits: validCategoryLimits.map(cl => ({
@@ -158,7 +291,7 @@ export default function BudgetForm({
     if (onClose) onClose();
   };
 
-  const availableCategories = categories.filter(cat => 
+  const availableCategories = categories.filter(cat =>
     !categoryLimits.some(cl => cl.category_id == cat.id)
   );
 
@@ -185,14 +318,31 @@ export default function BudgetForm({
             key={`monthly_limit-${budget?.id || 'new'}`}
             id="monthly_limit"
             name="monthly_limit"
-            type="number"
+            type="text"
             label="Limite mensal total"
             defaultValue={budget?.monthly_limit ?? ''}
             inputProps={{
               step: '0.01',
               min: '0',
+              max: String(MAX_VALUE),
               placeholder: 'R$ 0,00',
-              autoComplete: 'off'
+              autoComplete: 'off',
+              maxLength: MAX_CHARS,
+              inputMode: 'decimal',
+              onInput: (e) => {
+                const el = e.target;
+                if (el.value && el.value.length > MAX_CHARS) {
+                  el.value = el.value.slice(0, MAX_CHARS);
+                }
+              },
+              onPaste: (e) => {
+                const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+                const el = e.target;
+                e.preventDefault();
+                const before = el.value || '';
+                const combined = (before + paste).slice(0, MAX_CHARS);
+                el.value = combined;
+              }
             }}
             isRequired
           />
@@ -245,59 +395,18 @@ export default function BudgetForm({
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-custom pr-1">
               {categoryLimits.map((categoryLimit, index) => (
-                  <div 
-                    key={categoryLimit._uid}
-                    className="flex flex-col sm:flex-row gap-3 p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg items-start sm:items-center"
-                  >
-                    <div className="flex-1 w-full sm:w-auto">
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
-                        Categoria
-                      </label>
-                      <select
-                        value={categoryLimit.category_id}
-                        onChange={(e) => handleCategoryLimitChange(index, 'category_id', e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-                        required
-                      >
-                        <option value="">Selecione uma categoria</option>
-                        {categories
-                          .filter(cat => 
-                            !categoryLimits.some((cl, i) => i !== index && cl.category_id == cat.id)
-                          )
-                          .map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-                    
-                    <div className="flex-1 w-full sm:w-auto">
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 sm:hidden">
-                        Limite (R$)
-                      </label>
-                      <input
-                        type="number"
-                        value={categoryLimit.limit}
-                        onChange={(e) => handleCategoryLimitChange(index, 'limit', e.target.value)}
-                        placeholder="R$ 0,00"
-                        step="0.01"
-                        min="0"
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-                        required
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCategoryLimit(index)}
-                      className="w-full sm:w-auto p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center gap-2 sm:gap-0"
-                      title="Remover"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                      <span className="text-sm sm:hidden">Remover</span>
-                    </button>
-                  </div>
+                <CategoryLimitRow
+                  key={categoryLimit._uid}
+                  index={index}
+                  categoryLimit={categoryLimit}
+                  categories={categories}
+                  categoryLimitsAll={categoryLimits}
+                  onChange={(i, field, value) => {
+                    handleCategoryLimitChange(i, field, value);
+                  }}
+                  onRemove={(i) => handleRemoveCategoryLimit(i)}
+                  max={MAX_VALUE}
+                />
               ))}
             </div>
           )}

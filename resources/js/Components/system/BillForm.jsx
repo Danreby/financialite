@@ -9,10 +9,12 @@ import { AVAILABLE_ICONS, AVAILABLE_COLORS } from "@/Utils/categoryIcons";
 import { AlertCircle } from "lucide-react";
 import ScrollArea from "../common/ScrollArea";
 
-export default function BillForm({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
+const MAX_CHARS = 10;
+
+export default function BillForm({
+  isOpen,
+  onClose,
+  onSuccess,
   categories = [],
   bill = null
 }) {
@@ -41,7 +43,7 @@ export default function BillForm({
     const formData = new FormData(form);
 
     const title = formData.get("title")?.toString().trim();
-    const amount = formData.get("amount")?.toString().trim();
+    const amountRaw = formData.get("amount")?.toString().trim();
     const dueDay = formData.get("due_day")?.toString().trim();
 
     toast.dismiss();
@@ -58,13 +60,30 @@ export default function BillForm({
       return;
     }
 
+    if (amountRaw && amountRaw.length > MAX_CHARS) {
+      toast.error(`O valor não pode ter mais que ${MAX_CHARS} caracteres.`);
+      form.elements.namedItem("amount")?.focus();
+      return;
+    }
+
+    let amount = null;
+    if (amountRaw) {
+      const normalized = amountRaw.replace(/\./g, '').replace(/,/g, '.').replace(/[^\d.]/g, '');
+      const parsed = parseFloat(normalized);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        amount = parsed;
+      } else {
+        amount = null;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
       const payload = {
         title,
         description: formData.get("description")?.toString().trim() || null,
-        amount: amount && parseFloat(amount) > 0 ? parseFloat(amount) : null,
+        amount: amount,
         recurrence_type: recurrenceType,
         due_day: parseInt(dueDay),
         start_date: new Date().toISOString().split('T')[0],
@@ -121,16 +140,6 @@ export default function BillForm({
     >
       <form className="space-y-6" onSubmit={handleSubmit} noValidate>
         <ScrollArea className="max-h-[70vh] pr-1" style={{ paddingRight: '0.25rem' }}>
-            {/* <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex gap-3">
-                    <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800 dark:text-blue-200">
-                    <p className="font-medium mb-1">💡 Dica sobre contas recorrentes</p>
-                    <p>Cadastre suas contas mensais (luz, água, internet) para receber lembretes 2 dias e 1 dia antes do vencimento. O valor pode ser deixado em branco se variar a cada mês.</p>
-                    </div>
-                </div>
-            </div> */}
-
             <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-4">
                     <FloatLabelField
@@ -175,7 +184,32 @@ export default function BillForm({
                         min: '1',
                         max: '31',
                         placeholder: 'Ex: 10',
-                        autoComplete: 'off'
+                        autoComplete: 'off',
+                        maxLength: 2,
+                        inputMode: 'numeric',
+                        onInput: (e) => {
+                          const el = e.target;
+                          let v = String(el.value || '').replace(/\D/g, '');
+                          if (v.length > 2) v = v.slice(0, 2);
+                          el.value = v;
+                        },
+                        onPaste: (e) => {
+                          const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+                          e.preventDefault();
+                          const el = e.target;
+                          const before = String(el.value || '').replace(/\D/g, '');
+                          const combined = (before + paste.replace(/\D/g, '')).slice(0, 2);
+                          el.value = combined;
+                        },
+                        onBlur: (e) => {
+                          const el = e.target;
+                          const v = String(el.value || '').replace(/\D/g, '');
+                          if (v === '') return;
+                          const n = parseInt(v, 10);
+                          if (!Number.isNaN(n) && n > 31) {
+                            el.value = '31';
+                          }
+                        }
                     }}
                     isRequired
                     />
@@ -184,22 +218,34 @@ export default function BillForm({
                     key={`amount-${bill?.id || 'new'}`}
                     id="amount"
                     name="amount"
-                    type="number"
+                    type="text"
                     label="Valor estimado (opcional)"
-                    defaultValue={bill?.amount}
+                    defaultValue={bill?.amount ?? ''}
                     inputProps={{
                         step: '0.01',
                         min: '0.01',
                         placeholder: 'R$ 0,00',
-                        autoComplete: 'off'
+                        autoComplete: 'off',
+                        maxLength: MAX_CHARS,
+                        inputMode: 'decimal',
+                        onInput: (e) => {
+                          const el = e.target;
+                          if (el.value && el.value.length > MAX_CHARS) {
+                            el.value = el.value.slice(0, MAX_CHARS);
+                          }
+                        },
+                        onPaste: (e) => {
+                          const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+                          const el = e.target;
+                          e.preventDefault();
+                          const before = el.value || '';
+                          const combined = (before + paste).slice(0, MAX_CHARS);
+                          el.value = combined;
+                        }
                     }}
-                    //   helperText="Deixe vazio se o valor varia"
                     />
 
                     <div>
-                    {/* <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Recorrência *
-                    </label> */}
                     <select
                         name="recurrence_type"
                         value={recurrenceType}
@@ -215,9 +261,6 @@ export default function BillForm({
                 </div>
 
                 <div>
-                    {/* <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Categoria
-                    </label> */}
                     <select
                     key={`category-${bill?.id || 'new'}`}
                     name="category_id"
@@ -234,11 +277,7 @@ export default function BillForm({
                 </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-5">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Personalização Visual
-            </h3>
-
+            <div className="pt-4 space-y-5">
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Ícone
@@ -285,7 +324,7 @@ export default function BillForm({
                 </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700 mt-2">
                 <SecondaryButton type="button" onClick={handleClose} className="w-full sm:w-auto">
                     Cancelar
                 </SecondaryButton>

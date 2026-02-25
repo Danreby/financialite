@@ -17,6 +17,8 @@ export default function BillPaymentForm({
 
   if (!bill) return null;
 
+  const MAX_CHARS = 10;
+
   const formatCurrency = (value) => {
     if (!value && value !== 0) return "—";
     return new Intl.NumberFormat("pt-BR", {
@@ -39,12 +41,27 @@ export default function BillPaymentForm({
     const form = event.currentTarget;
     const formData = new FormData(form);
 
-    const amountPaid = formData.get("amount_paid")?.toString().trim();
+    const amountPaidRaw = formData.get("amount_paid")?.toString().trim();
     const paidDate = formData.get("paid_date")?.toString().trim();
 
     toast.dismiss();
 
-    if (!amountPaid || parseFloat(amountPaid) <= 0) {
+    if (!amountPaidRaw) {
+      toast.error("Informe o valor pago.");
+      form.elements.namedItem("amount_paid")?.focus();
+      return;
+    }
+
+    if (amountPaidRaw.length > MAX_CHARS) {
+      toast.error(`O valor não pode ter mais que ${MAX_CHARS} caracteres.`);
+      form.elements.namedItem("amount_paid")?.focus();
+      return;
+    }
+
+    const normalized = amountPaidRaw.replace(/\./g, "").replace(/,/g, ".").replace(/[^\d.]/g, "");
+    const parsedAmount = parseFloat(normalized);
+
+    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
       toast.error("Informe o valor pago.");
       form.elements.namedItem("amount_paid")?.focus();
       return;
@@ -62,7 +79,7 @@ export default function BillPaymentForm({
       await axios.post(route("bills.pay", bill.id), {
         due_date: dueDate,
         paid_date: paidDate,
-        amount_paid: parseFloat(amountPaid),
+        amount_paid: parsedAmount,
       });
 
       toast.success("Pagamento registrado com sucesso!");
@@ -132,14 +149,30 @@ export default function BillPaymentForm({
             key={`amount_paid-${bill.id}-${dueDate}`}
             id="amount_paid"
             name="amount_paid"
-            type="number"
+            type="text"
             label="Valor pago"
-            defaultValue={bill.amount > 0 ? bill.amount : ""}
+            defaultValue={bill.amount > 0 ? String(bill.amount) : ""}
             inputProps={{
               step: "0.01",
               min: "0.01",
               placeholder: "R$ 0,00",
               autoComplete: "off",
+              maxLength: MAX_CHARS,
+              inputMode: "decimal",
+              onInput: (e) => {
+                const el = e.target;
+                if (el.value && el.value.length > MAX_CHARS) {
+                  el.value = el.value.slice(0, MAX_CHARS);
+                }
+              },
+              onPaste: (e) => {
+                const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+                const el = e.target;
+                e.preventDefault();
+                const before = el.value || '';
+                const combined = (before + paste).slice(0, MAX_CHARS);
+                el.value = combined;
+              },
             }}
             isRequired
           />
