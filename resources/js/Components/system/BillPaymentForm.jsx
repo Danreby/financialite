@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
+import PaymentDateSelector from "@/Components/common/inputs/PaymentDateSelector";
 import { DollarSign, Calendar, AlertTriangle } from "lucide-react";
 
 export default function BillPaymentForm({
@@ -14,6 +15,12 @@ export default function BillPaymentForm({
   bill = null,
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
+  const [paidDate, setPaidDate] = useState(today);
+
+  const handlePaidDateChange = useCallback((date) => {
+    setPaidDate(date);
+  }, []);
 
   if (!bill) return null;
 
@@ -27,7 +34,6 @@ export default function BillPaymentForm({
     }).format(value);
   };
 
-  const today = new Date().toISOString().split("T")[0];
   const dueDate = bill.due_date || bill.date;
   const isOverdue =
     bill.status === "overdue" ||
@@ -42,7 +48,6 @@ export default function BillPaymentForm({
     const formData = new FormData(form);
 
     const amountPaidRaw = formData.get("amount_paid")?.toString().trim();
-    const paidDate = formData.get("paid_date")?.toString().trim();
 
     toast.dismiss();
 
@@ -69,7 +74,6 @@ export default function BillPaymentForm({
 
     if (!paidDate) {
       toast.error("Informe a data do pagamento.");
-      form.elements.namedItem("paid_date")?.focus();
       return;
     }
 
@@ -144,7 +148,7 @@ export default function BillPaymentForm({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <FloatLabelField
             key={`amount_paid-${bill.id}-${dueDate}`}
             id="amount_paid"
@@ -177,17 +181,9 @@ export default function BillPaymentForm({
             isRequired
           />
 
-          <FloatLabelField
-            key={`paid_date-${bill.id}-${dueDate}`}
-            id="paid_date"
-            name="paid_date"
-            type="date"
-            label="Data do pagamento"
-            defaultValue={today}
-            inputProps={{
-              autoComplete: "off",
-            }}
-            isRequired
+          <PaymentDateSelector
+            value={paidDate}
+            onChange={handlePaidDateChange}
           />
         </div>
 

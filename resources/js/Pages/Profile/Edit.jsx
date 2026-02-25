@@ -11,6 +11,7 @@ export default function Edit({
     mustVerifyEmail,
     status,
     bankAccounts = [],
+    bankAccountsList = [],
     incomes = [],
     totalMonthlyIncome = 0,
     savingsGoals = [],
@@ -66,6 +67,7 @@ export default function Edit({
                             incomes={incomes}
                             totalMonthlyIncome={totalMonthlyIncome}
                             bankAccounts={bankAccounts}
+                            bankAccountsList={bankAccountsList}
                         />
                     </div>
 

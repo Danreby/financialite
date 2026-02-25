@@ -6,6 +6,7 @@ import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import BareButton from "@/Components/common/buttons/BareButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
+import PaymentDateSelector from "@/Components/common/inputs/PaymentDateSelector";
 import { useNumericInput, useDecimalInput } from "@/Hooks/useNumericInput";
 
 export default function EditTransactionModal({
@@ -25,6 +26,7 @@ export default function EditTransactionModal({
   const [totalInstallments, setTotalInstallments] = useState("1");
   const [isRecurring, setIsRecurring] = useState(false);
   const [status, setStatus] = useState("unpaid");
+  const [paidDate, setPaidDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleNumericKeyDown = useNumericInput();
@@ -72,6 +74,11 @@ export default function EditTransactionModal({
     );
     setIsRecurring(Boolean(transaction.is_recurring));
     setStatus(transaction.status || "unpaid");
+    setPaidDate(
+      transaction.paid_date
+        ? transaction.paid_date.slice(0, 10)
+        : new Date().toISOString().slice(0, 10)
+    );
   }, [transaction]);
 
   const handleSubmit = async (e) => {
@@ -114,7 +121,7 @@ export default function EditTransactionModal({
 
       if (status === "paid") {
         payload.status = "paid";
-        payload.paid_date = new Date().toISOString().slice(0, 10);
+        payload.paid_date = paidDate || new Date().toISOString().slice(0, 10);
       } else {
         payload.status = "unpaid";
         payload.paid_date = null;
@@ -276,7 +283,13 @@ export default function EditTransactionModal({
             <BareButton
               type="button"
               onClick={() => {
-                setStatus((prev) => (prev === "paid" ? "unpaid" : "paid"));
+                setStatus((prev) => {
+                  const next = prev === "paid" ? "unpaid" : "paid";
+                  if (next === "paid" && !paidDate) {
+                    setPaidDate(new Date().toISOString().slice(0, 10));
+                  }
+                  return next;
+                });
               }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 ${
                 status === "paid"
@@ -291,6 +304,16 @@ export default function EditTransactionModal({
               />
             </BareButton>
           </div>
+
+          {status === "paid" && (
+            <div className="md:col-span-2">
+              <PaymentDateSelector
+                value={paidDate}
+                onChange={setPaidDate}
+                compact
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-1">
             {/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
