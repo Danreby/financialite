@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Anexo;
+use App\Models\Bank;
+use App\Models\BankTransfer;
+use App\Models\BankUser;
 use App\Models\Card;
 use App\Models\CardUser;
 use App\Models\Category;
@@ -10,6 +13,9 @@ use App\Models\Income;
 use App\Models\Notification;
 use App\Models\Transacao;
 use App\Policies\AnexoPolicy;
+use App\Policies\BankPolicy;
+use App\Policies\BankTransferPolicy;
+use App\Policies\BankUserPolicy;
 use App\Policies\CardPolicy;
 use App\Policies\CardUserPolicy;
 use App\Policies\CategoryPolicy;
@@ -27,6 +33,9 @@ class SecurityServiceProvider extends ServiceProvider
 {
     protected array $policies = [
         Anexo::class => AnexoPolicy::class,
+        Bank::class => BankPolicy::class,
+        BankTransfer::class => BankTransferPolicy::class,
+        BankUser::class => BankUserPolicy::class,
         Transacao::class => TransacaoPolicy::class,
         Category::class => CategoryPolicy::class,
         CardUser::class => CardUserPolicy::class,
