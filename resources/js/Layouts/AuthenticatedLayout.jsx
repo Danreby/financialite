@@ -43,7 +43,7 @@ export default function AuthenticatedLayout({ children }) {
         />
 
     		<main 
-          className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6" 
+          className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom px-3 py-4 sm:px-4 lg:px-6" 
           style={{
             backgroundColor: 'var(--theme-bgPageLight)',
           }}
