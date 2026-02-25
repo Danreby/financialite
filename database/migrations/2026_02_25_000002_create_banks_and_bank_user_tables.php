@@ -2,27 +2,52 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('banks', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->softDeletes();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('banks')) {
+            Schema::create('banks', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->unique();
+                $table->softDeletes();
+                $table->timestamps();
+            });
+        }
 
-        Schema::create('bank_user', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('bank_id')->constrained('banks')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->decimal('balance', 14, 2)->default(0);
-            $table->unique(['bank_id', 'user_id']);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('bank_user')) {
+            Schema::create('bank_user', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('bank_id')->constrained('banks')->cascadeOnDelete();
+                $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+                $table->decimal('balance', 14, 2)->default(0);
+                $table->unique(['bank_id', 'user_id']);
+                $table->timestamps();
+            });
+        } else {
+            if (!Schema::hasColumn('bank_user', 'balance')) {
+                Schema::table('bank_user', function (Blueprint $table) {
+                    $table->decimal('balance', 14, 2)->default(0)->after('user_id');
+                });
+            }
+
+            $dbName  = DB::getDatabaseName();
+            $hasUniq = DB::table('information_schema.TABLE_CONSTRAINTS')
+                ->where('CONSTRAINT_SCHEMA', $dbName)
+                ->where('TABLE_NAME', 'bank_user')
+                ->where('CONSTRAINT_TYPE', 'UNIQUE')
+                ->whereIn('CONSTRAINT_NAME', ['bank_user_bank_id_user_id_unique', 'bank_user_unique'])
+                ->exists();
+
+            if (!$hasUniq) {
+                Schema::table('bank_user', function (Blueprint $table) {
+                    $table->unique(['bank_id', 'user_id'], 'bank_user_bank_id_user_id_unique');
+                });
+            }
+        }
     }
 
     public function down(): void

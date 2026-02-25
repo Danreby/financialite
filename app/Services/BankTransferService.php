@@ -14,9 +14,38 @@ class BankTransferService implements BankTransferServiceInterface
     public function transfer(Authenticatable $user, array $data): BankTransfer
     {
         return DB::transaction(function () use ($user, $data) {
-            $fromAccount = BankUser::forUser($user->id)->findOrFail($data['from_bank_user_id']);
-            $toAccount   = BankUser::forUser($user->id)->findOrFail($data['to_bank_user_id']);
-            $amount      = (float) $data['amount'];
+            $fromId = (int) $data['from_bank_user_id'];
+            $toId   = (int) $data['to_bank_user_id'];
+            $amount = (float) $data['amount'];
+
+            if ($fromId === $toId) {
+                throw new \DomainException('A conta de origem e destino não podem ser a mesma.');
+            }
+
+            if ($amount <= 0) {
+                throw new \DomainException('O valor da transferência deve ser maior que zero.');
+            }
+
+            $lockIds = [$fromId, $toId];
+            sort($lockIds);
+
+            $accounts = BankUser::forUser($user->id)
+                ->whereIn('id', $lockIds)
+                ->lockForUpdate()
+                ->orderBy('id')
+                ->get()
+                ->keyBy('id');
+
+            if ($accounts->count() !== 2) {
+                throw new \DomainException('Uma ou ambas as contas não foram encontradas.');
+            }
+
+            $fromAccount = $accounts->get($fromId);
+            $toAccount   = $accounts->get($toId);
+
+            if ((float) $fromAccount->balance < $amount) {
+                throw new \DomainException('Saldo insuficiente para realizar a transferência.');
+            }
 
             $fromAccount->decrement('balance', $amount);
             $toAccount->increment('balance', $amount);
@@ -26,7 +55,7 @@ class BankTransferService implements BankTransferServiceInterface
                 'from_bank_user_id'  => $fromAccount->id,
                 'to_bank_user_id'    => $toAccount->id,
                 'amount'             => $amount,
-                'description'        => $data['description'] ?? null,
+                'description'        => isset($data['description']) ? trim($data['description']) : null,
             ]);
         });
     }
