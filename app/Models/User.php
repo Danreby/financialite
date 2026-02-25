@@ -48,7 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function banks(): BelongsToMany
     {
-        return $this->belongsToMany(Card::class, 'card_user', 'user_id', 'card_id');
+        return $this->belongsToMany(Bank::class, 'bank_user', 'user_id', 'bank_id');
     }
 
     public function cards(): BelongsToMany
@@ -68,12 +68,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function bankUsers(): HasMany
     {
-        return $this->hasMany(CardUser::class, 'user_id');
+        return $this->hasMany(BankUser::class, 'user_id');
     }
 
     public function cardUsers(): HasMany
     {
         return $this->hasMany(CardUser::class, 'user_id');
+    }
+
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(BankUser::class, 'user_id');
     }
 
     public function categories(): HasMany
