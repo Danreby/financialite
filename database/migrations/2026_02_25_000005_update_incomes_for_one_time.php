@@ -16,7 +16,7 @@ return new class extends Migration
             if (!Schema::hasColumn('incomes', 'received_at')) {
                 $table->date('received_at')->nullable()->after('is_recurring');
             }
-            if (!Schema::hasColumn('incomes', 'bank_account_id')) {
+            if (!Schema::hasColumn('incomes', 'bank_account_id') && Schema::hasTable('bank_user')) {
                 $table->foreignId('bank_account_id')->nullable()->after('bank_user_id')
                     ->constrained('bank_user')->nullOnDelete();
             }

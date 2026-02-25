@@ -178,7 +178,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 				} else {
 					toast.success("Cartão vinculado com sucesso.");
 				}
-				e.currentTarget.reset();
 				setSelectedCardId("");
 				setBrand("");
 				setDescription("");

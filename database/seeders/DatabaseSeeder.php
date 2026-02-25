@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            BanksSeeder::class,
+            BankInstitutionsSeeder::class,
             ExampleCategoriesSeeder::class,
             ExampleFaturasLastSixMonthsSeeder::class,
         ]);
