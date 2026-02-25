@@ -8,9 +8,23 @@ import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 import Autocomplete from "@/Components/common/inputs/Autocomplete";
 import { useNumericInput } from "@/Hooks/useNumericInput";
 
+const BRAND_OPTIONS = [
+	{ value: '', label: 'Sem bandeira' },
+	{ value: 'visa', label: 'Visa' },
+	{ value: 'mastercard', label: 'Mastercard' },
+	{ value: 'elo', label: 'Elo' },
+	{ value: 'hipercard', label: 'Hipercard' },
+	{ value: 'american_express', label: 'American Express' },
+	{ value: 'diners_club', label: 'Diners Club' },
+];
+
 export default function CardForm({ isOpen, onClose, onSuccess }) {
 	const [cards, setCards] = useState([]);
 	const [selectedCardId, setSelectedCardId] = useState("");
+	const [brand, setBrand] = useState("");
+	const [description, setDescription] = useState("");
+	const [closingDay, setClosingDay] = useState("");
+	const [creditLimit, setCreditLimit] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const handleNumericKeyDown = useNumericInput();
@@ -47,6 +61,10 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 	useEffect(() => {
 		if (!isOpen) {
 			setSelectedCardId("");
+			setBrand("");
+			setDescription("");
+			setClosingDay("");
+			setCreditLimit("");
 		}
 	}, [isOpen]);
 
@@ -80,7 +98,14 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 		}
 
 		axios
-			.post(route("cards.attach"), { card_id: selectedCardId, due_day: dueDay })
+			.post(route("cards.attach"), {
+				card_id: selectedCardId,
+				due_day: dueDay,
+				brand: brand || null,
+				description: description.trim() || null,
+				closing_day: closingDay ? parseInt(closingDay, 10) : null,
+				credit_limit: creditLimit ? parseFloat(creditLimit) : null,
+			})
 			.then((response) => {
 				toast.dismiss();
 				const payload = response.data || {};
@@ -140,6 +165,66 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 						placeholder: "Opcional. Ex: 10",
 					}}
 				/>
+
+				<div className="flex flex-col gap-1">
+					<label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+						Bandeira
+					</label>
+					<select
+						value={brand}
+						onChange={(e) => setBrand(e.target.value)}
+						className="w-full rounded-xl border border-gray-300 bg-white p-2.5 text-sm shadow-sm focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+					>
+						{BRAND_OPTIONS.map((opt) => (
+							<option key={opt.value} value={opt.value}>{opt.label}</option>
+						))}
+					</select>
+				</div>
+
+				<FloatLabelField
+					id="closing_day"
+					name="closing_day"
+					type="number"
+					label="Dia de fechamento (1 a 31)"
+					inputProps={{
+						min: 1,
+						max: 31,
+						inputMode: "numeric",
+						onKeyDown: handleNumericKeyDown,
+						placeholder: "Opcional. Ex: 5",
+						value: closingDay,
+						onChange: (e) => setClosingDay(e.target.value),
+					}}
+				/>
+
+				<FloatLabelField
+					id="credit_limit"
+					name="credit_limit"
+					type="number"
+					label="Limite de crédito (R$)"
+					inputProps={{
+						step: "0.01",
+						min: 0,
+						placeholder: "Opcional. Ex: 5000.00",
+						value: creditLimit,
+						onChange: (e) => setCreditLimit(e.target.value),
+					}}
+				/>
+
+				<div className="flex flex-col gap-1">
+					<label htmlFor="card_description" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+						Descrição
+					</label>
+					<textarea
+						id="card_description"
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
+						placeholder="Observações sobre este cartão..."
+						maxLength={500}
+						rows={2}
+						className="w-full rounded-xl border border-gray-300 bg-white p-2.5 text-sm shadow-sm resize-none focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+					/>
+				</div>
 
 				<div className="flex items-center justify-end gap-3 pt-2">
 					<SecondaryButton

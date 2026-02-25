@@ -37,6 +37,10 @@ export default function Cartoes({ bankAccounts }) {
   const [isEditCardModalOpen, setIsEditCardModalOpen] = useState(false);
   const [cardBeingEdited, setCardBeingEdited] = useState(null);
   const [cardDueDayInput, setCardDueDayInput] = useState('');
+  const [cardBrandInput, setCardBrandInput] = useState('');
+  const [cardDescriptionInput, setCardDescriptionInput] = useState('');
+  const [cardClosingDayInput, setCardClosingDayInput] = useState('');
+  const [cardCreditLimitInput, setCardCreditLimitInput] = useState('');
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState({ type: null, id: null, name: '' });
 
@@ -52,30 +56,55 @@ export default function Cartoes({ bankAccounts }) {
   const openEditCardModal = (account) => {
     setCardBeingEdited(account);
     setCardDueDayInput(account.due_day ? String(account.due_day) : '');
+    setCardBrandInput(account.brand || '');
+    setCardDescriptionInput(account.description || '');
+    setCardClosingDayInput(account.closing_day ? String(account.closing_day) : '');
+    setCardCreditLimitInput(account.credit_limit != null ? String(account.credit_limit) : '');
     setIsEditCardModalOpen(true);
   };
 
   const handleSubmitEditCard = async (event) => {
     event.preventDefault();
     if (!cardBeingEdited || saving) return;
-    const value = cardDueDayInput.trim();
-    const parsed = parseInt(value, 10);
-    if (Number.isNaN(parsed) || parsed < 1 || parsed > 31) {
+
+    const dueValue = cardDueDayInput.trim();
+    const parsedDue = dueValue ? parseInt(dueValue, 10) : null;
+    if (dueValue && (Number.isNaN(parsedDue) || parsedDue < 1 || parsedDue > 31)) {
       toast.error('Informe um dia de vencimento entre 1 e 31.');
       return;
     }
+
+    const closingValue = cardClosingDayInput.trim();
+    const parsedClosing = closingValue ? parseInt(closingValue, 10) : null;
+    if (closingValue && (Number.isNaN(parsedClosing) || parsedClosing < 1 || parsedClosing > 31)) {
+      toast.error('Informe um dia de fechamento entre 1 e 31.');
+      return;
+    }
+
     setSaving(true);
     try {
-      await axios.patch(route('cards.update-due-day', cardBeingEdited.id), { due_day: parsed });
+      const payload = {
+        due_day: parsedDue,
+        closing_day: parsedClosing,
+        brand: cardBrandInput || null,
+        description: cardDescriptionInput.trim() || null,
+        credit_limit: cardCreditLimitInput ? parseFloat(cardCreditLimitInput) : null,
+      };
+
+      await axios.patch(route('cards.update-due-day', cardBeingEdited.id), payload);
       setLocalCards((prev) =>
-        prev.map((acc) => (acc.id === cardBeingEdited.id ? { ...acc, due_day: parsed } : acc)),
+        prev.map((acc) =>
+          acc.id === cardBeingEdited.id
+            ? { ...acc, ...payload, due_day: parsedDue, closing_day: parsedClosing }
+            : acc,
+        ),
       );
-      toast.success('Vencimento atualizado com sucesso.');
+      toast.success('Cartão atualizado com sucesso.');
       setIsEditCardModalOpen(false);
       setCardBeingEdited(null);
     } catch (error) {
       console.error(error);
-      toast.error('Não foi possível atualizar o vencimento.');
+      toast.error('Não foi possível atualizar o cartão.');
     } finally {
       setSaving(false);
     }
@@ -119,7 +148,16 @@ export default function Cartoes({ bankAccounts }) {
     const name = cardUser.card?.name || `Cartão #${cardUser.id}`;
     setLocalCards((prev) => {
       if (prev.some((acc) => acc.id === cardUser.id)) return prev;
-      return [...prev, { id: cardUser.id, card_id: cardUser.card_id, name, due_day: cardUser.due_day }];
+      return [...prev, {
+        id: cardUser.id,
+        card_id: cardUser.card_id,
+        name,
+        due_day: cardUser.due_day,
+        closing_day: cardUser.closing_day,
+        credit_limit: cardUser.credit_limit,
+        brand: cardUser.card?.brand || cardUser.brand,
+        description: cardUser.card?.description || cardUser.description,
+      }];
     });
   };
 
@@ -230,6 +268,14 @@ export default function Cartoes({ bankAccounts }) {
         card={cardBeingEdited}
         dueDayInput={cardDueDayInput}
         onDueDayChange={setCardDueDayInput}
+        brandInput={cardBrandInput}
+        onBrandChange={setCardBrandInput}
+        descriptionInput={cardDescriptionInput}
+        onDescriptionChange={setCardDescriptionInput}
+        closingDayInput={cardClosingDayInput}
+        onClosingDayChange={setCardClosingDayInput}
+        creditLimitInput={cardCreditLimitInput}
+        onCreditLimitChange={setCardCreditLimitInput}
         onSubmit={handleSubmitEditCard}
         saving={saving}
       />
