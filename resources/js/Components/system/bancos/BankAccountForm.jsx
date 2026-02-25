@@ -1,18 +1,54 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Modal from '@/Components/common/Modal';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
+import Autocomplete from '@/Components/common/inputs/Autocomplete';
+import { bankAccountService } from '@/Services/bankService';
+import { toast } from 'react-toastify';
 
-export default function BankAccountForm({ isOpen, onClose, onSuccess, existingAccounts = [] }) {
-  const [bankName, setBankName] = useState('');
+export default function BankAccountForm({ isOpen, onClose, onSuccess }) {
+  const [banks, setBanks] = useState([]);
+  const [selectedBankId, setSelectedBankId] = useState('');
   const [balance, setBalance] = useState('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let cancelled = false;
+
+    const loadBanks = async () => {
+      try {
+        const data = await bankAccountService.listBanks();
+        if (!cancelled) {
+          setBanks(
+            (data || []).map((b) => ({
+              value: String(b.id),
+              label: b.name,
+            }))
+          );
+        }
+      } catch {
+        toast.error('Não foi possível carregar a lista de bancos.');
+      }
+    };
+
+    loadBanks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
   const resetForm = () => {
-    setBankName('');
+    setSelectedBankId('');
     setBalance('');
     setErrors({});
   };
+
+  useEffect(() => {
+    if (!isOpen) resetForm();
+  }, [isOpen]);
 
   const handleClose = () => {
     if (saving) return;
@@ -24,9 +60,8 @@ export default function BankAccountForm({ isOpen, onClose, onSuccess, existingAc
     e.preventDefault();
     if (saving) return;
 
-    const name = bankName.trim();
-    if (!name) {
-      setErrors({ bank_name: 'Informe o nome do banco.' });
+    if (!selectedBankId) {
+      setErrors({ bank_id: 'Selecione um banco.' });
       return;
     }
 
@@ -34,9 +69,8 @@ export default function BankAccountForm({ isOpen, onClose, onSuccess, existingAc
     setErrors({});
 
     try {
-      const { bankAccountService } = await import('@/Services/bankService');
       const data = await bankAccountService.create({
-        bank_name: name,
+        bank_id: parseInt(selectedBankId, 10),
         balance: balance ? parseFloat(balance) : 0,
       });
 
@@ -44,9 +78,14 @@ export default function BankAccountForm({ isOpen, onClose, onSuccess, existingAc
       resetForm();
       onClose?.();
     } catch (error) {
+      const status = error.response?.status;
       const serverErrors = error.response?.data?.errors;
+      const message = error.response?.data?.message;
+
       if (serverErrors) {
         setErrors(serverErrors);
+      } else if (status === 422 && message) {
+        setErrors({ general: message });
       } else {
         setErrors({ general: 'Não foi possível criar a conta bancária.' });
       }
@@ -58,22 +97,24 @@ export default function BankAccountForm({ isOpen, onClose, onSuccess, existingAc
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Nova Conta Bancária" maxWidth="md">
       <form onSubmit={handleSubmit} className="space-y-4 p-1">
-        <div>
-          <label htmlFor="bank_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Nome do Banco
+
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            Banco
           </label>
-          <input
-            id="bank_name"
-            type="text"
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
-            placeholder="Ex: Nubank, Itaú, Bradesco..."
-            maxLength={255}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-100 dark:placeholder-gray-500"
-            autoFocus
+          <Autocomplete
+            options={banks}
+            value={selectedBankId}
+            onChange={setSelectedBankId}
+            placeholder="Pesquisar banco..."
+            labelKey="label"
+            valueKey="value"
+            name="bank_id"
           />
-          {errors.bank_name && (
-            <p className="mt-1 text-xs text-red-500">{Array.isArray(errors.bank_name) ? errors.bank_name[0] : errors.bank_name}</p>
+          {errors.bank_id && (
+            <p className="mt-1 text-xs text-red-500">
+              {Array.isArray(errors.bank_id) ? errors.bank_id[0] : errors.bank_id}
+            </p>
           )}
         </div>
 

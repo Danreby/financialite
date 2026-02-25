@@ -54,15 +54,20 @@ class BankAccountService implements BankAccountServiceInterface
     public function createForUser(Authenticatable $user, array $data): BankUser
     {
         return DB::transaction(function () use ($user, $data) {
-            $bank = Bank::firstOrCreate(
-                ['name' => $data['name']],
-                ['name' => $data['name']]
-            );
+            $bank = Bank::findOrFail($data['bank_id']);
+
+            $existing = BankUser::where('bank_id', $bank->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existing) {
+                throw new \DomainException("Você já possui uma conta no banco \"{$bank->name}\".");
+            }
 
             return BankUser::create([
-                'bank_id'  => $bank->id,
-                'user_id'  => $user->id,
-                'balance'  => $data['balance'] ?? 0,
+                'bank_id' => $bank->id,
+                'user_id' => $user->id,
+                'balance' => $data['balance'] ?? 0,
             ]);
         });
     }

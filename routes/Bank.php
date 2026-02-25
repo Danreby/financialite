@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('bank-accounts')->name('bank-accounts.')->group(function () {
+        Route::get('/banks', [BankController::class, 'listBanks'])->name('list-banks');
         Route::get('/', [BankController::class, 'index'])->name('index');
         Route::get('/stats', [BankController::class, 'stats'])->name('stats');
         Route::post('/', [BankController::class, 'store'])

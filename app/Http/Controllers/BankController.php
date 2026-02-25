@@ -44,6 +44,13 @@ class BankController extends Controller
         ]);
     }
 
+    public function listBanks(Request $request): JsonResponse
+    {
+        $banks = Bank::withoutTrashed()->ordered()->get(['id', 'name']);
+
+        return $this->success($banks);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Bank::class);
@@ -88,6 +95,8 @@ class BankController extends Controller
             $this->notifications->info($user, 'Banco adicionado', "Conta do banco \"{$bankUser->bank->name}\" foi vinculada.");
 
             return $this->success($bankUser, 201);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
             return $this->serverError('Erro ao adicionar banco.');

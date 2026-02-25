@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class BankTransferService implements BankTransferServiceInterface
 {
+    protected const DEFAULT_LIMIT = 20;
+
     public function transfer(Authenticatable $user, array $data): BankTransfer
     {
         return DB::transaction(function () use ($user, $data) {
@@ -60,12 +62,19 @@ class BankTransferService implements BankTransferServiceInterface
         });
     }
 
-    public function listForUser(int $userId, int $limit = 20): Collection
+    public function listForUser(int $userId, ?int $bankUserId = null): Collection
     {
-        return BankTransfer::with(['fromBankUser.bank', 'toBankUser.bank'])
+        $query = BankTransfer::with(['fromBankUser.bank', 'toBankUser.bank'])
             ->where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->limit($limit)
-            ->get();
+            ->orderBy('created_at', 'desc');
+
+        if (!is_null($bankUserId)) {
+            $query->where(function ($q) use ($bankUserId) {
+                $q->where('from_bank_user_id', $bankUserId)
+                  ->orWhere('to_bank_user_id', $bankUserId);
+            });
+        }
+
+        return $query->limit(self::DEFAULT_LIMIT)->get();
     }
 }

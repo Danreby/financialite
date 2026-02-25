@@ -79,8 +79,6 @@ export default function Modal({
     useEffect(() => {
         if (!isOpen) return;
 
-        previousFocusRef.current = document.activeElement;
-
         const originalOverflow = document.body.style.overflow;
         const originalPaddingRight = document.body.style.paddingRight;
         const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -89,6 +87,22 @@ export default function Modal({
         document.body.style.paddingRight = `${scrollbarWidth}px`;
 
         document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.body.style.overflow = originalOverflow;
+            document.body.style.paddingRight = originalPaddingRight;
+
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, handleKeyDown]);
+
+    // Separate effect: initial focus only runs when the modal opens/closes,
+    // not when onClose/handleKeyDown references change (which would cause
+    // focus to jump back to the X button on every re-render).
+    useEffect(() => {
+        if (!isOpen) return;
+
+        previousFocusRef.current = document.activeElement;
 
         const focusTimer = setTimeout(() => {
             if (initialFocus?.current) {
@@ -104,18 +118,14 @@ export default function Modal({
         }, 0);
 
         return () => {
-            document.body.style.overflow = originalOverflow;
-            document.body.style.paddingRight = originalPaddingRight;
-
-            document.removeEventListener('keydown', handleKeyDown);
-            
             clearTimeout(focusTimer);
 
             if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
                 previousFocusRef.current.focus();
             }
         };
-    }, [isOpen, handleKeyDown, initialFocus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     const widthClass = maxWidthClassMap[maxWidth] ?? maxWidthClassMap['2xl'];
 

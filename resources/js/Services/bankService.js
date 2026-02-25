@@ -1,6 +1,11 @@
 import { apiService } from './api';
 
 export const bankAccountService = {
+    listBanks: async () => {
+        const response = await apiService.get(route('bank-accounts.list-banks'));
+        return response.data;
+    },
+
     list: async () => {
         const response = await apiService.get(route('bank-accounts.index'));
         return response.data;
