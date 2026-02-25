@@ -14,6 +14,7 @@ export default function IncomeSection({
   incomes: initialIncomes = [],
   totalMonthlyIncome: initialTotal = 0,
   bankAccounts = [],
+  bankAccountsList = [],
 }) {
   const [incomes, setIncomes] = useState(initialIncomes)
   const [totalMonthly, setTotalMonthly] = useState(initialTotal)
@@ -81,7 +82,6 @@ export default function IncomeSection({
 
   return (
     <div className="space-y-4">
-      {/* Header com total */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
@@ -99,7 +99,6 @@ export default function IncomeSection({
         </PrimaryButton>
       </div>
 
-      {/* Lista de incomes */}
       {incomes.length > 0 ? (
         <ScrollArea maxHeightClassName="max-h-[360px] sm:max-h-[400px]">
           <div className="space-y-3">
@@ -126,26 +125,25 @@ export default function IncomeSection({
         </div>
       )}
 
-      {/* Form de criação */}
       <IncomeForm
         isOpen={showForm}
         onClose={handleCloseForm}
         onSuccess={handleCreated}
         bankAccounts={bankAccounts}
+        bankAccountsList={bankAccountsList}
       />
 
-      {/* Form de edição */}
       {editingIncome && (
         <IncomeForm
           isOpen={!!editingIncome}
           onClose={handleCloseEdit}
           onSuccess={handleUpdated}
           bankAccounts={bankAccounts}
+          bankAccountsList={bankAccountsList}
           income={editingIncome}
         />
       )}
 
-      {/* Modal de confirmação de exclusão */}
       <Modal
         isOpen={!!deletingIncome}
         onClose={handleCloseDelete}

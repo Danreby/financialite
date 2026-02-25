@@ -10,8 +10,11 @@ const INCOME_TYPES = [
   { value: 'investment', label: 'Investimento', icon: '📈' },
   { value: 'rental', label: 'Aluguel', icon: '🏠' },
   { value: 'benefit', label: 'Benefício', icon: '🎁' },
+  { value: 'pix', label: 'Pix', icon: '⚡' },
   { value: 'other', label: 'Outro', icon: '💰' },
 ]
+
+const ONE_TIME_TYPES = ['pix', 'other']
 
 const PAYMENT_DAY_TYPES = [
   { value: 'fixed', label: 'Dia fixo do mês' },
@@ -23,6 +26,7 @@ export default function IncomeForm({
   onClose,
   onSuccess,
   bankAccounts = [],
+  bankAccountsList = [],
   income = null,
 }) {
   const isEditing = !!income
@@ -31,9 +35,12 @@ export default function IncomeForm({
   const [description, setDescription] = useState(income?.description || '')
   const [amount, setAmount] = useState(income?.amount ? String(income.amount) : '')
   const [type, setType] = useState(income?.type || 'salary')
+  const [isRecurring, setIsRecurring] = useState(income?.is_recurring ?? true)
   const [paymentDayType, setPaymentDayType] = useState(income?.payment_day_type || 'fixed')
   const [paymentDayValue, setPaymentDayValue] = useState(income?.payment_day_value ? String(income.payment_day_value) : '1')
+  const [receivedAt, setReceivedAt] = useState(income?.received_at || '')
   const [bankUserId, setBankUserId] = useState(income?.bank_user_id ? String(income.bank_user_id) : '')
+  const [bankAccountId, setBankAccountId] = useState(income?.bank_account_id ? String(income.bank_account_id) : '')
   const [isActive, setIsActive] = useState(income?.is_active ?? true)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
@@ -45,9 +52,12 @@ export default function IncomeForm({
       setDescription(income.description || '')
       setAmount(income.amount ? String(income.amount) : '')
       setType(income.type || 'salary')
+      setIsRecurring(income.is_recurring ?? true)
       setPaymentDayType(income.payment_day_type || 'fixed')
       setPaymentDayValue(income.payment_day_value ? String(income.payment_day_value) : '1')
+      setReceivedAt(income.received_at || '')
       setBankUserId(income.bank_user_id ? String(income.bank_user_id) : '')
+      setBankAccountId(income.bank_account_id ? String(income.bank_account_id) : '')
       setIsActive(income.is_active ?? true)
     }
   }, [income])
@@ -58,9 +68,12 @@ export default function IncomeForm({
       setDescription('')
       setAmount('')
       setType('salary')
+      setIsRecurring(true)
       setPaymentDayType('fixed')
       setPaymentDayValue('1')
+      setReceivedAt('')
       setBankUserId('')
+      setBankAccountId('')
       setIsActive(true)
     }
     setErrors({})
@@ -83,10 +96,19 @@ export default function IncomeForm({
       description: description.trim() || null,
       amount: parseFloat(amount),
       type,
-      payment_day_type: paymentDayType,
-      payment_day_value: parseInt(paymentDayValue, 10),
+      is_recurring: isRecurring,
       is_active: isActive,
       bank_user_id: bankUserId ? parseInt(bankUserId, 10) : null,
+      bank_account_id: bankAccountId ? parseInt(bankAccountId, 10) : null,
+    }
+
+    if (isRecurring) {
+      payload.payment_day_type = paymentDayType
+      payload.payment_day_value = parseInt(paymentDayValue, 10)
+    } else {
+      payload.received_at = receivedAt || null
+      payload.payment_day_type = 'fixed'
+      payload.payment_day_value = 1
     }
 
     try {
@@ -125,17 +147,20 @@ export default function IncomeForm({
           </div>
         )}
 
-        {/* Tipo - cards selecionáveis */}
         <div>
           <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
             Tipo de renda
           </label>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
             {INCOME_TYPES.map((t) => (
               <button
                 key={t.value}
                 type="button"
-                onClick={() => setType(t.value)}
+                onClick={() => {
+                  setType(t.value)
+                  if (ONE_TIME_TYPES.includes(t.value)) setIsRecurring(false)
+                  else setIsRecurring(true)
+                }}
                 className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs font-medium transition-all border ${
                   type === t.value
                     ? 'themed-selected border-theme-accent ring-1 ring-theme-accent/30'
@@ -148,6 +173,17 @@ export default function IncomeForm({
             ))}
           </div>
           {errors.type && <p className="text-xs text-red-500 mt-1">{errors.type[0]}</p>}
+        </div>
+
+        <div>
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <div className={`relative w-11 h-6 rounded-full transition-colors ${isRecurring ? 'bg-theme-accent' : 'bg-gray-300 dark:bg-gray-600'}`}>
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${isRecurring ? 'translate-x-5' : ''}`} />
+            </div>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {isRecurring ? 'Renda recorrente (mensal)' : 'Renda única (avulsa)'}
+            </span>
+          </label>
         </div>
 
         {/* Título e Valor */}
@@ -182,40 +218,51 @@ export default function IncomeForm({
           </div>
         </div>
 
-        {/* Dia de pagamento */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Tipo de dia</label>
-            <select
-              value={paymentDayType}
-              onChange={(e) => setPaymentDayType(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-            >
-              {PAYMENT_DAY_TYPES.map((pd) => (
-                <option key={pd.value} value={pd.value}>{pd.label}</option>
-              ))}
-            </select>
-            {errors.payment_day_type && <p className="text-xs text-red-500 mt-1">{errors.payment_day_type[0]}</p>}
-          </div>
+        {isRecurring ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Tipo de dia</label>
+              <select
+                value={paymentDayType}
+                onChange={(e) => setPaymentDayType(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              >
+                {PAYMENT_DAY_TYPES.map((pd) => (
+                  <option key={pd.value} value={pd.value}>{pd.label}</option>
+                ))}
+              </select>
+              {errors.payment_day_type && <p className="text-xs text-red-500 mt-1">{errors.payment_day_type[0]}</p>}
+            </div>
 
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                {paymentDayType === 'fixed' ? 'Dia do mês' : 'Nº do dia útil'}
+              </label>
+              <input
+                type="number"
+                value={paymentDayValue}
+                onChange={(e) => setPaymentDayValue(e.target.value)}
+                min={1}
+                max={paymentDayType === 'fixed' ? 31 : 25}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+                required
+              />
+              {errors.payment_day_value && <p className="text-xs text-red-500 mt-1">{errors.payment_day_value[0]}</p>}
+            </div>
+          </div>
+        ) : (
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-              {paymentDayType === 'fixed' ? 'Dia do mês' : 'Nº do dia útil'}
-            </label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Data de recebimento</label>
             <input
-              type="number"
-              value={paymentDayValue}
-              onChange={(e) => setPaymentDayValue(e.target.value)}
-              min={1}
-              max={paymentDayType === 'fixed' ? 31 : 25}
+              type="date"
+              value={receivedAt}
+              onChange={(e) => setReceivedAt(e.target.value)}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              required
             />
-            {errors.payment_day_value && <p className="text-xs text-red-500 mt-1">{errors.payment_day_value[0]}</p>}
+            {errors.received_at && <p className="text-xs text-red-500 mt-1">{errors.received_at[0]}</p>}
           </div>
-        </div>
+        )}
 
-        {/* Descrição */}
         <div>
           <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Descrição (opcional)</label>
           <textarea
@@ -228,36 +275,48 @@ export default function IncomeForm({
           />
         </div>
 
-        {/* Banco e Status */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Conta bancária (opcional)</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Cartão vinculado (opcional)</label>
             <select
               value={bankUserId}
               onChange={(e) => setBankUserId(e.target.value)}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
-              <option value="">Nenhuma</option>
+              <option value="">Nenhum</option>
               {bankAccounts.map((ba) => (
                 <option key={ba.id} value={ba.id}>{ba.name}</option>
               ))}
             </select>
           </div>
 
-          <div className="flex items-end pb-1">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-theme-accent focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f]"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300">Renda ativa</span>
-            </label>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Conta bancária (opcional)</label>
+            <select
+              value={bankAccountId}
+              onChange={(e) => setBankAccountId(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+            >
+              <option value="">Nenhuma</option>
+              {bankAccountsList.map((ba) => (
+                <option key={ba.id} value={ba.id}>{ba.bank?.name || ba.name || `Conta #${ba.id}`}</option>
+              ))}
+            </select>
           </div>
         </div>
 
-        {/* Botões */}
+        <div className="flex items-center">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-theme-accent focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f]"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Renda ativa</span>
+          </label>
+        </div>
+
         <div className="flex justify-end gap-3 pt-2">
           <SecondaryButton type="button" onClick={handleClose}>
             Cancelar
