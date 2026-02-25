@@ -25,7 +25,7 @@ class CategoryController extends Controller
 
         $categories = Category::forUser($user->id)
             ->ordered()
-            ->get(['id', 'name', 'color', 'icon']);
+            ->get(['id', 'name', 'color', 'icon', 'type']);
 
         return $this->success($categories);
     }
@@ -39,9 +39,10 @@ class CategoryController extends Controller
 
         $category = DB::transaction(function () use ($data, $user) {
             $category = Category::create([
-                'name' => $data['name'],
-                'color' => $data['color'] ?? null,
-                'icon' => $data['icon'] ?? null,
+                'name'    => $data['name'],
+                'color'   => $data['color'] ?? null,
+                'icon'    => $data['icon'] ?? null,
+                'type'    => $data['type'] ?? 'expense',
                 'user_id' => $user->id,
             ]);
 
@@ -62,9 +63,10 @@ class CategoryController extends Controller
 
         DB::transaction(function () use ($category, $data, $user) {
             $category->update([
-                'name' => $data['name'],
+                'name'  => $data['name'],
                 'color' => $data['color'] ?? null,
-                'icon' => $data['icon'] ?? null,
+                'icon'  => $data['icon'] ?? null,
+                'type'  => $data['type'] ?? $category->type,
             ]);
 
             $this->notifications->info($user, 'Categoria atualizada', 'Uma categoria foi atualizada.');

@@ -38,6 +38,11 @@ class CategoryStoreRequest extends FormRequest
                 'string',
                 'max:50',
             ],
+            'type' => [
+                'sometimes',
+                'string',
+                Rule::in(\App\Models\Category::VALID_TYPES),
+            ],
         ];
     }
 
@@ -51,6 +56,7 @@ class CategoryStoreRequest extends FormRequest
             'color.regex' => 'A cor deve estar no formato hexadecimal (#RRGGBB ou #RGB).',
             'color.max' => 'A cor não pode ter mais de :max caracteres.',
             'icon.max' => 'O ícone não pode ter mais de :max caracteres.',
+            'type.in' => 'O tipo deve ser receita ou despesa.',
         ];
     }
 
