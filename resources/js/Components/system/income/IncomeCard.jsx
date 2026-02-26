@@ -7,6 +7,7 @@ const TYPE_CONFIG = {
   investment: { icon: '📈', gradient: 'from-emerald-500 to-teal-600' },
   rental:     { icon: '🏠', gradient: 'from-amber-500 to-orange-600' },
   benefit:    { icon: '🎁', gradient: 'from-pink-500 to-rose-600' },
+  pix:        { icon: '⚡', gradient: 'from-teal-500 to-cyan-600' },
   other:      { icon: '💰', gradient: 'from-gray-500 to-slate-600' },
 }
 
@@ -38,14 +39,26 @@ export default function IncomeCard({ income, onEdit, onToggle, onDelete }) {
                 Inativa
               </span>
             )}
+            {income.is_recurring === false && (
+              <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400">
+                Avulsa
+              </span>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
             <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
               {income.type_label}
             </span>
-            <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-              📅 {income.payment_day_label}
-            </span>
+            {income.is_recurring !== false && (
+              <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                📅 {income.payment_day_label}
+              </span>
+            )}
+            {income.is_recurring === false && income.received_at && (
+              <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                📅 {new Date(income.received_at).toLocaleDateString('pt-BR')}
+              </span>
+            )}
             {income.bank_name && (
               <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                 🏦 {income.bank_name}

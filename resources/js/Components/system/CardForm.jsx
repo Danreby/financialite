@@ -8,9 +8,31 @@ import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 import Autocomplete from "@/Components/common/inputs/Autocomplete";
 import { useNumericInput } from "@/Hooks/useNumericInput";
 
+const BRAND_OPTIONS = [
+	{ value: '', label: 'Sem bandeira' },
+	{ value: 'visa', label: 'Visa' },
+	{ value: 'mastercard', label: 'Mastercard' },
+	{ value: 'elo', label: 'Elo' },
+	{ value: 'hipercard', label: 'Hipercard' },
+	{ value: 'american_express', label: 'American Express' },
+	{ value: 'diners_club', label: 'Diners Club' },
+	{ value: 'aura', label: 'Aura' },
+	{ value: 'cabal', label: 'Cabal' },
+	{ value: 'sorocred', label: 'Sorocred' },
+	{ value: 'banescard', label: 'Banescard' },
+	{ value: 'banricompras', label: 'BanriCompras' },
+	{ value: 'jcb', label: 'JCB' },
+	{ value: 'unionpay', label: 'UnionPay' },
+];
+
 export default function CardForm({ isOpen, onClose, onSuccess }) {
 	const [cards, setCards] = useState([]);
 	const [selectedCardId, setSelectedCardId] = useState("");
+	const [brand, setBrand] = useState("");
+	const [description, setDescription] = useState("");
+	const [dueDay, setDueDay] = useState("");
+	const [closingDay, setClosingDay] = useState("");
+	const [creditLimit, setCreditLimit] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const handleNumericKeyDown = useNumericInput();
@@ -47,17 +69,48 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 	useEffect(() => {
 		if (!isOpen) {
 			setSelectedCardId("");
+			setBrand("");
+			setDescription("");
+			setDueDay("");
+			setClosingDay("");
+			setCreditLimit("");
 		}
 	}, [isOpen]);
+
+	const handleDayChange = (setter) => (e) => {
+		let v = e.target.value.replace(/\D/g, "").slice(0, 2);
+		if (v !== "") {
+			let n = parseInt(v, 10);
+			if (Number.isNaN(n)) {
+				v = "";
+			} else {
+				if (n > 31) n = 31;
+				if (n < 1) n = 1;
+				v = String(n);
+			}
+		}
+		setter(v);
+	};
+
+	const handleCreditLimitChange = (e) => {
+		let v = e.target.value;
+		v = v.replace(/[^0-9.]/g, "");
+		const parts = v.split(".");
+		const intPart = (parts[0] || "").slice(0, 10); 
+		let fracPart = parts[1] ?? "";
+		if (parts.length > 2) {
+			fracPart = parts.slice(1).join("").slice(0, 2);
+		} else {
+			fracPart = fracPart.slice(0, 2);
+		}
+		const final = fracPart !== "" ? `${intPart}.${fracPart}` : intPart;
+		setCreditLimit(final);
+	};
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		if (isSubmitting) return;
 		setIsSubmitting(true);
-
-		const formData = new FormData(e.currentTarget);
-		const dueDayRaw = formData.get("due_day")?.toString().trim();
-		const formElement = e.currentTarget;
 
 		toast.dismiss();
 
@@ -67,20 +120,56 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 			return;
 		}
 
-		let dueDay = null;
-		if (dueDayRaw) {
-			const parsed = parseInt(dueDayRaw, 10);
+		let dueDayParsed = null;
+		if (dueDay) {
+			const parsed = parseInt(dueDay, 10);
 			if (Number.isNaN(parsed) || parsed < 1 || parsed > 31) {
 				toast.error("Informe um dia de vencimento entre 1 e 31.");
-				formElement.elements.namedItem("due_day")?.focus();
+				document.getElementById("due_day")?.focus();
 				setIsSubmitting(false);
 				return;
 			}
-			dueDay = parsed;
+			dueDayParsed = parsed;
+		}
+
+		let closingDayParsed = null;
+		if (closingDay) {
+			const parsed = parseInt(closingDay, 10);
+			if (Number.isNaN(parsed) || parsed < 1 || parsed > 31) {
+				toast.error("Informe um dia de fechamento entre 1 e 31.");
+				document.getElementById("closing_day")?.focus();
+				setIsSubmitting(false);
+				return;
+			}
+			closingDayParsed = parsed;
+		}
+
+		if (creditLimit) {
+			const cleaned = creditLimit.replace(/[^0-9]/g, ""); 
+			if (cleaned.length > 10) {
+				toast.error("O limite de crédito deve possuir no máximo 10 dígitos.");
+				document.getElementById("credit_limit")?.focus();
+				setIsSubmitting(false);
+				return;
+			}
+		}
+
+		if (description && description.trim().length > 255) {
+			toast.error("A descrição deve ter no máximo 255 caracteres.");
+			document.getElementById("card_description")?.focus();
+			setIsSubmitting(false);
+			return;
 		}
 
 		axios
-			.post(route("cards.attach"), { card_id: selectedCardId, due_day: dueDay })
+			.post(route("cards.attach"), {
+				card_id: selectedCardId,
+				due_day: dueDayParsed,
+				brand: brand || null,
+				description: description.trim() || null,
+				closing_day: closingDayParsed,
+				credit_limit: creditLimit ? parseFloat(creditLimit) : null,
+			})
 			.then((response) => {
 				toast.dismiss();
 				const payload = response.data || {};
@@ -89,8 +178,12 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 				} else {
 					toast.success("Cartão vinculado com sucesso.");
 				}
-				formElement.reset();
 				setSelectedCardId("");
+				setBrand("");
+				setDescription("");
+				setDueDay("");
+				setClosingDay("");
+				setCreditLimit("");
 				setIsSubmitting(false);
 				if (onSuccess) onSuccess(payload.card_user || payload);
 				if (onClose) onClose();
@@ -113,9 +206,9 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 		<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar cartão">
 			<form className="space-y-4" onSubmit={handleSubmit} noValidate>
 				<div className="flex flex-col gap-1">
-					<label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+					{/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
 						Cartão
-					</label>
+					</label> */}
 					<Autocomplete
 						options={cards}
 						value={selectedCardId}
@@ -130,16 +223,76 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 				<FloatLabelField
 					id="due_day"
 					name="due_day"
-					type="number"
+					type="text"
 					label="Dia de vencimento do cartão (1 a 31)"
 					inputProps={{
-						min: 1,
-						max: 31,
+						maxLength: 2,
 						inputMode: "numeric",
+						pattern: "\\d{1,2}",
 						onKeyDown: handleNumericKeyDown,
 						placeholder: "Opcional. Ex: 10",
+						value: dueDay,
+						onChange: handleDayChange(setDueDay),
 					}}
 				/>
+
+				<div className="flex flex-col gap-1">
+					{/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+						Bandeira
+					</label> */}
+					<Autocomplete
+						options={BRAND_OPTIONS}
+						value={brand}
+						onChange={setBrand}
+						placeholder="Bandeira do cartão..."
+						labelKey="label"
+						valueKey="value"
+						name="brand"
+					/>
+				</div>
+
+				<FloatLabelField
+					id="closing_day"
+					name="closing_day"
+					type="text"
+					label="Dia de fechamento (1 a 31)"
+					inputProps={{
+						maxLength: 2,
+						inputMode: "numeric",
+						pattern: "\\d{1,2}",
+						onKeyDown: handleNumericKeyDown,
+						placeholder: "Opcional. Ex: 5",
+						value: closingDay,
+						onChange: handleDayChange(setClosingDay),
+					}}
+				/>
+
+				<FloatLabelField
+					id="credit_limit"
+					name="credit_limit"
+					type="text"
+					label="Limite de crédito (R$)"
+					inputProps={{
+						placeholder: "Opcional. Ex: 5000.00",
+						inputMode: "decimal",
+						onKeyDown: handleNumericKeyDown,
+						value: creditLimit,
+						onChange: handleCreditLimitChange,
+					}}
+				/>
+
+				<div className="flex flex-col gap-1">
+					<textarea
+						id="card_description"
+						name="card_description"
+						value={description}
+						onChange={(e) => setDescription(e.target.value.slice(0, 255))}
+						placeholder="Observações sobre este cartão..."
+						maxLength={255}
+						rows={2}
+						className="w-full rounded-l border border-gray-300 bg-white p-2.5 text-sm shadow-sm resize-none focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+					/>
+				</div>
 
 				<div className="flex items-center justify-end gap-3 pt-2">
 					<SecondaryButton

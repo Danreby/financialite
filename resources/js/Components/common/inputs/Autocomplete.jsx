@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import ScrollArea from '../ScrollArea'
 
 export default function Autocomplete({
   options = [],
@@ -138,42 +139,44 @@ export default function Autocomplete({
 
   const dropdownContent = (
     <AnimatePresence>
-      {isOpen && filtered.length > 0 && (
-        <motion.ul
-          ref={(el) => {
-            listRef.current = el
-            dropdownRef.current = el
-          }}
-          role="listbox"
-          style={dropdownStyle}
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.15 }}
-          className="max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#0f0f0f]"
-        >
-          {filtered.map((opt, idx) => (
-            <li
-              key={opt[valueKey]}
-              role="option"
-              aria-selected={highlightIndex === idx}
-              onClick={() => handleSelect(opt)}
-              onMouseEnter={() => setHighlightIndex(idx)}
-              className={`cursor-pointer px-3 py-2 text-sm transition-colors
-                ${highlightIndex === idx
-                  ? 'bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20'
-                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }
-                ${String(opt[valueKey]) === String(value)
-                  ? 'font-semibold'
-                  : ''
-                }`}
-            >
-              {opt[labelKey]}
-            </li>
-          ))}
-        </motion.ul>
-      )}
+      <ScrollArea>
+        {isOpen && filtered.length > 0 && (
+          <motion.ul
+            ref={(el) => {
+              listRef.current = el
+              dropdownRef.current = el
+            }}
+            role="listbox"
+            style={dropdownStyle}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#0f0f0f]"
+          >
+            {filtered.map((opt, idx) => (
+              <li
+                key={opt[valueKey]}
+                role="option"
+                aria-selected={highlightIndex === idx}
+                onClick={() => handleSelect(opt)}
+                onMouseEnter={() => setHighlightIndex(idx)}
+                className={`cursor-pointer px-3 py-2 text-sm transition-colors
+                  ${highlightIndex === idx
+                    ? 'bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }
+                  ${String(opt[valueKey]) === String(value)
+                    ? 'font-semibold'
+                    : ''
+                  }`}
+              >
+                {opt[labelKey]}
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </ScrollArea>
 
       {isOpen && search.trim() && filtered.length === 0 && (
         <motion.div
@@ -204,7 +207,13 @@ export default function Autocomplete({
         autoComplete="off"
         value={search}
         onChange={handleInputChange}
-        onFocus={() => setIsOpen(true)}
+        onFocus={() => {
+          // Clear search text so all options are visible when the dropdown opens.
+          // If the user leaves without selecting, the mousedown-outside handler
+          // restores the previously selected option's label.
+          setSearch('')
+          setIsOpen(true)
+        }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}

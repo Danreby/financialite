@@ -11,6 +11,18 @@ const CARD_GRADIENTS = [
 	'from-red-500 to-rose-600',
 ];
 
+const BRAND_LABELS = {
+	visa: 'Visa',
+	mastercard: 'Mastercard',
+	elo: 'Elo',
+	hipercard: 'Hipercard',
+	american_express: 'Amex',
+	diners_club: 'Diners',
+};
+
+const formatCurrency = (value) =>
+	new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
+
 function getCardGradient(id) {
 	return CARD_GRADIENTS[(id || 0) % CARD_GRADIENTS.length];
 }
@@ -26,8 +38,10 @@ function getCardInitials(name) {
 
 export default function CardItem({ account, onEdit, onDelete, saving }) {
 	const dueLabel = account.due_day ? `Dia ${account.due_day}` : null;
+	const closingLabel = account.closing_day ? `Fecha dia ${account.closing_day}` : null;
 	const gradient = getCardGradient(account.card_id || account.id);
 	const initials = getCardInitials(account.name);
+	const brandLabel = account.brand ? BRAND_LABELS[account.brand] || account.brand : null;
 
 	return (
 		<motion.div
@@ -44,12 +58,36 @@ export default function CardItem({ account, onEdit, onDelete, saving }) {
 			</div>
 
 			<div className="flex-1 min-w-0">
-				<p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-					{account.name || `Cartão #${account.id}`}
-				</p>
-				{dueLabel && (
-					<p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-						Vencimento: {dueLabel}
+				<div className="flex items-center gap-2">
+					<p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+						{account.name || `Cartão #${account.id}`}
+					</p>
+					{brandLabel && (
+						<span className="inline-flex items-center rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400 flex-shrink-0">
+							{brandLabel}
+						</span>
+					)}
+				</div>
+				<div className="flex items-center gap-2 mt-0.5 flex-wrap">
+					{dueLabel && (
+						<p className="text-xs text-gray-500 dark:text-gray-400">
+							Vencimento: {dueLabel}
+						</p>
+					)}
+					{closingLabel && (
+						<p className="text-xs text-gray-500 dark:text-gray-400">
+							• {closingLabel}
+						</p>
+					)}
+					{account.credit_limit != null && account.credit_limit > 0 && (
+						<p className="text-xs text-emerald-600 dark:text-emerald-400">
+							• Limite: {formatCurrency(account.credit_limit)}
+						</p>
+					)}
+				</div>
+				{account.description && (
+					<p className="text-[11px] text-gray-400 dark:text-gray-500 truncate mt-0.5">
+						{account.description}
 					</p>
 				)}
 			</div>

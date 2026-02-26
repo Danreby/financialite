@@ -7,10 +7,16 @@ import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 import { AVAILABLE_ICONS, AVAILABLE_COLORS } from "@/Utils/categoryIcons";
 
+const TYPE_OPTIONS = [
+	{ value: 'expense', label: 'Despesa', emoji: '📉' },
+	{ value: 'income', label: 'Receita', emoji: '📈' },
+];
+
 export default function CategoryForm({ isOpen, onClose, onSuccess, categories = [] }) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [selectedIcon, setSelectedIcon] = useState(null);
 	const [selectedColor, setSelectedColor] = useState(null);
+	const [selectedType, setSelectedType] = useState('expense');
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
@@ -43,7 +49,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 		setIsSubmitting(true);
 
 		try {
-			const payload = { name };
+			const payload = { name, type: selectedType };
 			if (selectedIcon) payload.icon = selectedIcon;
 			if (selectedColor) payload.color = selectedColor;
 
@@ -83,6 +89,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 	const handleClose = () => {
 		setSelectedIcon(null);
 		setSelectedColor(null);
+		setSelectedType('expense');
 		if (onClose) onClose();
 	};
 
@@ -105,6 +112,28 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 					}}
 					isRequired
 				/>
+
+				<div>
+					<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+						Tipo
+					</label>
+					<div className="flex gap-2">
+						{TYPE_OPTIONS.map((opt) => (
+							<button
+								key={opt.value}
+								type="button"
+								onClick={() => setSelectedType(opt.value)}
+								className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-medium transition-all ${
+									selectedType === opt.value
+										? 'themed-selected border-theme-accent'
+										: 'border-gray-300 bg-white hover:border-gray-400 dark:border-gray-700 dark:bg-[#0f0f0f] dark:hover:border-gray-600'
+								}`}
+							>
+								<span>{opt.emoji}</span> {opt.label}
+							</button>
+						))}
+					</div>
+				</div>
 
 				<div className="space-y-4">
 					<div>

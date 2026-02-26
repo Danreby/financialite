@@ -261,10 +261,7 @@ class FaturaDashboardService
 
         $cardQuery = CardUser::with('card')
             ->forUser($user->id)
-            ->whereNotNull('due_day')
-            ->whereHas('transacoes', function ($q) {
-                $q->where('type', 'credit')->where('status', '!=', 'paid');
-            });
+            ->whereNotNull('due_day');
 
         if ($bankUserId) {
             $cardQuery->where('id', $bankUserId);
@@ -382,10 +379,6 @@ class FaturaDashboardService
         ];
     }
 
-    /**
-     * Get top spending categories for a custom month period.
-     * Returns aggregated spending by category, with recurring/non-recurring breakdown.
-     */
     public function getTopSpendingByPeriod(
         Authenticatable $user,
         string $monthFrom,

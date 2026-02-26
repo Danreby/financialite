@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Bank;
 
+use App\Security\Rules\SafeNumeric;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,22 +15,10 @@ class BankUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $bankId = $this->route('bank');
-
         return [
-            'name' => [
+            'balance' => [
                 'required',
-                'string',
-                'min:2',
-                'max:255',
-                'unique:banks,name,' . $bankId,
-                new SafeString(255),
-            ],
-            'due_day' => [
-                'nullable',
-                'integer',
-                'min:1',
-                'max:31',
+                SafeNumeric::money(0, 999999999.99),
             ],
         ];
     }
@@ -37,12 +26,8 @@ class BankUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'O nome do banco é obrigatório.',
-            'name.min' => 'O nome deve ter pelo menos :min caracteres.',
-            'name.max' => 'O nome não pode ter mais de :max caracteres.',
-            'name.unique' => 'Já existe um banco com este nome.',
-            'due_day.min' => 'O dia de vencimento deve ser entre 1 e 31.',
-            'due_day.max' => 'O dia de vencimento deve ser entre 1 e 31.',
+            'balance.required' => 'O saldo é obrigatório.',
+            'balance.min' => 'O saldo deve ser um valor positivo.',
         ];
     }
 

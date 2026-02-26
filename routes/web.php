@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\TransacaoController;
 use App\Http\Controllers\NotificationController;
 use App\Models\CardUser;
@@ -29,12 +30,15 @@ Route::get('/dashboard', function () {
                 'id' => $cardUser->id,
                 'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
                 'due_day' => $cardUser->due_day,
+                'closing_day' => $cardUser->closing_day,
+                'credit_limit' => $cardUser->credit_limit,
+                'brand' => $cardUser->card?->brand,
             ];
         });
 
     $categories = Category::forUser($user->id)
         ->orderBy('name')
-        ->get(['id', 'name', 'icon', 'color']);
+        ->get(['id', 'name', 'icon', 'color', 'type']);
 
     return Inertia::render('Dashboard', [
         'bankAccounts' => $bankAccounts,
@@ -60,6 +64,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
                         'card_id' => $cardUser->card_id,
                         'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
                         'due_day' => $cardUser->due_day,
+                        'closing_day' => $cardUser->closing_day,
+                        'credit_limit' => $cardUser->credit_limit,
+                        'brand' => $cardUser->card?->brand,
+                        'description' => $cardUser->card?->description,
                     ];
                 });
 
@@ -73,7 +81,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         $categories = Category::forUser($user->id)
             ->orderBy('name')
-            ->paginate(20, ['id', 'name', 'icon', 'color'], 'categories_page');
+            ->paginate(20, ['id', 'name', 'icon', 'color', 'type'], 'categories_page');
 
         return Inertia::render('Categorias', [
             'categories' => $categories,
@@ -209,6 +217,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('reports.index');
 
+    Route::get('/bancos', [BankController::class, 'page'])->name('bancos.index');
+
     Route::get('/about', function () {
         return Inertia::render('About');
     })->name('about');
@@ -262,5 +272,7 @@ require __DIR__.'/SavingsGoal.php';
 require __DIR__.'/Bill.php';
 
 require __DIR__.'/Budget.php';
+
+require __DIR__.'/Bank.php';
 
 require __DIR__.'/auth.php';

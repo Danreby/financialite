@@ -1,45 +1,52 @@
 import { apiService } from './api';
 
-export const bankService = {
+export const bankAccountService = {
+    listBanks: async () => {
+        const response = await apiService.get(route('bank-accounts.list-banks'));
+        return response.data;
+    },
+
     list: async () => {
-        const response = await apiService.get(route('banks.index'));
+        const response = await apiService.get(route('bank-accounts.index'));
+        return response.data;
+    },
+
+    stats: async () => {
+        const response = await apiService.get(route('bank-accounts.stats'));
+        return response.data;
+    },
+
+    show: async (bankUserId) => {
+        const response = await apiService.get(route('bank-accounts.show', bankUserId));
         return response.data;
     },
 
     create: async (data) => {
-        const response = await apiService.post(route('banks.store'), data);
+        const response = await apiService.post(route('bank-accounts.store'), data);
         return response.data;
     },
 
-    update: async (id, data) => {
-        const response = await apiService.put(route('banks.update', id), data);
+    update: async (bankUserId, data) => {
+        const response = await apiService.patch(route('bank-accounts.update', bankUserId), data);
         return response.data;
     },
 
-    delete: async (id) => {
-        const response = await apiService.delete(route('banks.destroy', id));
-        return response.data;
-    },
-
-    attach: async (data) => {
-        const response = await apiService.post(route('banks.attach'), data);
-        return response.data;
-    },
-
-    detach: async (bankUserId) => {
-        const response = await apiService.delete(
-            route('bank-users.destroy', bankUserId)
-        );
-        return response.data;
-    },
-
-    updateDueDay: async (bankUserId, dueDay) => {
-        const response = await apiService.patch(
-            route('bank-users.update', bankUserId),
-            { due_day: dueDay }
-        );
+    delete: async (bankUserId) => {
+        const response = await apiService.delete(route('bank-accounts.destroy', bankUserId));
         return response.data;
     },
 };
 
-export default bankService;
+export const bankTransferService = {
+    list: async () => {
+        const response = await apiService.get(route('bank-transfers.index'));
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await apiService.post(route('bank-transfers.store'), data);
+        return response.data;
+    },
+};
+
+export default bankAccountService;

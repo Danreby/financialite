@@ -52,11 +52,17 @@ class CardController extends Controller
         
         $data = $this->normalizeInsertData($request->validated());
         $card = DB::transaction(function () use ($data, $user) {
-            $card = Card::create($data);
+            $card = Card::create([
+                'name'        => $data['name'],
+                'brand'       => $data['brand'] ?? null,
+                'description' => $data['description'] ?? null,
+            ]);
 
             CardUser::create([
-                'card_id' => $card->id,
-                'user_id' => $user->id,
+                'card_id'      => $card->id,
+                'user_id'      => $user->id,
+                'closing_day'  => $data['closing_day'] ?? null,
+                'credit_limit' => $data['credit_limit'] ?? null,
             ]);
 
             $this->notifications->info($user, 'Cartão adicionado', 'Um novo cartão foi vinculado à sua conta.');
@@ -77,7 +83,24 @@ class CardController extends Controller
 
         $data = $request->validated();
         DB::transaction(function () use ($card, $data, $user) {
-            $card->update($data);
+            $card->update([
+                'name'        => $data['name'],
+                'brand'       => $data['brand'] ?? $card->brand,
+                'description' => $data['description'] ?? $card->description,
+            ]);
+
+            if (isset($data['closing_day']) || isset($data['credit_limit'])) {
+                $cardUser = CardUser::forUser($user->id)->forCard($card->id)->first();
+                if ($cardUser) {
+                    if (isset($data['closing_day'])) {
+                        $cardUser->closing_day = $data['closing_day'];
+                    }
+                    if (isset($data['credit_limit'])) {
+                        $cardUser->credit_limit = $data['credit_limit'];
+                    }
+                    $cardUser->save();
+                }
+            }
 
             $this->notifications->info($user, 'Cartão atualizado', 'As informações do cartão foram atualizadas.');
         });
@@ -157,9 +180,11 @@ class CardController extends Controller
 
         $cardUser = DB::transaction(function () use ($data, $user) {
             $cardUser = CardUser::create([
-                'user_id' => $user->id,
-                'card_id' => $data['card_id'],
-                'due_day' => $data['due_day'] ?? null,
+                'user_id'      => $user->id,
+                'card_id'      => $data['card_id'],
+                'due_day'      => $data['due_day'] ?? null,
+                'closing_day'  => $data['closing_day'] ?? null,
+                'credit_limit' => $data['credit_limit'] ?? null,
             ]);
 
             $this->notifications->info($user, 'Conta vinculada', 'Um cartão foi vinculado com sucesso.');

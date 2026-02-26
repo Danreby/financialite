@@ -36,6 +36,15 @@ class ProfileController extends Controller
                 'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
             ]);
 
+        $bankAccountsList = \App\Models\BankUser::with('bank')
+            ->where('user_id', $user->id)
+            ->get()
+            ->map(fn ($bu) => [
+                'id'      => $bu->id,
+                'name'    => $bu->bank?->name ?? ('Banco #' . $bu->id),
+                'balance' => (float) $bu->balance,
+            ]);
+
         $incomes = $this->incomeService->listForUser($user->id)
             ->map(fn ($income) => [
                 'id'                => $income->id,
@@ -48,8 +57,12 @@ class ProfileController extends Controller
                 'payment_day_value' => $income->payment_day_value,
                 'payment_day_label' => $income->payment_day_label,
                 'is_active'         => $income->is_active,
+                'is_recurring'      => $income->is_recurring,
+                'received_at'       => $income->received_at?->format('Y-m-d'),
                 'bank_name'         => optional($income->bankUser?->card)->name,
                 'bank_user_id'      => $income->bank_user_id,
+                'bank_account_id'   => $income->bank_account_id,
+                'bank_account_name' => optional($income->bankAccount?->bank)->name,
             ]);
 
         $totalMonthly = $this->incomeService->totalMonthlyIncome($user->id);
@@ -73,17 +86,19 @@ class ProfileController extends Controller
         $savingsSummary = $this->savingsService->summaryForUser($user->id);
 
         $userStats = [
-            'member_since'     => $user->created_at?->format('d/m/Y'),
-            'banks_count'      => $user->bankUsers()->count(),
-            'categories_count' => $user->categories()->count(),
-            'incomes_count'    => $user->incomes()->where('is_active', true)->count(),
+            'member_since'       => $user->created_at?->format('d/m/Y'),
+            'banks_count'        => $user->bankUsers()->count(),
+            'categories_count'   => $user->categories()->count(),
+            'incomes_count'      => $user->incomes()->where('is_active', true)->count(),
             'transactions_count' => $user->transacoes()->count(),
+            'savings_goals_count'=> $user->savingsGoals()->count(),
         ];
 
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail'    => $request->user() instanceof MustVerifyEmail,
             'status'             => session('status'),
             'bankAccounts'       => $bankAccounts,
+            'bankAccountsList'   => $bankAccountsList,
             'incomes'            => $incomes,
             'totalMonthlyIncome' => $totalMonthly,
             'savingsGoals'       => $savingsGoals,

@@ -16,6 +16,8 @@ use App\Contracts\Services\AuthServiceInterface;
 use App\Contracts\Services\IncomeServiceInterface;
 use App\Contracts\Services\ExtratoServiceInterface;
 use App\Contracts\Services\SavingsGoalServiceInterface;
+use App\Contracts\Services\BankAccountServiceInterface;
+use App\Contracts\Services\BankTransferServiceInterface;
 
 use App\Services\FaturaService;
 use App\Services\AnexoService;
@@ -29,6 +31,8 @@ use App\Services\Auth\AuthService;
 use App\Services\IncomeService;
 use App\Services\ExtratoService;
 use App\Services\SavingsGoalService;
+use App\Services\BankAccountService;
+use App\Services\BankTransferService;
 
 class ServiceBindingProvider extends ServiceProvider
 {
@@ -45,6 +49,8 @@ class ServiceBindingProvider extends ServiceProvider
         IncomeServiceInterface::class => IncomeService::class,
         ExtratoServiceInterface::class => ExtratoService::class,
         SavingsGoalServiceInterface::class => SavingsGoalService::class,
+        BankAccountServiceInterface::class => BankAccountService::class,
+        BankTransferServiceInterface::class => BankTransferService::class,
     ];
 
     public function register(): void

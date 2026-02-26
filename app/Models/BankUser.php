@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Transacao;
 
 class BankUser extends Model
 {
@@ -15,11 +14,11 @@ class BankUser extends Model
     protected $fillable = [
         'bank_id',
         'user_id',
-        'due_day',
+        'balance',
     ];
 
     protected $casts = [
-        'due_day' => 'integer',
+        'balance' => 'decimal:2',
         'bank_id' => 'integer',
         'user_id' => 'integer',
         'created_at' => 'datetime',
@@ -36,9 +35,9 @@ class BankUser extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function transacoes(): HasMany
+    public function incomes(): HasMany
     {
-        return $this->hasMany(Transacao::class, 'bank_user_id');
+        return $this->hasMany(Income::class, 'bank_account_id');
     }
 
     public function scopeForUser(Builder $query, int $userId): Builder

@@ -41,21 +41,39 @@ class IncomeStoreRequest extends FormRequest
                 'required',
                 Rule::in(Income::VALID_TYPES),
             ],
+            'is_recurring' => [
+                'sometimes',
+                'boolean',
+            ],
             'payment_day_type' => [
-                'required',
+                'required_if:is_recurring,true,1',
+                'nullable',
                 Rule::in(Income::VALID_PAYMENT_DAY_TYPES),
             ],
             'payment_day_value' => [
-                'required',
+                'required_if:is_recurring,true,1',
+                'nullable',
                 'integer',
                 'min:1',
                 'max:31',
+            ],
+            'received_at' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
             ],
             'is_active' => [
                 'sometimes',
                 'boolean',
             ],
             'bank_user_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('card_user', 'id')->where(function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }),
+            ],
+            'bank_account_id' => [
                 'nullable',
                 'integer',
                 Rule::exists('bank_user', 'id')->where(function ($query) use ($userId) {
@@ -74,12 +92,15 @@ class IncomeStoreRequest extends FormRequest
             'amount.required'           => 'O valor é obrigatório.',
             'type.required'             => 'O tipo de renda é obrigatório.',
             'type.in'                   => 'O tipo de renda informado é inválido.',
-            'payment_day_type.required' => 'O tipo de dia de pagamento é obrigatório.',
+            'payment_day_type.required_if' => 'O tipo de dia de pagamento é obrigatório para rendas recorrentes.',
             'payment_day_type.in'       => 'O tipo de dia de pagamento informado é inválido.',
-            'payment_day_value.required'=> 'O dia de pagamento é obrigatório.',
+            'payment_day_value.required_if'=> 'O dia de pagamento é obrigatório para rendas recorrentes.',
             'payment_day_value.min'     => 'O dia de pagamento deve ser no mínimo 1.',
             'payment_day_value.max'     => 'O dia de pagamento deve ser no máximo 31.',
+            'received_at.date'          => 'A data de recebimento deve ser uma data válida.',
+            'received_at.before_or_equal' => 'A data de recebimento não pode ser no futuro.',
             'bank_user_id.exists'       => 'A conta bancária selecionada não existe ou não pertence a você.',
+            'bank_account_id.exists'    => 'A conta bancária selecionada não existe ou não pertence a você.',
         ];
     }
 
@@ -89,6 +110,23 @@ class IncomeStoreRequest extends FormRequest
             $this->merge([
                 'is_active' => filter_var($this->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
+        }
+
+        if ($this->has('is_recurring')) {
+            $this->merge([
+                'is_recurring' => filter_var($this->is_recurring, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+            ]);
+        }
+
+        // Default payment_day fields for non-recurring incomes
+        $isRecurring = filter_var($this->is_recurring ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if (!$isRecurring) {
+            if (!$this->has('payment_day_type') || !$this->payment_day_type) {
+                $this->merge(['payment_day_type' => 'fixed']);
+            }
+            if (!$this->has('payment_day_value') || !$this->payment_day_value) {
+                $this->merge(['payment_day_value' => 1]);
+            }
         }
 
         if ($this->has('title')) {

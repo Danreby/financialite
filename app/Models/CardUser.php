@@ -16,14 +16,18 @@ class CardUser extends Model
         'card_id',
         'user_id',
         'due_day',
+        'closing_day',
+        'credit_limit',
     ];
 
     protected $casts = [
-        'due_day' => 'integer',
-        'card_id' => 'integer',
-        'user_id' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'due_day'      => 'integer',
+        'closing_day'  => 'integer',
+        'credit_limit' => 'decimal:2',
+        'card_id'      => 'integer',
+        'user_id'      => 'integer',
+        'created_at'   => 'datetime',
+        'updated_at'   => 'datetime',
     ];
 
     public function card(): BelongsTo

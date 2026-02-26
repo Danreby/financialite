@@ -16,6 +16,8 @@ class AttachCardToUserRequest extends FormRequest
         return [
             'card_id' => 'required|exists:cards,id',
             'due_day' => 'nullable|integer|min:1|max:31',
+            'closing_day' => 'nullable|integer|min:1|max:31',
+            'credit_limit' => 'nullable|numeric|min:0|max:999999999.99',
         ];
     }
 }

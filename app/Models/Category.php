@@ -14,10 +14,18 @@ class Category extends Model
 
     protected $table = 'categories';
 
+    public const VALID_TYPES = ['income', 'expense'];
+
+    public const TYPE_LABELS = [
+        'income'  => 'Receita',
+        'expense' => 'Despesa',
+    ];
+
     protected $fillable = [
         'name',
         'color',
         'icon',
+        'type',
         'user_id',
     ];
 
@@ -26,11 +34,25 @@ class Category extends Model
     ];
 
     protected $casts = [
-        'user_id' => 'integer',
+        'user_id'    => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
+
+    public function scopeOfType(Builder $query, string $type): Builder
+    {
+        if (in_array($type, self::VALID_TYPES, true)) {
+            return $query->where('type', $type);
+        }
+
+        return $query;
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return self::TYPE_LABELS[$this->type] ?? 'Despesa';
+    }
 
     public function transacoes(): HasMany
     {

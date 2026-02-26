@@ -15,7 +15,11 @@ class Income extends Model
 
     protected $table = 'incomes';
 
-    public const VALID_TYPES = ['salary', 'freelance', 'investment', 'rental', 'benefit', 'other'];
+    public const VALID_TYPES = ['salary', 'freelance', 'investment', 'rental', 'benefit', 'other', 'pix'];
+
+    public const RECURRING_TYPES = ['salary', 'freelance', 'investment', 'rental', 'benefit', 'other'];
+
+    public const ONE_TIME_TYPES = ['pix'];
 
     public const VALID_PAYMENT_DAY_TYPES = ['fixed', 'business_day'];
 
@@ -26,6 +30,7 @@ class Income extends Model
         'rental'     => 'Aluguel',
         'benefit'    => 'Benefício',
         'other'      => 'Outro',
+        'pix'        => 'Pix',
     ];
 
     protected $fillable = [
@@ -36,7 +41,10 @@ class Income extends Model
         'payment_day_type',
         'payment_day_value',
         'is_active',
+        'is_recurring',
+        'received_at',
         'bank_user_id',
+        'bank_account_id',
     ];
 
     protected $hidden = [
@@ -47,8 +55,11 @@ class Income extends Model
         'amount'            => 'decimal:2',
         'payment_day_value' => 'integer',
         'is_active'         => 'boolean',
+        'is_recurring'      => 'boolean',
+        'received_at'       => 'date',
         'user_id'           => 'integer',
         'bank_user_id'      => 'integer',
+        'bank_account_id'   => 'integer',
         'created_at'        => 'datetime',
         'updated_at'        => 'datetime',
         'deleted_at'        => 'datetime',
@@ -62,6 +73,26 @@ class Income extends Model
     public function bankUser(): BelongsTo
     {
         return $this->belongsTo(CardUser::class, 'bank_user_id');
+    }
+
+    public function bankAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankUser::class, 'bank_account_id');
+    }
+
+    public function scopeRecurring(Builder $query): Builder
+    {
+        return $query->where('is_recurring', true);
+    }
+
+    public function scopeOneTime(Builder $query): Builder
+    {
+        return $query->where('is_recurring', false);
+    }
+
+    public function isOneTimeType(): bool
+    {
+        return in_array($this->type, self::ONE_TIME_TYPES, true);
     }
 
     public function scopeForUser(Builder $query, int $userId): Builder
