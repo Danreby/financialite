@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { sanitizeFilterParams } from '@/Utils/security'
@@ -10,8 +10,15 @@ export function useExtratoData(initialFilters = {}) {
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const abortControllerRef = useRef(null)
 
   const fetchData = useCallback(async () => {
+    // Cancel any in-flight request before starting a new one
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    abortControllerRef.current = new AbortController()
+
     setLoading(true)
     setError(null)
 
@@ -27,6 +34,7 @@ export function useExtratoData(initialFilters = {}) {
       const response = await axios.get(route('extrato.data'), {
         params: sanitizedParams,
         timeout: 10000,
+        signal: abortControllerRef.current.signal,
       })
 
       const data = response.data || {}
@@ -35,6 +43,8 @@ export function useExtratoData(initialFilters = {}) {
       setIncomes(data.incomes || [])
       setSummary(data.summary || null)
     } catch (err) {
+      // Ignore aborted requests
+      if (axios.isCancel(err) || err.name === 'AbortError' || err.name === 'CanceledError') return
       console.error('Erro ao carregar extrato:', err)
       setError(err.response?.data?.message || 'Erro ao carregar extrato.')
       toast.error('Erro ao carregar dados do extrato.')
@@ -43,8 +53,18 @@ export function useExtratoData(initialFilters = {}) {
     }
   }, [filters])
 
+  // Debounce filter changes by 300ms to prevent rapid re-fetches
   useEffect(() => {
-    fetchData()
+    const timeout = setTimeout(() => {
+      fetchData()
+    }, 300)
+
+    return () => {
+      clearTimeout(timeout)
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
   }, [fetchData])
 
   const updateFilters = useCallback((newFilters) => {

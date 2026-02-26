@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import { toast } from 'react-toastify';
 import { AnimatePresence } from 'framer-motion';
@@ -17,7 +17,7 @@ import BankTransferHistory from '@/Components/system/bancos/BankTransferHistory'
 const formatCurrency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
 
-export default function Bancos({ bankAccounts, stats: initialStats }) {
+export default function Bancos({ bankAccounts, stats: initialStats, transfers: initialTransfers = [] }) {
   const initial = useMemo(() => {
     if (Array.isArray(bankAccounts?.data)) return bankAccounts.data;
     if (Array.isArray(bankAccounts)) return bankAccounts;
@@ -25,7 +25,9 @@ export default function Bancos({ bankAccounts, stats: initialStats }) {
   }, [bankAccounts]);
 
   const [accounts, setAccounts] = useState(initial);
-  const [transfers, setTransfers] = useState([]);
+  const [transfers, setTransfers] = useState(
+    Array.isArray(initialTransfers) ? initialTransfers : (initialTransfers?.data || [])
+  );
   const [stats, setStats] = useState(initialStats || null);
   const [saving, setSaving] = useState(false);
 
@@ -35,20 +37,6 @@ export default function Bancos({ bankAccounts, stats: initialStats }) {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState({ type: null, id: null, name: '' });
-
-  useEffect(() => {
-    const next = Array.isArray(bankAccounts?.data)
-      ? bankAccounts.data
-      : Array.isArray(bankAccounts)
-        ? bankAccounts
-        : [];
-    setAccounts(next);
-  }, [bankAccounts]);
-
-  useEffect(() => {
-    loadTransfers();
-    loadStats();
-  }, []);
 
   const loadTransfers = async () => {
     try {

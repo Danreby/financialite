@@ -11,9 +11,3 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     
     Route::apiResource('card-users', CardUserController::class);
 });
-
-Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
-    Route::apiResource('cards', CardController::class);
-    Route::get('card-users/stats', [CardUserController::class, 'stats']);
-    Route::apiResource('card-users', CardUserController::class);
-});

@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'action.limit' => \App\Http\Middleware\ActionRateLimiter::class,
+            'cache.api' => \App\Http\Middleware\CacheApiResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

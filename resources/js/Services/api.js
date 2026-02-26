@@ -147,13 +147,6 @@ const normalizeError = (error) => {
 
 api.interceptors.request.use(
     (config) => {
-        if (config.method === 'get') {
-            config.params = {
-                ...config.params,
-                _t: Date.now(),
-            };
-        }
-
         return config;
     },
     (error) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import axios from 'axios'
 import { Head } from '@inertiajs/react'
 import { toast } from 'react-toastify'
@@ -20,6 +20,7 @@ import BudgetForm from '@/Components/system/BudgetForm'
 import BillPaymentForm from '@/Components/system/BillPaymentForm'
 import ScrollArea from '@/Components/common/ScrollArea'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
+import { dashboardService } from '@/Services/dashboardService'
 
 function formatDateLabel(value) {
   if (!value) return ''
@@ -170,21 +171,23 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   }
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       try {
-        const [faturasResponse, statsResponse, insightsResponse] = await Promise.all([
-          axios.get(route('transacoes.index'), { params: { ...currentFilters, page } }),
-          axios.get(route('transacoes.stats'), { params: { ...currentFilters } }),
-          axios.get(route('transacoes.insights'), { params: { ...currentFilters } }),
-        ])
+        // Single consolidated request instead of 3 separate ones
+        dashboardService.invalidateCache()
+        const response = await dashboardService.getData(currentFilters, page)
 
-        const payload = faturasResponse.data || {}
+        if (cancelled) return
+
+        const payload = response.transactions || {}
         setData(payload)
 
         const faturas = payload.data || []
         setRecentFaturas(faturas)
 
-        const statsPayload = statsResponse.data || {}
+        const statsPayload = response.stats || {}
 
         const currentMonthDebitTotal = Number(statsPayload.current_month_debit_total || 0)
         const remainingMoney = Number(statsPayload.remaining_money || 0)
@@ -309,8 +312,9 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           percentage: Number(statsPayload.non_recurring_spending?.percentage || 0),
         })
 
-        setDashboardInsights(insightsResponse.data || null)
+        setDashboardInsights(response.insights || null)
       } catch (error) {
+        if (cancelled) return
         console.error(error)
         if (error.response?.data?.message) {
           toast.error(error.response.data.message)
@@ -319,6 +323,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
         }
       }
     })()
+
+    return () => { cancelled = true }
   }, [currentFilters, page, reloadKey])
 
   return (

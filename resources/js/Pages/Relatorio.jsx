@@ -39,24 +39,17 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		const load = async () => {
 			setIsLoading(true);
 			try {
-				const [statsResponse, exportResponse] = await Promise.all([
-					axios.get(route("transacoes.stats"), {
-						params: {
-							bank_user_id: selectedBankId || undefined,
-							category_id: selectedCategoryId || undefined,
-						},
-					}),
-					axios.get(route("transacoes.export_data"), {
-						params: {
-							bank_user_id: selectedBankId || undefined,
-							category_id: selectedCategoryId || undefined,
-						},
-					}),
-				]);
+				// Single consolidated request instead of 2 separate ones
+				const response = await axios.get(route("reports.data"), {
+					params: {
+						bank_user_id: selectedBankId || undefined,
+						category_id: selectedCategoryId || undefined,
+					},
+				});
 
 				if (!isMounted) return;
 
-				const payload = statsResponse.data || {};
+				const payload = response.data?.stats || {};
 				setStats({
 					total_income: Number(payload.total_income || 0),
 					total_expenses: Number(payload.total_expenses || 0),
@@ -84,7 +77,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 					};
 				};
 
-				const raw = Array.isArray(exportResponse.data) ? exportResponse.data : [];
+				const raw = Array.isArray(response.data?.export_data) ? response.data.export_data : [];
 				const normalized = raw.map(normalizeTransaction);
 
 				const grouped = normalized.reduce((acc, item) => {

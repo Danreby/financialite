@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Head, router } from "@inertiajs/react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -41,8 +41,15 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 	const [transactionToDelete, setTransactionToDelete] = useState(null);
 	const [isDeletingId, setIsDeletingId] = useState(null);
 	const [detailTransaction, setDetailTransaction] = useState(null);
+	const isFirstRender = useRef(true);
 
 	useEffect(() => {
+		// Skip the initial render since we already have SSR data
+		if (isFirstRender.current) {
+			isFirstRender.current = false;
+			return;
+		}
+
 		const timeout = setTimeout(() => {
 			router.get(route('transactions.index'), {
 				bank_user_id: selectedBankId || undefined,

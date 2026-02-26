@@ -4,3 +4,5 @@ export { bankAccountService, bankTransferService } from './bankService';
 export { categoryService } from './categoryService';
 export { anexoService } from './anexoService';
 export { notificationService } from './notificationService';
+export { dashboardService } from './dashboardService';
+export { requestCache } from './requestCache';

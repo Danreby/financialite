@@ -5,6 +5,8 @@ use App\Http\Controllers\CardController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\TransacaoController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportController;
 use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Transacao;
@@ -50,6 +52,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/dashboard/data', [DashboardController::class, 'data'])
+        ->middleware('cache.api:15')
+        ->name('dashboard.data');
+
+    Route::get('/reports/data', [ReportController::class, 'data'])
+        ->middleware('cache.api:15')
+        ->name('reports.data');
 
     Route::get('/accounts', function () {
             $user = request()->user();
@@ -258,6 +268,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/notifications', [NotificationController::class, 'clearAll'])
         ->name('notifications.clear-all');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])
+        ->middleware('cache.api:10')
         ->name('notifications.unread-count');
 });
 

@@ -48,6 +48,8 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
+      // Skip polling when tab is not visible to save requests
+      if (document.hidden) return
       try {
         const response = await axios.get(route('notifications.unread-count'))
         setUnreadCount(Number(response.data?.unread_count || 0))
@@ -57,8 +59,21 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
     }
 
     fetchUnreadCount()
-    const interval = setInterval(fetchUnreadCount, 30000)
-    return () => clearInterval(interval)
+    // Poll every 60 seconds instead of 30, and pause when tab is hidden
+    const interval = setInterval(fetchUnreadCount, 60000)
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchUnreadCount()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const toggleTheme = () => setIsDark((prev) => !prev)
