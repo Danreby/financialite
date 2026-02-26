@@ -1,7 +1,7 @@
 # 💰 Financialite
 
 > Uma plataforma web completa para gerenciamento de finanças pessoais e controle de faturas, é possivel acessar o projeto pelo link https://financialite.rolims.com
->ps.: Quando fiz esse codigo só eu e Deus sabíamos... agora só Ele sabe
+>ps.: Quando fiz esse codigo só eu e Deus sabíamos como funcionava... agora só Ele sabe
 
 ## 📋 Visão Geral
 
