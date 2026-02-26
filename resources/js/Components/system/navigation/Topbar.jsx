@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 import axios from 'axios'
 import BareButton from '@/Components/common/buttons/BareButton'
 import BellIcon from '@/Components/common/icons/BellIcon'
@@ -7,6 +7,8 @@ import SunIcon from '@/Components/common/icons/SunIcon'
 import { AnimatePresence, motion } from 'framer-motion'
 
 export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNotifications, onOpenMobileNav }) {
+  const { unreadNotificationCount: initialUnread = 0 } = usePage().props
+
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === 'undefined') return false
     const stored = window.localStorage.getItem('theme')
@@ -14,8 +16,21 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
     return stored === 'dark' || (!stored && prefersDark)
   })
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
+  // Seed unread count from Inertia shared props — no extra request on mount
+  const [unreadCount, setUnreadCount] = useState(Number(initialUnread ?? 0))
   const userMenuRef = useRef(null)
+  // Track whether initial Inertia seed has already been applied so navigation
+  // between pages updates the count correctly without a network request.
+  const lastInertiaUnreadRef = useRef(Number(initialUnread ?? 0))
+
+  // Sync with Inertia shared prop on every page navigation (prop changes value)
+  useEffect(() => {
+    const incoming = Number(initialUnread ?? 0)
+    if (incoming !== lastInertiaUnreadRef.current) {
+      lastInertiaUnreadRef.current = incoming
+      setUnreadCount(incoming)
+    }
+  }, [initialUnread])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -58,9 +73,14 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
       }
     }
 
-    fetchUnreadCount()
-    // Poll every 60 seconds instead of 30, and pause when tab is hidden
-    const interval = setInterval(fetchUnreadCount, 60000)
+    // Do NOT call fetchUnreadCount() on mount — the count is already seeded
+    // from Inertia shared props, so we save one network request per page load.
+    // Poll every 90 seconds; pause when the tab is hidden.
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchUnreadCount()
+      }
+    }, 90_000)
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {

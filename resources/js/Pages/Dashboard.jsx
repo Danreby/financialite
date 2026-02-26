@@ -57,6 +57,9 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [editingBill, setEditingBill] = useState(null)
   const [payingBill, setPayingBill] = useState(null)
 
+  // Track previous reloadKey to only invalidate cache on explicit mutations
+  const prevReloadKeyRef = useRef(reloadKey)
+
   const handleMonthClick = useCallback(async (monthKey) => {
     let shouldFetchData = true
 
@@ -173,10 +176,16 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
+    // Only invalidate cache when a mutation occurred (reloadKey changed),
+    // not on every filter/page change — filter changes produce a different
+    // cache key automatically via requestCache._buildKey.
+    if (reloadKey !== prevReloadKeyRef.current) {
+      prevReloadKeyRef.current = reloadKey
+      dashboardService.invalidateCache()
+    }
+
+    ;(async () => {
       try {
-        // Single consolidated request instead of 3 separate ones
-        dashboardService.invalidateCache()
         const response = await dashboardService.getData(currentFilters, page)
 
         if (cancelled) return

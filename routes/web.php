@@ -254,7 +254,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return response()->json(['theme' => $theme]);
     })->name('settings.theme');
 
-    Route::get('/cards/list', [CardController::class, 'list'])->name('cards.list');
+    Route::get('/cards/list', [CardController::class, 'list'])
+        ->middleware('cache.api:30')
+        ->name('cards.list');
     Route::post('/cards/attach', [CardController::class, 'attachToUser'])->name('cards.attach');
     Route::patch('/cards/user/{cardUser}/due-day', [CardController::class, 'updateDueDay'])
         ->name('cards.update-due-day');

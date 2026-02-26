@@ -7,12 +7,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->group(function () {
 	Route::prefix('transacoes')->name('transacoes.')->group(function () {
 		Route::get('/', [TransacaoController::class, 'index'])->name('index');
-		Route::get('/stats', [TransacaoController::class, 'stats'])->name('stats');
+		Route::get('/stats', [TransacaoController::class, 'stats'])
+			->middleware('cache.api:15')
+			->name('stats');
 		Route::get('/insights', [TransacaoController::class, 'getInsights'])
-			->middleware('action.limit:insights,30')
+			->middleware(['action.limit:insights,30', 'cache.api:15'])
 			->name('insights');
 		Route::get('/top-spending-by-period', [TransacaoController::class, 'topSpendingByPeriod'])
-			->middleware('action.limit:top_spending_period,30')
+			->middleware(['action.limit:top_spending_period,30', 'cache.api:15'])
 			->name('top_spending_by_period');
 		Route::get('/export-data', [TransacaoController::class, 'exportData'])
 			->middleware('action.limit:export,10')

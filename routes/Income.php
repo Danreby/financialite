@@ -24,6 +24,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('extrato')->name('extrato.')->group(function () {
         Route::get('/', [ExtratoController::class, 'index'])->name('index');
-        Route::get('/data', [ExtratoController::class, 'data'])->name('data');
+        Route::get('/data', [ExtratoController::class, 'data'])
+            ->middleware('cache.api:15')
+            ->name('data');
     });
 });

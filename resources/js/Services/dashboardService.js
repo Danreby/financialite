@@ -1,7 +1,11 @@
 import { apiService } from './api';
 import requestCache from './requestCache';
 
-const DASHBOARD_CACHE_TTL = 15_000;
+// Fresh for 20s, then stale-while-revalidate for another 40s.
+// The backend also has a 15s HTTP cache (cache.api:15) so the net
+// effect is at most one API request per 15s even without client caching.
+const DASHBOARD_CACHE_TTL = 20_000;
+const DASHBOARD_STALE_TTL = 40_000;
 
 export const dashboardService = {
     getData: async (filters = {}, page = 1) => {
@@ -19,7 +23,7 @@ export const dashboardService = {
         return requestCache.dedup(url, cleanParams, async () => {
             const response = await apiService.get(url, cleanParams);
             return response.data;
-        }, DASHBOARD_CACHE_TTL);
+        }, DASHBOARD_CACHE_TTL, DASHBOARD_STALE_TTL);
     },
 
     invalidateCache: () => {
@@ -28,3 +32,4 @@ export const dashboardService = {
 };
 
 export default dashboardService;
+
