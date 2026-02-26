@@ -36,10 +36,16 @@ const FloatLabelField = forwardRef(
         const effectiveValue =
             value !== undefined && value !== null ? value : internalValue;
 
+        // Also consider value passed via inputProps (for controlled inputs that
+        // skip the top-level `value` prop and drive the input through inputProps)
+        const inputPropsValue = inputProps?.value;
         const hasValue =
-            effectiveValue !== undefined &&
-            effectiveValue !== null &&
-            String(effectiveValue).length > 0;
+            (effectiveValue !== undefined &&
+                effectiveValue !== null &&
+                String(effectiveValue).length > 0) ||
+            (inputPropsValue !== undefined &&
+                inputPropsValue !== null &&
+                String(inputPropsValue).length > 0);
         const isFloating = isFocused || hasValue;
 
         const baseInputClasses =

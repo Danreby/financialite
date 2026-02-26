@@ -27,11 +27,17 @@ class BankController extends Controller
 
     public function page(Request $request): Response
     {
-        $user = $request->user();
-        $stats = $this->bankAccountService->getStats($user->id);
-        $transfers = $this->bankTransferService->listForUser($user->id, 15);
+        $user         = $request->user();
+        $bankAccounts = $this->bankAccountService->listForUser($user->id);
+        $stats        = $this->bankAccountService->getStats($user->id);
+        $transfers    = $this->bankTransferService->listForUser($user->id, 15);
 
         return Inertia::render('Bancos', [
+            'bankAccounts' => $bankAccounts->map(fn ($bu) => [
+                'id'      => $bu->id,
+                'balance' => (float) $bu->balance,
+                'bank'    => $bu->bank ? ['id' => $bu->bank->id, 'name' => $bu->bank->name] : null,
+            ]),
             'stats'     => $stats,
             'transfers' => $transfers->map(fn ($t) => [
                 'id'          => $t->id,

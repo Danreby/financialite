@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import axios from 'axios';
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { toast } from 'react-toastify';
 import { AnimatePresence } from 'framer-motion';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -27,9 +27,20 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 	const [payingBill, setPayingBill] = useState(null);
 	const [deletingBill, setDeletingBill] = useState(null);
 
+	// Fetch fresh bill data from the API (ensures correct user data regardless of SSR state)
+	const loadBills = useCallback(async () => {
+		try {
+			const response = await axios.get(route('bills.index'));
+			const data = response.data;
+			setBills(Array.isArray(data) ? data : (data?.data ?? []));
+		} catch {
+			// silently fall back to Inertia SSR data
+		}
+	}, []);
+
 	useEffect(() => {
-		setBills(initialBills);
-	}, [initialBills]);
+		loadBills();
+	}, [loadBills]);
 
 	const stats = useMemo(() => {
 		const active = bills.filter((b) => b.status === 'active');
@@ -72,11 +83,11 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 		return result;
 	}, [bills, filter, search]);
 
-	const handleFormSuccess = useCallback(() => {
+	const handleFormSuccess = useCallback(async () => {
 		setIsFormOpen(false);
 		setEditingBill(null);
-		router.reload({ only: ['bills'] });
-	}, []);
+		await loadBills();
+	}, [loadBills]);
 
 	const handleEdit = (bill) => {
 		setEditingBill(bill);
@@ -100,11 +111,11 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 		setPayingBill({ ...bill, due_date: dueDate });
 	};
 
-	const handlePaySuccess = useCallback(() => {
+	const handlePaySuccess = useCallback(async () => {
 		setPayingBill(null);
 		toast.success('Pagamento registrado com sucesso!');
-		router.reload({ only: ['bills'] });
-	}, []);
+		await loadBills();
+	}, [loadBills]);
 
 	const handleToggle = async (bill) => {
 		setSaving(true);
