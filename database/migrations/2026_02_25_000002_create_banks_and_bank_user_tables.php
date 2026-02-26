@@ -21,11 +21,14 @@ return new class extends Migration
         if (!Schema::hasTable('bank_user')) {
             Schema::create('bank_user', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('bank_id')->constrained('banks')->cascadeOnDelete();
-                $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+                $table->unsignedBigInteger('bank_id');
+                $table->unsignedBigInteger('user_id');
                 $table->decimal('balance', 14, 2)->default(0);
-                $table->unique(['bank_id', 'user_id']);
+                $table->unique(['bank_id', 'user_id'], 'bu_bank_id_user_id_uniq');
                 $table->timestamps();
+
+                $table->foreign('bank_id', 'bu_bank_id_fk')->references('id')->on('banks')->cascadeOnDelete();
+                $table->foreign('user_id', 'bu_user_id_fk')->references('id')->on('users')->cascadeOnDelete();
             });
         } else {
             if (!Schema::hasColumn('bank_user', 'balance')) {
