@@ -86,11 +86,12 @@ class ProfileController extends Controller
         $savingsSummary = $this->savingsService->summaryForUser($user->id);
 
         $userStats = [
-            'member_since'     => $user->created_at?->format('d/m/Y'),
-            'banks_count'      => $user->bankUsers()->count(),
-            'categories_count' => $user->categories()->count(),
-            'incomes_count'    => $user->incomes()->where('is_active', true)->count(),
+            'member_since'       => $user->created_at?->format('d/m/Y'),
+            'banks_count'        => $user->bankUsers()->count(),
+            'categories_count'   => $user->categories()->count(),
+            'incomes_count'      => $user->incomes()->where('is_active', true)->count(),
             'transactions_count' => $user->transacoes()->count(),
+            'savings_goals_count'=> $user->savingsGoals()->count(),
         ];
 
         return Inertia::render('Profile/Edit', [
