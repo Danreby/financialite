@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transacao;
 use App\Models\CardUser;
+use App\Models\BankUser;
 use App\Services\FaturaService;
 use App\Services\FaturaExportService;
 use App\Services\FaturaImportService;
@@ -102,9 +103,19 @@ class FaturaController extends Controller
             return $this->success($paginated);
         }
 
+        $debitAccounts = BankUser::with('bank')
+            ->forUser($user->id)
+            ->get()
+            ->map(fn (BankUser $bu) => [
+                'id' => $bu->id,
+                'name' => $bu->bank?->name ?? ('Conta #' . $bu->id),
+                'balance' => (float) $bu->balance,
+            ]);
+
         return Inertia::render('Fatura', [
             'monthlyGroups' => $dashboard['monthly_groups'],
             'bankAccounts' => $dashboard['bank_accounts'],
+            'debitAccounts' => $debitAccounts,
             'currentMonthKey' => $dashboard['current_month_key'],
             'filters' => [
                 'bank_user_id' => $request->input('bank_user_id'),
@@ -214,8 +225,10 @@ class FaturaController extends Controller
             $this->authorize('view', $bankUser);
         }
 
+        $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
+
         try {
-            $totalPaidThisRun = $this->paymentService->payMonthForUser($user, $data['month'], $bankUser ?? null);
+            $totalPaidThisRun = $this->paymentService->payMonthForUser($user, $data['month'], $bankUser, $bankAccount);
 
             if ($totalPaidThisRun <= 0) {
                 return $this->success(['message' => 'Nenhuma fatura pendente para este mês.']);

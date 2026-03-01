@@ -24,6 +24,12 @@ class PayMonthRequest extends FormRequest
                     $query->where('user_id', $userId);
                 }),
             ],
+            'bank_account_id' => [
+                'required',
+                Rule::exists('bank_user', 'id')->where(function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }),
+            ],
         ];
     }
 }
