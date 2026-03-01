@@ -82,7 +82,7 @@ function useNumericInput(initialValue = '', min, max) {
 	};
 }
 
-export default function Fatura({ monthlyGroups = [], bankAccounts = [], categories = [], filters = {}, currentMonthKey = null }) {
+export default function Fatura({ monthlyGroups = [], bankAccounts = [], debitAccounts = [], categories = [], filters = {}, currentMonthKey = null }) {
 	const normalizedMonthlyGroups = useMemo(() => {
 		if (!Array.isArray(monthlyGroups)) return [];
 
@@ -271,6 +271,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], categori
 									month_key={selectedGroup.month_key}
 									bankUserId={selectedBankId || null}
 									bankAccounts={bankAccounts}
+									debitAccounts={debitAccounts}
 									due_day={selectedAccount?.due_day ?? null}
 									onPaid={handlePaidMonth}
 									isCurrentPending={

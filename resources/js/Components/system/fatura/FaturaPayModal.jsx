@@ -1,12 +1,18 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Landmark, AlertTriangle } from "lucide-react";
 import Modal from "@/Components/common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import Autocomplete from "@/Components/common/inputs/Autocomplete";
 import FaturaCardTransactionList from "@/Components/system/fatura/FaturaCardTransactionList";
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
 
 export default function FaturaPayModal({
   isOpen,
@@ -16,16 +22,19 @@ export default function FaturaPayModal({
   items = [],
   bankUserId = null,
   bankAccounts = [],
+  debitAccounts = [],
   onPaid,
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState(
     bankUserId ? String(bankUserId) : ""
   );
+  const [selectedBankAccountId, setSelectedBankAccountId] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setSelectedCardId(bankUserId ? String(bankUserId) : "");
+      setSelectedBankAccountId("");
     }
   }, [isOpen, bankUserId]);
 
@@ -38,8 +47,21 @@ export default function FaturaPayModal({
     [bankAccounts]
   );
 
+  const bankAccountOptions = useMemo(
+    () =>
+      debitAccounts.map((acc) => ({
+        value: String(acc.id),
+        label: `${acc.name} · ${formatCurrency(acc.balance)}`,
+      })),
+    [debitAccounts]
+  );
+
   const handleCardSelect = useCallback((value) => {
     setSelectedCardId(value ? String(value) : "");
+  }, []);
+
+  const handleBankAccountSelect = useCallback((value) => {
+    setSelectedBankAccountId(value ? String(value) : "");
   }, []);
 
   const pendingItems = useMemo(() => {
@@ -65,8 +87,20 @@ export default function FaturaPayModal({
     [bankAccounts, selectedCardId]
   );
 
+  const selectedBankAccount = useMemo(
+    () =>
+      debitAccounts.find((a) => String(a.id) === selectedBankAccountId) ?? null,
+    [debitAccounts, selectedBankAccountId]
+  );
+
+  const isInsufficientBalance =
+    selectedBankAccount && totalToPay > 0 && selectedBankAccount.balance < totalToPay;
+
   const canPay =
-    !isSubmitting && !!selectedCardId && pendingItems.length > 0;
+    !isSubmitting &&
+    !!selectedCardId &&
+    !!selectedBankAccountId &&
+    pendingItems.length > 0;
 
   const handleSubmit = async () => {
     if (!canPay) return;
@@ -77,6 +111,7 @@ export default function FaturaPayModal({
       await axios.post(route("transacoes.pay_month"), {
         month: monthKey,
         bank_user_id: selectedCardId,
+        bank_account_id: selectedBankAccountId,
       });
 
       toast.success("Pagamentos registrados com sucesso.");
@@ -123,6 +158,62 @@ export default function FaturaPayModal({
           {!selectedCardId && (
             <p className="mt-2 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
               Selecione o cartão para ver as transações pendentes da fatura.
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-4 dark:border-gray-700 dark:bg-gray-900/30">
+          <label className="mb-2 flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <Landmark className="w-3.5 h-3.5 shrink-0" />
+            Conta bancária para pagamento
+          </label>
+
+          <Autocomplete
+            options={bankAccountOptions}
+            value={selectedBankAccountId}
+            onChange={handleBankAccountSelect}
+            placeholder="Selecione a conta…"
+            name="pay_bank_account_id"
+          />
+
+          {selectedBankAccount && (
+            <div className="mt-2 space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Saldo disponível</span>
+                <span className={`font-semibold ${
+                  isInsufficientBalance
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-green-600 dark:text-green-400'
+                }`}>
+                  {formatCurrency(selectedBankAccount.balance)}
+                </span>
+              </div>
+
+              {totalToPay > 0 && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500 dark:text-gray-400">Saldo após pagamento</span>
+                  <span className={`font-medium ${
+                    isInsufficientBalance
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {formatCurrency(selectedBankAccount.balance - totalToPay)}
+                  </span>
+                </div>
+              )}
+
+              {isInsufficientBalance && (
+                <div className="flex items-center gap-1.5 mt-1 text-[11px] text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Saldo insuficiente para cobrir o valor total da fatura</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!selectedBankAccountId && (
+            <p className="mt-2 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+              Selecione a conta bancária de onde o pagamento será debitado.
             </p>
           )}
         </div>

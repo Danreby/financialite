@@ -15,6 +15,7 @@ export default function FaturaMonthSection({
   month_key,
   bankUserId = null,
   bankAccounts = [],
+  debitAccounts = [],
   onPaid,
   is_paid = false,
   due_day = null,
@@ -154,6 +155,7 @@ export default function FaturaMonthSection({
         items={items}
         bankUserId={bankUserId}
         bankAccounts={bankAccounts}
+        debitAccounts={debitAccounts}
         onPaid={onPaid}
       />
       <FaturaDetailModal
