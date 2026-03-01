@@ -19,6 +19,7 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
     const visibleMonths = months.filter((m) => m.combinedTotal > 0);
     const hasAny        = visibleMonths.length > 0;
     const hasSimulated  = (totals.simulatedAll ?? 0) > 0;
+    const hasRecurring  = months.some((m) => (m.realRecurringCreditTotal ?? 0) + (m.realRecurringDebitTotal ?? 0) > 0);
 
     return (
         <div className="flex flex-col gap-0">
@@ -31,8 +32,14 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
                         <div className="flex items-center gap-2">
                             <span className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
                                 <span className="h-2 w-2 rounded-full bg-blue-400 dark:bg-blue-500 shrink-0" />
-                                Atual
+                                Parcelado
                             </span>
+                            {hasRecurring && (
+                                <span className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
+                                    <span className="h-2 w-2 rounded-full bg-blue-300 dark:bg-blue-400 shrink-0" />
+                                    Recorrente
+                                </span>
+                            )}
                             {hasSimulated && (
                                 <span className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
                                     <span
@@ -97,7 +104,7 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
                             Nenhum gasto projetado
                         </p>
                         <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
-                            Adicione parcelamentos ou simulações para visualizar
+                            Adicione parcelamentos, transações recorrentes ou simulações para visualizar
                         </p>
                     </div>
                 </div>

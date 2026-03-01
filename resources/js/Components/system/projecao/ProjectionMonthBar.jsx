@@ -16,6 +16,9 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
     const {
         ym,
         isCurrentMonth,
+        realInstallmentTotal,
+        realRecurringCreditTotal,
+        realRecurringDebitTotal,
         realCreditTotal,
         realDebitTotal,
         simulatedCreditTotal,
@@ -24,6 +27,7 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
         simulatedTotal,
         combinedTotal,
         simulationBreakdown,
+        recurringBreakdown = [],
     } = data;
 
     const safeMax      = maxValue > 0 ? maxValue : 1;
@@ -31,8 +35,8 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
     const realRatio    = combinedTotal > 0 ? (realTotal / combinedTotal) * 100 : 0;
     const simulRatio   = combinedTotal > 0 ? (simulatedTotal / combinedTotal) * 100 : 0;
     const hasSimulated = simulatedTotal > 0;
-    const hasBreakdown = simulationBreakdown.length > 0;
-    const hasSubInfo   = realCreditTotal > 0 || realDebitTotal > 0 || simulatedCreditTotal > 0 || simulatedDebitTotal > 0;
+    const hasBreakdown = simulationBreakdown.length > 0 || recurringBreakdown.length > 0;
+    const hasSubInfo   = realInstallmentTotal > 0 || realRecurringCreditTotal > 0 || realRecurringDebitTotal > 0 || simulatedCreditTotal > 0 || simulatedDebitTotal > 0;
 
     return (
         <div className="group">
@@ -130,8 +134,9 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
 
                 {hasSubInfo && (
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 pl-[68px] text-[10px] text-gray-400 dark:text-gray-600">
-                        {realCreditTotal > 0 && <span>💳 {formatCurrencyBRL(realCreditTotal)}</span>}
-                        {realDebitTotal > 0 && <span>🏦 {formatCurrencyBRL(realDebitTotal)}</span>}
+                        {realInstallmentTotal > 0 && <span>💳 {formatCurrencyBRL(realInstallmentTotal)}</span>}
+                        {realRecurringCreditTotal > 0 && <span>🔁 cred {formatCurrencyBRL(realRecurringCreditTotal)}</span>}
+                        {realRecurringDebitTotal > 0 && <span>🔁 déb {formatCurrencyBRL(realRecurringDebitTotal)}</span>}
                         {simulatedCreditTotal > 0 && (
                             <span style={{ color: 'var(--theme-accent)' }}>+cred {formatCurrencyBRL(simulatedCreditTotal)}</span>
                         )}
@@ -153,20 +158,42 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                         className="overflow-hidden"
                     >
                         <div className="mx-3 mb-2 rounded-lg border border-gray-100 dark:border-white/[0.06] px-3 py-2 flex flex-col gap-1.5">
-                            <span className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold">
-                                Itens simulados neste mês
-                            </span>
-                            {simulationBreakdown.map((item) => (
-                                <div key={item.id} className="flex items-center justify-between">
-                                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{item.title}</span>
-                                    <span
-                                        className="shrink-0 text-xs font-semibold ml-3"
-                                        style={{ color: 'var(--theme-accent)' }}
-                                    >
-                                        {formatCurrencyBRL(item.amount)}
+                            {recurringBreakdown.length > 0 && (
+                                <>
+                                    <span className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold">
+                                        Recorrentes neste mês
                                     </span>
-                                </div>
-                            ))}
+                                    {recurringBreakdown.map((item) => (
+                                        <div key={item.id} className="flex items-center justify-between">
+                                            <span className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 truncate">
+                                                <span>🔁</span>
+                                                {item.title}
+                                            </span>
+                                            <span className="shrink-0 text-xs font-semibold ml-3 text-blue-500 dark:text-blue-400">
+                                                {formatCurrencyBRL(item.amount)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
+                            {simulationBreakdown.length > 0 && (
+                                <>
+                                    <span className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold mt-1">
+                                        Itens simulados neste mês
+                                    </span>
+                                    {simulationBreakdown.map((item) => (
+                                        <div key={item.id} className="flex items-center justify-between">
+                                            <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{item.title}</span>
+                                            <span
+                                                className="shrink-0 text-xs font-semibold ml-3"
+                                                style={{ color: 'var(--theme-accent)' }}
+                                            >
+                                                {formatCurrencyBRL(item.amount)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}

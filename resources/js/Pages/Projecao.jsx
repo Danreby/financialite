@@ -60,10 +60,11 @@ function StatCard({ label, value, sub, icon, accentBg = false }) {
 
 
 export default function Projecao({
-    installments     = [],
-    bankAccounts     = [],
-    categories       = [],
-    currentMonthStats = { credit: 0, debit: 0, month: '' },
+    installments          = [],
+    recurringTransactions = [],
+    bankAccounts          = [],
+    categories            = [],
+    currentMonthStats     = { credit: 0, debit: 0, month: '' },
 }) {
     const [simulations, setSimulations] = useState(() => loadStoredSimulations());
     const [monthsAhead, setMonthsAhead] = useState(12);
@@ -71,6 +72,7 @@ export default function Projecao({
 
     const projectionData = useProjectionEngine({
         installments,
+        recurringTransactions,
         simulations,
         currentMonthStats,
         monthsAhead,
@@ -86,10 +88,14 @@ export default function Projecao({
 
     const now = new Date().toISOString().slice(0, 7);
 
-    const totalActiveInstallments = installments.filter((i) => i.completion_month >= now).length;
-    const totalRemainingReal      = installments.reduce(
+    const totalActiveInstallments  = installments.filter((i) => i.completion_month >= now).length;
+    const totalRemainingReal       = installments.reduce(
         (s, i) => s + i.installment_amount * i.remaining_installments, 0,
     );
+    const totalActiveRecurring     = recurringTransactions.filter((r) => r.start_month <= now).length;
+    const monthlyRecurringExpense  = recurringTransactions
+        .filter((r) => r.start_month <= now)
+        .reduce((s, r) => s + r.amount, 0);
     const simulatedImpactNow   = projectionData.months[0]?.simulatedTotal ?? 0;
     const totalSimulatedBurden = projectionData.totals.simulatedAll;
     const hasSimulations       = simulations.length > 0;
@@ -149,22 +155,22 @@ export default function Projecao({
                 <FadeInItem>
                     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
                         <StatCard
-                            label="Crédito este mês"
-                            value={formatCurrencyBRL(currentMonthStats.credit)}
-                            sub="em parcelamentos ativos"
-                            icon="💳"
-                        />
-                        <StatCard
-                            label="Débito este mês"
-                            value={formatCurrencyBRL(currentMonthStats.debit)}
-                            sub="gastos à vista"
-                            icon="🏦"
-                        />
-                        <StatCard
                             label="Parcelamentos ativos"
                             value={totalActiveInstallments}
                             sub={`${formatCurrencyBRL(totalRemainingReal)} restante total`}
-                            icon="📋"
+                            icon="💳"
+                        />
+                        <StatCard
+                            label="Recorrentes ativos"
+                            value={totalActiveRecurring}
+                            sub={`${formatCurrencyBRL(monthlyRecurringExpense)}/mês`}
+                            icon="🔁"
+                        />
+                        <StatCard
+                            label="Total projetado (real)"
+                            value={formatCurrencyBRL(projectionData.totals.realAll)}
+                            sub={`próximos ${monthsAhead} meses`}
+                            icon="📊"
                         />
                         <StatCard
                             label="Total simulado"

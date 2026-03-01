@@ -86,11 +86,47 @@ class ProjecaoController extends Controller
             ];
         });
 
+        // Recurring transactions: they repeat every month indefinitely
+        $recurringTxs = Transacao::with(['bankUser.card', 'category'])
+            ->where('user_id', $user->id)
+            ->where('is_recurring', true)
+            ->where(function ($q) {
+                $q->whereNull('total_installments')
+                  ->orWhere('total_installments', '<=', 1);
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        $recurringTransactions = $recurringTxs->map(function ($tx) {
+            $createdAt = Carbon::parse($tx->created_at);
+            $dueDay    = $tx->bankUser?->due_day ?? 1;
+
+            // Determine the first month in which this recurring item appears on statement
+            $startMonth = $createdAt->day <= $dueDay
+                ? $createdAt->copy()->startOfMonth()
+                : $createdAt->copy()->addMonth()->startOfMonth();
+
+            return [
+                'id'             => $tx->id,
+                'title'          => $tx->title,
+                'amount'         => (float) $tx->amount,
+                'type'           => $tx->type ?? 'debit',
+                'start_month'    => $startMonth->format('Y-m'),
+                'bank_user_id'   => $tx->bankUser?->id,
+                'bank_name'      => $tx->bankUser?->card?->name,
+                'category_id'    => $tx->category?->id,
+                'category_name'  => $tx->category?->name,
+                'category_icon'  => $tx->category?->icon,
+                'category_color' => $tx->category?->color,
+            ];
+        });
+
         return Inertia::render('Projecao', [
-            'installments'        => $installments,
-            'bankAccounts'        => $bankAccounts,
-            'categories'          => $categories,
-            'currentMonthStats'   => [
+            'installments'          => $installments,
+            'recurringTransactions' => $recurringTransactions,
+            'bankAccounts'          => $bankAccounts,
+            'categories'            => $categories,
+            'currentMonthStats'     => [
                 'credit' => (float) $currentMonthCredit,
                 'debit'  => (float) $currentMonthDebit,
                 'month'  => $now->format('Y-m'),

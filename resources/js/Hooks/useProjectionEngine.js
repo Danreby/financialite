@@ -25,6 +25,15 @@ function realAmountInMonth(installment, targetYM) {
 }
 
 /**
+ * Returns the amount of a recurring transaction in a given YYYY-MM month.
+ * A recurring transaction applies every month from start_month onwards.
+ */
+function recurringAmountInMonth(recurring, targetYM) {
+    if (compareYM(targetYM, recurring.start_month) < 0) return 0;
+    return recurring.amount;
+}
+
+/**
  * Returns the simulated installment amount billed in a given YYYY-MM month.
  */
 function simulatedAmountInMonth(simulation, targetYM) {
@@ -39,16 +48,18 @@ function simulatedAmountInMonth(simulation, targetYM) {
  * Custom hook that computes monthly projection data.
  *
  * @param {Object}   params
- * @param {Array}    params.installments       - Real installments from backend
- * @param {Array}    params.simulations        - Simulated items added by user
- * @param {Object}   params.currentMonthStats  - { credit, debit, month: 'YYYY-MM' }
- * @param {number}   params.monthsAhead        - How many months to project (default 24)
+ * @param {Array}    params.installments           - Real installment transactions from backend
+ * @param {Array}    params.recurringTransactions  - Recurring transactions that repeat every month
+ * @param {Array}    params.simulations            - Simulated items added by user
+ * @param {Object}   params.currentMonthStats      - { credit, debit, month: 'YYYY-MM' }
+ * @param {number}   params.monthsAhead            - How many months to project (default 24)
  */
 export function useProjectionEngine({
-    installments = [],
-    simulations  = [],
-    currentMonthStats = {},
-    monthsAhead  = 24,
+    installments          = [],
+    recurringTransactions = [],
+    simulations           = [],
+    currentMonthStats     = {},
+    monthsAhead           = 24,
 }) {
     return useMemo(() => {
         const baseYM = currentMonthStats.month ?? new Date().toISOString().slice(0, 7);
@@ -59,13 +70,25 @@ export function useProjectionEngine({
             const isCurrentMonth = ym === baseYM;
 
             // Sum of all real installments due this month
-            const realCreditTotal = installments.reduce(
+            const realInstallmentTotal = installments.reduce(
                 (sum, inst) => sum + realAmountInMonth(inst, ym),
                 0,
             );
 
-            // Current-month debit (only available for the current month)
-            const realDebitTotal = isCurrentMonth ? (currentMonthStats.debit ?? 0) : 0;
+            // Sum of all recurring credit transactions active this month
+            const realRecurringCreditTotal = recurringTransactions
+                .filter((r) => r.type === 'credit')
+                .reduce((sum, r) => sum + recurringAmountInMonth(r, ym), 0);
+
+            // Sum of all recurring debit transactions active this month
+            const realRecurringDebitTotal = recurringTransactions
+                .filter((r) => r.type === 'debit')
+                .reduce((sum, r) => sum + recurringAmountInMonth(r, ym), 0);
+
+            const realCreditTotal = realInstallmentTotal + realRecurringCreditTotal;
+
+            // Current-month debit (only available for the current month); recurring debit is always projected
+            const realDebitTotal = (isCurrentMonth ? (currentMonthStats.debit ?? 0) : 0) + realRecurringDebitTotal;
 
             // Sum of simulated credit installments due this month
             const simulatedCreditTotal = simulations
@@ -91,15 +114,26 @@ export function useProjectionEngine({
                 .map((s) => ({
                     id:     s.id,
                     title:  s.title,
-                    amount: s.type === 'credit'
-                        ? simulatedAmountInMonth(s, ym)
-                        : simulatedAmountInMonth(s, ym),
+                    amount: simulatedAmountInMonth(s, ym),
                     type:   s.type,
+                }));
+
+            // Per-recurring breakdown for this month
+            const recurringBreakdown = recurringTransactions
+                .filter((r) => recurringAmountInMonth(r, ym) > 0)
+                .map((r) => ({
+                    id:     r.id,
+                    title:  r.title,
+                    amount: r.amount,
+                    type:   r.type,
                 }));
 
             return {
                 ym,
                 isCurrentMonth,
+                realInstallmentTotal,
+                realRecurringCreditTotal,
+                realRecurringDebitTotal,
                 realCreditTotal,
                 realDebitTotal,
                 realTotal,
@@ -108,13 +142,14 @@ export function useProjectionEngine({
                 simulatedTotal,
                 combinedTotal,
                 simulationBreakdown,
+                recurringBreakdown,
             };
         });
 
         // Grand totals
-        const totalRealAllMonths = monthData.reduce((s, m) => s + m.realCreditTotal, 0);
+        const totalRealAllMonths      = monthData.reduce((s, m) => s + m.realTotal, 0);
         const totalSimulatedAllMonths = monthData.reduce((s, m) => s + m.simulatedTotal, 0);
-        const highestCombinedMonth = monthData.reduce(
+        const highestCombinedMonth    = monthData.reduce(
             (max, m) => (m.combinedTotal > max.combinedTotal ? m : max),
             monthData[0] ?? { combinedTotal: 0 },
         );
@@ -128,5 +163,5 @@ export function useProjectionEngine({
             },
             highestCombinedMonth,
         };
-    }, [installments, simulations, currentMonthStats, monthsAhead]);
+    }, [installments, recurringTransactions, simulations, currentMonthStats, monthsAhead]);
 }
