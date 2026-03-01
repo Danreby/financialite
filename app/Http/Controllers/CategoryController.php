@@ -9,6 +9,8 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class CategoryController extends Controller
 {
@@ -88,5 +90,18 @@ class CategoryController extends Controller
         });
 
         return $this->success(['message' => 'Categoria removida.']);
+    }
+
+    public function page(Request $request): InertiaResponse
+    {
+        $user = $request->user();
+
+        $categories = Category::forUser($user->id)
+            ->orderBy('name')
+            ->paginate(20, ['id', 'name', 'icon', 'color', 'type'], 'categories_page');
+
+        return Inertia::render('Categorias', [
+            'categories' => $categories,
+        ]);
     }
 }

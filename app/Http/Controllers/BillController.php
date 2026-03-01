@@ -6,12 +6,15 @@ use App\Http\Requests\Bill\BillStoreRequest;
 use App\Http\Requests\Bill\BillUpdateRequest;
 use App\Models\Bill;
 use App\Models\BillPayment;
+use App\Models\Category;
 use App\Services\NotificationService;
 use App\Services\BillPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class BillController extends Controller
 {
@@ -186,5 +189,25 @@ class BillController extends Controller
         $bill = $this->billPaymentService->toggleBillStatus($bill, $user);
 
         return $this->success($bill);
+    }
+
+    public function page(Request $request): InertiaResponse
+    {
+        $user = $request->user();
+
+        $bills = Bill::forUser($user->id)
+            ->with(['category:id,name,color,icon'])
+            ->orderBy('due_day')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $categories = Category::forUser($user->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon', 'color']);
+
+        return Inertia::render('Contas', [
+            'bills' => $bills,
+            'categories' => $categories,
+        ]);
     }
 }

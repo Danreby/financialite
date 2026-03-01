@@ -12,6 +12,8 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class CardController extends Controller
 {
@@ -193,5 +195,31 @@ class CardController extends Controller
         });
 
         return $this->success($cardUser->load('card'), 201);
+    }
+
+    public function accounts(Request $request): InertiaResponse
+    {
+        $user = $request->user();
+
+        $bankAccounts = CardUser::with('card')
+            ->forUser($user->id)
+            ->orderBy('id')
+            ->paginate(10, ['*'], 'accounts_page')
+            ->through(function ($cardUser) {
+                return [
+                    'id' => $cardUser->id,
+                    'card_id' => $cardUser->card_id,
+                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                    'due_day' => $cardUser->due_day,
+                    'closing_day' => $cardUser->closing_day,
+                    'credit_limit' => $cardUser->credit_limit,
+                    'brand' => $cardUser->card?->brand,
+                    'description' => $cardUser->card?->description,
+                ];
+            });
+
+        return Inertia::render('Cartoes', [
+            'bankAccounts' => $bankAccounts,
+        ]);
     }
 }
