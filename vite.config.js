@@ -43,50 +43,15 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Split vendor libraries from app code so the browser can cache them
-        // independently. Library code rarely changes; app code changes often.
+        // Keep all node_modules together in a single vendor chunk so React is
+        // always guaranteed to be initialised before any package that calls
+        // React.createContext() at module-evaluation time.
+        // Splitting React into its own chunk causes a race condition in
+        // production where vendor-misc is loaded in parallel and tries to call
+        // createContext before vendor-react has finished evaluating.
         manualChunks: (id) => {
-          // React core runtime
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-            return 'vendor-react';
-          }
-          // Inertia + routing
-          if (id.includes('node_modules/@inertiajs')) {
-            return 'vendor-inertia';
-          }
-          // Animation library (large, rarely changes)
-          if (id.includes('node_modules/framer-motion')) {
-            return 'vendor-motion';
-          }
-          // Chart libraries (large)
-          if (
-            id.includes('node_modules/chart.js') ||
-            id.includes('node_modules/react-chartjs-2')
-          ) {
-            return 'vendor-charts';
-          }
-          // Excel / file export (large, rarely used)
-          if (
-            id.includes('node_modules/xlsx-js-style') ||
-            id.includes('node_modules/file-saver')
-          ) {
-            return 'vendor-export';
-          }
-          // Icon library (many small files, better as one chunk)
-          if (id.includes('node_modules/lucide-react')) {
-            return 'vendor-icons';
-          }
-          // Toast notifications
-          if (id.includes('node_modules/react-toastify')) {
-            return 'vendor-toast';
-          }
-          // HTTP client
-          if (id.includes('node_modules/axios')) {
-            return 'vendor-http';
-          }
-          // All other node_modules go into a generic vendor chunk
           if (id.includes('node_modules')) {
-            return 'vendor-misc';
+            return 'vendor';
           }
         },
       },
