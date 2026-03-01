@@ -1,12 +1,13 @@
 import React from 'react'
-import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight, BarChart3 } from 'lucide-react'
 import ScrollArea from '@/Components/common/ScrollArea'
 
 export default function SpendingTrends({ 
   currentMonth = 0, 
   previousMonth = 0, 
   threeMonthAvg = 0,
-  categoryTrends = []
+  categoryTrends = [],
+  hasData = true
 }) {
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -63,6 +64,22 @@ export default function SpendingTrends({
         </h3>
       </div>
 
+      {!hasData ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center py-8 gap-4">
+          <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <BarChart3 className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Dados insuficientes
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-[220px]">
+              Registre transações de débito para visualizar suas tendências de gastos
+            </p>
+          </div>
+        </div>
+      ) : (
+      <>
       <div className="space-y-4 mb-6">
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
@@ -176,6 +193,8 @@ export default function SpendingTrends({
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   )
 }

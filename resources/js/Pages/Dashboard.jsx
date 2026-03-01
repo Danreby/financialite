@@ -33,7 +33,7 @@ function formatDateLabel(value) {
   }).format(date)
 }
 
-export default function Dashboard({ bankAccounts = [], categories = [] }) {
+export default function Dashboard({ bankAccounts = [], categories = [], bankAccountsList = [] }) {
   const [currentFilters, setCurrentFilters] = useState({})
   const [page, setPage] = useState(1)
   const [reloadKey, setReloadKey] = useState(0)
@@ -41,6 +41,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   const [recentFaturas, setRecentFaturas] = useState([])
   const [monthlySummary, setMonthlySummary] = useState([])
   const [topSpendingCategories, setTopSpendingCategories] = useState([])
+  const [debitSpendingCategories, setDebitSpendingCategories] = useState([])
+  const [creditSpendingCategories, setCreditSpendingCategories] = useState([])
   const [topSpendingLabel, setTopSpendingLabel] = useState('Mês vigente')
   const [selectedFaturaItem, setSelectedFaturaItem] = useState(null)
   const [recurringSpending, setRecurringSpending] = useState({ total: 0, percentage: 0 })
@@ -103,6 +105,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
   }, [])
 
   const activeTopSpending = monthData?.top_spending_categories ?? topSpendingCategories
+  const activeDebitSpending = monthData?.debit_spending_categories ?? debitSpendingCategories
+  const activeCreditSpending = monthData?.credit_spending_categories ?? creditSpendingCategories
   const activeTopSpendingLabel = monthData?.period_label ?? topSpendingLabel
   const activeRecurring = monthData?.recurring_spending ?? recurringSpending
   const activeNonRecurring = monthData?.non_recurring_spending ?? nonRecurringSpending
@@ -309,6 +313,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           : topSpendingPayload
 
         setTopSpendingCategories(normalizedTopSpending)
+        setDebitSpendingCategories(Array.isArray(statsPayload.debit_spending_categories) ? statsPayload.debit_spending_categories : [])
+        setCreditSpendingCategories(Array.isArray(statsPayload.credit_spending_categories) ? statsPayload.credit_spending_categories : [])
         setTopSpendingLabel(topSpendingLabelPayload)
 
         setRecurringSpending({
@@ -384,6 +390,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           <FadeInItem>
             <QuickActions
               bankAccounts={bankAccounts}
+              bankAccountsList={bankAccountsList}
               categories={categories}
               onTransactionCreated={() => setReloadKey((prev) => prev + 1)}
             />
@@ -467,6 +474,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           <FadeInItem>
             <TopSpendingCategories
               data={activeTopSpending}
+              debitData={activeDebitSpending}
+              creditData={activeCreditSpending}
               label={activeTopSpendingLabel}
               recurringSpending={activeRecurring}
               nonRecurringSpending={activeNonRecurring}
@@ -481,6 +490,8 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
           <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <FinancialHealthScore
               score={dashboardInsights?.financial_health?.score ?? 0}
+              hasData={dashboardInsights?.financial_health?.has_data ?? false}
+              missingData={dashboardInsights?.financial_health?.missing_data ?? {}}
               factors={dashboardInsights?.financial_health?.factors ?? {
                 savingsRate: 0,
                 budgetAdherence: 0,
@@ -520,6 +531,7 @@ export default function Dashboard({ bankAccounts = [], categories = [] }) {
               previousMonth={dashboardInsights?.spending_trends?.previous_month ?? 0}
               threeMonthAvg={dashboardInsights?.spending_trends?.three_month_avg ?? 0}
               categoryTrends={dashboardInsights?.spending_trends?.category_trends ?? []}
+              hasData={dashboardInsights?.spending_trends?.has_data ?? false}
             />
           </FadeInItem>
         </FadeInContainer>

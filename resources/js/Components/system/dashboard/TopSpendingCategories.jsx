@@ -1,11 +1,19 @@
-import React from 'react'
+import React, { useState, useMemo } from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 import TopSpendingPieChart from '@/Components/system/dashboard/TopSpendingPieChart'
 import LoadingOverlay from '@/Components/common/LoadingOverlay'
 import useThemeColors from '@/Hooks/useThemeColors'
 
+const FILTER_TABS = [
+  { key: 'all', label: 'Todos' },
+  { key: 'debit', label: 'Débito' },
+  { key: 'credit', label: 'Crédito' },
+]
+
 export default function TopSpendingCategories({
   data = [],
+  debitData = [],
+  creditData = [],
   label = 'Mês vigente',
   recurringSpending = {},
   nonRecurringSpending = {},
@@ -14,9 +22,22 @@ export default function TopSpendingCategories({
   onClearSelection,
 }) {
   const { chartColors } = useThemeColors()
-  const topSix = Array.isArray(data)
-    ? [...data].sort((a, b) => Number(b.total || 0) - Number(a.total || 0)).slice(0, 6)
-    : []
+  const [activeFilter, setActiveFilter] = useState('all')
+
+  const sourceData = useMemo(() => {
+    switch (activeFilter) {
+      case 'debit':
+        return Array.isArray(debitData) ? debitData : []
+      case 'credit':
+        return Array.isArray(creditData) ? creditData : []
+      default:
+        return Array.isArray(data) ? data : []
+    }
+  }, [activeFilter, data, debitData, creditData])
+
+  const topSix = useMemo(() => {
+    return [...sourceData].sort((a, b) => Number(b.total || 0) - Number(a.total || 0)).slice(0, 6)
+  }, [sourceData])
 
   const totalTop = topSix.reduce((acc, item) => acc + Number(item.total || 0), 0)
 
@@ -53,9 +74,28 @@ export default function TopSpendingCategories({
         )}
       </div>
 
+      <div className="flex gap-1 mb-4">
+        {FILTER_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveFilter(tab.key)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+              activeFilter === tab.key
+                ? 'bg-[var(--theme-accent)] text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {(!prepared || prepared.length === 0) && (
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Ainda não há gastos para este mês.
+          {activeFilter === 'all'
+            ? 'Ainda não há gastos para este mês.'
+            : `Sem transações de ${activeFilter === 'debit' ? 'débito' : 'crédito'} neste período.`}
         </p>
       )}
 
@@ -66,8 +106,8 @@ export default function TopSpendingCategories({
           total={totalTop}
           colors={colors}
           items={prepared}
-          recurringSpending={recurringSpending}
-          nonRecurringSpending={nonRecurringSpending}
+          recurringSpending={activeFilter === 'all' ? recurringSpending : {}}
+          nonRecurringSpending={activeFilter === 'all' ? nonRecurringSpending : {}}
         />
       )}
     </div>

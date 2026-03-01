@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
+import { toast } from 'react-toastify';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import FaturaForm from '@/Components/system/FaturaForm';
 import CardForm from '@/Components/system/CardForm';
 import CategoryForm from '@/Components/system/CategoryForm';
 import FaturaImportModal from '@/Components/system/fatura/import/FaturaImportModal';
+import QuickIncomeForm from '@/Components/system/income/QuickIncomeForm';
 
-export default function QuickActions({ bankAccounts = [], categories = [], onTransactionCreated }) {
+export default function QuickActions({ bankAccounts = [], bankAccountsList = [], categories = [], onTransactionCreated }) {
   const [showFaturaForm, setShowFaturaForm] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [localBankAccounts, setLocalBankAccounts] = useState(bankAccounts);
   const [localCategories, setLocalCategories] = useState(categories);
   const [isDark, setIsDark] = useState(() => {
@@ -44,10 +47,17 @@ export default function QuickActions({ bankAccounts = [], categories = [], onTra
   const actions = [
     {
       icon: '💸',
-      title: 'Nova Transação',
-      description: 'Registrar receita ou despesa',
+      title: 'Nova Despesa',
+      description: 'Registrar despesa',
       useThemeColors: true,
       onClick: () => setShowFaturaForm(true),
+    },
+        {
+      icon: '💰',
+      title: 'Nova Entrada',
+      description: 'Registrar entrada',
+      useThemeColors: true,
+      onClick: () => setShowIncomeForm(true),
     },
     {
       icon: '🏦',
@@ -62,13 +72,6 @@ export default function QuickActions({ bankAccounts = [], categories = [], onTra
       description: 'Criar nova categoria',
       useThemeColors: true,
       onClick: () => setShowCategoryForm(true),
-    },
-    {
-      icon: '⏳',
-      title: 'Transações Pendentes',
-      description: 'Visualizar pendências',
-      useThemeColors: true,
-      onClick: () => router.visit(route('transactions.index')),
     },
     {
       icon: '💳',
@@ -181,6 +184,17 @@ export default function QuickActions({ bankAccounts = [], categories = [], onTra
         onClose={() => setShowImportModal(false)}
         onImported={() => {
           //
+        }}
+      />
+
+      <QuickIncomeForm
+        isOpen={showIncomeForm}
+        onClose={() => setShowIncomeForm(false)}
+        bankAccountsList={bankAccountsList}
+        onSuccess={() => {
+          setShowIncomeForm(false);
+          toast.success('Entrada cadastrada com sucesso!');
+          if (onTransactionCreated) onTransactionCreated();
         }}
       />
     </>

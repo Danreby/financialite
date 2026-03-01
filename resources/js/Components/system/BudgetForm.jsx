@@ -134,6 +134,7 @@ export default function BudgetForm({
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryLimits, setCategoryLimits] = useState([]);
+  const [monthlyLimit, setMonthlyLimit] = useState('');
 
   const isEditing = !!budget?.id;
 
@@ -147,11 +148,13 @@ export default function BudgetForm({
 
   useEffect(() => {
     if (isOpen) {
+      setMonthlyLimit(budget?.monthly_limit ?? '');
+
       if (budget?.category_limits) {
         setCategoryLimits(
           budget.category_limits.map((cl, i) => ({
             _uid: `existing-${cl.category_id}-${i}`,
-            category_id: cl.category_id,
+            category_id: String(cl.category_id),
             limit: cl.limit
           }))
         );
@@ -159,6 +162,7 @@ export default function BudgetForm({
         setCategoryLimits([]);
       }
     } else {
+      setMonthlyLimit('');
       setCategoryLimits([]);
     }
   }, [budget, isOpen]);
@@ -190,10 +194,7 @@ export default function BudgetForm({
     event.preventDefault();
     if (isSubmitting) return;
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-
-    const monthlyLimitRaw = formData.get("monthly_limit")?.toString().trim();
+    const monthlyLimitRaw = (monthlyLimit ?? '').toString().trim();
     const monthlyLimitNum = monthlyLimitRaw === '' ? NaN : parseFloat(monthlyLimitRaw);
 
     toast.dismiss();
@@ -260,7 +261,7 @@ export default function BudgetForm({
         toast.success("Orçamento criado com sucesso.");
       }
 
-      form.reset();
+      setMonthlyLimit('');
       setCategoryLimits([]);
       setIsSubmitting(false);
       if (onSuccess) onSuccess();
@@ -287,6 +288,7 @@ export default function BudgetForm({
   };
 
   const handleClose = () => {
+    setMonthlyLimit('');
     setCategoryLimits([]);
     if (onClose) onClose();
   };
@@ -315,12 +317,16 @@ export default function BudgetForm({
 
         <div className="space-y-3">
           <FloatLabelField
-            key={`monthly_limit-${budget?.id || 'new'}`}
             id="monthly_limit"
             name="monthly_limit"
             type="text"
             label="Limite mensal total"
-            defaultValue={budget?.monthly_limit ?? ''}
+            value={monthlyLimit}
+            onChange={(e) => {
+              let v = String(e.target.value || '');
+              if (v.length > MAX_CHARS) v = v.slice(0, MAX_CHARS);
+              setMonthlyLimit(v);
+            }}
             inputProps={{
               step: '0.01',
               min: '0',
@@ -329,19 +335,12 @@ export default function BudgetForm({
               autoComplete: 'off',
               maxLength: MAX_CHARS,
               inputMode: 'decimal',
-              onInput: (e) => {
-                const el = e.target;
-                if (el.value && el.value.length > MAX_CHARS) {
-                  el.value = el.value.slice(0, MAX_CHARS);
-                }
-              },
               onPaste: (e) => {
                 const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
-                const el = e.target;
                 e.preventDefault();
-                const before = el.value || '';
+                const before = monthlyLimit || '';
                 const combined = (before + paste).slice(0, MAX_CHARS);
-                el.value = combined;
+                setMonthlyLimit(combined);
               }
             }}
             isRequired
