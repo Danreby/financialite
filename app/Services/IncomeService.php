@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Services\IncomeServiceInterface;
+use App\Models\BankUser;
 use App\Models\Income;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -27,6 +28,14 @@ class IncomeService implements IncomeServiceInterface
             $income = new Income($data);
             $income->user_id = $user->id;
             $income->save();
+
+            // For one-time entries, immediately credit the linked bank account balance
+            if (empty($data['is_recurring']) && !empty($data['bank_account_id'])) {
+                $bankUser = BankUser::forUser($user->id)->find((int) $data['bank_account_id']);
+                if ($bankUser) {
+                    $bankUser->increment('balance', (float) $data['amount']);
+                }
+            }
 
             return $income;
         });

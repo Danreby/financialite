@@ -190,23 +190,9 @@ class FaturaDashboardService
 
         $allRows = collect($debitRows)->merge($creditRows);
 
-        $topSpendingCategories = $allRows
-            ->groupBy('category_id')
-            ->map(function ($items) {
-                $first = $items->first();
-
-                return [
-                    'category_id' => $first['category_id'] ?? null,
-                    'category_name' => $first['category_name'] ?? 'Sem categoria',
-                    'category_icon' => $first['category_icon'] ?? null,
-                    'category_color' => $first['category_color'] ?? null,
-                    'total' => (float) $items->sum('amount'),
-                ];
-            })
-            ->sortByDesc('total')
-            ->take(6)
-            ->values()
-            ->all();
+        $topSpendingCategories = $this->aggregateCategorySpending($allRows);
+        $debitSpendingCategories = $this->aggregateCategorySpending(collect($debitRows));
+        $creditSpendingCategories = $this->aggregateCategorySpending(collect($creditRows));
 
         $totalRecurring = $allRows->where('is_recurring', true)->sum('amount');
         $totalNonRecurring = $allRows->where('is_recurring', false)->sum('amount');
@@ -234,6 +220,8 @@ class FaturaDashboardService
         $stats['current_month_debit_total'] = (float) $currentMonthDebitTotal;
         $stats['monthly_summary'] = $monthlySummary;
         $stats['top_spending_categories'] = $topSpendingCategories;
+        $stats['debit_spending_categories'] = $debitSpendingCategories;
+        $stats['credit_spending_categories'] = $creditSpendingCategories;
         $stats['recurring_spending'] = [
             'total' => (float) $totalRecurring,
             'percentage' => $recurringPercentage,
@@ -447,23 +435,9 @@ class FaturaDashboardService
 
         $allRows = collect($debitRows)->merge($creditRows);
 
-        $topSpendingCategories = $allRows
-            ->groupBy('category_id')
-            ->map(function ($items) {
-                $first = $items->first();
-
-                return [
-                    'category_id'    => $first['category_id'] ?? null,
-                    'category_name'  => $first['category_name'] ?? 'Sem categoria',
-                    'category_icon'  => $first['category_icon'] ?? null,
-                    'category_color' => $first['category_color'] ?? null,
-                    'total'          => (float) $items->sum('amount'),
-                ];
-            })
-            ->sortByDesc('total')
-            ->take(6)
-            ->values()
-            ->all();
+        $topSpendingCategories = $this->aggregateCategorySpending($allRows);
+        $debitSpendingCategories = $this->aggregateCategorySpending(collect($debitRows));
+        $creditSpendingCategories = $this->aggregateCategorySpending(collect($creditRows));
 
         $totalRecurring = $allRows->where('is_recurring', true)->sum('amount');
         $totalNonRecurring = $allRows->where('is_recurring', false)->sum('amount');
@@ -479,6 +453,8 @@ class FaturaDashboardService
 
         return [
             'top_spending_categories' => $topSpendingCategories,
+            'debit_spending_categories' => $debitSpendingCategories,
+            'credit_spending_categories' => $creditSpendingCategories,
             'period_label' => $periodLabel,
             'recurring_spending' => [
                 'total' => (float) $totalRecurring,
@@ -502,5 +478,26 @@ class FaturaDashboardService
         }
 
         return $query->pluck('total_paid', 'month_key');
+    }
+
+    private function aggregateCategorySpending($rows): array
+    {
+        return $rows
+            ->groupBy('category_id')
+            ->map(function ($items) {
+                $first = $items->first();
+
+                return [
+                    'category_id' => $first['category_id'] ?? null,
+                    'category_name' => $first['category_name'] ?? 'Sem categoria',
+                    'category_icon' => $first['category_icon'] ?? null,
+                    'category_color' => $first['category_color'] ?? null,
+                    'total' => (float) $items->sum('amount'),
+                ];
+            })
+            ->sortByDesc('total')
+            ->take(6)
+            ->values()
+            ->all();
     }
 }

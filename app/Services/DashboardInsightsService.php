@@ -36,13 +36,51 @@ class DashboardInsightsService
         $monthEnd = $today->copy()->endOfMonth();
         $currentMonthKey = $today->format('Y-m');
 
+        $hasIncomes = Income::forUser($user->id)->where('is_active', true)->exists();
+
+        $totalTransactionsAllTime = Transacao::forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->count();
+
+        $hasDebitTransactions = Transacao::forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->where('type', 'debit')
+            ->exists();
+
+        $hasCreditTransactions = Transacao::forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->where('type', 'credit')
+            ->exists();
+
+        $hasBills = Bill::forUser($user->id)->active()->exists();
+        $hasBudget = Budget::forUser($user->id)->forMonth($currentMonthKey)->exists();
+
+        $hasAnyFinancialData = $hasIncomes || $totalTransactionsAllTime > 0 || $hasBills;
+
+        if (!$hasAnyFinancialData) {
+            return [
+                'score' => 0,
+                'has_data' => false,
+                'missing_data' => [
+                    'incomes' => !$hasIncomes,
+                    'transactions' => $totalTransactionsAllTime === 0,
+                    'bills' => !$hasBills,
+                    'budget' => !$hasBudget,
+                ],
+                'factors' => [
+                    'savingsRate' => 0,
+                    'budgetAdherence' => 0,
+                    'debtRatio' => 0,
+                    'emergencyFund' => 0,
+                    'recurringControl' => 0,
+                    'paymentDiscipline' => 0,
+                ],
+            ];
+        }
+
         $monthlyIncome = Income::forUser($user->id)
             ->where('is_active', true)
             ->sum('amount');
-
-        if ($monthlyIncome == 0) {
-            $monthlyIncome = 5000;
-        }
 
         $currentMonthSpending = $this->budgetCalculationService->calculateTotalMonthlySpending(
             $user,
@@ -52,71 +90,109 @@ class DashboardInsightsService
             $currentMonthKey
         );
 
-        $savingsRate = $monthlyIncome > 0 
-            ? max(0, (($monthlyIncome - $currentMonthSpending) / $monthlyIncome) * 100) 
-            : 0;
+        $activeFactors = [];
+        $totalWeight = 0;
 
-        $budgetAdherence = $this->calculateBudgetAdherence($user, $bankUserId);
+        if ($hasIncomes && $monthlyIncome > 0) {
+            $savingsRate = max(0, min(100, (($monthlyIncome - $currentMonthSpending) / $monthlyIncome) * 100));
+            $activeFactors['savingsRate'] = ['value' => $savingsRate, 'weight' => 0.25];
+            $totalWeight += 0.25;
+        } else {
+            $savingsRate = 0;
+        }
 
-        $totalIncome = Income::forUser($user->id)->sum('amount');
-        
-        $totalDebitSpending = Transacao::forUser($user->id)->where('type', 'debit')->sum('amount');
-        
-        $unpaidInvoiceTotal = $this->budgetCalculationService->calculatePendingInvoiceTotal(
-            $user,
-            $bankUserId,
-            $currentMonthKey
-        );
-        
-        $totalSpending = $totalDebitSpending + $unpaidInvoiceTotal;
-        
-        $totalBalance = $totalIncome - $totalSpending;
-        
-        $emergencyFund = $currentMonthSpending > 0 
-            ? max(0, $totalBalance / $currentMonthSpending) 
-            : 0;
+        if ($hasBudget) {
+            $budgetAdherence = $this->calculateBudgetAdherence($user, $bankUserId);
+            $activeFactors['budgetAdherence'] = ['value' => $budgetAdherence, 'weight' => 0.25];
+            $totalWeight += 0.25;
+        } else {
+            $budgetAdherence = 0;
+        }
 
-        $totalTransactions = Transacao::forUser($user->id)
+        if ($hasIncomes && ($hasDebitTransactions || $hasCreditTransactions)) {
+            $totalIncomeSum = Income::forUser($user->id)->where('is_active', true)->sum('amount');
+            $totalDebitSpending = Transacao::forUser($user->id)
+                ->forBankUser($bankUserId)
+                ->where('type', 'debit')
+                ->sum('amount');
+            $unpaidInvoiceTotal = $this->budgetCalculationService->calculatePendingInvoiceTotal(
+                $user,
+                $bankUserId,
+                $currentMonthKey
+            );
+            $totalSpending = $totalDebitSpending + $unpaidInvoiceTotal;
+            $totalBalance = $totalIncomeSum - $totalSpending;
+            $emergencyFund = $currentMonthSpending > 0
+                ? max(0, $totalBalance / $currentMonthSpending)
+                : 0;
+            $activeFactors['emergencyFund'] = ['value' => min(100, ($emergencyFund / 6) * 100), 'weight' => 0.20];
+            $totalWeight += 0.20;
+        } else {
+            $emergencyFund = 0;
+        }
+
+        $currentMonthTransactions = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->where('type', 'debit')
             ->count();
 
-        $recurringTransactions = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->where('type', 'debit')
-            ->where('is_recurring', true)
-            ->count();
+        if ($currentMonthTransactions > 0 || $hasBills) {
+            $recurringTransactions = Transacao::forUser($user->id)
+                ->forBankUser($bankUserId)
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->where('type', 'debit')
+                ->where('is_recurring', true)
+                ->count();
 
-        $activeBillsCount = Bill::forUser($user->id)
-            ->active()
-            ->recurrent()
-            ->count();
+            $activeBillsCount = Bill::forUser($user->id)
+                ->active()
+                ->recurrent()
+                ->count();
 
-        $recurringControl = $totalTransactions > 0 
-            ? min(100, (($recurringTransactions + $activeBillsCount) / $totalTransactions) * 100) 
-            : ($activeBillsCount > 0 ? 80 : 0);
+            $recurringControl = $currentMonthTransactions > 0
+                ? min(100, (($recurringTransactions + $activeBillsCount) / $currentMonthTransactions) * 100)
+                : ($activeBillsCount > 0 ? 80 : 0);
 
-        $upcomingBillsCount = Bill::forUser($user->id)->active()->count();
-        $overdueBillsCount = BillPayment::whereHas('bill', function($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })->where('status', 'overdue')->count();
+            $activeFactors['recurringControl'] = ['value' => $recurringControl, 'weight' => 0.15];
+            $totalWeight += 0.15;
+        } else {
+            $recurringControl = 0;
+        }
 
-        $paymentDiscipline = $upcomingBillsCount > 0
-            ? max(0, 100 - (($overdueBillsCount / ($upcomingBillsCount + $overdueBillsCount)) * 100))
-            : 100;
+        if ($hasBills) {
+            $upcomingBillsCount = Bill::forUser($user->id)->active()->count();
+            $overdueBillsCount = BillPayment::whereHas('bill', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->where('status', 'overdue')->count();
 
-        $score = (
-            ($savingsRate * 0.25) +
-            ($budgetAdherence * 0.25) +
-            (min(100, ($emergencyFund / 6) * 100) * 0.20) +
-            ($recurringControl * 0.15) +
-            ($paymentDiscipline * 0.15)
-        );
+            $paymentDiscipline = $upcomingBillsCount > 0
+                ? max(0, 100 - (($overdueBillsCount / ($upcomingBillsCount + $overdueBillsCount)) * 100))
+                : 100;
+
+            $activeFactors['paymentDiscipline'] = ['value' => $paymentDiscipline, 'weight' => 0.15];
+            $totalWeight += 0.15;
+        } else {
+            $paymentDiscipline = 100;
+        }
+
+        $score = 0;
+        if ($totalWeight > 0) {
+            foreach ($activeFactors as $factor) {
+                $normalizedWeight = $factor['weight'] / $totalWeight;
+                $score += $factor['value'] * $normalizedWeight;
+            }
+        }
 
         return [
-            'score' => round($score, 1),
+            'score' => round(min(100, max(0, $score)), 1),
+            'has_data' => true,
+            'missing_data' => [
+                'incomes' => !$hasIncomes,
+                'transactions' => $totalTransactionsAllTime === 0,
+                'bills' => !$hasBills,
+                'budget' => !$hasBudget,
+            ],
             'factors' => [
                 'savingsRate' => round($savingsRate, 1),
                 'budgetAdherence' => round($budgetAdherence, 1),
@@ -371,14 +447,29 @@ class DashboardInsightsService
     private function getSpendingTrends(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();
+        $threeMonthsAgoStart = $today->copy()->subMonths(3)->startOfMonth();
+
+        $hasTransactions = Transacao::where('user_id', $user->id)
+            ->where('type', 'debit')
+            ->where('created_at', '>=', $threeMonthsAgoStart)
+            ->when($bankUserId, fn ($q) => $q->where('bank_user_id', $bankUserId))
+            ->exists();
+
+        if (!$hasTransactions) {
+            return [
+                'has_data' => false,
+                'current_month' => 0,
+                'previous_month' => 0,
+                'three_month_avg' => 0,
+                'category_trends' => [],
+            ];
+        }
 
         $currentMonthStart = $today->copy()->startOfMonth();
         $currentMonthEnd = $today->copy()->endOfMonth();
 
         $previousMonthStart = $today->copy()->subMonth()->startOfMonth();
         $previousMonthEnd = $today->copy()->subMonth()->endOfMonth();
-
-        $threeMonthsAgoStart = $today->copy()->subMonths(3)->startOfMonth();
 
         $currentMonth = $this->budgetCalculationService->calculateInstallmentAwareSpending(
             $user,
@@ -401,7 +492,8 @@ class DashboardInsightsService
             $currentMonthEnd
         );
 
-        $threeMonthAvg = $threeMonthTotal / 3;
+        $monthCount = max(1, $today->copy()->startOfMonth()->diffInMonths($threeMonthsAgoStart) + 1);
+        $threeMonthAvg = $threeMonthTotal / $monthCount;
 
         $currentCategorySpending = $this->budgetCalculationService->calculateInstallmentAwareCategorySpending(
             $user,
@@ -436,6 +528,7 @@ class DashboardInsightsService
         })->values()->take(10)->all();
 
         return [
+            'has_data' => true,
             'current_month' => (float) $currentMonth,
             'previous_month' => (float) $previousMonth,
             'three_month_avg' => (float) $threeMonthAvg,

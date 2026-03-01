@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\Transacao;
@@ -14,7 +15,7 @@ class FaturaPaymentService
     {
     }
 
-    public function payMonthForUser(Authenticatable $user, string $monthKey, ?CardUser $cardUser): float
+    public function payMonthForUser(Authenticatable $user, string $monthKey, ?CardUser $cardUser, ?BankUser $bankAccount = null): float
     {
         $bankUserId = $cardUser?->id;
 
@@ -35,7 +36,7 @@ class FaturaPaymentService
             return 0.0;
         }
 
-        return DB::transaction(function () use ($faturas, $user, $bankUserId, $monthKey) {
+        return DB::transaction(function () use ($faturas, $user, $bankUserId, $monthKey, $bankAccount) {
             $totalPaidThisRun = 0.0;
 
             foreach ($faturas as $transacao) {
@@ -53,6 +54,11 @@ class FaturaPaymentService
                 $paid->total_paid = ($paid->total_paid ?? 0) + $totalPaidThisRun;
                 $paid->paid_at = now();
                 $paid->save();
+
+                if ($bankAccount) {
+                    $bankAccount->balance = max(0, (float) $bankAccount->balance - $totalPaidThisRun);
+                    $bankAccount->save();
+                }
             }
 
             return (float) $totalPaidThisRun;
