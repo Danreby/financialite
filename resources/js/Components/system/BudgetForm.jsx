@@ -109,7 +109,7 @@ function CategoryLimitRow({
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
           required
         />
-        <p className="text-[10px] text-gray-400 mt-1">Máx. {MAX_CHARS} caracteres</p>
+        {/* <p className="text-[10px] text-gray-400 mt-1">Máx. {MAX_CHARS} caracteres</p> */}
       </div>
 
       <button
