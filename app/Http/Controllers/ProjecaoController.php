@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Transacao;
+use App\Services\FaturaBillingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class ProjecaoController extends Controller
 {
+    public function __construct(private FaturaBillingService $billing) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -31,106 +34,67 @@ class ProjecaoController extends Controller
         $now        = Carbon::now();
         $monthStart = $now->copy()->startOfMonth();
         $monthEnd   = $now->copy()->endOfMonth();
-
-        $currentMonthCredit = Transacao::where('user_id', $user->id)
-            ->where('type', 'credit')
-            ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->sum('amount');
+        $today      = $now->copy()->startOfMonth();
 
         $currentMonthDebit = Transacao::where('user_id', $user->id)
             ->where('type', 'debit')
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        $txs = Transacao::with(['bankUser.card', 'category'])
+        // Fetch ALL credit transactions — same scope as the fatura page
+        $allCreditTxs = Transacao::with(['bankUser.card', 'category'])
             ->where('user_id', $user->id)
-            ->where('total_installments', '>', 1)
+            ->where('type', 'credit')
             ->orderByDesc('created_at')
             ->get();
 
-        $installments = $txs->map(function ($tx) {
-            $totalInstallments  = (int) ($tx->total_installments ?? 1);
-            $currentInstallment = (int) ($tx->current_installment ?? 0);
-            $remaining          = max($totalInstallments - $currentInstallment, 0);
-            $amount             = (float) $tx->amount;
-            $installmentAmount  = $totalInstallments > 0
-                ? round($amount / $totalInstallments, 2)
-                : $amount;
+        $creditTransactions = $allCreditTxs->map(function ($tx) use ($today) {
+            $totalInstallments = max((int) ($tx->total_installments ?? 1), 1);
+            $isRecurring       = (bool) $tx->is_recurring;
+            $amountPerMonth    = round((float) $tx->amount / $totalInstallments, 2);
 
-            $createdAt = Carbon::parse($tx->created_at);
-            $dueDay    = $tx->bankUser?->due_day ?? 1;
+            // Use the exact same billing-month resolution as FaturaBillingService
+            $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($tx);
+            $firstBillingMonth    = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
 
-            $firstBillingMonth = $createdAt->day <= $dueDay
-                ? $createdAt->copy()->startOfMonth()
-                : $createdAt->copy()->addMonth()->startOfMonth();
+            $completionMonth = null;
+            if (!$isRecurring) {
+                $completionCarbon = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
+                $completionMonth  = $completionCarbon->format('Y-m');
 
-            $completionDate = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
-
-            return [
-                'id'                     => $tx->id,
-                'title'                  => $tx->title,
-                'amount'                 => $amount,
-                'installment_amount'     => $installmentAmount,
-                'total_installments'     => $totalInstallments,
-                'current_installment'    => $currentInstallment,
-                'remaining_installments' => $remaining,
-                'first_billing_month'    => $firstBillingMonth->format('Y-m'),
-                'completion_month'       => $completionDate->format('Y-m'),
-                'bank_user_id'           => $tx->bankUser?->id,
-                'bank_name'              => $tx->bankUser?->card?->name,
-                'category_id'            => $tx->category?->id,
-                'category_name'          => $tx->category?->name,
-                'category_icon'          => $tx->category?->icon,
-                'category_color'         => $tx->category?->color,
-                'type'                   => $tx->type ?? 'credit',
-            ];
-        });
-
-        // Recurring transactions: they repeat every month indefinitely
-        $recurringTxs = Transacao::with(['bankUser.card', 'category'])
-            ->where('user_id', $user->id)
-            ->where('is_recurring', true)
-            ->where(function ($q) {
-                $q->whereNull('total_installments')
-                  ->orWhere('total_installments', '<=', 1);
-            })
-            ->orderByDesc('created_at')
-            ->get();
-
-        $recurringTransactions = $recurringTxs->map(function ($tx) {
-            $createdAt = Carbon::parse($tx->created_at);
-            $dueDay    = $tx->bankUser?->due_day ?? 1;
-
-            // Determine the first month in which this recurring item appears on statement
-            $startMonth = $createdAt->day <= $dueDay
-                ? $createdAt->copy()->startOfMonth()
-                : $createdAt->copy()->addMonth()->startOfMonth();
+                // Skip transactions that finished before the current month
+                if ($completionCarbon->lt($today)) {
+                    return null;
+                }
+            }
 
             return [
-                'id'             => $tx->id,
-                'title'          => $tx->title,
-                'amount'         => (float) $tx->amount,
-                'type'           => $tx->type ?? 'debit',
-                'start_month'    => $startMonth->format('Y-m'),
-                'bank_user_id'   => $tx->bankUser?->id,
-                'bank_name'      => $tx->bankUser?->card?->name,
-                'category_id'    => $tx->category?->id,
-                'category_name'  => $tx->category?->name,
-                'category_icon'  => $tx->category?->icon,
-                'category_color' => $tx->category?->color,
+                'id'                  => $tx->id,
+                'title'               => $tx->title,
+                'amount'              => (float) $tx->amount,
+                'amount_per_month'    => $amountPerMonth,
+                'is_recurring'        => $isRecurring,
+                'total_installments'  => $totalInstallments,
+                'first_billing_month' => $firstBillingMonthKey,
+                'completion_month'    => $completionMonth,
+                'bank_user_id'        => $tx->bankUser?->id,
+                'bank_name'           => $tx->bankUser?->card?->name,
+                'category_id'         => $tx->category?->id,
+                'category_name'       => $tx->category?->name,
+                'category_icon'       => $tx->category?->icon,
+                'category_color'      => $tx->category?->color,
             ];
-        });
+        })->filter()->values();
 
         return Inertia::render('Projecao', [
-            'installments'          => $installments,
-            'recurringTransactions' => $recurringTransactions,
-            'bankAccounts'          => $bankAccounts,
-            'categories'            => $categories,
-            'currentMonthStats'     => [
-                'credit' => (float) $currentMonthCredit,
-                'debit'  => (float) $currentMonthDebit,
-                'month'  => $now->format('Y-m'),
+            'creditTransactions' => $creditTransactions,
+            'bankAccounts'       => $bankAccounts,
+            'categories'         => $categories,
+            'currentMonthStats'  => [
+                'debit' => (float) $currentMonthDebit,
+                'month' => $now->format('Y-m'),
             ],
         ]);
     }
 }
+

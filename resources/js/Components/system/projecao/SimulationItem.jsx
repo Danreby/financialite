@@ -11,14 +11,16 @@ function parseYM(ym) {
 export default function SimulationItem({ simulation, onRemove }) {
     const {
         id, title, amount, installments, installmentAmount,
-        type, bankName, categoryName, categoryColor, startMonth,
+        is_recurring, type, bankName, categoryName, categoryColor, startMonth,
     } = simulation;
 
-    const isCredit = type === 'credit';
+    const isCredit    = type === 'credit';
+    const isRecurring = is_recurring ?? false;
 
     const endMonth = (() => {
+        if (isRecurring) return null;
         const [y, m] = startMonth.split('-').map(Number);
-        const d = new Date(y, m - 1 + (installments - 1), 1);
+        const d = new Date(y, m - 1 + ((installments ?? 1) - 1), 1);
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     })();
 
@@ -39,6 +41,7 @@ export default function SimulationItem({ simulation, onRemove }) {
                         <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
                             {title}
                         </span>
+                        {/* Credit / Debit badge */}
                         <span
                             className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
                             style={isCredit ? {
@@ -51,6 +54,13 @@ export default function SimulationItem({ simulation, onRemove }) {
                         >
                             {isCredit ? 'Crédito' : 'Débito'}
                         </span>
+                        {/* Recurring badge */}
+                        {isRecurring && (
+                            <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                🔁 Recorrente
+                            </span>
+                        )}
+                        {/* Category badge */}
                         {categoryName && (
                             <span
                                 className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"
@@ -66,17 +76,23 @@ export default function SimulationItem({ simulation, onRemove }) {
 
                     <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
                         <span className="font-semibold text-gray-700 dark:text-gray-200">
-                            {formatCurrencyBRL(amount)}
+                            {formatCurrencyBRL(isRecurring ? installmentAmount : amount)}
                         </span>
-                        {installments > 1 && (
+                        {!isRecurring && installments > 1 && (
                             <span className="text-gray-400 dark:text-gray-500">
                                 {installments}× {formatCurrencyBRL(installmentAmount)}
                             </span>
                         )}
-                        <span className="text-gray-400 dark:text-gray-500">
-                            {parseYM(startMonth)}
-                            {installments > 1 ? ` → ${parseYM(endMonth)}` : ''}
-                        </span>
+                        {isRecurring ? (
+                            <span className="text-gray-400 dark:text-gray-500">
+                                /mês desde {parseYM(startMonth)}
+                            </span>
+                        ) : (
+                            <span className="text-gray-400 dark:text-gray-500">
+                                {parseYM(startMonth)}
+                                {(installments ?? 1) > 1 ? ` → ${parseYM(endMonth)}` : ''}
+                            </span>
+                        )}
                         {bankName && (
                             <span className="text-gray-400 dark:text-gray-500">{bankName}</span>
                         )}

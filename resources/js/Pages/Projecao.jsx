@@ -60,19 +60,17 @@ function StatCard({ label, value, sub, icon, accentBg = false }) {
 
 
 export default function Projecao({
-    installments          = [],
-    recurringTransactions = [],
+    creditTransactions    = [],
     bankAccounts          = [],
     categories            = [],
-    currentMonthStats     = { credit: 0, debit: 0, month: '' },
+    currentMonthStats     = { debit: 0, month: '' },
 }) {
     const [simulations, setSimulations] = useState(() => loadStoredSimulations());
     const [monthsAhead, setMonthsAhead] = useState(12);
     const [showForm, setShowForm]       = useState(true);
 
     const projectionData = useProjectionEngine({
-        installments,
-        recurringTransactions,
+        creditTransactions,
         simulations,
         currentMonthStats,
         monthsAhead,
@@ -88,14 +86,24 @@ export default function Projecao({
 
     const now = new Date().toISOString().slice(0, 7);
 
-    const totalActiveInstallments  = installments.filter((i) => i.completion_month >= now).length;
-    const totalRemainingReal       = installments.reduce(
-        (s, i) => s + i.installment_amount * i.remaining_installments, 0,
+    const activeInstallments = creditTransactions.filter(
+        (t) => !t.is_recurring && t.completion_month >= now,
     );
-    const totalActiveRecurring     = recurringTransactions.filter((r) => r.start_month <= now).length;
-    const monthlyRecurringExpense  = recurringTransactions
-        .filter((r) => r.start_month <= now)
-        .reduce((s, r) => s + r.amount, 0);
+    const activeRecurring = creditTransactions.filter((t) => t.is_recurring);
+
+    const totalRemainingReal = activeInstallments.reduce(
+        (s, t) => s + t.amount_per_month * (
+            (() => {
+                // count months from now until completion_month
+                const [cy, cm] = now.split('-').map(Number);
+                const [ey, em] = t.completion_month.split('-').map(Number);
+                return Math.max(0, (ey - cy) * 12 + (em - cm) + 1);
+            })()
+        ),
+        0,
+    );
+    const monthlyRecurringExpense = activeRecurring.reduce((s, t) => s + t.amount_per_month, 0);
+
     const simulatedImpactNow   = projectionData.months[0]?.simulatedTotal ?? 0;
     const totalSimulatedBurden = projectionData.totals.simulatedAll;
     const hasSimulations       = simulations.length > 0;
@@ -156,13 +164,13 @@ export default function Projecao({
                     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
                         <StatCard
                             label="Parcelamentos ativos"
-                            value={totalActiveInstallments}
+                            value={activeInstallments.length}
                             sub={`${formatCurrencyBRL(totalRemainingReal)} restante total`}
                             icon="💳"
                         />
                         <StatCard
                             label="Recorrentes ativos"
-                            value={totalActiveRecurring}
+                            value={activeRecurring.length}
                             sub={`${formatCurrencyBRL(monthlyRecurringExpense)}/mês`}
                             icon="🔁"
                         />
