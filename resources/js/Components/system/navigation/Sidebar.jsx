@@ -116,6 +116,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
           <NavItem type={6} open={isOpen} href={route('contas.index')} label="Contas" />
           <NavItem type={11} open={isOpen} href={route('extrato.index')} label="Extrato" />
           <NavItem type={10} open={isOpen} href={route('reports.index')} label="Relatórios" />
+          <NavItem type={15} open={isOpen} href={route('projecao.index')} label="Projeção" />
           <NavItem type={7} open={isOpen} href={route('about')} label="Sobre" />
         </nav>
 
