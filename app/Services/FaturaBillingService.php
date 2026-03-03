@@ -25,11 +25,23 @@ class FaturaBillingService
         $cutoffDay = min((int) $closingDay, 28);
         $dayOfPurchase = (int) $createdAt->format('d');
 
-        if ($dayOfPurchase <= $cutoffDay) {
-            return $createdAt->format('Y-m');
+        // Find the current fatura for this card and month
+        $monthKey = $dayOfPurchase <= $cutoffDay
+            ? $createdAt->format('Y-m')
+            : $createdAt->copy()->addMonth()->format('Y-m');
+
+        // Check if the fatura for this month is paid (closed)
+        $fatura = \App\Models\Fatura::where('bank_user_id', $transacao->bank_user_id)
+            ->where('month_key', $monthKey)
+            ->first();
+
+        if ($fatura && $fatura->isPaid()) {
+            // If fatura is paid, assign to next month
+            $nextMonth = Carbon::createFromFormat('Y-m', $monthKey)->addMonth();
+            return $nextMonth->format('Y-m');
         }
 
-        return $createdAt->copy()->addMonth()->format('Y-m');
+        return $monthKey;
     }
 
     public function resolveCurrentBillingMonthKey(?CardUser $cardUser = null): string
