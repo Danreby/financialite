@@ -59,6 +59,8 @@ export default function About() {
     },
   ]
 
+  const apkDownloadUrl = 'https://github.com/Danreby/FinancialiteAPK/releases/latest/download/financialite.apk'
+
   return (
     <AuthenticatedLayout>
       <Head title="Sobre" />
@@ -185,6 +187,43 @@ export default function About() {
               >
                 Abrir LivePix em nova aba
               </a>
+            </div>
+          </section>
+        </FadeInItem>
+
+        <FadeInItem>
+          <section className="rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              📱 Aplicativo Mobile
+            </h2>
+            <div className="space-y-4">
+              <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                O Financialite também está disponível como aplicativo Android!
+                Gerencie suas finanças de qualquer lugar, com sincronização em tempo real
+                com a versão web.
+              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <a
+                  href={apkDownloadUrl}
+                  download
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
+                  style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent))' }}
+                >
+                  <span className="text-lg">⬇️</span>
+                  Baixar APK (Android)
+                </a>
+                <a
+                  href="https://github.com/Danreby/FinancialiteAPK/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Ver todas as versões →
+                </a>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Ao instalar, pode ser necessário habilitar &quot;Fontes desconhecidas&quot; nas configurações do Android.
+              </p>
             </div>
           </section>
         </FadeInItem>
