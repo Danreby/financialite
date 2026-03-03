@@ -178,7 +178,10 @@ class TransacaoApiController extends Controller
             $bankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
-        $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
+        $bankAccount = null;
+        if (!empty($data['bank_account_id'])) {
+            $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
+        }
 
         try {
             $totalPaidThisRun = $this->paymentService->payMonthForUser($user, $data['month'], $bankUser, $bankAccount);

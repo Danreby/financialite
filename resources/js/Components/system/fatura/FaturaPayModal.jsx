@@ -173,10 +173,8 @@ export default function FaturaPayModal({
   const isInsufficientBalance =
     selectedBankAccount && totalToPay > 0 && selectedBankAccount.balance < totalToPay;
 
-  /** Card is optional — only the bank account and at least one pending item are required. */
   const canPay =
     !isSubmitting &&
-    !!selectedBankAccountId &&
     pendingItems.length > 0;
 
   const isAllCards = !selectedCardId;
@@ -195,7 +193,7 @@ export default function FaturaPayModal({
       await axios.post(route("transacoes.pay_month"), {
         month: monthKey,
         bank_user_id: selectedCardId || null,
-        bank_account_id: selectedBankAccountId,
+        bank_account_id: selectedBankAccountId || null,
       });
 
       toast.success("Pagamentos registrados com sucesso.");
@@ -217,7 +215,6 @@ export default function FaturaPayModal({
     if (!isSubmitting && onClose) onClose();
   };
 
-  // ── Render confirmation step ──────────────────────────────────────────────
   if (step === "confirm") {
     return (
       <Modal
@@ -240,7 +237,6 @@ export default function FaturaPayModal({
     );
   }
 
-  // ── Render form step ──────────────────────────────────────────────────────
   return (
     <Modal
       isOpen={isOpen}
@@ -249,7 +245,6 @@ export default function FaturaPayModal({
       title={`Pagar fatura de ${monthLabel}`}
     >
       <div className="space-y-4 text-sm">
-        {/* ── Card filter (optional) ───────────────────────────────────── */}
         <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-4 dark:border-gray-700 dark:bg-gray-900/30">
           <label className="mb-2 flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             <CreditCard className="w-3.5 h-3.5 shrink-0" />
@@ -267,7 +262,7 @@ export default function FaturaPayModal({
             name="pay_card_id"
           />
 
-          {isAllCards ? (
+          {/* {isAllCards ? (
             <div className="mt-2 flex items-start gap-1.5 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400">
               <Info className="mt-0.5 w-3.5 h-3.5 shrink-0" />
               <span>
@@ -278,13 +273,16 @@ export default function FaturaPayModal({
             <p className="mt-2 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
               Mostrando apenas transações do cartão selecionado.
             </p>
-          )}
+          )} */}
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-4 dark:border-gray-700 dark:bg-gray-900/30">
           <label className="mb-2 flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             <Landmark className="w-3.5 h-3.5 shrink-0" />
-            Conta bancária para pagamento
+            Conta bancária para débito
+            <span className="ml-1 rounded-full bg-gray-200 px-1.5 py-0.5 text-[10px] font-normal text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+              Opcional
+            </span>
           </label>
 
           <Autocomplete
@@ -330,14 +328,16 @@ export default function FaturaPayModal({
             </div>
           )}
 
-          {!selectedBankAccountId && (
-            <p className="mt-2 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-              Selecione a conta bancária de onde o pagamento será debitado.
-            </p>
-          )}
+          {/* {!selectedBankAccountId && (
+            <div className="mt-2 flex items-start gap-1.5 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400">
+              <Info className="mt-0.5 w-3.5 h-3.5 shrink-0" />
+              <span>
+                Sem conta selecionada — as transações serão marcadas como pagas sem debitar saldo.
+              </span>
+            </div>
+          )} */}
         </div>
 
-        {/* ── Pending transactions list ──────────────────────────────── */}
         <FaturaCardTransactionList
           items={pendingItems}
           totalToPay={totalToPay}
