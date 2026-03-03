@@ -91,11 +91,12 @@ export default function Cartoes({ bankAccounts }) {
         credit_limit: cardCreditLimitInput ? parseFloat(cardCreditLimitInput) : null,
       };
 
-      await axios.patch(route('cards.update-due-day', cardBeingEdited.id), payload);
+      const response = await axios.patch(route('cards.update-due-day', cardBeingEdited.id), payload);
+      const updated = response.data || {};
       setLocalCards((prev) =>
         prev.map((acc) =>
           acc.id === cardBeingEdited.id
-            ? { ...acc, ...payload, due_day: parsedDue, closing_day: parsedClosing }
+            ? { ...acc, ...updated }
             : acc,
         ),
       );
