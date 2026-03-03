@@ -47,12 +47,12 @@ function TransactionRow({ item }) {
   );
 }
 
-export default function FaturaCardTransactionList({ items = [], totalToPay = 0 }) {
+export default function FaturaCardTransactionList({ items = [], totalToPay = 0, emptyMessage }) {
   if (items.length === 0) {
     return (
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-800 dark:bg-gray-900/20">
         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-          Nenhuma transação pendente para este cartão neste mês.
+          {emptyMessage ?? "Nenhuma transação pendente para este cartão neste mês."}
         </p>
       </div>
     );

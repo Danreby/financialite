@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Landmark } from "lucide-react";
 import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
@@ -8,12 +9,14 @@ import BareButton from "@/Components/common/buttons/BareButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 import { useNumericInput, useDecimalInput } from "@/Hooks/useNumericInput";
 
-export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = [], categories = [] }) {
+export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = [], debitAccounts = [], categories = [] }) {
   const [isRecurring, setIsRecurring] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [type, setType] = useState("");
   const [selectedBankId, setSelectedBankId] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [deductFromBank, setDeductFromBank] = useState(false);
+  const [selectedDebitAccountId, setSelectedDebitAccountId] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -22,6 +25,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       setType("");
       setSelectedBankId("");
       setSelectedCategoryId("");
+      setDeductFromBank(false);
+      setSelectedDebitAccountId("");
     }
   }, [isOpen]);
 
@@ -110,6 +115,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       is_recurring: effectiveRecurring ? 1 : 0,
       bank_user_id: selectedBankId || null,
       category_id: selectedCategoryId || null,
+      debit_account_id: deductFromBank && selectedDebitAccountId ? selectedDebitAccountId : null,
     };
 
     axios
@@ -122,6 +128,8 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
         setType("");
         setSelectedBankId("");
         setSelectedCategoryId("");
+        setDeductFromBank(false);
+        setSelectedDebitAccountId("");
         setIsSubmitting(false);
         if (onSuccess) onSuccess(response.data || {});
         if (onClose) onClose();
@@ -326,7 +334,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
               onChange={(e) => setSelectedBankId(e.target.value)}
               className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
-              <option value="">Selecione um cartão</option>
+              <option value="">Selecione um cartão (opcional)</option>
               {bankAccounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.name}
@@ -334,6 +342,61 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
               ))}
             </select>
           </div>
+
+          {/* ── Bank deduction toggle ──────────────────────────────────── */}
+          {debitAccounts.length > 0 && (
+            <div className="md:col-span-2 space-y-3 rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-3.5 dark:border-gray-700 dark:bg-gray-900/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Landmark className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Subtrair de conta bancária
+                  </span>
+                </div>
+                <BareButton
+                  type="button"
+                  onClick={() => {
+                    setDeductFromBank((prev) => !prev);
+                    if (deductFromBank) setSelectedDebitAccountId("");
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 themed-ring focus:ring-offset-2 ${
+                    deductFromBank
+                      ? "themed-toggle-on"
+                      : "bg-gray-300 dark:bg-gray-700"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                      deductFromBank ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </BareButton>
+              </div>
+
+              {deductFromBank && (
+                <div className="flex flex-col gap-1.5">
+                  <select
+                    value={selectedDebitAccountId}
+                    onChange={(e) => setSelectedDebitAccountId(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 bg-white p-2 text-xs sm:text-sm shadow-sm dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+                  >
+                    <option value="">Selecione uma conta</option>
+                    {debitAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name}
+                        {typeof account.balance === "number"
+                          ? ` · ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(account.balance)}`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    O valor da despesa será debitado do saldo da conta selecionada.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">

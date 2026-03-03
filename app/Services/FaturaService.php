@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Services\FaturaServiceInterface;
+use App\Models\BankUser;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -12,6 +13,9 @@ class FaturaService implements FaturaServiceInterface
 {
     public function createForUser(Authenticatable $user, array $data): Transacao
     {
+        $debitAccountId = $data['debit_account_id'] ?? null;
+        unset($data['debit_account_id']);
+
         $data['user_id'] = $user->id;
         $data['total_installments'] = max($data['total_installments'] ?? 1, 1);
         $data['current_installment'] = 0;
@@ -31,8 +35,18 @@ class FaturaService implements FaturaServiceInterface
             $data['is_recurring'] = false;
         }
 
-        return DB::transaction(function () use ($data) {
-            return Transacao::create($data);
+        $amount = (float) ($data['amount'] ?? 0);
+
+        return DB::transaction(function () use ($data, $debitAccountId, $user, $amount) {
+            $fatura = Transacao::create($data);
+
+            if ($debitAccountId && $amount > 0) {
+                $bankAccount = BankUser::forUser($user->id)->findOrFail($debitAccountId);
+                $bankAccount->balance = max(0, (float) $bankAccount->balance - $amount);
+                $bankAccount->save();
+            }
+
+            return $fatura;
         });
     }
 

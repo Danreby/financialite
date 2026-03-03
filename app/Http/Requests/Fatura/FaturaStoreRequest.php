@@ -80,6 +80,13 @@ class FaturaStoreRequest extends FormRequest
                     $query->where('user_id', $userId);
                 }),
             ],
+            'debit_account_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('bank_user', 'id')->where(function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }),
+            ],
         ];
     }
 
@@ -100,6 +107,7 @@ class FaturaStoreRequest extends FormRequest
             'current_installment.lte' => 'A parcela atual não pode ser maior que o total de parcelas.',
             'bank_user_id.exists' => 'A conta bancária selecionada não existe ou não pertence a você.',
             'category_id.exists' => 'A categoria selecionada não existe ou não pertence a você.',
+            'debit_account_id.exists' => 'A conta para débito selecionada não existe ou não pertence a você.',
         ];
     }
 

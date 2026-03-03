@@ -140,6 +140,7 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
         isOpen={showFaturaForm}
         onClose={() => setShowFaturaForm(false)}
         bankAccounts={localBankAccounts}
+        debitAccounts={bankAccountsList}
         categories={localCategories}
         onSuccess={() => {
           setShowFaturaForm(false);
