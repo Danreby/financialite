@@ -15,13 +15,14 @@ class FaturaBillingService
             ? $transacao->created_at->copy()
             : Carbon::parse($transacao->created_at);
 
-        $dueDay = $transacao->bankUser->due_day ?? null;
+        // Prefer closing_day (card billing cycle close date) over due_day
+        $closingDay = $transacao->bankUser->closing_day ?? $transacao->bankUser->due_day ?? null;
 
-        if (!$dueDay) {
+        if (!$closingDay) {
             return $createdAt->format('Y-m');
         }
 
-        $cutoffDay = min((int) $dueDay, 28);
+        $cutoffDay = min((int) $closingDay, 28);
         $dayOfPurchase = (int) $createdAt->format('d');
 
         if ($dayOfPurchase <= $cutoffDay) {
@@ -35,16 +36,23 @@ class FaturaBillingService
     {
         $today = Carbon::today();
 
-        if (!$cardUser || !$cardUser->due_day) {
-            $candidate = $today->copy();
-        } else {
-            $cutoffDay = min((int) $cardUser->due_day, 28);
-            $day = (int) $today->format('d');
-
-            $candidate = $day <= $cutoffDay
-                ? $today->copy()
-                : $today->copy()->addMonth();
+        if (!$cardUser) {
+            return $today->format('Y-m');
         }
+
+        // Prefer closing_day (card billing cycle close date) over due_day
+        $closingDay = $cardUser->closing_day ?? $cardUser->due_day ?? null;
+
+        if (!$closingDay) {
+            return $today->format('Y-m');
+        }
+
+        $cutoffDay = min((int) $closingDay, 28);
+        $day = (int) $today->format('d');
+
+        $candidate = $day <= $cutoffDay
+            ? $today->copy()
+            : $today->copy()->addMonth();
 
         return $candidate->format('Y-m');
     }

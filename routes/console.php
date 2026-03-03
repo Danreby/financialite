@@ -12,6 +12,8 @@ Schedule::command('bills:check-upcoming')->dailyAt('09:00');
 
 Schedule::command('invoices:check-due-date')->dailyAt('09:00');
 
+Schedule::command('cards:check-closing-day')->dailyAt('09:00');
+
 // Credit recurring incomes to linked bank accounts on the configured payment day
 // Runs at 00:05 so balances are updated at the very start of the payment day
 Schedule::command('incomes:credit-to-bank')->dailyAt('00:05');

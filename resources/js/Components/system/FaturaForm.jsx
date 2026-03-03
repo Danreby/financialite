@@ -30,6 +30,13 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (type !== "debit") {
+      setDeductFromBank(false);
+      setSelectedDebitAccountId("");
+    }
+  }, [type]);
+
   const handleNumericKeyDown = useNumericInput();
   const handleDecimalKeyDown = useDecimalInput();
 
@@ -123,7 +130,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
       .then((response) => {
         toast.dismiss();
         toast.success("Transação criada com sucesso.");
-		formElement.reset();
+        formElement.reset();
         setIsRecurring(false);
         setType("");
         setSelectedBankId("");
@@ -237,9 +244,6 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
           />
 
           <div className="flex flex-col gap-1">
-            {/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Tipo
-            </label> */}
             <div className="inline-flex items-center gap-2 rounded-full p-1 text-xs font-medium">
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-full px-3 py-1 text-gray-700 transition hover:bg-white hover:shadow-sm dark:text-gray-200 dark:hover:bg-gray-800">
                 <input
@@ -343,8 +347,7 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
             </select>
           </div>
 
-          {/* ── Bank deduction toggle ──────────────────────────────────── */}
-          {debitAccounts.length > 0 && (
+          {type === "debit" && debitAccounts.length > 0 && (
             <div className="md:col-span-2 space-y-3 rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-3.5 dark:border-gray-700 dark:bg-gray-900/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -356,8 +359,11 @@ export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = 
                 <BareButton
                   type="button"
                   onClick={() => {
-                    setDeductFromBank((prev) => !prev);
-                    if (deductFromBank) setSelectedDebitAccountId("");
+                    setDeductFromBank((prev) => {
+                      const next = !prev;
+                      if (!next) setSelectedDebitAccountId("");
+                      return next;
+                    });
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 themed-ring focus:ring-offset-2 ${
                     deductFromBank
