@@ -263,7 +263,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-HbYHncGb.css",
+    "file": "assets/app-B5ZBQhT7.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -367,7 +367,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-mKKjJjQ8.js",
+    "file": "assets/Bancos-HvnxgbON.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -388,11 +388,11 @@
       "_DangerButton-Be1DjsNn.js"
     ],
     "css": [
-      "assets/app-HbYHncGb.css"
+      "assets/app-B5ZBQhT7.css"
     ]
   },
   "resources/js/Pages/Cartoes.jsx": {
-    "file": "assets/Cartoes-By1IyHho.js",
+    "file": "assets/Cartoes-xIJlYGSV.js",
     "name": "Cartoes",
     "src": "resources/js/Pages/Cartoes.jsx",
     "isDynamicEntry": true,
@@ -474,7 +474,7 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-DQHlVGG-.js",
+    "file": "assets/Dashboard-JOxht7Ma.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
@@ -522,7 +522,7 @@
     ]
   },
   "resources/js/Pages/Fatura.jsx": {
-    "file": "assets/Fatura-D5LIewZ6.js",
+    "file": "assets/Fatura-otmGTvet.js",
     "name": "Fatura",
     "src": "resources/js/Pages/Fatura.jsx",
     "isDynamicEntry": true,
@@ -562,7 +562,7 @@
     ]
   },
   "resources/js/Pages/Profile/Edit.jsx": {
-    "file": "assets/Edit-DdwOIQTG.js",
+    "file": "assets/Edit-tRubRgAL.js",
     "name": "Edit",
     "src": "resources/js/Pages/Profile/Edit.jsx",
     "isDynamicEntry": true,
@@ -688,7 +688,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-CYBbZx0r.js",
+    "file": "assets/app-CF81E0hh.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -721,7 +721,7 @@
       "resources/js/Pages/Transacao.jsx"
     ],
     "css": [
-      "assets/app-HbYHncGb.css"
+      "assets/app-B5ZBQhT7.css"
     ]
   }
 }
