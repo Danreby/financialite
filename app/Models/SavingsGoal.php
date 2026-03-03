@@ -30,6 +30,12 @@ class SavingsGoal extends Model
         'deleted_at',
     ];
 
+    protected $appends = [
+        'is_completed',
+        'progress',
+        'remaining',
+    ];
+
     protected $casts = [
         'target_amount'  => 'decimal:2',
         'current_amount' => 'decimal:2',

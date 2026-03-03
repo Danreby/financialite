@@ -67,11 +67,11 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
       const data = response.data
       onSuccess?.({
         ...data,
-        progress: data.target_amount > 0
+        progress: data.progress ?? (data.target_amount > 0
           ? Math.min(Math.round((data.current_amount / data.target_amount) * 100 * 10) / 10, 100)
-          : 0,
-        remaining: Math.max(data.target_amount - data.current_amount, 0),
-        is_completed: data.completed_at !== null,
+          : 0),
+        remaining: data.remaining ?? Math.max(data.target_amount - data.current_amount, 0),
+        is_completed: data.is_completed ?? (data.completed_at !== null),
       })
       handleClose()
     } catch (error) {

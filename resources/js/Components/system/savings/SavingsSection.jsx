@@ -68,11 +68,11 @@ export default function SavingsSection({
       const updated = goals.map((g) => (g.id === goalId ? {
         ...g,
         ...res.data,
-        progress: res.data.target_amount > 0
+        progress: res.data.progress ?? (res.data.target_amount > 0
           ? Math.min(Math.round((res.data.current_amount / res.data.target_amount) * 100 * 10) / 10, 100)
-          : 0,
-        remaining: Math.max(res.data.target_amount - res.data.current_amount, 0),
-        is_completed: res.data.completed_at !== null,
+          : 0),
+        remaining: res.data.remaining ?? Math.max(res.data.target_amount - res.data.current_amount, 0),
+        is_completed: res.data.is_completed ?? (res.data.completed_at !== null),
       } : g))
       setGoals(updated)
       refreshSummary(updated)
