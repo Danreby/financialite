@@ -26,7 +26,6 @@ class CheckInvoiceDueDateCommand extends Command
         $oneDayFromNow = $today->copy()->addDay();
         $twoDaysFromNow = $today->copy()->addDays(2);
 
-        // Buscar faturas não pagas com banco associado (que tem due_day)
         $invoices = Fatura::with('user', 'bankUser.card')
             ->whereNull('paid_at')
             ->whereHas('bankUser', function($q) {
@@ -43,12 +42,9 @@ class CheckInvoiceDueDateCommand extends Command
                 continue;
             }
 
-            // Calcular a data de vencimento baseado no month_key e due_day
-            // Se month_key for 2026-02, o vencimento seria no dia due_day de março (próximo mês)
             $invoiceDate = Carbon::parse($invoice->month_key . '-01');
             $dueDate = $invoiceDate->copy()->addMonth()->day(min($invoice->bankUser->due_day, $invoiceDate->copy()->addMonth()->daysInMonth));
             
-            // Notificar 2 dias antes
             if ($dueDate->isSameDay($twoDaysFromNow)) {
                 $bankName = $invoice->bankUser?->card?->name ?? 'Cartão';
                 $monthLabel = $invoiceDate->translatedFormat('F/Y');
@@ -63,7 +59,6 @@ class CheckInvoiceDueDateCommand extends Command
                 $this->line("  → Notificado: {$invoice->user->name} - {$bankName} {$monthLabel} (2 dias)");
             }
 
-            // Notificar 1 dia antes
             if ($dueDate->isSameDay($oneDayFromNow)) {
                 $bankName = $invoice->bankUser?->card?->name ?? 'Cartão';
                 $monthLabel = $invoiceDate->translatedFormat('F/Y');
@@ -78,7 +73,6 @@ class CheckInvoiceDueDateCommand extends Command
                 $this->line("  → Notificado: {$invoice->user->name} - {$bankName} {$monthLabel} (1 dia)");
             }
 
-            // Notificar no dia do vencimento
             if ($dueDate->isSameDay($today)) {
                 $bankName = $invoice->bankUser?->card?->name ?? 'Cartão';
                 $monthLabel = $invoiceDate->translatedFormat('F/Y');

@@ -30,7 +30,6 @@ class CheckCardClosingDayCommand extends Command
         $notified2Days = 0;
         $notifiedToday = 0;
 
-        // Load all active card users that have a closing_day set
         $cardUsers = CardUser::with(['card', 'user'])
             ->whereNotNull('closing_day')
             ->get();
@@ -43,7 +42,6 @@ class CheckCardClosingDayCommand extends Command
             $closingDay = (int) $cardUser->closing_day;
             $cardName   = $cardUser->card->name ?? ('Cartão #' . $cardUser->id);
 
-            // Notify 2 days before closing
             if ($closingDay === $twoDaysAhead) {
                 $this->notifications->warning(
                     $cardUser->user,
@@ -55,7 +53,6 @@ class CheckCardClosingDayCommand extends Command
                 $this->line("  → Notificado: {$cardUser->user->name} - {$cardName} (2 dias)");
             }
 
-            // Notify 1 day before closing
             if ($closingDay === $oneDayAhead) {
                 $this->notifications->warning(
                     $cardUser->user,
@@ -67,7 +64,6 @@ class CheckCardClosingDayCommand extends Command
                 $this->line("  → Notificado: {$cardUser->user->name} - {$cardName} (1 dia)");
             }
 
-            // Notify on the closing day itself
             if ($closingDay === $todayDay) {
                 $this->notifications->info(
                     $cardUser->user,

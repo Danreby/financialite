@@ -26,7 +26,6 @@ class CheckUpcomingBillsCommand extends Command
         $oneDayFromNow = $today->copy()->addDay();
         $twoDaysFromNow = $today->copy()->addDays(2);
 
-        // Buscar todas ascontas ativas
         $bills = Bill::with('user')
             ->where('status', 'active')
             ->get();
@@ -42,7 +41,6 @@ class CheckUpcomingBillsCommand extends Command
                 continue;
             }
 
-            // Notificar 2 dias antes
             if ($nextDueDate->isSameDay($twoDaysFromNow)) {
                 $this->notifications->warning(
                     $bill->user,
@@ -54,7 +52,6 @@ class CheckUpcomingBillsCommand extends Command
                 $this->line("  → Notificado: {$bill->user->name} - {$bill->title} (2 dias)");
             }
 
-            // Notificar 1 dia antes
             if ($nextDueDate->isSameDay($oneDayFromNow)) {
                 $this->notifications->warning(
                     $bill->user,
@@ -66,7 +63,6 @@ class CheckUpcomingBillsCommand extends Command
                 $this->line("  → Notificado: {$bill->user->name} - {$bill->title} (1 dia)");
             }
 
-            // Notificar no dia do vencimento
             if ($nextDueDate->isSameDay($today)) {
                 $this->notifications->error(
                     $bill->user,

@@ -21,6 +21,7 @@ class NotificationController extends Controller
         $user = Auth::user();
 
         $notifications = Notification::forUser($user->id)
+            ->where('title', 'not like', '__meta:%')
             ->orderByDesc('created_at')
             ->get();
 
@@ -58,7 +59,9 @@ class NotificationController extends Controller
 
         $user = Auth::user();
 
-        Notification::forUser($user->id)->delete();
+        Notification::forUser($user->id)
+            ->where('title', 'not like', '__meta:%')
+            ->delete();
 
         return $this->success(['status' => 'ok']);
     }
@@ -67,7 +70,10 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        $count = Notification::forUser($user->id)->unread()->count();
+        $count = Notification::forUser($user->id)
+            ->unread()
+            ->where('title', 'not like', '__meta:%')
+            ->count();
 
         return $this->success(['unread_count' => $count]);
     }
