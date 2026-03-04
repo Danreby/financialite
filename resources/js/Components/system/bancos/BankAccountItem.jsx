@@ -5,7 +5,7 @@ import BareButton from '@/Components/common/buttons/BareButton';
 const formatCurrency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
 
-export default function BankAccountItem({ account, onEdit, onDelete, saving }) {
+export default function BankAccountItem({ account, onEdit, onDelete, onAdjust, saving }) {
   const balance = parseFloat(account.balance ?? 0);
   const balanceColor =
     balance > 0
@@ -38,6 +38,18 @@ export default function BankAccountItem({ account, onEdit, onDelete, saving }) {
       </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <BareButton
+          type="button"
+          onClick={() => onAdjust(account)}
+          disabled={saving}
+          className="rounded-lg p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+          aria-label="Ajustar saldo"
+          title="Adicionar ou subtrair valor"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </BareButton>
         <BareButton
           type="button"
           onClick={() => onEdit(account)}

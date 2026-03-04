@@ -13,6 +13,7 @@ import BankAccountForm from '@/Components/system/bancos/BankAccountForm';
 import EditBankAccountModal from '@/Components/system/bancos/EditBankAccountModal';
 import BankTransferForm from '@/Components/system/bancos/BankTransferForm';
 import BankTransferHistory from '@/Components/system/bancos/BankTransferHistory';
+import BalanceAdjustModal from '@/Components/system/bancos/BalanceAdjustModal';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
@@ -37,6 +38,9 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState({ type: null, id: null, name: '' });
+
+  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const [accountBeingAdjusted, setAccountBeingAdjusted] = useState(null);
 
   const loadTransfers = async () => {
     try {
@@ -129,6 +133,26 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
     toast.success('Conta bancária criada com sucesso.');
   };
 
+  const openAdjustModal = (account) => {
+    setAccountBeingAdjusted(account);
+    setIsAdjustModalOpen(true);
+  };
+
+  const handleAdjustSuccess = (updated) => {
+    if (updated) {
+      refreshAccounts();
+      loadStats();
+    }
+    toast.success('Saldo ajustado com sucesso.');
+    setIsAdjustModalOpen(false);
+    setAccountBeingAdjusted(null);
+  };
+
+  const handleCloseAdjustModal = useCallback(() => {
+    setIsAdjustModalOpen(false);
+    setAccountBeingAdjusted(null);
+  }, []);
+
   const handleTransferSuccess = () => {
     toast.success('Transferência realizada com sucesso.');
     refreshAccounts();
@@ -220,6 +244,7 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
                       account={account}
                       onEdit={openEditModal}
                       onDelete={(payload) => openConfirmDelete(payload)}
+                      onAdjust={openAdjustModal}
                       saving={saving}
                     />
                   ))}
@@ -269,6 +294,13 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
         target={confirmTarget}
         onConfirm={handleConfirmDelete}
         saving={saving}
+      />
+
+      <BalanceAdjustModal
+        isOpen={isAdjustModalOpen}
+        onClose={handleCloseAdjustModal}
+        account={accountBeingAdjusted}
+        onSuccess={handleAdjustSuccess}
       />
     </AuthenticatedLayout>
   );
