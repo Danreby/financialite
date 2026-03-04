@@ -8,12 +8,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('bills:check-upcoming')->dailyAt('09:00');
+Schedule::command('bills:check-upcoming')->dailyAt('12:00');
 
-Schedule::command('invoices:check-due-date')->dailyAt('09:00');
+Schedule::command('invoices:check-due-date')->dailyAt('12:00');
 
-Schedule::command('cards:check-closing-day')->dailyAt('09:00');
+Schedule::command('cards:check-closing-day')->dailyAt('12:00');
 
-Schedule::command('budget:check-threshold')->dailyAt('09:00');
+Schedule::command('budget:check-threshold')->dailyAt('12:00');
 
-Schedule::command('incomes:credit-to-bank')->dailyAt('00:05');
+Schedule::command('incomes:credit-to-bank')->dailyAt('12:00');
