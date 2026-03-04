@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('bank-accounts')->name('bank-accounts.')->group(function () {
-        // list-banks: global list of supported bank institutions — rarely changes
         Route::get('/banks', [BankController::class, 'listBanks'])
             ->middleware('cache.api:60')
             ->name('list-banks');
