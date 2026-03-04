@@ -25,8 +25,10 @@ class FaturaBillingService
         $cutoffDay = min((int) $closingDay, 28);
         $dayOfPurchase = (int) $createdAt->format('d');
 
-        // Find the current fatura for this card and month
-        $monthKey = $dayOfPurchase <= $cutoffDay
+        // Card closes at midnight on the closing day.
+        // A transaction created ON the closing day (any time) belongs to the NEXT billing cycle.
+        // Only transactions strictly BEFORE the closing day belong to the current cycle.
+        $monthKey = $dayOfPurchase < $cutoffDay
             ? $createdAt->format('Y-m')
             : $createdAt->copy()->addMonth()->format('Y-m');
 
@@ -62,7 +64,9 @@ class FaturaBillingService
         $cutoffDay = min((int) $closingDay, 28);
         $day = (int) $today->format('d');
 
-        $candidate = $day <= $cutoffDay
+        // On or after the closing day the current open billing cycle is the next calendar month.
+        // Strictly before the closing day the open cycle is still the current calendar month.
+        $candidate = $day < $cutoffDay
             ? $today->copy()
             : $today->copy()->addMonth();
 

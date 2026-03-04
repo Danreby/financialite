@@ -16,7 +16,9 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
         [months],
     );
 
-    const visibleMonths = months.filter((m) => m.combinedTotal > 0);
+    // Always include the current billing month even when it has no transactions yet,
+    // so the user can see the active open invoice when all pending ones are already paid.
+    const visibleMonths = months.filter((m) => m.combinedTotal > 0 || m.isCurrentMonth);
     const hasAny        = visibleMonths.length > 0;
     const hasSimulated  = (totals.simulatedAll ?? 0) > 0;
     const hasRecurring  = months.some((m) => (m.realRecurringTotal ?? 0) > 0);
@@ -110,16 +112,14 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
                 </div>
             ) : (
                 <div className="flex flex-col gap-0 pt-1">
-                    {months.map((monthData, idx) =>
-                        monthData.combinedTotal > 0 ? (
-                            <ProjectionMonthBar
-                                key={monthData.ym}
-                                data={monthData}
-                                maxValue={maxValue}
-                                index={idx}
-                            />
-                        ) : null
-                    )}
+                    {visibleMonths.map((monthData, idx) => (
+                        <ProjectionMonthBar
+                            key={monthData.ym}
+                            data={monthData}
+                            maxValue={maxValue}
+                            index={idx}
+                        />
+                    ))}
                 </div>
             )}
         </div>

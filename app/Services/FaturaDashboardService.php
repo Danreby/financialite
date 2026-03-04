@@ -55,9 +55,10 @@ class FaturaDashboardService
             ->get()
             ->map(function ($cardUser) {
                 return [
-                    'id' => $cardUser->id,
-                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
-                    'due_day' => $cardUser->due_day,
+                    'id'          => $cardUser->id,
+                    'name'        => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                    'due_day'     => $cardUser->due_day,
+                    'closing_day' => $cardUser->closing_day,
                 ];
             });
 

@@ -19,6 +19,7 @@ export default function FaturaMonthSection({
   onPaid,
   is_paid = false,
   due_day = null,
+  closing_day = null,
   isCurrentPending = false,
 }) {
   const [showPayModal, setShowPayModal] = useState(false);
@@ -55,9 +56,14 @@ export default function FaturaMonthSection({
       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 flex justify-start items-center gap-3 sm:gap-4">
           <div className="inline-flex flex-col items-start px-4 py-2">
+            {closing_day && (
+              <p className="mt-0.5 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
+                Fechamento: todo dia <span className="font-semibold">{closing_day}</span>
+              </p>
+            )}
             {due_day && (
 						<p className="mt-0.5 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
-                Vencimento do cartão: todo dia <span className="font-semibold">{due_day}</span>
+                Vencimento: todo dia <span className="font-semibold">{due_day}</span>
               </p>
             )}
 					<p className="mt-1 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">

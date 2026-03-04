@@ -231,17 +231,24 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], debitAcc
 						{selectedAccount && (
 							<div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm 2xl:text-sm text-gray-600 dark:text-gray-300">
 								<span>
-									Dia de vencimento:{' '}
-									{selectedAccount.due_day
-										? `todo dia ${selectedAccount.due_day}`
-										: 'ainda não definido'}
-								</span>
-								<SecondaryButton
-									type="button"
-									onClick={handleOpenDueDayModal}
-									className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide themed-outline-btn"
-								>
-									Definir dia de vencimento
+								Fechamento:{' '}
+								{selectedAccount.closing_day
+									? `todo dia ${selectedAccount.closing_day}`
+									: 'não definido'}
+							</span>
+							<span className="text-gray-400 dark:text-gray-600">•</span>
+							<span>
+								Vencimento:{' '}
+								{selectedAccount.due_day
+									? `todo dia ${selectedAccount.due_day}`
+									: 'ainda não definido'}
+							</span>
+							<SecondaryButton
+								type="button"
+								onClick={handleOpenDueDayModal}
+								className="rounded-full px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wide themed-outline-btn"
+							>
+								Definir vencimento
 								</SecondaryButton>
 							</div>
 						)}
@@ -273,6 +280,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], debitAcc
 									bankAccounts={bankAccounts}
 									debitAccounts={debitAccounts}
 									due_day={selectedAccount?.due_day ?? null}
+									closing_day={selectedAccount?.closing_day ?? null}
 									onPaid={handlePaidMonth}
 									isCurrentPending={
 										logicalCurrentKey &&

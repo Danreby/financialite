@@ -120,28 +120,34 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 			return;
 		}
 
-		let dueDayParsed = null;
-		if (dueDay) {
-			const parsed = parseInt(dueDay, 10);
-			if (Number.isNaN(parsed) || parsed < 1 || parsed > 31) {
-				toast.error("Informe um dia de vencimento entre 1 e 31.");
-				document.getElementById("due_day")?.focus();
-				setIsSubmitting(false);
-				return;
-			}
-			dueDayParsed = parsed;
+		// Dia de vencimento é obrigatório
+		if (!dueDay || dueDay.trim() === "") {
+			toast.error("O dia de vencimento é obrigatório.");
+			document.getElementById("due_day")?.focus();
+			setIsSubmitting(false);
+			return;
+		}
+		const dueDayParsed = parseInt(dueDay, 10);
+		if (Number.isNaN(dueDayParsed) || dueDayParsed < 1 || dueDayParsed > 31) {
+			toast.error("Informe um dia de vencimento entre 1 e 31.");
+			document.getElementById("due_day")?.focus();
+			setIsSubmitting(false);
+			return;
 		}
 
-		let closingDayParsed = null;
-		if (closingDay) {
-			const parsed = parseInt(closingDay, 10);
-			if (Number.isNaN(parsed) || parsed < 1 || parsed > 31) {
-				toast.error("Informe um dia de fechamento entre 1 e 31.");
-				document.getElementById("closing_day")?.focus();
-				setIsSubmitting(false);
-				return;
-			}
-			closingDayParsed = parsed;
+		// Dia de fechamento é obrigatório
+		if (!closingDay || closingDay.trim() === "") {
+			toast.error("O dia de fechamento é obrigatório.");
+			document.getElementById("closing_day")?.focus();
+			setIsSubmitting(false);
+			return;
+		}
+		const closingDayParsed = parseInt(closingDay, 10);
+		if (Number.isNaN(closingDayParsed) || closingDayParsed < 1 || closingDayParsed > 31) {
+			toast.error("Informe um dia de fechamento entre 1 e 31.");
+			document.getElementById("closing_day")?.focus();
+			setIsSubmitting(false);
+			return;
 		}
 
 		if (creditLimit) {
@@ -193,9 +199,14 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 				setIsSubmitting(false);
 				if (error.response && error.response.status === 422) {
 					const data = error.response.data || {};
-					const validationMessage =
-						data.errors?.card_id?.[0] || data.message || "Erro de validação ao vincular cartão.";
-					toast.error(validationMessage);
+					const errors = data.errors ?? {};
+					const firstError =
+						errors.due_day?.[0] ||
+						errors.closing_day?.[0] ||
+						errors.card_id?.[0] ||
+						data.message ||
+						"Erro de validação ao vincular cartão.";
+					toast.error(firstError);
 					return;
 				}
 				toast.error("Erro ao vincular cartão.");
@@ -205,66 +216,59 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar cartão">
 			<form className="space-y-4" onSubmit={handleSubmit} noValidate>
-				<div className="flex flex-col gap-1">
-					{/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-						Cartão
-					</label> */}
-					<Autocomplete
-						options={cards}
-						value={selectedCardId}
-						onChange={setSelectedCardId}
-						placeholder="Pesquisar cartão..."
-						labelKey="label"
-						valueKey="value"
-						name="card_id"
-					/>
-				</div>
+
+				<Autocomplete
+					options={cards}
+					value={selectedCardId}
+					onChange={setSelectedCardId}
+					placeholder="Pesquisar cartão..."
+					labelKey="label"
+					valueKey="value"
+					name="card_id"
+				/>
 
 				<FloatLabelField
 					id="due_day"
 					name="due_day"
 					type="text"
-					label="Dia de vencimento do cartão (1 a 31)"
+					label="Dia de vencimento (1 a 31) *"
 					inputProps={{
 						maxLength: 2,
 						inputMode: "numeric",
 						pattern: "\\d{1,2}",
 						onKeyDown: handleNumericKeyDown,
-						placeholder: "Opcional. Ex: 10",
+						placeholder: "Obrigatório. Ex: 10",
 						value: dueDay,
 						onChange: handleDayChange(setDueDay),
+						required: true,
 					}}
 				/>
-
-				<div className="flex flex-col gap-1">
-					{/* <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-						Bandeira
-					</label> */}
-					<Autocomplete
-						options={BRAND_OPTIONS}
-						value={brand}
-						onChange={setBrand}
-						placeholder="Bandeira do cartão..."
-						labelKey="label"
-						valueKey="value"
-						name="brand"
-					/>
-				</div>
 
 				<FloatLabelField
 					id="closing_day"
 					name="closing_day"
 					type="text"
-					label="Dia de fechamento (1 a 31)"
+					label="Dia de fechamento (1 a 31) *"
 					inputProps={{
 						maxLength: 2,
 						inputMode: "numeric",
 						pattern: "\\d{1,2}",
 						onKeyDown: handleNumericKeyDown,
-						placeholder: "Opcional. Ex: 5",
+						placeholder: "Obrigatório. Ex: 3",
 						value: closingDay,
 						onChange: handleDayChange(setClosingDay),
+						required: true,
 					}}
+				/>
+
+				<Autocomplete
+					options={BRAND_OPTIONS}
+					value={brand}
+					onChange={setBrand}
+					placeholder="Bandeira do cartão..."
+					labelKey="label"
+					valueKey="value"
+					name="brand"
 				/>
 
 				<FloatLabelField
@@ -281,18 +285,16 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 					}}
 				/>
 
-				<div className="flex flex-col gap-1">
-					<textarea
-						id="card_description"
-						name="card_description"
-						value={description}
-						onChange={(e) => setDescription(e.target.value.slice(0, 255))}
-						placeholder="Observações sobre este cartão..."
-						maxLength={255}
-						rows={2}
-						className="w-full rounded-l border border-gray-300 bg-white p-2.5 text-sm shadow-sm resize-none focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-					/>
-				</div>
+				<textarea
+					id="card_description"
+					name="card_description"
+					value={description}
+					onChange={(e) => setDescription(e.target.value.slice(0, 255))}
+					placeholder="Observações sobre este cartão..."
+					maxLength={255}
+					rows={2}
+					className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm shadow-sm resize-none focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+				/>
 
 				<div className="flex items-center justify-end gap-3 pt-2">
 					<SecondaryButton
