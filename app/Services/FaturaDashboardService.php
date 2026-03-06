@@ -248,9 +248,13 @@ class FaturaDashboardService
     {
         $today = Carbon::today();
 
+        // Use closing_day (fatura closing date) to determine próximo fechamento.
+        // Falls back to due_day if closing_day is not set.
         $cardQuery = CardUser::with('card')
             ->forUser($user->id)
-            ->whereNotNull('due_day');
+            ->where(function ($q) {
+                $q->whereNotNull('closing_day')->orWhereNotNull('due_day');
+            });
 
         if ($bankUserId) {
             $cardQuery->where('id', $bankUserId);
@@ -263,27 +267,29 @@ class FaturaDashboardService
         }
 
         $results = $cards->map(function (CardUser $cardUser) use ($today) {
-            $dueDay = (int) $cardUser->due_day;
+            // Prefer closing_day; fall back to due_day
+            $closingDay = $cardUser->closing_day ?? $cardUser->due_day;
+            $closingDay = (int) $closingDay;
 
-            $candidateDay = min($dueDay, (int) $today->copy()->endOfMonth()->format('d'));
-            $thisMonthDue = $today->copy()->setDay($candidateDay);
+            $candidateDay = min($closingDay, (int) $today->copy()->endOfMonth()->format('d'));
+            $thisMonthClose = $today->copy()->setDay($candidateDay);
 
-            if ($thisMonthDue->lt($today)) {
+            if ($thisMonthClose->lt($today)) {
                 $nextMonth = $today->copy()->addMonthNoOverflow();
-                $candidateDay = min($dueDay, (int) $nextMonth->endOfMonth()->format('d'));
-                $nextDue = $nextMonth->setDay($candidateDay);
+                $candidateDay = min($closingDay, (int) $nextMonth->endOfMonth()->format('d'));
+                $nextClose = $nextMonth->setDay($candidateDay);
             } else {
-                $nextDue = $thisMonthDue;
+                $nextClose = $thisMonthClose;
             }
 
-            $daysUntilDue = (int) $today->diffInDays($nextDue);
+            $daysUntilClose = (int) $today->diffInDays($nextClose);
 
             return [
                 'card_id'        => $cardUser->id,
                 'card_name'      => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
-                'due_day'        => $dueDay,
-                'days_until_due' => $daysUntilDue,
-                'next_due_date'  => $nextDue->toDateString(),
+                'closing_day'    => $closingDay,
+                'days_until_due' => $daysUntilClose,
+                'next_due_date'  => $nextClose->toDateString(),
             ];
         })->sortBy('days_until_due')->values()->all();
 
