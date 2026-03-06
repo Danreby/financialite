@@ -227,7 +227,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           if (!nearestDue) {
             return {
               id: 5,
-              title: 'Próximo vencimento',
+              title: 'Próximo fechamento',
               value: '—',
               delta: 'Nenhum cartão pendente',
               deltaVariant: 'neutral',
@@ -253,7 +253,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
 
           return {
             id: 5,
-            title: 'Próximo vencimento em',
+            title: 'Próximo fechamento em',
             value,
             delta,
             deltaVariant,
