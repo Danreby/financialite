@@ -263,7 +263,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-D45DEr-U.css",
+    "file": "assets/app-CVreBT5p.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -367,7 +367,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-BJfJZ-uS.js",
+    "file": "assets/Bancos-DEK-RV3C.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -388,7 +388,7 @@
       "_DangerButton-DAN1Wz8R.js"
     ],
     "css": [
-      "assets/app-D45DEr-U.css"
+      "assets/app-CVreBT5p.css"
     ]
   },
   "resources/js/Pages/Cartoes.jsx": {
@@ -474,7 +474,7 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-CnMsm3Ek.js",
+    "file": "assets/Dashboard-C5G-kdAr.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
@@ -689,7 +689,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-ggP82bXO.js",
+    "file": "assets/app-CKIinwsP.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -722,7 +722,7 @@
       "resources/js/Pages/Transacao.jsx"
     ],
     "css": [
-      "assets/app-D45DEr-U.css"
+      "assets/app-CVreBT5p.css"
     ]
   }
 }
