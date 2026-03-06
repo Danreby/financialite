@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useDecimalInput, useNumericInput } from '@/Hooks/useNumericInput';
 import { formatCurrencyBRL } from '@/Lib/formatters';
+import { getIconEmoji } from '@/Utils/categoryIcons';
 
 const CURRENT_MONTH = () => new Date().toISOString().slice(0, 7);
 
@@ -254,7 +255,9 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                     >
                         <option value="">Sem categoria</option>
                         {categories.map((c) => (
-                            <option key={c.id} value={c.id}>{c.icon ? `${c.icon} ` : ''}{c.name}</option>
+                            <option key={c.id} value={c.id}>
+                                {c.icon ? `${getIconEmoji(c.icon) ?? c.icon} ` : ''}{c.name}
+                            </option>
                         ))}
                     </select>
                 </div>
