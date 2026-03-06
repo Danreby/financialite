@@ -103,20 +103,6 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
     },
   }), [primaryColor, secondaryColor])
 
-  // ── Empty state ───────────────────────────────────────────────────────────
-  if (!data.length) {
-    return (
-      <div className="p-4 lg:p-6">
-        <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
-          Gastos mensais
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Ainda não há dados suficientes para exibir o gráfico.
-        </p>
-      </div>
-    )
-  }
-
   // ── Dataset factory ───────────────────────────────────────────────────────
   const makeDataset = (label, values, color, hidden) => ({
     label,
@@ -222,6 +208,20 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [selectedIndex, primaryColor, dark, onMonthClick, monthKeys, gridColor, tickColor, tooltipBg, tooltipBdr, tooltipTitle, tooltipBody])
+
+  // ── Empty state ───────────────────────────────────────────────────────────
+  if (!data.length) {
+    return (
+      <div className="p-4 lg:p-6">
+        <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
+          Gastos mensais
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Ainda não há dados suficientes para exibir o gráfico.
+        </p>
+      </div>
+    )
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
