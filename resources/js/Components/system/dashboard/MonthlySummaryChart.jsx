@@ -15,13 +15,17 @@ import useThemeColors from '@/Hooks/useThemeColors'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 
 // ─── Vertical dashed-line plugin for selected month ───────────────────────────
-// Registered globally but fully null-safe, so it is harmless on any chart
-// (Doughnut, Bar…) that does not configure this plugin.
-if (!ChartJS.registry.plugins.get('verticalHighlight')) {
+// Module-level flag prevents double-registration on hot-reload.
+// Fully null-safe on opts so it is harmless on Doughnut/Bar charts that
+// do not configure this plugin.
+let _vhlRegistered = false
+function ensureVerticalHighlight() {
+  if (_vhlRegistered) return
+  _vhlRegistered = true
   ChartJS.register({
     id: 'verticalHighlight',
     beforeDraw(chart, _args, opts) {
-      const idx = opts?.selectedIndex          // null-safe: opts may be undefined
+      const idx = opts?.selectedIndex   // may be undefined on other chart types
       if (idx == null || idx < 0) return
       const { ctx, chartArea, scales } = chart
       if (!chartArea || !scales?.x) return
@@ -38,6 +42,7 @@ if (!ChartJS.registry.plugins.get('verticalHighlight')) {
     },
   })
 }
+ensureVerticalHighlight()
 
 // ─── Canvas gradient builder ──────────────────────────────────────────────────
 function buildGradient(ctx, chartArea, hex, maxAlpha) {
