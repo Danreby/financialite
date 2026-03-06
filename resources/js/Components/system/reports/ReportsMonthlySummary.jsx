@@ -31,6 +31,8 @@ export default function ReportsMonthlySummary({ items = [], onSelectPeriod }) {
               <th className="py-2 px-3 text-right">Total geral</th>
               <th className="py-2 px-3 text-right">Total crédito</th>
               <th className="py-2 px-3 text-right">Total débito</th>
+              <th className="py-2 px-3 text-right">Parcelas</th>
+              <th className="py-2 px-3 text-right">Total parcelas</th>
               <th className="py-2 pl-3 text-right">Qtd. transações</th>
               {onSelectPeriod && <th className="py-2 pl-3 text-right">Detalhar</th>}
             </tr>
@@ -52,6 +54,18 @@ export default function ReportsMonthlySummary({ items = [], onSelectPeriod }) {
                 </td>
                 <td className="py-1.5 px-3 text-right themed-amount whitespace-nowrap">
                   {formatCurrency(row.total_debit)}
+                </td>
+                <td className="py-1.5 px-3 text-right whitespace-nowrap">
+                  {row.installment_count > 0 ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:text-purple-300">
+                      {row.installment_count} parc.
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 dark:text-gray-600">—</span>
+                  )}
+                </td>
+                <td className="py-1.5 px-3 text-right text-purple-600 dark:text-purple-400 whitespace-nowrap">
+                  {row.installment_count > 0 ? formatCurrency(row.installment_total) : "—"}
                 </td>
                 <td className="py-1.5 pl-3 text-right text-gray-700 dark:text-gray-200 whitespace-nowrap">
                   {row.count}

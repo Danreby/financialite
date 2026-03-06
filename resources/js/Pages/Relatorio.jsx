@@ -67,7 +67,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 						...item,
 						period_key: periodKey,
 						period_label: periodLabel,
-						bank_name: item.bank_user?.card?.name || "Sem cartão",
+						bank_name: item.bank_user?.bank?.name || item.bank_user?.card?.name || "Sem cartão",
 						category_name: item.category?.name || "Sem categoria",
 						category_icon: item.category?.icon || null,
 						category_color: item.category?.color || null,
@@ -90,17 +90,24 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							total_credit: 0,
 							total_debit: 0,
 							count: 0,
+							installment_count: 0,
+							installment_total: 0,
 							transactions: [],
 						};
 					}
 
 					const debitAmount = item.type === "debit" ? item.amount || 0 : 0;
 					const creditInstallment = item.type === "credit" ? item.installment_amount || 0 : 0;
+					const isInstallment = item.type === "credit" && Number(item.total_installments || 0) > 1;
 
 					acc[key].total_debit += debitAmount;
 					acc[key].total_credit += creditInstallment;
 					acc[key].total_amount = acc[key].total_credit + acc[key].total_debit;
 					acc[key].count += 1;
+					if (isInstallment) {
+						acc[key].installment_count += 1;
+						acc[key].installment_total += creditInstallment;
+					}
 					acc[key].transactions.push(item);
 					return acc;
 				}, {});
@@ -117,6 +124,8 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 						total_credit: group.total_credit,
 						total_debit: group.total_debit,
 						count: group.count,
+						installment_count: group.installment_count,
+						installment_total: group.installment_total,
 					}))
 				);
 
@@ -155,8 +164,11 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		const averageTicket = totalCount > 0 ? totalAmount / totalCount : 0;
 		const topExpense = [...periodGroups].sort((a, b) => (b.total_amount || 0) - (a.total_amount || 0))[0];
 
+		// Use monthly average expense vs declared monthly income for a meaningful savings rate
+		const periodCount = Math.max(periodGroups.length, 1);
+		const avgMonthlyExpense = totalAmount / periodCount;
 		const savingsRate = totalMonthlyIncome > 0
-			? ((totalMonthlyIncome - (stats.total_expenses || 0)) / totalMonthlyIncome) * 100
+			? ((totalMonthlyIncome - avgMonthlyExpense) / totalMonthlyIncome) * 100
 			: 0;
 
 		const monthlyAvg = periodGroups.length > 0

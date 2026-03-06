@@ -6,13 +6,14 @@ export default function ReportsInsightsBar({ insights }) {
     {
       label: "Saldo líquido (pagos)",
       value: formatCurrencyBRL(insights.netBalance || 0),
-      helper: "Receitas pagas - despesas pagas",
+      helper: "Receitas pagas − despesas pagas",
       icon: "💰",
+      tone: (insights.netBalance || 0) >= 0 ? "positive" : "negative",
     },
     {
       label: "Ticket médio",
       value: insights.averageTicket ? formatCurrencyBRL(insights.averageTicket) : "-",
-      helper: "Valor médio por transação",
+      helper: "Valor médio por transação no período",
       icon: "🎫",
     },
     {
@@ -24,20 +25,20 @@ export default function ReportsInsightsBar({ insights }) {
     {
       label: "Taxa de poupança",
       value: insights.savingsRate != null ? `${insights.savingsRate.toFixed(1)}%` : "-",
-      helper: "Renda - despesas / renda",
+      helper: "Renda mensal − gasto médio / renda",
       icon: "🏦",
       tone: insights.savingsRate > 20 ? "positive" : insights.savingsRate > 0 ? "neutral" : "negative",
     },
     {
       label: "Média mensal",
       value: insights.monthlyAvg ? formatCurrencyBRL(insights.monthlyAvg) : "-",
-      helper: "Gasto médio por período",
+      helper: "Gasto médio por mês no período",
       icon: "📅",
     },
     {
       label: "Total de transações",
       value: insights.totalTransactions != null ? String(insights.totalTransactions) : "-",
-      helper: "Todas as transações do filtro",
+      helper: "Quantidade total no período filtrado",
       icon: "🔢",
     },
   ];
