@@ -6,13 +6,10 @@ import CategoryBadge from '@/Components/common/CategoryBadge'
 import ScrollArea from '@/Components/common/ScrollArea'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
-// ArcElement must be registered for Doughnut charts.
-// Tooltip is registered here and is idempotent (safe to call multiple times).
 ChartJS.register(ArcElement, Tooltip)
 
 const isDark = () => document.documentElement.classList.contains('dark')
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function TopSpendingPieChart({
   labels = [],
   values = [],
@@ -24,12 +21,11 @@ export default function TopSpendingPieChart({
 }) {
   const dark = isDark()
 
-  // Stable, memoised chart data — avoids unnecessary Chart.js re-renders
   const chartData = useMemo(() => ({
     labels,
     datasets: [
       {
-        data: values.length ? values : [1],   // placeholder slice when empty
+        data: values.length ? values : [1],
         backgroundColor: values.length
           ? labels.map((_, i) => colors[i % colors.length])
           : [dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'],
@@ -48,7 +44,6 @@ export default function TopSpendingPieChart({
   const tooltipBdr = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
   const tooltipTxt = dark ? '#f9fafb' : '#111827'
 
-  // Stable options — only regenerate when total or theme changes
   const options = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -76,11 +71,8 @@ export default function TopSpendingPieChart({
         },
       },
     },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [total, dark, tooltipBg, tooltipBdr, tooltipTxt, values.length])
 
-  // Donut key: forces a clean remount when the category set changes, giving a
-  // fresh entrance animation instead of a potentially broken diff update.
   const donutKey = useMemo(() => labels.join('|') || 'empty', [labels])
 
   const recurringPct    = recurringSpending?.percentage    || 0
@@ -89,13 +81,10 @@ export default function TopSpendingPieChart({
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-      {/* ── Left: donut + type breakdown ─────────────────────────────────── */}
       <div className="flex flex-col items-center gap-3 lg:w-[190px] lg:flex-shrink-0">
-        {/* Donut */}
         <div className="relative h-44 w-full max-w-[180px] lg:h-48">
           <Doughnut key={donutKey} data={chartData} options={options} />
 
-          {/* Centre label */}
           <AnimatePresence mode="wait">
             <motion.div
               key={total}
@@ -115,7 +104,6 @@ export default function TopSpendingPieChart({
           </AnimatePresence>
         </div>
 
-        {/* Recurring breakdown */}
         {showRecurring && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -137,7 +125,6 @@ export default function TopSpendingPieChart({
         )}
       </div>
 
-      {/* ── Right: category list ──────────────────────────────────────────── */}
       <ScrollArea maxHeightClassName="max-h-[280px]" className="flex-1 min-w-0 pr-1">
         <ul className="space-y-2.5">
           <AnimatePresence initial={false}>
@@ -153,7 +140,6 @@ export default function TopSpendingPieChart({
                   transition={{ duration: 0.22, delay: index * 0.04 }}
                   className="flex flex-col gap-1"
                 >
-                  {/* Row: badge + amount */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                       <span
@@ -179,7 +165,6 @@ export default function TopSpendingPieChart({
                     </div>
                   </div>
 
-                  {/* Mini progress bar */}
                   <div className="h-1 w-full rounded-full bg-gray-100 dark:bg-white/[0.06] overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
@@ -199,7 +184,6 @@ export default function TopSpendingPieChart({
   )
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
 function RecurringRow({ color, label, pct }) {
   return (
     <div className="flex items-center justify-between text-xs gap-2">
