@@ -6,8 +6,8 @@
       "_vendor-Z124E9Sp.js"
     ]
   },
-  "_AuthenticatedLayout-IU3HDy0d.js": {
-    "file": "assets/AuthenticatedLayout-IU3HDy0d.js",
+  "_AuthenticatedLayout-Do8PL9k8.js": {
+    "file": "assets/AuthenticatedLayout-Do8PL9k8.js",
     "name": "AuthenticatedLayout",
     "imports": [
       "_vendor-Z124E9Sp.js",
@@ -272,13 +272,13 @@
     ]
   },
   "resources/js/Pages/About.jsx": {
-    "file": "assets/About-D0XROw7b.js",
+    "file": "assets/About-OS2bP05o.js",
     "name": "About",
     "src": "resources/js/Pages/About.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_FadeInContainer-Dqg42hBt.js",
       "_BareButton-C2Gp4Nhx.js"
     ]
@@ -367,14 +367,14 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-DEK-RV3C.js",
+    "file": "assets/Bancos-BO999LcZ.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_PrimaryButton-CBLnTFCy.js",
       "_ScrollArea-DzE4tQMK.js",
       "_EmptyState-Cygvs0hS.js",
@@ -392,13 +392,13 @@
     ]
   },
   "resources/js/Pages/Cartoes.jsx": {
-    "file": "assets/Cartoes-DWnaiVIp.js",
+    "file": "assets/Cartoes-Dm8TP3Zo.js",
     "name": "Cartoes",
     "src": "resources/js/Pages/Cartoes.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_PrimaryButton-CBLnTFCy.js",
       "_Pagination-DNPHyvWL.js",
       "_ScrollArea-DzE4tQMK.js",
@@ -417,13 +417,13 @@
     ]
   },
   "resources/js/Pages/Categorias.jsx": {
-    "file": "assets/Categorias-B8PN38tD.js",
+    "file": "assets/Categorias-D4fRGP2T.js",
     "name": "Categorias",
     "src": "resources/js/Pages/Categorias.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_PrimaryButton-CBLnTFCy.js",
       "_ScrollArea-DzE4tQMK.js",
       "_EmptyState-Cygvs0hS.js",
@@ -439,13 +439,13 @@
     ]
   },
   "resources/js/Pages/Config.jsx": {
-    "file": "assets/Config-G5Em37bP.js",
+    "file": "assets/Config-DjSx-q-Y.js",
     "name": "Config",
     "src": "resources/js/Pages/Config.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_PrimaryButton-CBLnTFCy.js",
       "_FloatLabelField-BKzp2Ud-.js",
       "_EyeIcon-Chnrjq8x.js",
@@ -453,13 +453,13 @@
     ]
   },
   "resources/js/Pages/Contas.jsx": {
-    "file": "assets/Contas-CjlzcjsF.js",
+    "file": "assets/Contas-CNLGvSox.js",
     "name": "Contas",
     "src": "resources/js/Pages/Contas.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_Modal-Bl1niVLN.js",
       "_PrimaryButton-CBLnTFCy.js",
       "_SecondaryButton-DPTsnpDv.js",
@@ -474,13 +474,13 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-C5G-kdAr.js",
+    "file": "assets/Dashboard-BRIrducU.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_StatCard-CpbzowAr.js",
       "_Modal-Bl1niVLN.js",
       "_PrimaryButton-CBLnTFCy.js",
@@ -505,13 +505,13 @@
     ]
   },
   "resources/js/Pages/Extrato.jsx": {
-    "file": "assets/Extrato-CoD5Lm4Y.js",
+    "file": "assets/Extrato-Bk_dsR6I.js",
     "name": "Extrato",
     "src": "resources/js/Pages/Extrato.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_formatters-DEYZwcN3.js",
       "_ScrollArea-DzE4tQMK.js",
       "_CategoryBadge-DJHn6TId.js",
@@ -522,13 +522,13 @@
     ]
   },
   "resources/js/Pages/Fatura.jsx": {
-    "file": "assets/Fatura-YN5Bf83q.js",
+    "file": "assets/Fatura-E_Hzrjje.js",
     "name": "Fatura",
     "src": "resources/js/Pages/Fatura.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_FaturaDetailModal-BvBWiVd1.js",
       "_CategoryBadge-DJHn6TId.js",
       "_formatters-DEYZwcN3.js",
@@ -545,13 +545,13 @@
     ]
   },
   "resources/js/Pages/Parcelamentos.jsx": {
-    "file": "assets/Parcelamentos-CSgj_CRL.js",
+    "file": "assets/Parcelamentos-Bdi5bN0_.js",
     "name": "Parcelamentos",
     "src": "resources/js/Pages/Parcelamentos.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_FadeInContainer-Dqg42hBt.js",
       "_CategoryBadge-DJHn6TId.js",
       "_ScrollArea-DzE4tQMK.js",
@@ -562,13 +562,13 @@
     ]
   },
   "resources/js/Pages/Profile/Edit.jsx": {
-    "file": "assets/Edit-DLudKirv.js",
+    "file": "assets/Edit-BCL34Mdq.js",
     "name": "Edit",
     "src": "resources/js/Pages/Profile/Edit.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "resources/js/Pages/Profile/Partials/DeleteUserForm.jsx",
       "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx",
       "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.jsx",
@@ -626,13 +626,13 @@
     ]
   },
   "resources/js/Pages/Projecao.jsx": {
-    "file": "assets/Projecao-1NqFt80w.js",
+    "file": "assets/Projecao-DFh00stH.js",
     "name": "Projecao",
     "src": "resources/js/Pages/Projecao.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_FadeInContainer-Dqg42hBt.js",
       "_useNumericInput-B5UV4AWK.js",
       "_formatters-DEYZwcN3.js",
@@ -641,13 +641,13 @@
     ]
   },
   "resources/js/Pages/Relatorio.jsx": {
-    "file": "assets/Relatorio-Cadu9DT2.js",
+    "file": "assets/Relatorio-D6tt2YOs.js",
     "name": "Relatorio",
     "src": "resources/js/Pages/Relatorio.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_ExportExcel-CoM61Ae1.js",
       "_BareButton-C2Gp4Nhx.js",
       "_FaturaDetailModal-BvBWiVd1.js",
@@ -663,13 +663,13 @@
     ]
   },
   "resources/js/Pages/Transacao.jsx": {
-    "file": "assets/Transacao-B6KGWU0j.js",
+    "file": "assets/Transacao-C25PzDO1.js",
     "name": "Transacao",
     "src": "resources/js/Pages/Transacao.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-Z124E9Sp.js",
-      "_AuthenticatedLayout-IU3HDy0d.js",
+      "_AuthenticatedLayout-Do8PL9k8.js",
       "_ScrollArea-DzE4tQMK.js",
       "_SecondaryButton-DPTsnpDv.js",
       "_DangerButton-DAN1Wz8R.js",
@@ -689,7 +689,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-CKIinwsP.js",
+    "file": "assets/app-Do4oicH1.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
