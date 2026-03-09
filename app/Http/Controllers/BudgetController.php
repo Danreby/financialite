@@ -57,11 +57,9 @@ class BudgetController extends Controller
             ]);
         }
 
-        // Get current spending
         $totalSpent = $budget->getCurrentSpending();
         $categorySpending = $budget->getCategorySpending();
 
-        // Prepare budget data with spending
         $budgetData = $budget->toArray();
         $budgetData['total_spent'] = $totalSpent;
         $budgetData['remaining'] = max(0, $budget->monthly_limit - $totalSpent);
@@ -71,7 +69,6 @@ class BudgetController extends Controller
         $budgetData['monthly_income'] = $monthlyIncome;
         $budgetData['recommended_limit'] = $recommendedLimit;
 
-        // Add spending to category limits
         if (isset($budgetData['category_limits'])) {
             foreach ($budgetData['category_limits'] as &$categoryLimit) {
                 $categoryId = $categoryLimit['category_id'];
@@ -139,18 +136,14 @@ class BudgetController extends Controller
         $data = $request->validated();
 
         DB::transaction(function () use ($budget, $data, $user) {
-            // Update budget
             $budget->update([
                 'monthly_limit' => $data['monthly_limit'] ?? $budget->monthly_limit,
                 'is_active' => $data['is_active'] ?? $budget->is_active,
             ]);
 
-            // Update category limits if provided
             if (isset($data['category_limits'])) {
-                // Delete existing category limits
                 $budget->categoryLimits()->delete();
 
-                // Create new category limits
                 foreach ($data['category_limits'] as $categoryLimit) {
                     BudgetCategory::create([
                         'budget_id' => $budget->id,
@@ -194,7 +187,6 @@ class BudgetController extends Controller
             ->first();
 
         if (!$budget) {
-            // Get user's monthly income to set as default limit
             $monthlyIncome = \App\Models\Income::forUser($user->id)
                 ->where('is_active', true)
                 ->sum('amount');
@@ -209,11 +201,9 @@ class BudgetController extends Controller
             ]);
         }
 
-        // Get current spending
         $totalSpent = $budget->getCurrentSpending();
         $categorySpending = $budget->getCategorySpending();
 
-        // Prepare budget data with spending
         $budgetData = $budget->toArray();
         $budgetData['total_spent'] = $totalSpent;
         $budgetData['remaining'] = max(0, $budget->monthly_limit - $totalSpent);
@@ -221,7 +211,6 @@ class BudgetController extends Controller
             ? min(100, ($totalSpent / $budget->monthly_limit) * 100) 
             : 0;
 
-        // Add spending to category limits
         if (isset($budgetData['category_limits'])) {
             foreach ($budgetData['category_limits'] as &$categoryLimit) {
                 $categoryId = $categoryLimit['category_id'];

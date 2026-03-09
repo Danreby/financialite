@@ -37,8 +37,6 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'status' => fn () => $request->session()->get('status'),
             ],
-            // Shared lazily: only evaluated when the prop is actually accessed.
-            // Avoids an extra HTTP round-trip from Topbar to fetch the unread count.
             'unreadNotificationCount' => fn () => $user
                 ? Notification::where('user_id', $user->id)
                     ->where('is_read', false)

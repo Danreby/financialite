@@ -19,11 +19,6 @@ class BudgetCalculationService
         private FaturaBillingService $billing
     ) {}
 
-    /**
-     * Get the effective credit group for the current billing month.
-     * Uses the same billing-cycle-aware approach as FaturaDashboardService
-     * to ensure budget card matches "Total Mensal".
-     */
     private function getEffectiveCreditGroup(
         Authenticatable $user,
         ?int $bankUserId

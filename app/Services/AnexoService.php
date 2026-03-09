@@ -308,11 +308,6 @@ class AnexoService
         return Anexo::forUser($userId)->count();
     }
 
-    /**
-     * Checks if the physical file exists on disk.
-     * NOTE: $anexo->exists is the Eloquent property (true when model is persisted),
-     * NOT a file-existence check. Use this method for file checks.
-     */
     public function fileExistsOnDisk(Anexo $anexo): bool
     {
         return Storage::disk($anexo->disk)->exists($anexo->full_path);

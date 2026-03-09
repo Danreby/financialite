@@ -208,9 +208,6 @@ export default function Autocomplete({
         value={search}
         onChange={handleInputChange}
         onFocus={() => {
-          // Clear search text so all options are visible when the dropdown opens.
-          // If the user leaves without selecting, the mousedown-outside handler
-          // restores the previously selected option's label.
           setSearch('')
           setIsOpen(true)
         }}

@@ -15,7 +15,6 @@ class FaturaBillingService
             ? $transacao->created_at->copy()
             : Carbon::parse($transacao->created_at);
 
-        // Prefer closing_day (card billing cycle close date) over due_day
         $closingDay = $transacao->bankUser->closing_day ?? $transacao->bankUser->due_day ?? null;
 
         if (!$closingDay) {
@@ -25,20 +24,15 @@ class FaturaBillingService
         $cutoffDay = min((int) $closingDay, 28);
         $dayOfPurchase = (int) $createdAt->format('d');
 
-        // Card closes at midnight on the closing day.
-        // A transaction created ON the closing day (any time) belongs to the NEXT billing cycle.
-        // Only transactions strictly BEFORE the closing day belong to the current cycle.
         $monthKey = $dayOfPurchase < $cutoffDay
             ? $createdAt->format('Y-m')
             : $createdAt->copy()->addMonth()->format('Y-m');
 
-        // Check if the fatura for this month is paid (closed)
         $fatura = \App\Models\Fatura::where('bank_user_id', $transacao->bank_user_id)
             ->where('month_key', $monthKey)
             ->first();
 
         if ($fatura && $fatura->isPaid()) {
-            // If fatura is paid, assign to next month
             $nextMonth = Carbon::createFromFormat('Y-m', $monthKey)->addMonth();
             return $nextMonth->format('Y-m');
         }
@@ -54,7 +48,6 @@ class FaturaBillingService
             return $today->format('Y-m');
         }
 
-        // Prefer closing_day (card billing cycle close date) over due_day
         $closingDay = $cardUser->closing_day ?? $cardUser->due_day ?? null;
 
         if (!$closingDay) {
@@ -64,8 +57,6 @@ class FaturaBillingService
         $cutoffDay = min((int) $closingDay, 28);
         $day = (int) $today->format('d');
 
-        // On or after the closing day the current open billing cycle is the next calendar month.
-        // Strictly before the closing day the open cycle is still the current calendar month.
         $candidate = $day < $cutoffDay
             ? $today->copy()
             : $today->copy()->addMonth();

@@ -145,7 +145,6 @@ class CardController extends Controller
         $data = $request->validated();
 
         DB::transaction(function () use ($cardUser, $data, $user) {
-            // Update CardUser fields
             if (array_key_exists('due_day', $data)) {
                 $cardUser->due_day = $data['due_day'];
             }
@@ -157,7 +156,6 @@ class CardController extends Controller
             }
             $cardUser->save();
 
-            // Update Card fields (brand, description)
             $card = $cardUser->card;
             if ($card) {
                 $changed = false;

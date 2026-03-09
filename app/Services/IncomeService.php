@@ -29,7 +29,6 @@ class IncomeService implements IncomeServiceInterface
             $income->user_id = $user->id;
             $income->save();
 
-            // For one-time entries, immediately credit the linked bank account balance
             if (empty($data['is_recurring']) && !empty($data['bank_account_id'])) {
                 $bankUser = BankUser::forUser($user->id)->find((int) $data['bank_account_id']);
                 if ($bankUser) {

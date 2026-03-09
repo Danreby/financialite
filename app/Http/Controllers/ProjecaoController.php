@@ -41,7 +41,6 @@ class ProjecaoController extends Controller
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        // Fetch ALL credit transactions — same scope as the fatura page
         $allCreditTxs = Transacao::with(['bankUser.card', 'category'])
             ->where('user_id', $user->id)
             ->where('type', 'credit')
@@ -53,7 +52,6 @@ class ProjecaoController extends Controller
             $isRecurring       = (bool) $tx->is_recurring;
             $amountPerMonth    = round((float) $tx->amount / $totalInstallments, 2);
 
-            // Use the exact same billing-month resolution as FaturaBillingService
             $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($tx);
             $firstBillingMonth    = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
 
@@ -62,7 +60,6 @@ class ProjecaoController extends Controller
                 $completionCarbon = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
                 $completionMonth  = $completionCarbon->format('Y-m');
 
-                // Skip transactions that finished before the current month
                 if ($completionCarbon->lt($today)) {
                     return null;
                 }

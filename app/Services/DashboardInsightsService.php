@@ -343,15 +343,13 @@ class DashboardInsightsService
             ->get();
 
         $upcomingBills = [];
-        $processedBillIds = []; // Track which bills we've already added
+        $processedBillIds = [];
 
         foreach ($activeBills as $bill) {
-            // Skip if we already found an unpaid occurrence for this bill
             if (isset($processedBillIds[$bill->id])) {
                 continue;
             }
 
-            // Check current month
             $currentMonthDue = $bill->getDueDateForMonth($currentMonth);
             if ($currentMonthDue) {
                 $payment = BillPayment::where('bill_id', $bill->id)
@@ -361,7 +359,6 @@ class DashboardInsightsService
                 $isPaid = $payment && $payment->status === 'paid';
                 $isOverdue = !$isPaid && $currentMonthDue->lt($today);
 
-                // If not paid, add this occurrence and mark as processed
                 if (!$isPaid) {
                     $upcomingBills[] = $this->formatBillEntry(
                         $bill,
@@ -376,7 +373,6 @@ class DashboardInsightsService
                 }
             }
 
-            // If current month is paid or doesn't exist, check next month for recurring bills
             if ($bill->recurrence_type !== 'none') {
                 $nextMonthDue = $bill->getDueDateForMonth($nextMonth);
                 if ($nextMonthDue) {
@@ -398,7 +394,6 @@ class DashboardInsightsService
                     }
                 }
 
-                // If next month is also paid, check month after next
                 $monthAfterNextDue = $bill->getDueDateForMonth($monthAfterNext);
                 if ($monthAfterNextDue) {
                     $monthAfterNextPayment = BillPayment::where('bill_id', $bill->id)
@@ -420,7 +415,6 @@ class DashboardInsightsService
             }
         }
 
-        // Sort: overdue first, then by date (earliest first)
         usort($upcomingBills, function ($a, $b) {
             if ($a['is_overdue'] && !$b['is_overdue']) return -1;
             if (!$a['is_overdue'] && $b['is_overdue']) return 1;

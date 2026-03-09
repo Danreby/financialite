@@ -12,13 +12,6 @@ class FaturaExportService
     {
     }
 
-    /**
-     * Return all transactions expanded into individual monthly rows so that:
-     * - Installment transactions  → one row per installment month (months 1..N)
-     * - Recurring transactions    → one row per month from first billing month to today
-     * - Single-payment credit     → one row for its billing month
-     * - Debit transactions        → one row per transaction (grouped by created_at month)
-     */
     public function exportForUser(int $userId, ?int $bankUserId = null, ?int $categoryId = null): Collection
     {
         $transactions = Transacao::with(['bankUser.card', 'category'])
@@ -35,12 +28,10 @@ class FaturaExportService
 
         foreach ($transactions as $transacao) {
             if ($transacao->type === 'debit') {
-                // Debit: single row mapped to its created_at month
                 $rows->push($this->buildRow($transacao, null, null));
                 continue;
             }
 
-            // Credit: determine first billing month
             $firstMonthKey    = $this->billing->resolveBillingMonthKey($transacao);
             $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
             $installmentAmount = (float) $transacao->amount / $totalInstallments;
@@ -49,13 +40,11 @@ class FaturaExportService
             $cursor = Carbon::createFromFormat('Y-m', $firstMonthKey)->startOfMonth();
 
             if ($isRecurring) {
-                // Recurring: generate one row per month from first billing month to today
                 while ($cursor->format('Y-m') <= $currentMonth) {
                     $rows->push($this->buildRow($transacao, $cursor->format('Y-m'), null, $installmentAmount));
                     $cursor->addMonthNoOverflow();
                 }
             } else {
-                // Installment: generate one row per installment month
                 for ($i = 1; $i <= $totalInstallments; $i++) {
                     $rows->push($this->buildRow($transacao, $cursor->format('Y-m'), $i, $installmentAmount));
                     $cursor->addMonthNoOverflow();
@@ -65,15 +54,7 @@ class FaturaExportService
 
         return $rows;
     }
-
-    /**
-     * Build a single export row.
-     *
-     * @param  Transacao   $fatura
-     * @param  string|null $overrideInvoiceMonth  If set, overrides the invoice_month field.
-     * @param  int|null    $displayInstallment    The installment number for this row (1-based).
-     * @param  float|null  $installmentAmount     Pre-computed per-installment amount (credit only).
-     */
+    
     private function buildRow(
         Transacao $fatura,
         ?string   $overrideInvoiceMonth = null,

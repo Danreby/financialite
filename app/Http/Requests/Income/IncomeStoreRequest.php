@@ -118,7 +118,6 @@ class IncomeStoreRequest extends FormRequest
             ]);
         }
 
-        // Default payment_day fields for non-recurring incomes
         $isRecurring = filter_var($this->is_recurring ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         if (!$isRecurring) {
             if (!$this->has('payment_day_type') || !$this->payment_day_type) {

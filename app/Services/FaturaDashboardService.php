@@ -232,7 +232,6 @@ class FaturaDashboardService
             'percentage' => $nonRecurringPercentage,
         ];
 
-        // Calculate total monthly income and remaining money
         $totalMonthlyIncome = (float) Income::forUser($user->id)->active()->sum('amount');
         $remainingMoney = $totalMonthlyIncome - (float) $currentPendingBill - (float) $currentMonthDebitTotal;
 
@@ -248,8 +247,6 @@ class FaturaDashboardService
     {
         $today = Carbon::today();
 
-        // Use closing_day (fatura closing date) to determine próximo fechamento.
-        // Falls back to due_day if closing_day is not set.
         $cardQuery = CardUser::with('card')
             ->forUser($user->id)
             ->where(function ($q) {
@@ -267,7 +264,6 @@ class FaturaDashboardService
         }
 
         $results = $cards->map(function (CardUser $cardUser) use ($today) {
-            // Prefer closing_day; fall back to due_day
             $closingDay = $cardUser->closing_day ?? $cardUser->due_day;
             $closingDay = (int) $closingDay;
 
