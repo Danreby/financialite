@@ -69,13 +69,13 @@ export default function FinancialHealthScore({
     },
     {
       key: 'recurringControl',
-      label: 'Controle de Recorrentes',
+      label: 'Controle de Fixos',
       icon: Heart,
       value: factors.recurringControl,
       format: (v) => `${v.toFixed(0)}%`,
       thresholds: { good: 80, ok: 60 },
-      description: 'das despesas recorrentes monitoradas',
-      requires: 'transactions',
+      description: 'da renda disponível após despesas fixas',
+      requires: 'bills',
     },
     {
       key: 'paymentDiscipline',
@@ -248,6 +248,12 @@ export default function FinancialHealthScore({
                 <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
                   <span className="text-[var(--theme-accent)] mt-0.5">•</span>
                   <span>Revise seu orçamento e ajuste categorias conforme necessário</span>
+                </div>
+              )}
+              {factors.recurringControl < 60 && !missingData?.bills && (
+                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                  <span>Mais de 40% da sua renda está comprometida com despesas fixas — considere revisar suas obrigações recorrentes</span>
                 </div>
               )}
               {score >= 80 && (

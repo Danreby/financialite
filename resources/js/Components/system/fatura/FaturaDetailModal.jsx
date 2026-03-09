@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { Pencil, X, Check, Loader2, RotateCcw } from "lucide-react";
 import Modal from "@/Components/common/Modal";
 import AnexoSection from "@/Components/system/anexo/AnexoSection";
 import CategoryBadge from "@/Components/common/CategoryBadge";
@@ -8,20 +11,118 @@ function formatFullDate(dateString) {
   if (!dateString) return "-";
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return "-";
-
   const day = date.getDate().toString().padStart(2, "0");
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const year = date.getFullYear();
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");
-
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
-export default function FaturaDetailModal({ isOpen, onClose, item }) {
-  if (!item) {
-    return null;
-  }
+function buildEditData(item) {
+  if (!item) return {};
+  return {
+    title: item.title || "",
+    description: item.description || "",
+    amount: item.amount != null ? String(item.amount) : "",
+    type: item.type || "debit",
+    status: item.status || "unpaid",
+    category_id: item.category_id ? String(item.category_id) : "",
+    bank_user_id: item.bank_user_id ? String(item.bank_user_id) : "",
+    paid_date: item.paid_date
+      ? item.paid_date.slice(0, 10)
+      : new Date().toISOString().slice(0, 10),
+  };
+}
+
+export default function FaturaDetailModal({
+  isOpen,
+  onClose,
+  item,
+  bankAccounts = [],
+  categories = [],
+  onUpdated,
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editData, setEditData] = useState({});
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsEditing(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setEditData(buildEditData(item));
+  }, [item]);
+
+  const handleStartEdit = useCallback(() => setIsEditing(true), []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditData(buildEditData(item));
+    setIsEditing(false);
+  }, [item]);
+
+  const handleClose = useCallback(() => {
+    setIsEditing(false);
+    onClose();
+  }, [onClose]);
+
+  const handleFieldChange = useCallback((field, value) => {
+    setEditData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!item || isSubmitting) return;
+    const realId = item.transacao_id || item.id;
+    if (!realId) return;
+
+    if (!editData.title?.trim()) {
+      toast.error("Informe o título da transação.");
+      return;
+    }
+    if (!editData.amount || Number(editData.amount) <= 0) {
+      toast.error("Informe um valor válido.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    toast.dismiss();
+
+    try {
+      const isDebit = editData.type === "debit";
+      const payload = {
+        title: editData.title.trim(),
+        description: editData.description?.trim() || null,
+        amount: Number(editData.amount),
+        type: editData.type,
+        bank_user_id: editData.bank_user_id || null,
+        category_id: editData.category_id || null,
+        total_installments: isDebit
+          ? 1
+          : Math.max(Number(item.total_installments) || 1, 1),
+        is_recurring: isDebit ? 0 : item.is_recurring ? 1 : 0,
+        status: editData.status,
+        paid_date:
+          editData.status === "paid"
+            ? editData.paid_date || new Date().toISOString().slice(0, 10)
+            : null,
+      };
+
+      await axios.put(route("transacoes.update", realId), payload);
+      toast.success("Transação atualizada com sucesso.");
+      setIsEditing(false);
+      if (onUpdated) onUpdated();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Erro ao atualizar transação.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [item, editData, isSubmitting, onUpdated]);
+
+  if (!item) return null;
 
   const {
     id,
@@ -44,146 +145,400 @@ export default function FaturaDetailModal({ isOpen, onClose, item }) {
   } = item;
 
   const realTransacaoId = transacao_id || id;
-
   const totalInstallmentsNumber = Math.max(Number(total_installments || 1), 1);
   const rawAmountNumber = Number(amount || 0) || 0;
   const installmentAmount =
-    totalInstallmentsNumber > 1 ? rawAmountNumber / totalInstallmentsNumber : rawAmountNumber;
-
+    totalInstallmentsNumber > 1
+      ? rawAmountNumber / totalInstallmentsNumber
+      : rawAmountNumber;
   const hasInstallments = totalInstallmentsNumber > 1;
-
   const statusLabel =
     status === "paid"
       ? "Pago ✔️"
       : status === "overdue"
       ? "Vencido ❌"
       : "Em aberto ⌛";
-
-  const typeLabel = type === "credit" ? "Crédito" : type === "debit" ? "Débito" : "-";
-
+  const typeLabel =
+    type === "credit" ? "Crédito" : type === "debit" ? "Débito" : "-";
   const effectiveInstallmentNumber =
     total_installments && total_installments > 1
       ? display_installment || current_installment || 1
       : null;
 
+  const canEdit = !!realTransacaoId;
+
+  const inputBase =
+    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-[var(--theme-accent)] dark:border-gray-600 dark:bg-gray-900/80 dark:text-gray-100 dark:focus:border-[var(--theme-accent)]";
+  const labelBase =
+    "text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1 block";
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="lg" title="Detalhes da transação">
-      <div className="space-y-2 sm:space-y-3 md:space-y-4 text-base sm:text-lg text-gray-800 dark:text-gray-200">
-        <div>
-          <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            Título
-          </p>
-          <p className="mt-0.5 sm:mt-1 text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight">
-            {title}
-          </p>
-          {description && (
-            <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-400">{description}</p>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      maxWidth="lg"
+      title={
+        <span className="flex items-center gap-2">
+          Detalhes da transação
+          {isEditing && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--theme-accent)]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--theme-accent)]">
+              <Pencil className="w-2.5 h-2.5" />
+              Editando
+            </span>
           )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3">
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Valor total
-            </p>
-            <p className="text-sm sm:text-base md:text-lg font-semibold themed-amount">
-              {formatCurrency(rawAmountNumber)}
-            </p>
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Valor do mês
-            </p>
-            <p className="text-sm sm:text-base md:text-lg font-semibold themed-amount">
-              {formatCurrency(installmentAmount)}
-            </p>
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Tipo
-            </p>
-            <p className="text-xs sm:text-sm md:text-base">{typeLabel}</p>
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Status
-            </p>
-            <p className="text-xs sm:text-sm md:text-base">{statusLabel}</p>
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Banco
-            </p>
-            <p className="text-xs sm:text-sm md:text-base truncate">{bank_name || "-"}</p>
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Categoria
-            </p>
-            {category_name ? (
-              <CategoryBadge
-                name={category_name}
-                icon={category_icon}
-                color={category_color}
-                size="md"
-              />
-            ) : (
-              <p className="text-xs sm:text-sm md:text-base truncate">-</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3">
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Data da compra
-            </p>
-            <p className="text-xs sm:text-sm md:text-base">{formatFullDate(created_at)}</p>
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Data de pagamento
-            </p>
-            <p className="text-xs sm:text-sm md:text-base">{formatFullDate(paid_date)}</p>
-          </div>
-        </div>
-
-        <div className="space-y-0.5">
-          <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            Parcelamento / recorrência
-          </p>
-          {is_recurring ? (
-            <p className="text-xs sm:text-sm md:text-base">Transação recorrente.</p>
-          ) : hasInstallments ? (
+        </span>
+      }
+    >
+      {canEdit && (
+        <div className="flex items-center justify-end gap-2 -mt-1 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+          {isEditing ? (
             <>
-              <p className="text-xs sm:text-sm md:text-base">
-                {`Valor por parcela: ${formatCurrency(installmentAmount)}`}
-              </p>
-              <p className="text-[10px] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 mt-0.5">
-                {effectiveInstallmentNumber && (
-                  <span className="mr-3">
-                    Parcelas: <span className="font-semibold">{effectiveInstallmentNumber}/{totalInstallmentsNumber}</span>
-                  </span>
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-[var(--theme-accent)] text-white hover:opacity-90 transition-opacity disabled:opacity-60 shadow-sm"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
                 )}
-              </p>
+                {isSubmitting ? "Salvando…" : "Salvar"}
+              </button>
             </>
           ) : (
-            <p className="text-xs sm:text-sm md:text-base">Transação única.</p>
+            <button
+              type="button"
+              onClick={handleStartEdit}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Editar
+            </button>
           )}
         </div>
+      )}
 
-        {realTransacaoId && (
-          <div className="pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700">
-            <AnexoSection transacaoId={realTransacaoId} />
+      {isEditing ? (
+        <div className="space-y-3 sm:space-y-4">
+          <div>
+            <label htmlFor="fdt_title" className={labelBase}>
+              Título <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="fdt_title"
+              type="text"
+              maxLength={120}
+              value={editData.title || ""}
+              onChange={(e) => handleFieldChange("title", e.target.value)}
+              className={inputBase}
+              placeholder="Título da transação"
+            />
           </div>
-        )}
-      </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="fdt_amount" className={labelBase}>
+                Valor (R$) <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="fdt_amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                inputMode="decimal"
+                value={editData.amount || ""}
+                onChange={(e) => handleFieldChange("amount", e.target.value)}
+                className={inputBase}
+                placeholder="0,00"
+              />
+            </div>
+
+            <div>
+              <span className={labelBase}>Tipo</span>
+              <div className="flex gap-2 mt-1">
+                {["debit", "credit"].map((t) => (
+                  <label
+                    key={t}
+                    className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium cursor-pointer transition-colors ${
+                      editData.type === t
+                        ? "border-[var(--theme-accent)] bg-[var(--theme-accent)]/10 text-[var(--theme-accent)]"
+                        : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="fdt_type"
+                      value={t}
+                      checked={editData.type === t}
+                      onChange={() => handleFieldChange("type", t)}
+                      className="sr-only"
+                    />
+                    {t === "debit" ? "Débito" : "Crédito"}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="fdt_desc" className={labelBase}>
+              Descrição
+            </label>
+            <textarea
+              id="fdt_desc"
+              rows={2}
+              maxLength={250}
+              value={editData.description || ""}
+              onChange={(e) => handleFieldChange("description", e.target.value)}
+              className={`${inputBase} resize-none`}
+              placeholder="Descrição opcional"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="fdt_category" className={labelBase}>
+                Categoria
+              </label>
+              <select
+                id="fdt_category"
+                value={editData.category_id || ""}
+                onChange={(e) => handleFieldChange("category_id", e.target.value)}
+                className={inputBase}
+              >
+                <option value="">Sem categoria</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="fdt_bank" className={labelBase}>
+                Conta / Banco
+              </label>
+              <select
+                id="fdt_bank"
+                value={editData.bank_user_id || ""}
+                onChange={(e) => handleFieldChange("bank_user_id", e.target.value)}
+                className={inputBase}
+              >
+                <option value="">Sem conta vinculada</option>
+                {bankAccounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/40 px-4 py-3">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              Marcar como pago
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                handleFieldChange(
+                  "status",
+                  editData.status === "paid" ? "unpaid" : "paid"
+                )
+              }
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 ${
+                editData.status === "paid"
+                  ? "bg-emerald-500 shadow-lg shadow-emerald-500/30"
+                  : "bg-gray-300 dark:bg-gray-700"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                  editData.status === "paid" ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+
+          {editData.status === "paid" && (
+            <div>
+              <label htmlFor="fdt_paid_date" className={labelBase}>
+                Data de pagamento
+              </label>
+              <input
+                id="fdt_paid_date"
+                type="date"
+                value={editData.paid_date || ""}
+                onChange={(e) => handleFieldChange("paid_date", e.target.value)}
+                className={inputBase}
+              />
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-2 sm:hidden">
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              disabled={isSubmitting}
+              className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSubmitting}
+              className="flex-1 rounded-lg bg-[var(--theme-accent)] py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-60 shadow-sm flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSubmitting ? "Salvando…" : "Salvar alterações"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* ── VIEW MODE ─────────────────────────────────────────────── */
+        <div className="space-y-2 sm:space-y-3 md:space-y-4 text-base sm:text-lg text-gray-800 dark:text-gray-200">
+          <div>
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+              Título
+            </p>
+            <p className="mt-0.5 sm:mt-1 text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+              {title}
+            </p>
+            {description && (
+              <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-400">
+                {description}
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3">
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Valor total
+              </p>
+              <p className="text-sm sm:text-base md:text-lg font-semibold themed-amount">
+                {formatCurrency(rawAmountNumber)}
+              </p>
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Valor do mês
+              </p>
+              <p className="text-sm sm:text-base md:text-lg font-semibold themed-amount">
+                {formatCurrency(installmentAmount)}
+              </p>
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Tipo
+              </p>
+              <p className="text-xs sm:text-sm md:text-base">{typeLabel}</p>
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Status
+              </p>
+              <p className="text-xs sm:text-sm md:text-base">{statusLabel}</p>
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Banco
+              </p>
+              <p className="text-xs sm:text-sm md:text-base truncate">
+                {bank_name || "-"}
+              </p>
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Categoria
+              </p>
+              {category_name ? (
+                <CategoryBadge
+                  name={category_name}
+                  icon={category_icon}
+                  color={category_color}
+                  size="md"
+                />
+              ) : (
+                <p className="text-xs sm:text-sm md:text-base truncate">-</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3">
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Data da compra
+              </p>
+              <p className="text-xs sm:text-sm md:text-base">
+                {formatFullDate(created_at)}
+              </p>
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Data de pagamento
+              </p>
+              <p className="text-xs sm:text-sm md:text-base">
+                {formatFullDate(paid_date)}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-0.5">
+            <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+              Parcelamento / recorrência
+            </p>
+            {is_recurring ? (
+              <p className="text-xs sm:text-sm md:text-base">
+                Transação recorrente.
+              </p>
+            ) : hasInstallments ? (
+              <>
+                <p className="text-xs sm:text-sm md:text-base">
+                  {`Valor por parcela: ${formatCurrency(installmentAmount)}`}
+                </p>
+                <p className="text-[10px] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 mt-0.5">
+                  {effectiveInstallmentNumber && (
+                    <span className="mr-3">
+                      Parcelas:{" "}
+                      <span className="font-semibold">
+                        {effectiveInstallmentNumber}/{totalInstallmentsNumber}
+                      </span>
+                    </span>
+                  )}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs sm:text-sm md:text-base">Transação única.</p>
+            )}
+          </div>
+
+          {realTransacaoId && (
+            <div className="pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700">
+              <AnexoSection transacaoId={realTransacaoId} />
+            </div>
+          )}
+        </div>
+      )}
     </Modal>
   );
 }

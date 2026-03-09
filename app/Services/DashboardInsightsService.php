@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Budget;
+use App\Models\BankUser;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -110,54 +111,36 @@ class DashboardInsightsService
         }
 
         if ($hasIncomes && ($hasDebitTransactions || $hasCreditTransactions)) {
-            $totalIncomeSum = Income::forUser($user->id)->where('is_active', true)->sum('amount');
-            $totalDebitSpending = Transacao::forUser($user->id)
-                ->forBankUser($bankUserId)
-                ->where('type', 'debit')
-                ->sum('amount');
-            $unpaidInvoiceTotal = $this->budgetCalculationService->calculatePendingInvoiceTotal(
-                $user,
-                $bankUserId,
-                $currentMonthKey
-            );
-            $totalSpending = $totalDebitSpending + $unpaidInvoiceTotal;
-            $totalBalance = $totalIncomeSum - $totalSpending;
-            $emergencyFund = $currentMonthSpending > 0
-                ? max(0, $totalBalance / $currentMonthSpending)
-                : 0;
-            $activeFactors['emergencyFund'] = ['value' => min(100, ($emergencyFund / 6) * 100), 'weight' => 0.20];
+            $totalBankBalance = (float) BankUser::forUser($user->id)->sum('balance');
+            $emergencyFundMonths = $currentMonthSpending > 0
+                ? max(0.0, $totalBankBalance / $currentMonthSpending)
+                : ($totalBankBalance > 0 ? 12.0 : 0.0);
+            $emergencyFund = $emergencyFundMonths;
+            $activeFactors['emergencyFund'] = ['value' => min(100.0, ($emergencyFundMonths / 6.0) * 100.0), 'weight' => 0.20];
             $totalWeight += 0.20;
         } else {
             $emergencyFund = 0;
         }
 
-        $currentMonthTransactions = Transacao::forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->where('type', 'debit')
-            ->count();
-
-        if ($currentMonthTransactions > 0 || $hasBills) {
-            $recurringTransactions = Transacao::forUser($user->id)
-                ->forBankUser($bankUserId)
-                ->whereBetween('created_at', [$monthStart, $monthEnd])
-                ->where('type', 'debit')
-                ->where('is_recurring', true)
-                ->count();
-
-            $activeBillsCount = Bill::forUser($user->id)
+        if ($hasBills) {
+            $totalRecurringBillAmount = (float) Bill::forUser($user->id)
                 ->active()
                 ->recurrent()
-                ->count();
+                ->sum('amount');
 
-            $recurringControl = $currentMonthTransactions > 0
-                ? min(100, (($recurringTransactions + $activeBillsCount) / $currentMonthTransactions) * 100)
-                : ($activeBillsCount > 0 ? 80 : 0);
+            if ($hasIncomes && $monthlyIncome > 0) {
+                $recurringRatio = $totalRecurringBillAmount / $monthlyIncome;
+                $recurringControl = max(0.0, min(100.0, (1.0 - $recurringRatio) * 100.0));
+            } else {
+                $recurringControl = $currentMonthSpending > 0
+                    ? max(0.0, min(100.0, (1.0 - ($totalRecurringBillAmount / $currentMonthSpending)) * 100.0))
+                    : 50.0;
+            }
 
             $activeFactors['recurringControl'] = ['value' => $recurringControl, 'weight' => 0.15];
             $totalWeight += 0.15;
         } else {
-            $recurringControl = 0;
+            $recurringControl = 0.0;
         }
 
         if ($hasBills) {

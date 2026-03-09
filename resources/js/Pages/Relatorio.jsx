@@ -114,19 +114,23 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 
 				const sortedGroups = Object.values(grouped).sort((a, b) => (a.key || "").localeCompare(b.key || ""));
 
+				const currentMonthKey = new Date().toISOString().slice(0, 7);
+
 				setPeriodGroups(sortedGroups);
 				setAllTransactions(normalized);
 				setMonthlySummary(
-					sortedGroups.map((group) => ({
-						year_month: group.key,
-						month_label: group.label,
-						total_amount: group.total_amount,
-						total_credit: group.total_credit,
-						total_debit: group.total_debit,
-						count: group.count,
-						installment_count: group.installment_count,
-						installment_total: group.installment_total,
-					}))
+					sortedGroups
+						.filter((group) => !group.key || group.key <= currentMonthKey)
+						.map((group) => ({
+							year_month: group.key,
+							month_label: group.label,
+							total_amount: group.total_amount,
+							total_credit: group.total_credit,
+							total_debit: group.total_debit,
+							count: group.count,
+							installment_count: group.installment_count,
+							installment_total: group.installment_total,
+						}))
 				);
 
 				const fallbackKey = sortedGroups[sortedGroups.length - 1]?.key || "";

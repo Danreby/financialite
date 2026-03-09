@@ -59,7 +59,6 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
   const [editingBill, setEditingBill] = useState(null)
   const [payingBill, setPayingBill] = useState(null)
 
-  // Track previous reloadKey to only invalidate cache on explicit mutations
   const prevReloadKeyRef = useRef(reloadKey)
 
   const handleMonthClick = useCallback(async (monthKey) => {
@@ -180,9 +179,6 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
   useEffect(() => {
     let cancelled = false;
 
-    // Only invalidate cache when a mutation occurred (reloadKey changed),
-    // not on every filter/page change — filter changes produce a different
-    // cache key automatically via requestCache._buildKey.
     if (reloadKey !== prevReloadKeyRef.current) {
       prevReloadKeyRef.current = reloadKey
       dashboardService.invalidateCache()
@@ -421,6 +417,9 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
 
                   const handleClick = () => {
                     setSelectedFaturaItem({
+                      id: fatura.id,
+                      bank_user_id: fatura.bank_user_id,
+                      category_id: fatura.category_id,
                       title: fatura.title,
                       description: fatura.description,
                       amount: fatura.amount,
@@ -540,6 +539,12 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           isOpen={!!selectedFaturaItem}
           onClose={() => setSelectedFaturaItem(null)}
           item={selectedFaturaItem}
+          bankAccounts={bankAccounts}
+          categories={categories}
+          onUpdated={() => {
+            setSelectedFaturaItem(null)
+            setReloadKey((prev) => prev + 1)
+          }}
         />
 
         <BillForm

@@ -9,7 +9,7 @@ import BareButton from "@/Components/common/buttons/BareButton";
 import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
 import { useNumericInput, useDecimalInput } from "@/Hooks/useNumericInput";
 
-export default function FaturaForm({ isOpen, onClose, onSuccess, bankAccounts = [], debitAccounts = [], categories = [] }) {
+export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts = [], debitAccounts = [], categories = [] }) {
   const [isRecurring, setIsRecurring] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [type, setType] = useState("");

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { toast } from 'react-toastify';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
-import FaturaForm from '@/Components/system/FaturaForm';
+import ExpenseForm from '@/Components/system/ExpenseForm';
 import CardForm from '@/Components/system/CardForm';
 import CategoryForm from '@/Components/system/CategoryForm';
 import FaturaImportModal from '@/Components/system/fatura/import/FaturaImportModal';
 import QuickIncomeForm from '@/Components/system/income/QuickIncomeForm';
 
 export default function QuickActions({ bankAccounts = [], bankAccountsList = [], categories = [], onTransactionCreated }) {
-  const [showFaturaForm, setShowFaturaForm] = useState(false);
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -50,7 +50,7 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
       title: 'Nova Despesa',
       description: 'Registrar despesa',
       useThemeColors: true,
-      onClick: () => setShowFaturaForm(true),
+      onClick: () => setShowExpenseForm(true),
     },
         {
       icon: '💰',
@@ -136,14 +136,14 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
         </div>
       </div>
 
-      <FaturaForm
-        isOpen={showFaturaForm}
-        onClose={() => setShowFaturaForm(false)}
+      <ExpenseForm
+        isOpen={showExpenseForm}
+        onClose={() => setShowExpenseForm(false)}
         bankAccounts={localBankAccounts}
         debitAccounts={bankAccountsList}
         categories={localCategories}
         onSuccess={() => {
-          setShowFaturaForm(false);
+          setShowExpenseForm(false);
           if (onTransactionCreated) onTransactionCreated();
         }}
       />
