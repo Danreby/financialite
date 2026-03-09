@@ -248,7 +248,7 @@ export default function FaturaDetailModal({
               inputProps={{ min: "0.01", step: "0.01", inputMode: "decimal" }}
             />
 
-            <div className="relative px-3 pt-5 pb-2">
+            <div className="relative px-3">
               {/* <span className="pointer-events-none absolute left-3 top-1.5 select-none text-[0.7rem] font-medium tracking-wide text-gray-500 dark:text-gray-400">
                 Tipo
               </span> */}
