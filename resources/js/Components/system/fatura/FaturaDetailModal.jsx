@@ -213,7 +213,7 @@ export default function FaturaDetailModal({
         className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
         <Pencil className="w-3 h-3 flex-shrink-0" />
-        <span className="hidden sm:inline">Editar</span>
+        {/* <span className="hidden sm:inline">Editar</span> */}
       </button>
     )
   ) : null;
@@ -248,10 +248,10 @@ export default function FaturaDetailModal({
               inputProps={{ min: "0.01", step: "0.01", inputMode: "decimal" }}
             />
 
-            <div className="relative rounded-md border border-gray-300 dark:border-gray-700 px-3 pt-5 pb-2">
-              <span className="pointer-events-none absolute left-3 top-1.5 select-none text-[0.7rem] font-medium tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="relative px-3 pt-5 pb-2">
+              {/* <span className="pointer-events-none absolute left-3 top-1.5 select-none text-[0.7rem] font-medium tracking-wide text-gray-500 dark:text-gray-400">
                 Tipo
-              </span>
+              </span> */}
               <div className="flex gap-2">
                 {["debit", "credit"].map((t) => (
                   <label
@@ -286,13 +286,13 @@ export default function FaturaDetailModal({
               onChange={(e) =>
                 handleFieldChange("total_installments", e.target.value)
               }
-              helperText={
-                current_installment && Number(current_installment) > 1
-                  ? `Parcela atual: ${current_installment} de ${
-                      editData.total_installments || total_installments
-                    }`
-                  : "Altere o total caso tenha negociado um novo número de parcelas"
-              }
+              // helperText={
+              //   current_installment && Number(current_installment) > 1
+              //     ? `Parcela atual: ${current_installment} de ${
+              //         editData.total_installments || total_installments
+              //       }`
+              //     : "Altere o total caso tenha negociado um novo número de parcelas"
+              // }
               inputProps={{
                 min: String(Math.max(Number(current_installment) || 1, 1)),
                 max: "360",
