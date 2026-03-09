@@ -1,9 +1,6 @@
 import { apiService } from './api';
 import requestCache from './requestCache';
 
-// Fresh for 20s, then stale-while-revalidate for another 40s.
-// The backend also has a 15s HTTP cache (cache.api:15) so the net
-// effect is at most one API request per 15s even without client caching.
 const DASHBOARD_CACHE_TTL = 20_000;
 const DASHBOARD_STALE_TTL = 40_000;
 

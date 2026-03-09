@@ -1,15 +1,5 @@
-/**
- * In-memory request cache with:
- * - Deduplication of in-flight requests
- * - TTL-based expiry
- * - Stale-while-revalidate: return stale data immediately and refresh in background
- *
- * This avoids blocking the UI while refreshing data that is slightly outdated,
- * significantly reducing perceived latency and the number of serial blocking requests.
- */
-
 const DEFAULT_TTL = 30_000;
-const DEFAULT_STALE_TTL = 60_000; // how long stale data is still usable for SWR
+const DEFAULT_STALE_TTL = 60_000;
 const MAX_ENTRIES = 100;
 
 class RequestCache {
@@ -28,9 +18,6 @@ class RequestCache {
         return qs ? `${url}?${qs}` : url;
     }
 
-    /**
-     * Returns { data, isStale } or null when there is no usable cached entry.
-     */
     _getEntry(url, params) {
         const key = this._buildKey(url, params);
         const entry = this._cache.get(key);
@@ -46,7 +33,6 @@ class RequestCache {
             return { data: entry.data, isStale: true };
         }
 
-        // Fully expired — evict
         this._cache.delete(key);
         return null;
     }
@@ -72,33 +58,16 @@ class RequestCache {
         });
     }
 
-    /**
-     * Deduplicated fetch with stale-while-revalidate:
-     *
-     * 1. Fresh cache hit  → return immediately, no network request.
-     * 2. Stale cache hit  → return stale data immediately AND trigger a
-     *                       background refresh (no blocking wait for caller).
-     * 3. No cache / fully expired → fetch, block, cache result, return.
-     *
-     * @param {string}   url
-     * @param {object}   params
-     * @param {function} fetcher  async function that performs the actual request
-     * @param {number}   ttl      milliseconds until data is considered stale
-     * @param {number}   staleTtl additional milliseconds stale data is still usable
-     */
     async dedup(url, params, fetcher, ttl = DEFAULT_TTL, staleTtl = DEFAULT_STALE_TTL) {
         const entry = this._getEntry(url, params);
 
         if (entry && !entry.isStale) {
-            // Fresh — return immediately
             return entry.data;
         }
 
         const key = this._buildKey(url, params);
 
         if (entry && entry.isStale) {
-            // Stale-while-revalidate: serve stale data now, refresh in background.
-            // Only kick off a background refresh if one is not already in-flight.
             if (!this._inflight.has(key)) {
                 const bgPromise = fetcher()
                     .then((data) => {
@@ -116,12 +85,10 @@ class RequestCache {
             return entry.data;
         }
 
-        // No usable cache — if a request is already in-flight, wait for it.
         if (this._inflight.has(key)) {
             return this._inflight.get(key);
         }
 
-        // Fresh fetch — block the caller until the request completes.
         const promise = fetcher()
             .then((data) => {
                 this.set(url, params, data, ttl, staleTtl);
@@ -144,9 +111,6 @@ class RequestCache {
             }
         }
 
-        // Also cancel any in-flight requests matching the prefix so a fresh
-        // request is started on the next call rather than attaching to a
-        // now-stale in-flight promise.
         for (const key of this._inflight.keys()) {
             if (key.startsWith(prefix) || key.includes(prefix)) {
                 this._inflight.delete(key);
