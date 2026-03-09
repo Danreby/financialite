@@ -494,6 +494,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
               factors={dashboardInsights?.financial_health?.factors ?? {
                 savingsRate: 0,
                 budgetAdherence: 0,
+                budgetUsage: 0,
                 debtRatio: 0,
                 emergencyFund: 0,
                 recurringControl: 0,

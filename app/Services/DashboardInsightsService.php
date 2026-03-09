@@ -71,6 +71,7 @@ class DashboardInsightsService
                 'factors' => [
                     'savingsRate' => 0,
                     'budgetAdherence' => 0,
+                    'budgetUsage' => 0,
                     'debtRatio' => 0,
                     'emergencyFund' => 0,
                     'recurringControl' => 0,
@@ -104,10 +105,15 @@ class DashboardInsightsService
 
         if ($hasBudget) {
             $budgetAdherence = $this->calculateBudgetAdherence($user, $bankUserId);
-            $activeFactors['budgetAdherence'] = ['value' => $budgetAdherence, 'weight' => 0.25];
-            $totalWeight += 0.25;
+            $activeFactors['budgetAdherence'] = ['value' => $budgetAdherence, 'weight' => 0.15];
+            $totalWeight += 0.15;
+
+            $budgetUsage = $this->calculateBudgetUsage($user, $currentMonthKey, $currentMonthSpending, $monthlyIncome, $hasIncomes);
+            $activeFactors['budgetUsage'] = ['value' => $budgetUsage, 'weight' => 0.15];
+            $totalWeight += 0.15;
         } else {
             $budgetAdherence = 0;
+            $budgetUsage = 0;
         }
 
         if ($hasIncomes && ($hasDebitTransactions || $hasCreditTransactions)) {
@@ -137,8 +143,8 @@ class DashboardInsightsService
                     : 50.0;
             }
 
-            $activeFactors['recurringControl'] = ['value' => $recurringControl, 'weight' => 0.15];
-            $totalWeight += 0.15;
+            $activeFactors['recurringControl'] = ['value' => $recurringControl, 'weight' => 0.10];
+            $totalWeight += 0.10;
         } else {
             $recurringControl = 0.0;
         }
@@ -179,6 +185,7 @@ class DashboardInsightsService
             'factors' => [
                 'savingsRate' => round($savingsRate, 1),
                 'budgetAdherence' => round($budgetAdherence, 1),
+                'budgetUsage' => round($budgetUsage, 1),
                 'debtRatio' => 0,
                 'emergencyFund' => round($emergencyFund, 1),
                 'recurringControl' => round($recurringControl, 1),
@@ -224,6 +231,33 @@ class DashboardInsightsService
         return $totalCategories > 0 
             ? ($withinBudgetCount / $totalCategories) * 100 
             : 50.0;
+    }
+
+    private function calculateBudgetUsage(
+        Authenticatable $user,
+        string $currentMonthKey,
+        float $currentMonthSpending,
+        float $monthlyIncome,
+        bool $hasIncomes
+    ): float {
+        $budget = Budget::forUser($user->id)->forMonth($currentMonthKey)->first();
+
+        if (!$budget || $budget->monthly_limit <= 0) {
+            if ($hasIncomes && $monthlyIncome > 0) {
+                $usageRatio = $currentMonthSpending / $monthlyIncome;
+                return max(0.0, min(100.0, (1.0 - $usageRatio) * 100.0));
+            }
+            return 50.0;
+        }
+
+        $limit = (float) $budget->monthly_limit;
+
+        if ($hasIncomes && $monthlyIncome > 0 && $monthlyIncome < $limit) {
+            $limit = $monthlyIncome;
+        }
+
+        $usageRatio = $currentMonthSpending / $limit;
+        return max(0.0, min(100.0, (1.0 - $usageRatio) * 100.0));
     }
 
     private function getBudgetProgress(Authenticatable $user, ?int $bankUserId): array

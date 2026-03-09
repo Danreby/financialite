@@ -36,6 +36,7 @@ export default function Modal({
     closeOnOverlay = true,
     closeOnEscape = true,
     initialFocus,
+    headerActions,
     children,
 }) {
     const modalRef = useRef(null);
@@ -96,9 +97,6 @@ export default function Modal({
         };
     }, [isOpen, handleKeyDown]);
 
-    // Separate effect: initial focus only runs when the modal opens/closes,
-    // not when onClose/handleKeyDown references change (which would cause
-    // focus to jump back to the X button on every re-render).
     useEffect(() => {
         if (!isOpen) return;
 
@@ -124,7 +122,6 @@ export default function Modal({
                 previousFocusRef.current.focus();
             }
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const widthClass = maxWidthClassMap[maxWidth] ?? maxWidthClassMap['2xl'];
@@ -182,28 +179,31 @@ export default function Modal({
                                     )}
                                 </div>
 
-                                {onClose && (
-                                    <BareButton
-                                        type="button"
-                                        onClick={() => onClose?.()}
-                                        className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-1"
-                                        aria-label="Fechar modal"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                            className="h-4 w-4"
-                                            aria-hidden="true"
+                                <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                                    {headerActions}
+                                    {onClose && (
+                                        <BareButton
+                                            type="button"
+                                            onClick={() => onClose?.()}
+                                            className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-1"
+                                            aria-label="Fechar modal"
                                         >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
-                                    </BareButton>
-                                )}
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                                className="h-4 w-4"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        </BareButton>
+                                    )}
+                                </div>
                             </div>
                         )}
 

@@ -15,6 +15,7 @@ export default function FinancialHealthScore({
   factors = {
     savingsRate: 0,
     budgetAdherence: 0,
+    budgetUsage: 0,
     debtRatio: 0,  
     emergencyFund: 0, 
     recurringControl: 0,
@@ -49,12 +50,22 @@ export default function FinancialHealthScore({
     },
     {
       key: 'budgetAdherence',
-      label: 'Adesão ao Orçamento',
+      label: 'Categorias no Limite',
       icon: Target,
       value: factors.budgetAdherence,
       format: (v) => `${v.toFixed(0)}%`,
       thresholds: { good: 80, ok: 60 },
       description: 'das categorias dentro do limite',
+      requires: 'budget',
+    },
+    {
+      key: 'budgetUsage',
+      label: 'Uso do Orçamento',
+      icon: TrendingUp,
+      value: factors.budgetUsage,
+      format: (v) => `${v.toFixed(0)}%`,
+      thresholds: { good: 30, ok: 10 },
+      description: 'do orçamento mensal ainda disponível',
       requires: 'budget',
     },
     {
@@ -250,6 +261,12 @@ export default function FinancialHealthScore({
                   <span>Revise seu orçamento e ajuste categorias conforme necessário</span>
                 </div>
               )}
+              {factors.budgetUsage < 10 && !missingData?.budget && (
+                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                  <span>Seus gastos estão em ou acima do limite do orçamento — revise suas despesas deste mês</span>
+                </div>
+              )}
               {factors.recurringControl < 60 && !missingData?.bills && (
                 <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
                   <span className="text-[var(--theme-accent)] mt-0.5">•</span>
@@ -262,7 +279,7 @@ export default function FinancialHealthScore({
                   <span>Parabéns! Você está mantendo uma excelente saúde financeira</span>
                 </div>
               )}
-              {score > 0 && score < 80 && !hasMissingData && factors.savingsRate >= 10 && factors.emergencyFund >= 3 && factors.budgetAdherence >= 70 && (
+              {score > 0 && score < 80 && !hasMissingData && factors.savingsRate >= 10 && factors.emergencyFund >= 3 && factors.budgetAdherence >= 70 && factors.budgetUsage >= 10 && (
                 <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
                   <span className="text-[var(--theme-accent)] mt-0.5">•</span>
                   <span>Continue mantendo seus gastos sob controle para melhorar sua pontuação</span>
