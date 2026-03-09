@@ -14,10 +14,6 @@ import useThemeColors from '@/Hooks/useThemeColors'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 
-// ─── Vertical dashed-line plugin for selected month ───────────────────────────
-// Module-level flag prevents double-registration on hot-reload.
-// Fully null-safe on opts so it is harmless on Doughnut/Bar charts that
-// do not configure this plugin.
 let _vhlRegistered = false
 function ensureVerticalHighlight() {
   if (_vhlRegistered) return
@@ -25,7 +21,7 @@ function ensureVerticalHighlight() {
   ChartJS.register({
     id: 'verticalHighlight',
     beforeDraw(chart, _args, opts) {
-      const idx = opts?.selectedIndex   // may be undefined on other chart types
+      const idx = opts?.selectedIndex  
       if (idx == null || idx < 0) return
       const { ctx, chartArea, scales } = chart
       if (!chartArea || !scales?.x) return
@@ -44,7 +40,6 @@ function ensureVerticalHighlight() {
 }
 ensureVerticalHighlight()
 
-// ─── Canvas gradient builder ──────────────────────────────────────────────────
 function buildGradient(ctx, chartArea, hex, maxAlpha) {
   if (!ctx || !chartArea) return hex
   const g    = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
@@ -80,8 +75,6 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
   const primaryColor   = chartColors.primary?.startsWith('#') ? chartColors.primary : '#6366f1'
   const secondaryColor = dark ? '#60a5fa' : '#3b82f6'
 
-  // ── Inline gradient plugin — runs BEFORE each draw, no extra update() call ──
-  // Scoped to this <Line> instance via the plugins prop, never global.
   const gradientPlugin = useMemo(() => ({
     id: 'areaGradient',
     beforeDatasetsUpdate(chart) {
@@ -103,28 +96,13 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
     },
   }), [primaryColor, secondaryColor])
 
-  // ── Empty state ───────────────────────────────────────────────────────────
-  if (!data.length) {
-    return (
-      <div className="p-4 lg:p-6">
-        <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
-          Gastos mensais
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Ainda não há dados suficientes para exibir o gráfico.
-        </p>
-      </div>
-    )
-  }
-
-  // ── Dataset factory ───────────────────────────────────────────────────────
   const makeDataset = (label, values, color, hidden) => ({
     label,
     data: values,
     hidden,
     tension: 0.42,
     fill: true,
-    backgroundColor: color + '1a',  // overwritten by gradientPlugin before each draw
+    backgroundColor: color + '1a',
     borderColor: color,
     borderWidth: 2.5,
     pointRadius: values.map((_, i) => (i === selectedIndex ? 7 : 3)),
@@ -140,17 +118,14 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
     spanGaps: true,
   })
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const chartData = useMemo(() => ({
     labels,
     datasets: [
       makeDataset('Crédito', invoiceVals, primaryColor,   !showInvoice),
       makeDataset('Débito',  debitVals,   secondaryColor, !showDebit),
     ],
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [labels, invoiceVals, debitVals, primaryColor, secondaryColor, showInvoice, showDebit, selectedIndex, dark])
 
-  // ── Options ───────────────────────────────────────────────────────────────
   const gridColor    = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
   const tickColor    = dark ? '#4b5563' : '#9ca3af'
   const tooltipBg    = dark ? 'rgba(15,15,23,0.96)'    : 'rgba(255,255,255,0.98)'
@@ -158,7 +133,6 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
   const tooltipTitle = dark ? '#f9fafb' : '#111827'
   const tooltipBody  = dark ? '#9ca3af' : '#4b5563'
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const options = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -220,13 +194,23 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
         },
       },
     },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [selectedIndex, primaryColor, dark, onMonthClick, monthKeys, gridColor, tickColor, tooltipBg, tooltipBdr, tooltipTitle, tooltipBody])
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  if (!data.length) {
+    return (
+      <div className="p-4 lg:p-6">
+        <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
+          Gastos mensais
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Ainda não há dados suficientes para exibir o gráfico.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 lg:p-6">
-      {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
         <div>
           <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 leading-tight">
@@ -238,7 +222,6 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Inline legend */}
           <div className="hidden sm:flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400">
             {showInvoice && (
               <span className="flex items-center gap-1.5">
@@ -254,7 +237,6 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
             )}
           </div>
 
-          {/* Mode toggle pill */}
           <div className="inline-flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/[0.06] p-0.5">
             {MODES.map((m) => (
               <button
@@ -275,7 +257,6 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
         </div>
       </div>
 
-      {/* Chart canvas */}
       <div className="h-52 w-full sm:h-56 lg:h-64">
         <Line data={chartData} options={options} plugins={[gradientPlugin]} />
       </div>
