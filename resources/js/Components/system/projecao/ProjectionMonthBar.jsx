@@ -139,7 +139,6 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                     )}
                 </div>
 
-                {/* Sub-info row */}
                 {hasSubInfo && (
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 pl-[68px] text-[10px] text-gray-400 dark:text-gray-600">
                         {realInstallmentTotal > 0 && (
@@ -162,7 +161,6 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                 )}
             </button>
 
-            {/* Expanded breakdown */}
             <AnimatePresence initial={false}>
                 {expanded && hasBreakdown && (
                     <motion.div
@@ -175,7 +173,6 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                     >
                         <div className="mx-3 mb-2 rounded-lg border border-gray-100 dark:border-white/[0.06] px-3 py-2 flex flex-col gap-1.5">
 
-                            {/* Installment transactions */}
                             {installmentBreakdown.length > 0 && (
                                 <>
                                     <span className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold">
@@ -195,7 +192,6 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                                 </>
                             )}
 
-                            {/* Recurring transactions */}
                             {recurringBreakdown.length > 0 && (
                                 <>
                                     <span className={`text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold ${installmentBreakdown.length > 0 ? 'mt-1' : ''}`}>
@@ -215,7 +211,6 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                                 </>
                             )}
 
-                            {/* Simulated items */}
                             {simulationBreakdown.length > 0 && (
                                 <>
                                     <span className={`text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold ${(installmentBreakdown.length > 0 || recurringBreakdown.length > 0) ? 'mt-1' : ''}`}>

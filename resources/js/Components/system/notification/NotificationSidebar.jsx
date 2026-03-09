@@ -35,7 +35,6 @@ export default function NotificationSidebar({ open, onClose }) {
   const [loading, setLoading]             = useState(false)
   const abortRef                          = useRef(null)
 
-  // ── Fetch when opening ──────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return
 
@@ -66,15 +65,12 @@ export default function NotificationSidebar({ open, onClose }) {
     }
   }, [open])
 
-  // ── Close on Escape ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
-
-  // ── Actions ──────────────────────────────────────────────────────────────
 
   const handleMarkAsRead = useCallback(async (id) => {
     try {
@@ -109,11 +105,9 @@ export default function NotificationSidebar({ open, onClose }) {
     }
   }, [])
 
-  // ── Derived state ────────────────────────────────────────────────────────
   const unreadCount = notifications.filter((n) => !n.is_read).length
   const groups      = groupByDate(notifications)
 
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
       className={`fixed inset-0 z-40 flex justify-end ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}
@@ -121,7 +115,6 @@ export default function NotificationSidebar({ open, onClose }) {
       role="dialog"
       aria-label="Painel de notificações"
     >
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 ${
           open ? 'opacity-100' : 'opacity-0'
@@ -130,13 +123,11 @@ export default function NotificationSidebar({ open, onClose }) {
         aria-hidden="true"
       />
 
-      {/* Panel */}
       <aside
         className={`relative flex h-full w-full max-w-sm flex-col bg-white dark:bg-[#0b0b0b] shadow-2xl ring-1 ring-black/10 dark:ring-white/5 transform transition-transform duration-300 ease-out sm:max-w-md ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {/* ── Header ── */}
         <header className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 px-4 py-3">
           <div className="flex items-center gap-2.5">
             <Bell size={18} className="text-gray-500 dark:text-gray-400" aria-hidden="true" />
@@ -183,7 +174,6 @@ export default function NotificationSidebar({ open, onClose }) {
           </div>
         </header>
 
-        {/* ── Mobile action bar ── */}
         {(unreadCount > 0 || notifications.length > 0) && (
           <div className="flex sm:hidden gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-2">
             {unreadCount > 0 && (
@@ -207,7 +197,6 @@ export default function NotificationSidebar({ open, onClose }) {
           </div>
         )}
 
-        {/* ── Body ── */}
         <div className="flex-1 overflow-y-auto scrollbar-custom px-3 py-3">
           {loading && (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-400 dark:text-gray-600">
@@ -252,7 +241,6 @@ export default function NotificationSidebar({ open, onClose }) {
           )}
         </div>
 
-        {/* ── Footer ── */}
         {notifications.length > 0 && (
           <footer className="flex-shrink-0 border-t border-gray-100 dark:border-gray-800 px-4 py-2.5 text-center">
             <p className="text-[0.65rem] text-gray-400 dark:text-gray-600">

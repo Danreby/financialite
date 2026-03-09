@@ -80,7 +80,7 @@ export default function SavingsSection({
       toast.success(type === 'deposit' ? 'Depósito realizado!' : 'Retirada realizada!')
     } catch (error) {
       toast.error(error.response?.data?.error || 'Erro na operação.')
-      throw error // Re-throw para que o modal possa tratar
+      throw error
     }
   }
 
@@ -121,7 +121,6 @@ export default function SavingsSection({
         </PrimaryButton>
       </div>
 
-      {/* Summary bar */}
       {goals.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-2.5 shadow-sm dark:border-gray-800 dark:bg-gray-900/60">
           <div className="flex items-center gap-2">
@@ -164,7 +163,6 @@ export default function SavingsSection({
         </div>
       )}
 
-      {/* Goals list */}
       {goals.length > 0 ? (
         <ScrollArea maxHeightClassName="max-h-[400px]">
           <div className="space-y-3">
@@ -192,14 +190,12 @@ export default function SavingsSection({
         </div>
       )}
 
-      {/* Create form */}
       <SavingsForm
         isOpen={showForm}
         onClose={handleCloseForm}
         onSuccess={handleCreated}
       />
 
-      {/* Edit form */}
       {editingGoal && (
         <SavingsForm
           isOpen={!!editingGoal}
@@ -209,7 +205,6 @@ export default function SavingsSection({
         />
       )}
 
-      {/* Transaction modal */}
       {transactionGoal && (
         <SavingsTransactionModal
           isOpen={!!transactionGoal}
@@ -220,7 +215,6 @@ export default function SavingsSection({
         />
       )}
 
-      {/* Delete confirmation */}
       <Modal
         isOpen={!!deletingGoal}
         onClose={handleCloseDelete}

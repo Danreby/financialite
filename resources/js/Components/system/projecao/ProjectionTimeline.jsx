@@ -16,8 +16,6 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
         [months],
     );
 
-    // Always include the current billing month even when it has no transactions yet,
-    // so the user can see the active open invoice when all pending ones are already paid.
     const visibleMonths = months.filter((m) => m.combinedTotal > 0 || m.isCurrentMonth);
     const hasAny        = visibleMonths.length > 0;
     const hasSimulated  = (totals.simulatedAll ?? 0) > 0;

@@ -8,13 +8,7 @@ import FaturaImportFileInput from "@/Components/system/fatura/import/FaturaImpor
 import FaturaImportPreview from "@/Components/system/fatura/import/FaturaImportPreview";
 import FaturaImportActions from "@/Components/system/fatura/import/FaturaImportActions";
 
-/**
- * Maps normalized column headers (PT or EN) → API keys expected by the backend.
- * Supports Portuguese template headers and English legacy headers for backward
- * compatibility.
- */
 const COLUMN_MAP = Object.freeze({
-  // Portuguese (primary — matches the template)
   titulo: "title",
   descricao: "description",
   valor: "amount",
@@ -25,7 +19,6 @@ const COLUMN_MAP = Object.freeze({
   recorrente: "is_recurring",
   nome_cartao: "bank_user_name",
   nome_categoria: "category_name",
-  // English (backward compatibility)
   title: "title",
   description: "description",
   amount: "amount",
@@ -37,20 +30,14 @@ const COLUMN_MAP = Object.freeze({
   category_name: "category_name",
 });
 
-/** API keys that every row must have. */
 const REQUIRED_API_KEYS = ["title", "amount", "type"];
 
-/** Reverse map: API key → Portuguese display label (for user-facing messages). */
 const API_KEY_LABELS = Object.freeze({
   title: "titulo",
   amount: "valor",
   type: "tipo",
 });
 
-/**
- * Normalize a raw header string for lookup in COLUMN_MAP.
- * Lowercases, strips accents, collapses whitespace → underscore.
- */
 function normalizeHeaderKey(raw) {
   return String(raw || "")
     .trim()
@@ -60,10 +47,6 @@ function normalizeHeaderKey(raw) {
     .replace(/\s+/g, "_");
 }
 
-/**
- * Convert a row keyed by original (display) headers into a row keyed by API
- * keys, using COLUMN_MAP for resolution. Unknown columns are silently dropped.
- */
 function mapRowToApiKeys(row, originalHeaders) {
   const mapped = {};
   originalHeaders.forEach((header) => {
@@ -173,7 +156,6 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
             String(h || "").trim()
           );
 
-          // Resolve which API keys the file headers correspond to
           const resolvedApiKeys = originalHeaders.map(
             (h) => COLUMN_MAP[normalizeHeaderKey(h)]
           );
@@ -246,7 +228,6 @@ export default function FaturaImportModal({ isOpen, onClose, onImported }) {
     toast.dismiss();
 
     try {
-      // Map display-keyed rows → API-keyed rows before sending
       const apiRows = rows.map((row) => mapRowToApiKeys(row, headers));
 
       const response = await axios.post(route("transacoes.import"), {

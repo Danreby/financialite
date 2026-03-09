@@ -13,7 +13,6 @@ export function useExtratoData(initialFilters = {}) {
   const abortControllerRef = useRef(null)
 
   const fetchData = useCallback(async () => {
-    // Cancel any in-flight request before starting a new one
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
@@ -43,7 +42,6 @@ export function useExtratoData(initialFilters = {}) {
       setIncomes(data.incomes || [])
       setSummary(data.summary || null)
     } catch (err) {
-      // Ignore aborted requests
       if (axios.isCancel(err) || err.name === 'AbortError' || err.name === 'CanceledError') return
       console.error('Erro ao carregar extrato:', err)
       setError(err.response?.data?.message || 'Erro ao carregar extrato.')
@@ -53,7 +51,6 @@ export function useExtratoData(initialFilters = {}) {
     }
   }, [filters])
 
-  // Debounce filter changes by 300ms to prevent rapid re-fetches
   useEffect(() => {
     const timeout = setTimeout(() => {
       fetchData()

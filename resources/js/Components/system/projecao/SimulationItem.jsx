@@ -41,7 +41,6 @@ export default function SimulationItem({ simulation, onRemove }) {
                         <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
                             {title}
                         </span>
-                        {/* Credit / Debit badge */}
                         <span
                             className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
                             style={isCredit ? {
@@ -54,13 +53,11 @@ export default function SimulationItem({ simulation, onRemove }) {
                         >
                             {isCredit ? 'Crédito' : 'Débito'}
                         </span>
-                        {/* Recurring badge */}
                         {isRecurring && (
                             <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
                                 🔁 Recorrente
                             </span>
                         )}
-                        {/* Category badge */}
                         {categoryName && (
                             <span
                                 className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"

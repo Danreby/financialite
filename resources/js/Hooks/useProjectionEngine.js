@@ -1,8 +1,5 @@
 import { useMemo } from 'react';
 
-/**
- * Builds a month key 'YYYY-MM' offset by `offset` months from the baseYM.
- */
 function offsetMonth(baseYM, offset) {
     const [y, m] = baseYM.split('-').map(Number);
     const d = new Date(y, m - 1 + offset, 1);
@@ -13,22 +10,12 @@ function compareYM(a, b) {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
-/**
- * Returns the amount billed for a real credit transaction in a given YYYY-MM.
- * Matches FaturaBillingService::faturaAppliesToMonth logic exactly:
- *  - Recurring: applies from first_billing_month indefinitely.
- *  - Installment: applies from first_billing_month to completion_month.
- */
 function realCreditAmountInMonth(tx, targetYM) {
     if (compareYM(targetYM, tx.first_billing_month) < 0) return 0;
     if (!tx.is_recurring && tx.completion_month && compareYM(targetYM, tx.completion_month) > 0) return 0;
     return tx.amount_per_month;
 }
 
-/**
- * Returns the simulated amount billed in a given YYYY-MM month.
- * Supports both installment and recurring simulations.
- */
 function simulatedAmountInMonth(simulation, targetYM) {
     if (compareYM(targetYM, simulation.startMonth) < 0) return 0;
     if (!simulation.is_recurring) {
@@ -38,17 +25,6 @@ function simulatedAmountInMonth(simulation, targetYM) {
     return simulation.installmentAmount;
 }
 
-/**
- * Custom hook that computes monthly projection data exactly mirroring the Fatura page logic.
- *
- * @param {Object}  params
- * @param {Array}   params.creditTransactions  - All real credit transactions (installment + recurring)
- *                                               Each has: { id, title, amount_per_month, is_recurring,
- *                                                           first_billing_month, completion_month }
- * @param {Array}   params.simulations         - User-added simulations (installment or recurring)
- * @param {Object}  params.currentMonthStats   - { debit, month: 'YYYY-MM' }
- * @param {number}  params.monthsAhead         - How many months to project (default 24)
- */
 export function useProjectionEngine({
     creditTransactions = [],
     simulations        = [],
@@ -63,7 +39,6 @@ export function useProjectionEngine({
         const monthData = months.map((ym) => {
             const isCurrentMonth = ym === baseYM;
 
-            // ── Real credit breakdown ─────────────────────────────────────────
             const realInstallmentTotal = creditTransactions
                 .filter((t) => !t.is_recurring)
                 .reduce((sum, t) => sum + realCreditAmountInMonth(t, ym), 0);
@@ -74,10 +49,8 @@ export function useProjectionEngine({
 
             const realCreditTotal = realInstallmentTotal + realRecurringTotal;
 
-            // ── Debit: only current-month known actual debit ──────────────────
             const realDebitTotal = isCurrentMonth ? (currentMonthStats.debit ?? 0) : 0;
 
-            // ── Simulated breakdown ───────────────────────────────────────────
             const simulatedCreditTotal = simulations
                 .filter((s) => s.type === 'credit')
                 .reduce((sum, s) => sum + simulatedAmountInMonth(s, ym), 0);
@@ -90,7 +63,6 @@ export function useProjectionEngine({
             const simulatedTotal = simulatedCreditTotal + simulatedDebitTotal;
             const combinedTotal  = realTotal + simulatedTotal;
 
-            // Per-transaction breakdown (installment) for this month
             const installmentBreakdown = creditTransactions
                 .filter((t) => !t.is_recurring && realCreditAmountInMonth(t, ym) > 0)
                 .map((t) => ({
@@ -100,7 +72,6 @@ export function useProjectionEngine({
                     type:   'credit',
                 }));
 
-            // Per-transaction breakdown (recurring) for this month
             const recurringBreakdown = creditTransactions
                 .filter((t) => t.is_recurring && realCreditAmountInMonth(t, ym) > 0)
                 .map((t) => ({
@@ -110,7 +81,6 @@ export function useProjectionEngine({
                     type:   'credit',
                 }));
 
-            // Per-simulation breakdown for this month
             const simulationBreakdown = simulations
                 .filter((s) => simulatedAmountInMonth(s, ym) > 0)
                 .map((s) => ({
@@ -139,7 +109,6 @@ export function useProjectionEngine({
             };
         });
 
-        // Grand totals
         const totalRealAllMonths      = monthData.reduce((s, m) => s + m.realTotal, 0);
         const totalSimulatedAllMonths = monthData.reduce((s, m) => s + m.simulatedTotal, 0);
         const highestCombinedMonth    = monthData.reduce(

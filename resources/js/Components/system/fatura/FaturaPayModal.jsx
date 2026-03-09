@@ -14,7 +14,6 @@ const formatCurrency = (value) =>
     currency: "BRL",
   }).format(value);
 
-// ─── Confirmation step shown before actually submitting ─────────────────────
 function FaturaPayConfirmation({
   pendingItems,
   totalToPay,
@@ -84,7 +83,6 @@ function FaturaPayConfirmation({
   );
 }
 
-// ─── Main modal ──────────────────────────────────────────────────────────────────────
 export default function FaturaPayModal({
   isOpen,
   onClose,
@@ -97,7 +95,7 @@ export default function FaturaPayModal({
   onPaid,
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [step, setStep] = useState("form"); // "form" | "confirm"
+  const [step, setStep] = useState("form");
   const [selectedCardId, setSelectedCardId] = useState(
     bankUserId ? String(bankUserId) : ""
   );
@@ -137,10 +135,6 @@ export default function FaturaPayModal({
     setSelectedBankAccountId(value ? String(value) : "");
   }, []);
 
-  /**
-   * When a card is selected, show only its pending items.
-   * When no card is selected, show ALL pending items for the month.
-   */
   const pendingItems = useMemo(() => {
     const pending = items.filter((item) => item.status !== "paid");
     if (!selectedCardId) return pending;

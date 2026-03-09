@@ -16,13 +16,11 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
       }`}
     >
       <div className="flex items-start gap-3 p-3 sm:p-4">
-        {/* Icon */}
         <div className="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl text-xl sm:text-2xl shadow-sm"
           style={{ backgroundColor: goal.color || 'var(--theme-accent, #6366f1)' }}>
           {goal.icon || '💰'}
         </div>
 
-        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
@@ -42,7 +40,6 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
             </p>
           )}
 
-          {/* Progress bar */}
           <div className="mt-2">
             <div className="flex items-center justify-between text-[11px] mb-1">
               <span className="text-gray-500 dark:text-gray-400">
@@ -68,7 +65,6 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center justify-end gap-1 border-t border-gray-100 px-3 py-1.5 dark:border-gray-800/60 flex-wrap">
         {!isCompleted && (
           <>

@@ -6,9 +6,6 @@ import Tooltip from "@/Components/common/Tooltip";
 import ExportExcel from "@/Components/system/excel/ExportExcel";
 import DetailedExportExcel from "@/Components/system/excel/DetailedExportExcel";
 
-/**
- * Componente que exibe botões para exportação simples e detalhada
- */
 export default function ReportExportButtons({ filters = {} }) {
   const [exportData, setExportData] = useState([]);
 

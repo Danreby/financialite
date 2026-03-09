@@ -9,7 +9,7 @@ const initialForm = () => ({
     title:         '',
     amount:        '',
     installments:  '1',
-    mode:          'installment', // 'installment' | 'recurring'
+    mode:          'installment',
     type:          'credit',
     bankAccountId: '',
     categoryId:    '',
@@ -68,7 +68,6 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
     return (
         <form onSubmit={handleAdd} className="flex flex-col gap-3.5">
 
-            {/* Mode toggle */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                     Modo
@@ -97,7 +96,6 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                 </div>
             </div>
 
-            {/* Description */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                     Descrição
@@ -114,7 +112,6 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                 />
             </div>
 
-            {/* Amount + Installments */}
             <div className={`grid gap-3 ${isRecurring ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
@@ -151,7 +148,6 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                 )}
             </div>
 
-            {/* Summary pill */}
             {parsedAmount > 0 && (
                 <div
                     className="-mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
@@ -177,7 +173,6 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                 </div>
             )}
 
-            {/* Type */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                     Tipo
@@ -209,7 +204,6 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                 </div>
             </div>
 
-            {/* Start month + Card */}
             <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
@@ -242,7 +236,6 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                 )}
             </div>
 
-            {/* Category */}
             {categories.length > 0 && (
                 <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">

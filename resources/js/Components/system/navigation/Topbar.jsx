@@ -16,14 +16,10 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
     return stored === 'dark' || (!stored && prefersDark)
   })
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  // Seed unread count from Inertia shared props — no extra request on mount
   const [unreadCount, setUnreadCount] = useState(Number(initialUnread ?? 0))
   const userMenuRef = useRef(null)
-  // Track whether initial Inertia seed has already been applied so navigation
-  // between pages updates the count correctly without a network request.
   const lastInertiaUnreadRef = useRef(Number(initialUnread ?? 0))
 
-  // Sync with Inertia shared prop on every page navigation (prop changes value)
   useEffect(() => {
     const incoming = Number(initialUnread ?? 0)
     if (incoming !== lastInertiaUnreadRef.current) {
@@ -63,19 +59,15 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
-      // Skip polling when tab is not visible to save requests
       if (document.hidden) return
       try {
         const response = await axios.get(route('notifications.unread-count'))
         setUnreadCount(Number(response.data?.unread_count || 0))
       } catch {
-        // Silently fail
+        //
       }
     }
 
-    // Do NOT call fetchUnreadCount() on mount — the count is already seeded
-    // from Inertia shared props, so we save one network request per page load.
-    // Poll every 90 seconds; pause when the tab is hidden.
     const interval = setInterval(() => {
       if (!document.hidden) {
         fetchUnreadCount()
