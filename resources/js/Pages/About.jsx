@@ -191,7 +191,7 @@ export default function About() {
           </section>
         </FadeInItem>
 
-        <FadeInItem>
+        {/* <FadeInItem>
           <section className="rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
             <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
               📱 Aplicativo Mobile
@@ -226,7 +226,7 @@ export default function About() {
               </p>
             </div>
           </section>
-        </FadeInItem>
+        </FadeInItem> */}
 
         <FadeInItem>
           <section className="mb-4">
