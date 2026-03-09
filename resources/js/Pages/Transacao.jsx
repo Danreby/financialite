@@ -210,6 +210,9 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 				isOpen={!!detailTransaction}
 				onClose={() => setDetailTransaction(null)}
 				item={detailTransaction}
+				bankAccounts={bankAccounts}
+				categories={categories}
+				onUpdated={handleUpdated}
 			/>
 
 			<Modal

@@ -279,9 +279,13 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], debitAcc
 									bankUserId={selectedBankId || null}
 									bankAccounts={bankAccounts}
 									debitAccounts={debitAccounts}
-									due_day={selectedAccount?.due_day ?? null}
-									closing_day={selectedAccount?.closing_day ?? null}
-									onPaid={handlePaidMonth}
+								categories={categories}
+								due_day={selectedAccount?.due_day ?? null}
+								closing_day={selectedAccount?.closing_day ?? null}
+								onPaid={handlePaidMonth}
+								onUpdated={() =>
+									router.reload({ only: ['monthlyGroups'], preserveState: true })
+								}
 									isCurrentPending={
 										logicalCurrentKey &&
 										selectedGroup.month_key === logicalCurrentKey &&

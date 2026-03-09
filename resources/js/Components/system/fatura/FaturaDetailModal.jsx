@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import { Pencil, Check, Loader2, RotateCcw } from "lucide-react";
 import Modal from "@/Components/common/Modal";
 import AnexoSection from "@/Components/system/anexo/AnexoSection";
+import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
+import FloatLabelSelect from "@/Components/common/inputs/FloatLabelSelect";
 import CategoryBadge from "@/Components/common/CategoryBadge";
 import { formatCurrency } from "@/Lib/formatters";
 
@@ -32,6 +34,9 @@ function buildEditData(item) {
     paid_date: item.paid_date
       ? item.paid_date.slice(0, 10)
       : new Date().toISOString().slice(0, 10),
+    total_installments: item.total_installments
+      ? String(item.total_installments)
+      : "1",
   };
 }
 
@@ -101,7 +106,10 @@ export default function FaturaDetailModal({
         category_id: editData.category_id || null,
         total_installments: isDebit
           ? 1
-          : Math.max(Number(item.total_installments) || 1, 1),
+          : Math.max(
+              Number(editData.total_installments) || 1,
+              Number(item.current_installment) || 1,
+            ),
         is_recurring: isDebit ? 0 : item.is_recurring ? 1 : 0,
         status: editData.status,
         paid_date:
@@ -210,11 +218,6 @@ export default function FaturaDetailModal({
     )
   ) : null;
 
-  const inputBase =
-    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-[var(--theme-accent)] dark:border-gray-600 dark:bg-gray-900/80 dark:text-gray-100 dark:focus:border-[var(--theme-accent)]";
-  const labelBase =
-    "text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1 block";
-
   return (
     <Modal
       isOpen={isOpen}
@@ -224,43 +227,32 @@ export default function FaturaDetailModal({
       headerActions={headerActions}
     >
       {isEditing ? (
-        <div className="space-y-3 sm:space-y-4">
-          <div>
-            <label htmlFor="fdt_title" className={labelBase}>
-              Título <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="fdt_title"
-              type="text"
-              maxLength={120}
-              value={editData.title || ""}
-              onChange={(e) => handleFieldChange("title", e.target.value)}
-              className={inputBase}
-              placeholder="Título da transação"
+        <div className="space-y-4 pt-1">
+          <FloatLabelField
+            id="fdt_title"
+            label="Título"
+            isRequired
+            value={editData.title || ""}
+            onChange={(e) => handleFieldChange("title", e.target.value)}
+            inputProps={{ maxLength: 120 }}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FloatLabelField
+              id="fdt_amount"
+              label="Valor (R$)"
+              isRequired
+              type="number"
+              value={editData.amount || ""}
+              onChange={(e) => handleFieldChange("amount", e.target.value)}
+              inputProps={{ min: "0.01", step: "0.01", inputMode: "decimal" }}
             />
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="fdt_amount" className={labelBase}>
-                Valor (R$) <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="fdt_amount"
-                type="number"
-                min="0.01"
-                step="0.01"
-                inputMode="decimal"
-                value={editData.amount || ""}
-                onChange={(e) => handleFieldChange("amount", e.target.value)}
-                className={inputBase}
-                placeholder="0,00"
-              />
-            </div>
-
-            <div>
-              <span className={labelBase}>Tipo</span>
-              <div className="flex gap-2 mt-1">
+            <div className="relative rounded-md border border-gray-300 dark:border-gray-700 px-3 pt-5 pb-2">
+              <span className="pointer-events-none absolute left-3 top-1.5 select-none text-[0.7rem] font-medium tracking-wide text-gray-500 dark:text-gray-400">
+                Tipo
+              </span>
+              <div className="flex gap-2">
                 {["debit", "credit"].map((t) => (
                   <label
                     key={t}
@@ -285,59 +277,70 @@ export default function FaturaDetailModal({
             </div>
           </div>
 
-          <div>
-            <label htmlFor="fdt_desc" className={labelBase}>
-              Descrição
-            </label>
-            <textarea
-              id="fdt_desc"
-              rows={2}
-              maxLength={250}
-              value={editData.description || ""}
-              onChange={(e) => handleFieldChange("description", e.target.value)}
-              className={`${inputBase} resize-none`}
-              placeholder="Descrição opcional"
+          {editData.type === "credit" && !is_recurring && (
+            <FloatLabelField
+              id="fdt_installments"
+              label="Total de parcelas"
+              type="number"
+              value={editData.total_installments || "1"}
+              onChange={(e) =>
+                handleFieldChange("total_installments", e.target.value)
+              }
+              helperText={
+                current_installment && Number(current_installment) > 1
+                  ? `Parcela atual: ${current_installment} de ${
+                      editData.total_installments || total_installments
+                    }`
+                  : "Altere o total caso tenha negociado um novo número de parcelas"
+              }
+              inputProps={{
+                min: String(Math.max(Number(current_installment) || 1, 1)),
+                max: "360",
+                step: "1",
+                inputMode: "numeric",
+              }}
             />
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="fdt_category" className={labelBase}>
-                Categoria
-              </label>
-              <select
-                id="fdt_category"
-                value={editData.category_id || ""}
-                onChange={(e) => handleFieldChange("category_id", e.target.value)}
-                className={inputBase}
-              >
-                <option value="">Sem categoria</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <FloatLabelField
+            id="fdt_desc"
+            as="textarea"
+            label="Descrição"
+            value={editData.description || ""}
+            onChange={(e) => handleFieldChange("description", e.target.value)}
+            inputProps={{ maxLength: 250 }}
+          />
 
-            <div>
-              <label htmlFor="fdt_bank" className={labelBase}>
-                Conta / Banco
-              </label>
-              <select
-                id="fdt_bank"
-                value={editData.bank_user_id || ""}
-                onChange={(e) => handleFieldChange("bank_user_id", e.target.value)}
-                className={inputBase}
-              >
-                <option value="">Sem conta vinculada</option>
-                {bankAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FloatLabelSelect
+              id="fdt_category"
+              label="Categoria"
+              value={editData.category_id || ""}
+              onChange={(e) => handleFieldChange("category_id", e.target.value)}
+            >
+              <option value="">Sem categoria</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </FloatLabelSelect>
+
+            <FloatLabelSelect
+              id="fdt_bank"
+              label="Conta / Banco"
+              value={editData.bank_user_id || ""}
+              onChange={(e) =>
+                handleFieldChange("bank_user_id", e.target.value)
+              }
+            >
+              <option value="">Sem conta vinculada</option>
+              {bankAccounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.name}
+                </option>
+              ))}
+            </FloatLabelSelect>
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/40 px-4 py-3">
@@ -367,18 +370,13 @@ export default function FaturaDetailModal({
           </div>
 
           {editData.status === "paid" && (
-            <div>
-              <label htmlFor="fdt_paid_date" className={labelBase}>
-                Data de pagamento
-              </label>
-              <input
-                id="fdt_paid_date"
-                type="date"
-                value={editData.paid_date || ""}
-                onChange={(e) => handleFieldChange("paid_date", e.target.value)}
-                className={inputBase}
-              />
-            </div>
+            <FloatLabelField
+              id="fdt_paid_date"
+              label="Data de pagamento"
+              type="date"
+              value={editData.paid_date || ""}
+              onChange={(e) => handleFieldChange("paid_date", e.target.value)}
+            />
           )}
 
           <div className="flex gap-2 pt-2 sm:hidden">
@@ -402,7 +400,6 @@ export default function FaturaDetailModal({
           </div>
         </div>
       ) : (
-        /* ── VIEW MODE ─────────────────────────────────────────────── */
         <div className="space-y-2 sm:space-y-3 md:space-y-4 text-base sm:text-lg text-gray-800 dark:text-gray-200">
           <div>
             <p className="text-[10px] sm:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">

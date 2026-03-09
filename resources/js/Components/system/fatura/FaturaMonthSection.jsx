@@ -16,7 +16,9 @@ export default function FaturaMonthSection({
   bankUserId = null,
   bankAccounts = [],
   debitAccounts = [],
+  categories = [],
   onPaid,
+  onUpdated,
   is_paid = false,
   due_day = null,
   closing_day = null,
@@ -168,6 +170,9 @@ export default function FaturaMonthSection({
         isOpen={!!selectedItem}
         onClose={() => setSelectedItem(null)}
         item={selectedItem}
+        bankAccounts={bankAccounts}
+        categories={categories}
+        onUpdated={onUpdated}
       />
     </section>
   );

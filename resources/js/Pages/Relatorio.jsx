@@ -18,6 +18,7 @@ import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer
 export default function Relatorio({ bankAccounts = [], categories = [], incomes = [], totalMonthlyIncome = 0 }) {
 	const [selectedBankId, setSelectedBankId] = useState("");
 	const [selectedCategoryId, setSelectedCategoryId] = useState("");
+	const [refreshTick, setRefreshTick] = useState(0);
 	const [stats, setStats] = useState({
 		total_income: 0,
 		total_expenses: 0,
@@ -152,7 +153,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		return () => {
 			isMounted = false;
 		};
-	}, [selectedBankId, selectedCategoryId]);
+	}, [selectedBankId, selectedCategoryId, refreshTick]);
 
 	const selectedPeriod = useMemo(
 		() => periodGroups.find((group) => group.key === selectedPeriodKey) || null,
@@ -359,6 +360,9 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 			isOpen={!!selectedTransaction}
 			onClose={() => setSelectedTransaction(null)}
 			item={selectedTransaction}
+			bankAccounts={bankAccounts}
+			categories={categories}
+			onUpdated={() => setRefreshTick((t) => t + 1)}
 		/>
 	</FadeInContainer>
 		</AuthenticatedLayout>
