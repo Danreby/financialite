@@ -15,12 +15,6 @@ use Google_Client;
 
 class GoogleAuthController extends Controller
 {
-    /**
-     * Authenticate or register a user using their Google ID token.
-     *
-     * Flow: React opens Google popup → gets credential (ID token) → POSTs here.
-     * No server-side redirect needed.
-     */
     public function handleToken(Request $request): JsonResponse
     {
         $request->validate([
@@ -56,21 +50,17 @@ class GoogleAuthController extends Controller
             ], 422);
         }
 
-        // 1) Look up by google_id first (fastest, most reliable)
         $user = User::where('google_id', $googleId)->first();
 
         if (!$user) {
-            // 2) Check if an account exists with this email
             $user = User::where('email', $email)->first();
 
             if ($user) {
-                // Link Google to existing account
                 $user->update([
                     'google_id' => $googleId,
                     'avatar' => $avatar ?: $user->avatar,
                 ]);
             } else {
-                // 3) Create brand new user
                 $user = User::create([
                     'name' => $name,
                     'email' => $email,
@@ -83,13 +73,11 @@ class GoogleAuthController extends Controller
                 event(new Registered($user));
             }
         } else {
-            // Update avatar on each login
             if ($avatar && $avatar !== $user->avatar) {
                 $user->update(['avatar' => $avatar]);
             }
         }
 
-        // Mark email as verified if coming from a verified Google account
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
@@ -104,9 +92,6 @@ class GoogleAuthController extends Controller
         ]);
     }
 
-    /**
-     * Link Google account to the currently authenticated user.
-     */
     public function linkAccount(Request $request): JsonResponse
     {
         $request->validate([
@@ -123,7 +108,6 @@ class GoogleAuthController extends Controller
 
         $googleId = $googleUser['sub'];
 
-        // Ensure this Google account isn't linked to another user
         $existingUser = User::where('google_id', $googleId)->first();
         if ($existingUser && $existingUser->id !== $request->user()->id) {
             return response()->json([
@@ -143,9 +127,6 @@ class GoogleAuthController extends Controller
         ]);
     }
 
-    /**
-     * Unlink Google account from the currently authenticated user.
-     */
     public function unlinkAccount(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -166,10 +147,6 @@ class GoogleAuthController extends Controller
         ]);
     }
 
-    /**
-     * Verify a Google ID token using the Google API Client library.
-     * Returns the token payload or null on failure.
-     */
     private function verifyGoogleToken(string $credential): ?array
     {
         try {
@@ -183,7 +160,6 @@ class GoogleAuthController extends Controller
                 return null;
             }
 
-            // Validate audience matches our client ID
             $expectedClientId = config('services.google.client_id');
             if (($payload['aud'] ?? '') !== $expectedClientId) {
                 return null;
