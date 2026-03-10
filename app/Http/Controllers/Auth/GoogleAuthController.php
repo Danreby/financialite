@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Google_Client;
+use Google\Client as GoogleClient;
 
 class GoogleAuthController extends Controller
 {
@@ -150,7 +150,7 @@ class GoogleAuthController extends Controller
     private function verifyGoogleToken(string $credential): ?array
     {
         try {
-            $client = new Google_Client([
+            $client = new GoogleClient([
                 'client_id' => config('services.google.client_id'),
             ]);
 

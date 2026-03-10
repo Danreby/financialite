@@ -150,6 +150,7 @@ class AnexoService
             throw new \RuntimeException('Arquivo não encontrado no disco.');
         }
 
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk($anexo->disk);
 
         return $disk->download(
@@ -168,6 +169,7 @@ class AnexoService
             throw new \RuntimeException('Arquivo não encontrado no disco.');
         }
 
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk($anexo->disk);
 
         return $disk->response(
@@ -182,6 +184,7 @@ class AnexoService
 
     public function getTemporaryUrl(Anexo $anexo, int $minutes = 5): ?string
     {
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk($anexo->disk);
 
         if (method_exists($disk, 'temporaryUrl')) {
