@@ -1,0 +1,143 @@
+import { useCallback, useRef, useState } from 'react';
+import axios from 'axios';
+import { router } from '@inertiajs/react';
+import { toast } from 'react-toastify';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GSI_SRC = 'https://accounts.google.com/gsi/client';
+
+let gsiLoadPromise = null;
+
+function loadGsi() {
+    if (gsiLoadPromise) return gsiLoadPromise;
+
+    gsiLoadPromise = new Promise((resolve, reject) => {
+        if (window.google?.accounts?.id) {
+            resolve();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = GSI_SRC;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => {
+            gsiLoadPromise = null;
+            reject(new Error('Falha ao carregar o Google Sign-In.'));
+        };
+        document.head.appendChild(script);
+    });
+
+    return gsiLoadPromise;
+}
+
+/**
+ * Hook for Google popup-based authentication.
+ *
+ * @param {'login'|'link'} mode - 'login' for auth pages, 'link' for settings
+ * @returns {{ triggerGoogleLogin, isLoading }}
+ */
+export default function useGoogleAuth(mode = 'login') {
+    const [isLoading, setIsLoading] = useState(false);
+    const initializedRef = useRef(false);
+
+    const triggerGoogleLogin = useCallback(async () => {
+        if (isLoading) return;
+        if (!GOOGLE_CLIENT_ID) {
+            toast.error('Google Client ID não configurado.');
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            await loadGsi();
+
+            const credential = await new Promise((resolve, reject) => {
+                if (!initializedRef.current) {
+                    window.google.accounts.id.initialize({
+                        client_id: GOOGLE_CLIENT_ID,
+                        callback: (response) => {
+                            if (response.credential) {
+                                resolve(response.credential);
+                            } else {
+                                reject(new Error('Nenhuma credencial recebida do Google.'));
+                            }
+                        },
+                        auto_select: false,
+                        cancel_on_tap_outside: true,
+                        ux_mode: 'popup',
+                    });
+                    initializedRef.current = true;
+                }
+
+                // Show the One Tap / popup prompt
+                window.google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed()) {
+                        // Fallback: if One Tap is not displayed, use the built-in button flow
+                        // This happens when user has dismissed One Tap or uses incognito
+                        const tempContainer = document.createElement('div');
+                        tempContainer.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
+                        document.body.appendChild(tempContainer);
+
+                        window.google.accounts.id.renderButton(tempContainer, {
+                            type: 'standard',
+                            size: 'large',
+                        });
+
+                        const btn = tempContainer.querySelector('[role="button"]') || tempContainer.querySelector('div[id^="gsi"]');
+                        if (btn) {
+                            btn.click();
+                        } else {
+                            document.body.removeChild(tempContainer);
+                            reject(new Error('Não foi possível abrir o popup do Google. Tente novamente.'));
+                        }
+
+                        // Cleanup after a delay
+                        setTimeout(() => {
+                            if (document.body.contains(tempContainer)) {
+                                document.body.removeChild(tempContainer);
+                            }
+                        }, 500);
+                    }
+
+                    if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
+                        reject(new Error('__cancelled__'));
+                    }
+                });
+            });
+
+            // Send credential to the backend
+            const endpoint = mode === 'link'
+                ? route('google.link')
+                : route('google.token');
+
+            const response = await axios.post(endpoint, { credential });
+
+            if (mode === 'login' && response.data?.redirect) {
+                toast.success('Login com Google realizado!');
+                router.visit(response.data.redirect);
+            } else if (mode === 'link') {
+                toast.success(response.data?.message || 'Conta Google vinculada!');
+                router.reload({ only: ['auth'] });
+            }
+        } catch (error) {
+            if (error?.message === '__cancelled__') {
+                // User cancelled — silent
+                setIsLoading(false);
+                return;
+            }
+
+            const msg = error?.response?.data?.message
+                || error?.message
+                || 'Erro ao conectar com o Google.';
+
+            toast.error(msg);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isLoading, mode]);
+
+    return { triggerGoogleLogin, isLoading };
+}
