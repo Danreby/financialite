@@ -21,6 +21,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone',
         'password',
         'theme',
+        'google_id',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -29,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at',
         'two_factor_secret',
         'two_factor_recovery_codes',
+        'google_id',
     ];
 
     protected function casts(): array
@@ -113,5 +116,15 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return $resource->user_id === $this->id;
+    }
+
+    public function hasGoogleLinked(): bool
+    {
+        return !empty($this->google_id);
+    }
+
+    public function hasPasswordSet(): bool
+    {
+        return !empty($this->password);
     }
 }

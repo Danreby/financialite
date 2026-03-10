@@ -7,18 +7,10 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Anexo>
- */
 class AnexoFactory extends Factory
 {
     protected $model = Anexo::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $extensions = ['jpg', 'png', 'pdf', 'xlsx', 'csv', 'txt'];
@@ -39,7 +31,7 @@ class AnexoFactory extends Factory
             'stored_name' => Str::uuid()->toString() . '.' . $extension,
             'mime_type' => $mimeTypes[$extension],
             'extension' => $extension,
-            'size' => $this->faker->numberBetween(1024, 5 * 1024 * 1024), // 1KB to 5MB
+            'size' => $this->faker->numberBetween(1024, 5 * 1024 * 1024),
             'disk' => 'anexos',
             'path' => 'users/' . $this->faker->numberBetween(1, 100) . '/' . date('Y') . '/' . date('m'),
             'hash' => hash('sha256', $this->faker->text(100)),
@@ -47,9 +39,6 @@ class AnexoFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the anexo is an image.
-     */
     public function image(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -60,9 +49,6 @@ class AnexoFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the anexo is a PDF.
-     */
     public function pdf(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -73,9 +59,6 @@ class AnexoFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the anexo is a spreadsheet.
-     */
     public function spreadsheet(): static
     {
         return $this->state(fn (array $attributes) => [

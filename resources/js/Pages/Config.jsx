@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import ProfileSettingsCard from '@/Components/system/settings/ProfileSettingsCard'
 import SecuritySettingsCard from '@/Components/system/settings/SecuritySettingsCard'
 import ThemeSettingsCard from '@/Components/system/settings/ThemeSettingsCard'
+import GoogleSettingsCard from '@/Components/system/settings/GoogleSettingsCard'
 
 export default function Config({ userTheme = 'rose' }) {
   const { auth } = usePage().props
@@ -51,6 +52,10 @@ export default function Config({ userTheme = 'rose' }) {
 
         <motion.div variants={itemVariants}>
           <SecuritySettingsCard itemVariants={itemVariants} />
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <GoogleSettingsCard itemVariants={itemVariants} />
         </motion.div>
       </motion.div>
     </AuthenticatedLayout>
