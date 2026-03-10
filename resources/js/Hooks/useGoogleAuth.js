@@ -117,7 +117,9 @@ export default function useGoogleAuth(mode = 'login') {
 
             if (mode === 'login' && response.data?.redirect) {
                 toast.success('Login com Google realizado!');
-                router.visit(response.data.redirect);
+                // Force a full page reload so React state from any previous user
+                // session is completely cleared before the new user's page loads.
+                window.location.href = response.data.redirect;
             } else if (mode === 'link') {
                 toast.success(response.data?.message || 'Conta Google vinculada!');
                 router.reload({ only: ['auth'] });

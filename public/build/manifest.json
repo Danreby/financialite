@@ -245,8 +245,8 @@
     "file": "assets/formatters-DEYZwcN3.js",
     "name": "formatters"
   },
-  "_useGoogleAuth-gcGBAAnM.js": {
-    "file": "assets/useGoogleAuth-gcGBAAnM.js",
+  "_useGoogleAuth-BNO3Yzcg.js": {
+    "file": "assets/useGoogleAuth-BNO3Yzcg.js",
     "name": "useGoogleAuth",
     "imports": [
       "_vendor-Bum7DDzb.js"
@@ -318,7 +318,7 @@
     ]
   },
   "resources/js/Pages/Auth/Login.jsx": {
-    "file": "assets/Login-C_Ruvyro.js",
+    "file": "assets/Login-BqBAdfAY.js",
     "name": "Login",
     "src": "resources/js/Pages/Auth/Login.jsx",
     "isDynamicEntry": true,
@@ -327,7 +327,7 @@
       "_GuestLayout-CVFXit6n.js",
       "_AuthCard-Cog-sQxW.js",
       "_FormField-Cst6UZQu.js",
-      "_useGoogleAuth-gcGBAAnM.js",
+      "_useGoogleAuth-BNO3Yzcg.js",
       "_PrimaryButton-BICv8GP1.js",
       "_EyeIcon-kJeKHlup.js",
       "_InputError-V0rfnkRb.js",
@@ -335,7 +335,7 @@
     ]
   },
   "resources/js/Pages/Auth/Register.jsx": {
-    "file": "assets/Register-DPkFqguS.js",
+    "file": "assets/Register-CqLcjKee.js",
     "name": "Register",
     "src": "resources/js/Pages/Auth/Register.jsx",
     "isDynamicEntry": true,
@@ -344,7 +344,7 @@
       "_GuestLayout-CVFXit6n.js",
       "_AuthCard-Cog-sQxW.js",
       "_FormField-Cst6UZQu.js",
-      "_useGoogleAuth-gcGBAAnM.js",
+      "_useGoogleAuth-BNO3Yzcg.js",
       "_PrimaryButton-BICv8GP1.js",
       "_EyeIcon-kJeKHlup.js",
       "_InputError-V0rfnkRb.js",
@@ -377,7 +377,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-CWS3uIwF.js",
+    "file": "assets/Bancos-DvfqDepL.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -449,7 +449,7 @@
     ]
   },
   "resources/js/Pages/Config.jsx": {
-    "file": "assets/Config-B8LP1wA7.js",
+    "file": "assets/Config-BN2a55P_.js",
     "name": "Config",
     "src": "resources/js/Pages/Config.jsx",
     "isDynamicEntry": true,
@@ -459,7 +459,7 @@
       "_PrimaryButton-BICv8GP1.js",
       "_FloatLabelField-ZRpwNGep.js",
       "_EyeIcon-kJeKHlup.js",
-      "_useGoogleAuth-gcGBAAnM.js",
+      "_useGoogleAuth-BNO3Yzcg.js",
       "_BareButton-CmrOlptx.js"
     ]
   },
@@ -702,7 +702,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-Bl_Cjna3.js",
+    "file": "assets/app-B-c0WkYi.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
