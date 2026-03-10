@@ -6,8 +6,10 @@ import GuestLayout from '@/Layouts/GuestLayout'
 import AuthCard from '@/Components/auth/AuthCard'
 import AuthHeader from '@/Components/auth/AuthHeader'
 import FormField from '@/Components/auth/FormField'
+import GoogleButton from '@/Components/auth/GoogleButton'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import EyeIcon from '@/Components/common/icons/EyeIcon'
+import useGoogleAuth from '@/Hooks/useGoogleAuth'
 
 const errorMessages = {
   'validation.unique': 'Este email já está cadastrado.',
@@ -33,6 +35,7 @@ export default function Register() {
 
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
+  const { triggerGoogleLogin, isLoading: googleLoading } = useGoogleAuth('login')
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
@@ -184,6 +187,23 @@ export default function Register() {
               </PrimaryButton>
             </div>
           </motion.form>
+
+          {/* Google OAuth divider */}
+          <div className="flex items-center gap-3 my-5 px-4">
+            <div className="flex-1 h-px bg-gray-700" />
+            <span className="text-xs text-gray-500 uppercase tracking-wider">ou</span>
+            <div className="flex-1 h-px bg-gray-700" />
+          </div>
+
+          {/* Google button */}
+          <div className="px-4">
+            <GoogleButton
+              onClick={triggerGoogleLogin}
+              isLoading={googleLoading}
+              label="Cadastrar com Google"
+              disabled={processing}
+            />
+          </div>
 
           <div className="mt-6 border-t border-gray-800 pt-4 text-center text-sm text-gray-400 pb-4">
             <span>Já tem conta? </span>
