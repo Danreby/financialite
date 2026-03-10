@@ -159,14 +159,12 @@ export default function Login({ status, canResetPassword }) {
             </div>
           </motion.form>
 
-          {/* Google OAuth divider */}
           <div className="flex items-center gap-3 my-5 px-4">
             <div className="flex-1 h-px bg-gray-700" />
             <span className="text-xs text-gray-500 uppercase tracking-wider">ou</span>
             <div className="flex-1 h-px bg-gray-700" />
           </div>
 
-          {/* Google button */}
           <div className="px-4">
             <GoogleButton
               onClick={triggerGoogleLogin}

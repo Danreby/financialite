@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -21,13 +22,16 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): SymfonyResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Use Inertia::location() to force a full page reload instead of a soft
+        // navigation. This clears all React state from any previous user session,
+        // ensuring the newly logged-in user always sees their own fresh data.
+        return Inertia::location(redirect()->intended(route('dashboard', absolute: false))->getTargetUrl());
     }
 
     public function destroy(Request $request): RedirectResponse
