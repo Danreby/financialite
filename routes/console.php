@@ -9,11 +9,11 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('notify:users')
-    ->dailyAt('09:12')
+    ->dailyAt('09:16')
     ->withoutOverlapping()
     ->runInBackground();
 
 Schedule::command('incomes:credit-to-bank')
-    ->dailyAt('09:12')
+    ->dailyAt('09:16')
     ->withoutOverlapping()
     ->runInBackground();
