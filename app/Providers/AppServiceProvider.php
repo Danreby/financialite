@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Mail\MailtrapTransport;
+use App\Models\Transacao;
+use App\Observers\TransacaoObserver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Vite;
@@ -31,5 +33,7 @@ class AppServiceProvider extends ServiceProvider
                 apiKey: config('services.mailtrap.api_key')
             );
         });
+
+        Transacao::observe(TransacaoObserver::class);
     }
 }
