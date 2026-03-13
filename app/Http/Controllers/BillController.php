@@ -31,11 +31,7 @@ class BillController extends Controller
 
         $user = $request->user();
 
-        $bills = Bill::forUser($user->id)
-            ->with(['category:id,name,color,icon'])
-            ->orderBy('due_day')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $bills = $this->buildBillList($user->id);
 
         return $this->success($bills);
     }
@@ -195,11 +191,7 @@ class BillController extends Controller
     {
         $user = $request->user();
 
-        $bills = Bill::forUser($user->id)
-            ->with(['category:id,name,color,icon'])
-            ->orderBy('due_day')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $bills = $this->buildBillList($user->id);
 
         $categories = Category::forUser($user->id)
             ->orderBy('name')
@@ -209,5 +201,97 @@ class BillController extends Controller
             'bills' => $bills,
             'categories' => $categories,
         ]);
+    }
+
+    private function buildBillList(int $userId): \Illuminate\Support\Collection
+    {
+        return Bill::forUser($userId)
+            ->with([
+                'category:id,name,color,icon',
+                'payments' => fn ($q) => $q->where('status', 'paid')->latest('due_date'),
+            ])
+            ->orderBy('due_day')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn ($bill) => $this->enrichBillWithPaymentInfo($bill))
+            ->values();
+    }
+
+    private function enrichBillWithPaymentInfo(Bill $bill): array
+    {
+        $data = $bill->toArray();
+        unset($data['payments']);
+
+        if ($bill->status !== 'active' || !$bill->due_day) {
+            $data['is_paid_this_period'] = false;
+            $data['next_due_date']       = null;
+            return $data;
+        }
+
+        $today             = Carbon::today();
+        $currentPeriodDue  = $this->getCurrentPeriodDueDate($bill, $today);
+
+        if (!$currentPeriodDue) {
+            $data['is_paid_this_period'] = false;
+            $data['next_due_date']       = null;
+            return $data;
+        }
+
+        $isPaid = $bill->relationLoaded('payments') && $bill->payments->contains(
+            fn ($p) => $p->status === 'paid' && Carbon::parse($p->due_date)->isSameDay($currentPeriodDue)
+        );
+
+        if ($isPaid) {
+            $nextDue = $this->getNextPeriodDueDate($bill, $currentPeriodDue);
+            $data['is_paid_this_period'] = true;
+            $data['next_due_date']       = $nextDue?->format('Y-m-d');
+        } else {
+            $data['is_paid_this_period'] = false;
+            $data['next_due_date']       = $currentPeriodDue->format('Y-m-d');
+        }
+
+        return $data;
+    }
+
+    private function getCurrentPeriodDueDate(Bill $bill, Carbon $today): ?Carbon
+    {
+        switch ($bill->recurrence_type) {
+            case 'monthly':
+                return $today->copy()->day(min($bill->due_day, $today->daysInMonth));
+
+            case 'yearly':
+                $startDate = $bill->start_date;
+                if (!$startDate) {
+                    return null;
+                }
+                $monthDays = $today->copy()->month($startDate->month)->daysInMonth;
+                $candidate = $today->copy()->month($startDate->month)->day(min($bill->due_day, $monthDays));
+                if ($candidate->gt($today->copy()->addMonths(6))) {
+                    $candidate->subYear();
+                }
+                return $candidate;
+
+            case 'none':
+                return $bill->start_date ? Carbon::parse($bill->start_date) : null;
+
+            default:
+                return null;
+        }
+    }
+
+    private function getNextPeriodDueDate(Bill $bill, Carbon $currentDue): ?Carbon
+    {
+        switch ($bill->recurrence_type) {
+            case 'monthly':
+                $next = $currentDue->copy()->addMonth();
+                return $next->day(min($bill->due_day, $next->daysInMonth));
+
+            case 'yearly':
+                $next = $currentDue->copy()->addYear();
+                return $next->day(min($bill->due_day, $next->daysInMonth));
+
+            default:
+                return null;
+        }
     }
 }

@@ -32,12 +32,6 @@ function loadGsi() {
     return gsiLoadPromise;
 }
 
-/**
- * Hook for Google popup-based authentication.
- *
- * @param {'login'|'link'} mode - 'login' for auth pages, 'link' for settings
- * @returns {{ triggerGoogleLogin, isLoading }}
- */
 export default function useGoogleAuth(mode = 'login') {
     const [isLoading, setIsLoading] = useState(false);
     const initializedRef = useRef(false);
@@ -72,11 +66,8 @@ export default function useGoogleAuth(mode = 'login') {
                     initializedRef.current = true;
                 }
 
-                // Show the One Tap / popup prompt
                 window.google.accounts.id.prompt((notification) => {
                     if (notification.isNotDisplayed()) {
-                        // Fallback: if One Tap is not displayed, use the built-in button flow
-                        // This happens when user has dismissed One Tap or uses incognito
                         const tempContainer = document.createElement('div');
                         tempContainer.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
                         document.body.appendChild(tempContainer);
@@ -94,7 +85,6 @@ export default function useGoogleAuth(mode = 'login') {
                             reject(new Error('Não foi possível abrir o popup do Google. Tente novamente.'));
                         }
 
-                        // Cleanup after a delay
                         setTimeout(() => {
                             if (document.body.contains(tempContainer)) {
                                 document.body.removeChild(tempContainer);
@@ -108,7 +98,6 @@ export default function useGoogleAuth(mode = 'login') {
                 });
             });
 
-            // Send credential to the backend
             const endpoint = mode === 'link'
                 ? route('google.link')
                 : route('google.token');
@@ -117,8 +106,6 @@ export default function useGoogleAuth(mode = 'login') {
 
             if (mode === 'login' && response.data?.redirect) {
                 toast.success('Login com Google realizado!');
-                // Force a full page reload so React state from any previous user
-                // session is completely cleared before the new user's page loads.
                 window.location.href = response.data.redirect;
             } else if (mode === 'link') {
                 toast.success(response.data?.message || 'Conta Google vinculada!');
@@ -126,7 +113,6 @@ export default function useGoogleAuth(mode = 'login') {
             }
         } catch (error) {
             if (error?.message === '__cancelled__') {
-                // User cancelled — silent
                 setIsLoading(false);
                 return;
             }

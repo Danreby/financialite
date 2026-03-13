@@ -26,7 +26,7 @@ class CheckUpcomingBillsCommand extends Command
         $oneDayFromNow = $today->copy()->addDay();
         $twoDaysFromNow = $today->copy()->addDays(2);
 
-        $bills = Bill::with('user')
+        $bills = Bill::with(['user', 'payments' => fn ($q) => $q->where('status', 'paid')->latest('due_date')])
             ->where('status', 'active')
             ->get();
 
@@ -36,8 +36,17 @@ class CheckUpcomingBillsCommand extends Command
 
         foreach ($bills as $bill) {
             $nextDueDate = $bill->getNextDueDate();
-            
+
             if (!$nextDueDate) {
+                continue;
+            }
+
+            // Skip if this period's due date was already paid
+            $alreadyPaid = $bill->payments->contains(
+                fn ($p) => Carbon::parse($p->due_date)->isSameDay($nextDueDate)
+            );
+
+            if ($alreadyPaid) {
                 continue;
             }
 

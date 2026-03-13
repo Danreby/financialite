@@ -47,8 +47,9 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 		let upcoming = 0;
 		active.forEach((b) => {
 			const info = getNextDueInfo(b);
-			if (info?.overdue) overdue++;
-			else if (info?.daysUntil !== undefined && info.daysUntil <= 7) upcoming++;
+			if (!info || info.paid) return;
+			if (info.overdue) overdue++;
+			else if (typeof info.daysUntil === 'number' && info.daysUntil <= 7) upcoming++;
 		});
 
 		return { total: bills.length, active: active.length, totalMonthly, overdue, upcoming };
@@ -90,17 +91,21 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 	};
 
 	const handlePay = (bill) => {
-		const now = new Date();
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
 
 		let dueDate;
-		if (bill.recurrence_type === 'monthly') {
-			const d = new Date(now.getFullYear(), now.getMonth(), bill.due_day);
-			if (d <= now) d.setMonth(d.getMonth() + 1);
+		if (bill.next_due_date) {
+			// Use server-computed due date for the current (unpaid) period
+			dueDate = bill.next_due_date;
+		} else if (bill.recurrence_type === 'monthly') {
+			// Fallback: compute current period's due day (do not advance past today)
+			const d = new Date(today.getFullYear(), today.getMonth(), bill.due_day);
 			dueDate = d.toISOString().split('T')[0];
 		} else if (bill.start_date) {
 			dueDate = bill.start_date;
 		} else {
-			dueDate = now.toISOString().split('T')[0];
+			dueDate = today.toISOString().split('T')[0];
 		}
 
 		setPayingBill({ ...bill, due_date: dueDate });

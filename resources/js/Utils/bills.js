@@ -11,28 +11,40 @@ export function formatDueDay(dueDay) {
 export function getNextDueInfo(bill) {
 	if (!bill.due_day || bill.status !== 'active') return null;
 
-	const now = new Date();
-	const today = now.getDate();
-	const currentMonth = now.getMonth();
-	const currentYear = now.getFullYear();
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
 
-	let dueDate = new Date(currentYear, currentMonth, bill.due_day);
-
-	if (dueDate < now && today > bill.due_day) {
-		const daysDiff = today - bill.due_day;
-		if (daysDiff <= 15) {
-			return { overdue: true, text: `Venceu há ${daysDiff} dia${daysDiff > 1 ? 's' : ''}`, daysUntil: -daysDiff };
-		}
-		dueDate = new Date(currentYear, currentMonth + 1, bill.due_day);
+	// Bill already paid for the current billing period
+	if (bill.is_paid_this_period) {
+		if (!bill.next_due_date) return { paid: true, text: 'Pago', daysUntil: null };
+		const nextDue = new Date(bill.next_due_date + 'T00:00:00');
+		const daysUntil = Math.round((nextDue - today) / (1000 * 60 * 60 * 24));
+		if (daysUntil <= 0) return { paid: true, text: 'Pago', daysUntil: 0 };
+		return {
+			paid: true,
+			text: `Pago · próx. ${daysUntil} dia${daysUntil !== 1 ? 's' : ''}`,
+			daysUntil,
+		};
 	}
 
-	const diffTime = dueDate.getTime() - now.getTime();
-	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	// Use server-computed next_due_date when available (may be in the past = overdue)
+	let dueDate;
+	if (bill.next_due_date) {
+		dueDate = new Date(bill.next_due_date + 'T00:00:00');
+	} else {
+		// Fallback: compute from due_day only (no payment info)
+		dueDate = new Date(today.getFullYear(), today.getMonth(), bill.due_day);
+		if (dueDate < today) {
+			dueDate = new Date(today.getFullYear(), today.getMonth() + 1, bill.due_day);
+		}
+	}
 
-	if (diffDays === 0) return { today: true, text: 'Vence hoje', daysUntil: 0, soon: true };
-	if (diffDays < 0) return { overdue: true, text: `Venceu há ${Math.abs(diffDays)} dia${Math.abs(diffDays) > 1 ? 's' : ''}`, daysUntil: diffDays };
-	if (diffDays <= 3) return { soon: true, text: `Vence em ${diffDays} dia${diffDays > 1 ? 's' : ''}`, daysUntil: diffDays };
-	if (diffDays <= 7) return { soon: true, text: `Vence em ${diffDays} dias`, daysUntil: diffDays };
+	const daysUntil = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
 
-	return { text: `Vence em ${diffDays} dias`, daysUntil: diffDays };
+	if (daysUntil < 0) return { overdue: true, text: `Venceu há ${Math.abs(daysUntil)} dia${Math.abs(daysUntil) !== 1 ? 's' : ''}`, daysUntil };
+	if (daysUntil === 0) return { today: true, soon: true, text: 'Vence hoje', daysUntil: 0 };
+	if (daysUntil <= 3) return { soon: true, text: `Vence em ${daysUntil} dia${daysUntil !== 1 ? 's' : ''}`, daysUntil };
+	if (daysUntil <= 7) return { soon: true, text: `Vence em ${daysUntil} dias`, daysUntil };
+
+	return { text: `Vence em ${daysUntil} dias`, daysUntil };
 }

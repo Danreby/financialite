@@ -101,9 +101,10 @@ class Bill extends Model
 
     private function getNextMonthlyDueDate(\Carbon\Carbon $now): \Carbon\Carbon
     {
-        $dueDate = $now->copy()->day(min($this->due_day, $now->daysInMonth));
-        
-        if ($dueDate->lte($now)) {
+        $today   = $now->copy()->startOfDay();
+        $dueDate = $today->copy()->day(min($this->due_day, $today->daysInMonth));
+
+        if ($dueDate->lt($today)) {
             $dueDate->addMonth()->day(min($this->due_day, $dueDate->daysInMonth));
         }
 
@@ -116,11 +117,15 @@ class Bill extends Model
 
     private function getNextYearlyDueDate(\Carbon\Carbon $now): \Carbon\Carbon
     {
+        $today      = $now->copy()->startOfDay();
         $startMonth = $this->start_date->month;
-        $dueDate = $now->copy()->month($startMonth)->day(min($this->due_day, $now->daysInMonth));
-        
-        if ($dueDate->lte($now)) {
-            $dueDate->addYear()->month($startMonth)->day(min($this->due_day, $dueDate->daysInMonth));
+        $monthDays  = $today->copy()->month($startMonth)->daysInMonth;
+        $dueDate    = $today->copy()->month($startMonth)->day(min($this->due_day, $monthDays));
+
+        if ($dueDate->lt($today)) {
+            $dueDate->addYear();
+            $monthDays = $dueDate->copy()->month($startMonth)->daysInMonth;
+            $dueDate->month($startMonth)->day(min($this->due_day, $monthDays));
         }
 
         if ($this->end_date && $dueDate->gt($this->end_date)) {

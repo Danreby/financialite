@@ -26,11 +26,13 @@ export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, savi
 			className={`group relative rounded-xl border bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:bg-gray-900/50 ${
 				bill.status === 'inactive'
 					? 'border-gray-200/50 opacity-60 dark:border-gray-800/50'
-					: dueInfo?.overdue
-						? 'border-red-200 dark:border-red-900/40'
-						: dueInfo?.today
-							? 'border-amber-200 dark:border-amber-900/40'
-							: 'border-gray-200/70 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700'
+					: dueInfo?.paid
+						? 'border-emerald-200 dark:border-emerald-900/40'
+						: dueInfo?.overdue
+							? 'border-red-200 dark:border-red-900/40'
+							: dueInfo?.today
+								? 'border-amber-200 dark:border-amber-900/40'
+								: 'border-gray-200/70 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700'
 			}`}
 		>
 			<div className="p-3 sm:p-4">
@@ -79,17 +81,22 @@ export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, savi
 
 						{dueInfo && bill.status === 'active' && (
 							<div className={`mt-1.5 inline-flex items-center gap-1 text-xs font-medium rounded-md px-2 py-0.5 ${
-								dueInfo.overdue
+							dueInfo.paid
+								? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+								: dueInfo.overdue
 									? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
 									: dueInfo.today
 										? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
 										: dueInfo.soon
 											? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
 											: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
-							}`}>
-								{dueInfo.overdue && (
-									<svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-										<path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+						}`}>
+							{dueInfo.paid && (
+								<svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+									<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+								</svg>
+							)}
+							{dueInfo.overdue && !dueInfo.paid && (
 									</svg>
 								)}
 								{dueInfo.text}
@@ -108,7 +115,7 @@ export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, savi
 					</div>
 
 					<div className="flex flex-col gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
-						{bill.status === 'active' && (
+					{bill.status === 'active' && !dueInfo?.paid && (
 							<button
 								type="button"
 								onClick={() => onPay(bill)}

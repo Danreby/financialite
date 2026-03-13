@@ -24,7 +24,6 @@ export default function VerifyEmail({ status }) {
                 className="w-full max-w-md mx-auto px-4"
             >
                 <AuthCard>
-                    {/* Ícone e título */}
                     <div className="text-center pt-2 pb-4">
                         <motion.div 
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -54,7 +53,6 @@ export default function VerifyEmail({ status }) {
                         </p>
                     </div>
 
-                    {/* Mensagem explicativa */}
                     <div className="px-4 mb-5">
                         <p className="text-sm text-gray-600 dark:text-gray-400 text-center leading-relaxed">
                             Obrigado por se cadastrar! Para acessar sua conta, clique no link 
@@ -63,7 +61,6 @@ export default function VerifyEmail({ status }) {
                         </p>
                     </div>
 
-                    {/* Status de sucesso */}
                     {status === 'verification-link-sent' && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
@@ -83,7 +80,6 @@ export default function VerifyEmail({ status }) {
                         </motion.div>
                     )}
 
-                    {/* Formulário e botões */}
                     <form onSubmit={submit} className="px-4">
                         <div className="flex flex-col gap-3">
                             <PrimaryButton
@@ -136,7 +132,6 @@ export default function VerifyEmail({ status }) {
                         </div>
                     </form>
 
-                    {/* Dica e link para login */}
                     <div className="mt-6 pt-5 mx-4 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex items-start gap-3 mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
                             <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
