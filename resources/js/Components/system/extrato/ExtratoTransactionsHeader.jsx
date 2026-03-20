@@ -1,10 +1,5 @@
 import React from 'react'
 
-/**
- * Header do card de transações com contador
- * Componente modular seguindo SRP (Single Responsibility Principle)
- * @param {number} count - Número de transações
- */
 export default function ExtratoTransactionsHeader({ count = 0 }) {
   return (
     <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/10 px-4 py-3">

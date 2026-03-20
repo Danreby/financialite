@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Head } from '@inertiajs/react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import ExtratoFilters from '@/Components/system/extrato/ExtratoFilters'
@@ -11,6 +11,7 @@ import ExtratoPeriodBadge from '@/Components/system/extrato/ExtratoPeriodBadge'
 import ExtratoQuickPeriod from '@/Components/system/extrato/ExtratoQuickPeriod'
 import ExtratoSpendingOverview from '@/Components/system/extrato/ExtratoSpendingOverview'
 import ExtratoCategoryBreakdown from '@/Components/system/extrato/ExtratoCategoryBreakdown'
+import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
 import { useExtratoData } from '@/Hooks/useExtratoData'
 
@@ -34,7 +35,10 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
     totalTransactions,
     updateFilters,
     resetFilters,
+    refetch,
   } = useExtratoData(initialFilters)
+
+  const [selectedTransaction, setSelectedTransaction] = useState(null)
 
   const hasActiveFilters = useMemo(() => {
     return Boolean(
@@ -151,11 +155,21 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
                 totalCount={totalTransactions}
                 onClearFilters={resetFilters}
                 hasActiveFilters={hasActiveFilters}
+                onSelectTransaction={setSelectedTransaction}
               />
             </FadeInItem>
           </>
         )}
       </FadeInContainer>
+
+      <FaturaDetailModal
+        isOpen={!!selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+        item={selectedTransaction}
+        bankAccounts={bankAccounts}
+        categories={categories}
+        onUpdated={() => { setSelectedTransaction(null); refetch(); }}
+      />
     </AuthenticatedLayout>
   )
 }
