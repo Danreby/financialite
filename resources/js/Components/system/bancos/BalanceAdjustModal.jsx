@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '@/Components/common/Modal';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
+import { useCurrencyInput } from '@/Hooks/useCurrencyInput';
 
 const formatCurrency = (value) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
@@ -35,16 +36,11 @@ function AnimatedBalance({ value, className = '' }) {
 
 export default function BalanceAdjustModal({ isOpen, onClose, account, onSuccess }) {
     const [mode, setMode] = useState('add');
-    const [rawAmount, setRawAmount] = useState('');
+    const { displayValue: rawAmount, numericValue: parsedAmount, handleChange: handleAmountChange, reset: resetAmount, setFromNumeric } = useCurrencyInput('');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
     const currentBalance = parseFloat(account?.balance ?? 0);
-
-    const parsedAmount = useMemo(() => {
-        const v = parseFloat(rawAmount.replace(',', '.'));
-        return Number.isNaN(v) || v < 0 ? 0 : v;
-    }, [rawAmount]);
 
     const newBalance = useMemo(() => {
         if (mode === 'add') return currentBalance + parsedAmount;
@@ -56,24 +52,16 @@ export default function BalanceAdjustModal({ isOpen, onClose, account, onSuccess
     useEffect(() => {
         if (isOpen) {
             setMode('add');
-            setRawAmount('');
+            resetAmount();
             setError('');
             setSaving(false);
         }
-    }, [isOpen]);
+    }, [isOpen, resetAmount]);
 
     const applyPreset = useCallback((amount) => {
-        setRawAmount(String(amount));
+        setFromNumeric(amount);
         setError('');
-    }, []);
-
-    const handleAmountChange = (e) => {
-        let v = e.target.value.replace(/[^0-9.,]/g, '');
-        const dotCount = (v.match(/\./g) || []).length + (v.match(/,/g) || []).length;
-        if (dotCount > 1) return;
-        setRawAmount(v);
-        setError('');
-    };
+    }, [setFromNumeric]);
 
     const handleModeSwitch = (next) => {
         setMode(next);

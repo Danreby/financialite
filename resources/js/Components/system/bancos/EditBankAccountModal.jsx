@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import Modal from '@/Components/common/Modal';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
+import { useCurrencyInput } from '@/Hooks/useCurrencyInput';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
 
 export default function EditBankAccountModal({ isOpen, onClose, account, onSuccess, saving: externalSaving }) {
-  const [balance, setBalance] = useState('');
+  const { displayValue: balance, numericValue: balanceNumeric, handleChange: handleBalanceChange, setFromNumeric: setBalanceFromNumeric } = useCurrencyInput('');
   const [internalSaving, setInternalSaving] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -14,7 +15,7 @@ export default function EditBankAccountModal({ isOpen, onClose, account, onSucce
 
   React.useEffect(() => {
     if (account && isOpen) {
-      setBalance(account.balance != null ? String(account.balance) : '');
+      setBalanceFromNumeric(account.balance != null ? parseFloat(account.balance) : 0);
       setErrors({});
     }
   }, [account, isOpen]);
@@ -35,7 +36,7 @@ export default function EditBankAccountModal({ isOpen, onClose, account, onSucce
     try {
       const { bankAccountService } = await import('@/Services/bankService');
       const data = await bankAccountService.update(account.id, {
-        balance: balance ? parseFloat(balance) : 0,
+        balance: balanceNumeric,
       });
 
       onSuccess?.(data);
@@ -76,13 +77,13 @@ export default function EditBankAccountModal({ isOpen, onClose, account, onSucce
             Novo Saldo
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">R$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">R$</span>
             <input
               id="edit_balance"
-              type="number"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               value={balance}
-              onChange={(e) => setBalance(e.target.value)}
+              onChange={handleBalanceChange}
               placeholder="0,00"
               className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-100 dark:placeholder-gray-500"
               autoFocus
