@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Google\Client as GoogleClient;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -125,5 +126,110 @@ class AuthController extends Controller
         $token = $user->createToken('mobile-app')->plainTextToken;
 
         return $this->success(['token' => $token]);
+    }
+
+    public function googleLogin(Request $request): JsonResponse
+    {
+        $request->validate([
+            'id_token' => ['required', 'string', 'max:4096'],
+        ]);
+
+        $key = 'google-login:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            return $this->error('Muitas tentativas. Tente novamente mais tarde.', 429);
+        }
+
+        RateLimiter::hit($key, 60);
+
+        $payload = $this->verifyGoogleIdToken($request->id_token);
+
+        if (!$payload) {
+            return $this->error('Token do Google inválido ou expirado.', 422);
+        }
+
+        $googleId = $payload['sub'];
+        $email = strtolower(trim($payload['email']));
+        $name = $payload['name'] ?? 'Usuário';
+        $avatar = $payload['picture'] ?? null;
+
+        if (empty($payload['email_verified'])) {
+            return $this->error('Seu e-mail do Google não está verificado.', 422);
+        }
+
+        $user = User::where('google_id', $googleId)->first();
+
+        if (!$user) {
+            $user = User::where('email', $email)->first();
+
+            if ($user) {
+                $user->update([
+                    'google_id' => $googleId,
+                    'avatar' => $avatar ?: $user->avatar,
+                ]);
+            } else {
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'google_id' => $googleId,
+                    'avatar' => $avatar,
+                    'password' => null,
+                    'email_verified_at' => now(),
+                ]);
+
+                event(new Registered($user));
+            }
+        } else {
+            if ($avatar && $avatar !== $user->avatar) {
+                $user->update(['avatar' => $avatar]);
+            }
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        $user->tokens()->where('name', 'mobile-app')->delete();
+        $token = $user->createToken('mobile-app')->plainTextToken;
+
+        RateLimiter::clear($key);
+
+        return $this->success([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'theme' => $user->theme,
+                'is_verified' => $user->hasVerifiedEmail(),
+                'avatar' => $user->avatar,
+                'google_id' => $user->google_id,
+            ],
+            'token' => $token,
+        ]);
+    }
+
+    private function verifyGoogleIdToken(string $idToken): ?array
+    {
+        try {
+            $client = new GoogleClient([
+                'client_id' => config('services.google.client_id'),
+            ]);
+
+            $payload = $client->verifyIdToken($idToken);
+
+            if (!$payload) {
+                return null;
+            }
+
+            if (($payload['aud'] ?? '') !== config('services.google.client_id')) {
+                return null;
+            }
+
+            return $payload;
+        } catch (\Exception $e) {
+            report($e);
+            return null;
+        }
     }
 }

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/google', [AuthController::class, 'googleLogin']);
 });
 
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(function () {
