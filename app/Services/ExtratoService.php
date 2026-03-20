@@ -115,6 +115,8 @@ class ExtratoService implements ExtratoServiceInterface
             'current_installment' => $t->current_installment,
             'created_at'          => $t->created_at?->toIso8601String(),
             'paid_date'           => $t->paid_date?->toIso8601String(),
+            'bank_user_id'        => $t->bank_user_id,
+            'category_id'         => $t->category_id,
             'bank_name'           => optional($t->bankUser?->card)->name,
             'category_name'       => optional($t->category)->name,
             'category_icon'       => optional($t->category)->icon,

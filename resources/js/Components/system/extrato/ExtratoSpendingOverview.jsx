@@ -52,7 +52,6 @@ export default function ExtratoSpendingOverview({ summary, transactions = [] }) 
         Visão geral do período
       </h3>
 
-      {/* Income vs Expense bar */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
@@ -84,7 +83,6 @@ export default function ExtratoSpendingOverview({ summary, transactions = [] }) 
         </div>
       </div>
 
-      {/* Stat pills grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         <StatPill
           label="Média diária"

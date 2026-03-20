@@ -48,7 +48,6 @@ export default function ExtratoFilters({
         )}
       </div>
 
-      {/* Filter inputs */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5 min-w-[140px] flex-1 sm:flex-none">
           <label

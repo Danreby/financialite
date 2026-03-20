@@ -1,11 +1,5 @@
 import React, { useMemo } from 'react'
 
-/**
- * Badge de status do período selecionado
- * Mostra insights sobre o período filtrado
- * @param {string} startDate - Data inicial (YYYY-MM-DD)
- * @param {string} endDate - Data final (YYYY-MM-DD)
- */
 export default function ExtratoPeriodBadge({ startDate, endDate }) {
   const periodInfo = useMemo(() => {
     if (!startDate || !endDate) return null
@@ -17,15 +11,12 @@ export default function ExtratoPeriodBadge({ startDate, endDate }) {
       return null
     }
 
-    // Calcula diferença em dias
     const diffTime = Math.abs(end - start)
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
 
-    // Formata datas
     const formatDate = (date) =>
       date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
 
-    // Determina tipo de período
     let periodType = 'custom'
     let label = `${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`
 
@@ -35,7 +26,6 @@ export default function ExtratoPeriodBadge({ startDate, endDate }) {
     const startMonth = start.getMonth()
     const startYear = start.getFullYear()
 
-    // Verifica se é o mês atual
     if (
       startMonth === currentMonth &&
       startYear === currentYear &&
@@ -46,7 +36,6 @@ export default function ExtratoPeriodBadge({ startDate, endDate }) {
       label = 'Mês atual'
     }
 
-    // Verifica se é o mês anterior
     const lastMonth = new Date(currentYear, currentMonth - 1, 1)
     if (
       startMonth === lastMonth.getMonth() &&
@@ -57,19 +46,16 @@ export default function ExtratoPeriodBadge({ startDate, endDate }) {
       label = 'Mês anterior'
     }
 
-    // Verifica se é hoje
     if (diffDays === 1 && start.toDateString() === now.toDateString()) {
       periodType = 'today'
       label = 'Hoje'
     }
 
-    // Verifica se é últimos 7 dias
     if (diffDays === 7) {
       periodType = '7-days'
       label = 'Últimos 7 dias'
     }
 
-    // Verifica se é últimos 30 dias
     if (diffDays === 30 || diffDays === 31) {
       periodType = '30-days'
       label = 'Últimos 30 dias'

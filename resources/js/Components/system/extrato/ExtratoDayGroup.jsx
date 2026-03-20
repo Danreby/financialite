@@ -3,19 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import ExtratoTransactionRow from './ExtratoTransactionRow'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
-/**
- * Grupo de transações por dia com collapse
- * Componente modular com estado interno para expansão/colapso
- * @param {Object} group - Grupo de transações do dia
- */
-export default function ExtratoDayGroup({ group }) {
+export default function ExtratoDayGroup({ group, onSelectTransaction }) {
   const { label, day_total, transactions = [] } = group
   const [isExpanded, setIsExpanded] = useState(true)
   const transactionCount = transactions.length
 
   return (
     <div className="space-y-0.5">
-      {/* Day Header - Clickable to collapse/expand */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -24,7 +18,6 @@ export default function ExtratoDayGroup({ group }) {
         aria-label={`${isExpanded ? 'Ocultar' : 'Mostrar'} transações de ${label}`}
       >
         <div className="flex items-center gap-2">
-          {/* Collapse icon */}
           <motion.svg
             animate={{ rotate: isExpanded ? 90 : 0 }}
             transition={{ duration: 0.2 }}
@@ -50,7 +43,6 @@ export default function ExtratoDayGroup({ group }) {
         </span>
       </button>
 
-      {/* Transactions List with animation */}
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
@@ -68,7 +60,7 @@ export default function ExtratoDayGroup({ group }) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.02 }}
                 >
-                  <ExtratoTransactionRow transaction={tx} />
+                  <ExtratoTransactionRow transaction={tx} onSelect={onSelectTransaction} />
                 </motion.div>
               ))}
             </div>

@@ -16,7 +16,7 @@ function formatTime(dateString) {
   return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function ExtratoTransactionRow({ transaction }) {
+export default function ExtratoTransactionRow({ transaction, onSelect }) {
   const {
     title,
     description,
@@ -60,7 +60,13 @@ export default function ExtratoTransactionRow({ transaction }) {
       : null
 
   return (
-    <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-gray-50/80 dark:hover:bg-gray-900/30 transition">
+    <div
+      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${onSelect ? 'cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-900/30 active:bg-gray-100 dark:active:bg-gray-800/50' : 'hover:bg-gray-50/80 dark:hover:bg-gray-900/30'}`}
+      onClick={() => onSelect?.(transaction)}
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onKeyDown={(e) => { if (onSelect && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect(transaction); } }}
+    >
       <div
         className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
       >

@@ -1,16 +1,9 @@
 import React from 'react'
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
 
-/**
- * Barra de ações rápidas do extrato
- * Componente modular para ações como exportar, imprimir, etc
- * @param {number} transactionCount - Número de transações
- * @param {Function} onExport - Callback para exportar (futuro)
- */
 export default function ExtratoActionsBar({ transactionCount = 0, onExport }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3 themed-card">
-      {/* Info */}
       <div className="flex items-center gap-2">
         <span className="text-lg">📊</span>
         <div>
@@ -25,10 +18,8 @@ export default function ExtratoActionsBar({ transactionCount = 0, onExport }) {
         </div>
       </div>
 
-      {/* Actions */}
       {transactionCount > 0 && (
         <div className="flex items-center gap-2">
-          {/* Export button (placeholder para futura implementação) */}
           <SecondaryButton
             onClick={onExport}
             disabled={!onExport}
