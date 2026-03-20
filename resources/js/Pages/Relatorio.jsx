@@ -11,6 +11,9 @@ import ReportsPeriodModal from "@/Components/system/reports/ReportsPeriodModal";
 import ReportsInsightsBar from "@/Components/system/reports/ReportsInsightsBar";
 import ReportsCategoryBreakdown from "@/Components/system/reports/ReportsCategoryBreakdown";
 import ReportsCardBreakdown from "@/Components/system/reports/ReportsCardBreakdown";
+import ReportsSpendingTrendChart from "@/Components/system/reports/ReportsSpendingTrendChart";
+import ReportsTopTransactions from "@/Components/system/reports/ReportsTopTransactions";
+import ReportsMonthComparison from "@/Components/system/reports/ReportsMonthComparison";
 import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
 import { formatCurrencyBRL } from "@/Lib/formatters";
 import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer";
@@ -18,6 +21,8 @@ import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer
 export default function Relatorio({ bankAccounts = [], categories = [], incomes = [], totalMonthlyIncome = 0 }) {
 	const [selectedBankId, setSelectedBankId] = useState("");
 	const [selectedCategoryId, setSelectedCategoryId] = useState("");
+	const [selectedYear, setSelectedYear] = useState("");
+	const [transactionSearch, setTransactionSearch] = useState("");
 	const [refreshTick, setRefreshTick] = useState(0);
 	const [stats, setStats] = useState({
 		total_income: 0,
@@ -160,24 +165,55 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		[periodGroups, selectedPeriodKey],
 	);
 
+	// Extract available years from all period data
+	const availableYears = useMemo(() => {
+		const years = new Set()
+		periodGroups.forEach((g) => {
+			const year = (g.key || '').slice(0, 4)
+			if (year) years.add(year)
+		})
+		return [...years].sort((a, b) => b.localeCompare(a))
+	}, [periodGroups])
+
+	// Year-filtered data used by all display components
+	const filteredPeriodGroups = useMemo(() => {
+		if (!selectedYear) return periodGroups
+		return periodGroups.filter((g) => (g.key || '').startsWith(selectedYear))
+	}, [periodGroups, selectedYear])
+
+	const filteredMonthlySummary = useMemo(() => {
+		if (!selectedYear) return monthlySummary
+		return monthlySummary.filter((m) => (m.year_month || '').startsWith(selectedYear))
+	}, [monthlySummary, selectedYear])
+
+	const filteredAllTransactions = useMemo(() => {
+		if (!selectedYear && !transactionSearch) return allTransactions
+		return allTransactions.filter((tx) => {
+			const yearMatch = !selectedYear || (tx.invoice_month || tx.year_month || '').startsWith(selectedYear)
+			const searchMatch = !transactionSearch || (tx.title || '').toLowerCase().includes(transactionSearch.toLowerCase())
+			return yearMatch && searchMatch
+		})
+	}, [allTransactions, selectedYear, transactionSearch])
+
 	const insights = useMemo(() => {
-		const totalAmount = periodGroups.reduce((sum, group) => sum + (group.total_amount || 0), 0);
-		const totalCount = periodGroups.reduce(
+		const groups = filteredPeriodGroups
+		const totalAmount = groups.reduce((sum, group) => sum + (group.total_amount || 0), 0);
+		const totalCount = groups.reduce(
 			(sum, group) => sum + (Array.isArray(group.transactions) ? group.transactions.length : 0),
 			0,
 		);
 		const averageTicket = totalCount > 0 ? totalAmount / totalCount : 0;
-		const topExpense = [...periodGroups].sort((a, b) => (b.total_amount || 0) - (a.total_amount || 0))[0];
+		const topExpense = [...groups].sort((a, b) => (b.total_amount || 0) - (a.total_amount || 0))[0];
 
 		// Use monthly average expense vs declared monthly income for a meaningful savings rate
-		const periodCount = Math.max(periodGroups.length, 1);
+		const periodCount = Math.max(groups.length, 1);
 		const avgMonthlyExpense = totalAmount / periodCount;
 		const savingsRate = totalMonthlyIncome > 0
 			? ((totalMonthlyIncome - avgMonthlyExpense) / totalMonthlyIncome) * 100
 			: 0;
 
-		const monthlyAvg = periodGroups.length > 0
-			? totalAmount / periodGroups.length
+		const monthlyAvg = groups.length > 0
+			? totalAmount / groups.length
 			: 0;
 
 		return {
@@ -189,10 +225,10 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 			monthlyAvg,
 			totalTransactions: totalCount,
 		};
-	}, [periodGroups, stats.total_expenses, stats.total_income, totalMonthlyIncome]);
+	}, [filteredPeriodGroups, stats.total_expenses, stats.total_income, totalMonthlyIncome]);
 
 	const handleOpenPeriodModal = (key) => {
-		const resolved = key || selectedPeriodKey || periodGroups[periodGroups.length - 1]?.key || "";
+		const resolved = key || selectedPeriodKey || filteredPeriodGroups[filteredPeriodGroups.length - 1]?.key || "";
 		if (!resolved) return;
 		setSelectedPeriodKey(resolved);
 		setIsPeriodModalOpen(true);
@@ -223,63 +259,127 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				</FadeInItem>
 
 				<FadeInItem type="subtle"><section className="rounded-2xl p-3 shadow-md themed-card sm:p-3 lg:p-4 space-y-3">
-					<div className="flex flex-col gap-2 text-xs sm:text-sm sm:flex-row sm:items-center sm:justify-between">
-						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-							<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
-								<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
-									💳 Cartão
-								</label>
-								<select
-									value={selectedBankId}
-									onChange={(e) => setSelectedBankId(e.target.value)}
-									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
-									aria-label="Filtrar por cartão"
-								>
-									<option value="">Todos os cartões</option>
-									{bankAccounts.map((account) => (
-										<option key={account.id} value={account.id}>
-											{account.name}
-										</option>
-									))}
-								</select>
-							</div>
+				<div className="flex flex-col gap-2 text-xs sm:text-sm">
+					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap sm:gap-2">
+						{/* Card filter */}
+						<div className="flex w-full flex-col gap-1 sm:w-auto">
+							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
+								💳 Cartão
+							</label>
+							<select
+								value={selectedBankId}
+								onChange={(e) => setSelectedBankId(e.target.value)}
+								className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[180px]"
+								aria-label="Filtrar por cartão"
+							>
+								<option value="">Todos os cartões</option>
+								{bankAccounts.map((account) => (
+									<option key={account.id} value={account.id}>
+										{account.name}
+									</option>
+								))}
+							</select>
+						</div>
 
-							<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
-								<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
-									📂 Categoria
-								</label>
-								<select
-									value={selectedCategoryId}
-									onChange={(e) => setSelectedCategoryId(e.target.value)}
-									className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[200px]"
-									aria-label="Filtrar por categoria"
-								>
-									<option value="">Todas as categorias</option>
-									{categories.map((category) => (
-										<option key={category.id} value={category.id}>
-											{category.name}
-										</option>
-									))}
-								</select>
+						{/* Category filter */}
+						<div className="flex w-full flex-col gap-1 sm:w-auto">
+							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
+								📂 Categoria
+							</label>
+							<select
+								value={selectedCategoryId}
+								onChange={(e) => setSelectedCategoryId(e.target.value)}
+								className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[180px]"
+								aria-label="Filtrar por categoria"
+							>
+								<option value="">Todas as categorias</option>
+								{categories.map((category) => (
+									<option key={category.id} value={category.id}>
+										{category.name}
+									</option>
+								))}
+							</select>
+						</div>
+
+						{/* Year filter */}
+						<div className="flex w-full flex-col gap-1 sm:w-auto">
+							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
+								📅 Ano
+							</label>
+							<select
+								value={selectedYear}
+								onChange={(e) => setSelectedYear(e.target.value)}
+								disabled={availableYears.length === 0}
+								className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:min-w-[130px]"
+								aria-label="Filtrar por ano"
+							>
+								<option value="">Todos os anos</option>
+								{availableYears.map((year) => (
+									<option key={year} value={year}>{year}</option>
+								))}
+							</select>
+						</div>
+
+						{/* Search */}
+						<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-1 sm:max-w-xs">
+							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
+								🔍 Buscar transação
+							</label>
+							<div className="relative">
+								<svg className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+									<path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+								</svg>
+								<input
+									type="text"
+									value={transactionSearch}
+									onChange={(e) => setTransactionSearch(e.target.value)}
+									placeholder="Buscar por título..."
+									className="w-full rounded-lg border border-gray-300 bg-white pl-8 pr-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 dark:placeholder-gray-500"
+									aria-label="Buscar transação"
+								/>
+								{transactionSearch && (
+									<button
+										type="button"
+										onClick={() => setTransactionSearch('')}
+										className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										aria-label="Limpar busca"
+									>
+										<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+											<path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+										</svg>
+									</button>
+								)}
 							</div>
 						</div>
 
-						<div className="flex justify-end w-full sm:w-auto">
-							<ReportExportButtons
-								filters={{
-									bank_user_id: selectedBankId || undefined,
-									category_id: selectedCategoryId || undefined,
-								}}
-							/>
-						</div>
+						{/* Clear filters */}
+						{(selectedBankId || selectedCategoryId || selectedYear || transactionSearch) && (
+							<button
+								type="button"
+								onClick={() => { setSelectedBankId(''); setSelectedCategoryId(''); setSelectedYear(''); setTransactionSearch(''); }}
+								className="flex-shrink-0 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+							>
+								Limpar filtros
+							</button>
+						)}
 					</div>
-				</section>
-			</FadeInItem>
+
+					<div className="flex justify-end w-full">
+						<ReportExportButtons
+							filters={{
+								bank_user_id: selectedBankId || undefined,
+								category_id: selectedCategoryId || undefined,
+							}}
+						/>
+					</div>
+				</div>
+			</section>
+		</FadeInItem>
 
 			<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
 				<FadeInItem type="feature">
 					<ReportsPeriodSelector
-						periods={periodGroups}
+						periods={filteredPeriodGroups}
 						selectedKey={selectedPeriodKey}
 						onChange={setSelectedPeriodKey}
 						onOpen={handleOpenPeriodModal}
@@ -322,15 +422,38 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 			</FadeInContainer>
 
 			{/* Category & Card Breakdowns */}
-			{!isLoading && allTransactions.length > 0 && (
+			{!isLoading && filteredAllTransactions.length > 0 && (
 				<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
 					<FadeInItem type="feature">
-						<ReportsCategoryBreakdown transactions={allTransactions} />
+						<ReportsCategoryBreakdown transactions={filteredAllTransactions} />
 					</FadeInItem>
 					<FadeInItem type="feature">
-						<ReportsCardBreakdown transactions={allTransactions} />
+						<ReportsCardBreakdown transactions={filteredAllTransactions} />
 					</FadeInItem>
 				</FadeInContainer>
+			)}
+
+			{/* Spending trend chart + top transactions */}
+			{!isLoading && filteredAllTransactions.length > 0 && (
+				<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+					<FadeInItem type="feature">
+						<ReportsSpendingTrendChart monthlySummary={filteredMonthlySummary} />
+					</FadeInItem>
+					<FadeInItem type="feature">
+						<ReportsTopTransactions
+							transactions={filteredAllTransactions}
+							onSelect={handleSelectTransaction}
+							limit={8}
+						/>
+					</FadeInItem>
+				</FadeInContainer>
+			)}
+
+			{/* Month over month comparison */}
+			{!isLoading && filteredMonthlySummary.length >= 2 && (
+				<FadeInItem type="feature">
+					<ReportsMonthComparison monthlySummary={filteredMonthlySummary} />
+				</FadeInItem>
 			)}
 
 			<FadeInItem type="subtle">
@@ -345,7 +468,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							</span>
 						)}
 					</div>
-					<ReportsMonthlySummary items={monthlySummary} onSelectPeriod={handleOpenPeriodModal} />
+					<ReportsMonthlySummary items={filteredMonthlySummary} onSelectPeriod={handleOpenPeriodModal} />
 				</section>
 			</FadeInItem>
 
