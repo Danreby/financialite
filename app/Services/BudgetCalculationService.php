@@ -48,7 +48,7 @@ class BudgetCalculationService
 
         $paidByMonth = Fatura::where('user_id', $user->id)
             ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
-            ->pluck('total_paid', 'month_key');
+            ->get()->keyBy('month_key');
 
         $monthlyGroups = $this->billing->groupFaturasByMonth($allCreditTransactions, $paidByMonth);
         $currentMonthKey = $this->billing->resolveCurrentBillingMonthKey($selectedBankUser);
