@@ -51,7 +51,7 @@ class FaturaPaymentService
                     'bank_user_id' => $bankUserId,
                 ]);
 
-                $paid->total_paid = ($paid->total_paid ?? 0) + $totalPaidThisRun;
+                $paid->total_paid = $totalPaidThisRun;
                 $paid->paid_at = now();
                 $paid->save();
 
@@ -62,6 +62,71 @@ class FaturaPaymentService
             }
 
             return (float) $totalPaidThisRun;
+        });
+    }
+    public function payPartialForUser(
+        Authenticatable $user,
+        string $monthKey,
+        float $amount,
+        ?CardUser $cardUser,
+        ?BankUser $bankAccount = null
+    ): array {
+        $bankUserId = $cardUser?->id;
+
+        $targetMonth = now()->createFromFormat('Y-m', $monthKey)->startOfMonth();
+
+        $allTransacoes = Transacao::with('bankUser')
+            ->forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->get();
+
+        $totalDue = 0.0;
+        foreach ($allTransacoes as $transacao) {
+            if ($this->billing->faturaAppliesToMonth($transacao, $targetMonth)) {
+                $installments = max((int) ($transacao->total_installments ?? 1), 1);
+                $totalDue += (float) $transacao->amount / $installments;
+            }
+        }
+
+        if ($totalDue <= 0) {
+            throw new \DomainException('Nenhuma transação encontrada para este mês.');
+        }
+
+        return DB::transaction(function () use ($user, $bankUserId, $monthKey, $amount, $bankAccount, $totalDue) {
+            $faturaRecord = Fatura::firstOrNew([
+                'user_id'      => $user->id,
+                'month_key'    => $monthKey,
+                'bank_user_id' => $bankUserId,
+            ]);
+
+            $alreadyPaid = (float) ($faturaRecord->total_paid ?? 0);
+            $remaining   = max(0.0, $totalDue - $alreadyPaid);
+
+            if ($remaining <= 0) {
+                throw new \DomainException('Esta fatura já foi totalmente paga.');
+            }
+
+            $payAmount = min($amount, $remaining);
+
+            $faturaRecord->total_paid = $alreadyPaid + $payAmount;
+
+            if ($faturaRecord->total_paid >= $totalDue) {
+                $faturaRecord->paid_at = now();
+            }
+
+            $faturaRecord->save();
+
+            if ($bankAccount) {
+                $bankAccount->balance = max(0.0, (float) $bankAccount->balance - $payAmount);
+                $bankAccount->save();
+            }
+
+            return [
+                'total_paid'      => (float) $faturaRecord->total_paid,
+                'total_due'       => $totalDue,
+                'amount_paid_now' => $payAmount,
+                'is_fully_paid'   => $faturaRecord->paid_at !== null,
+            ];
         });
     }
 }

@@ -335,7 +335,7 @@ class FaturaDashboardService
             $months[] = [
                 'month_key' => $monthKey,
                 'month_label' => ucfirst($carbon->translatedFormat('M Y')),
-                'invoice_total' => (float) $paidByMonth->get($monthKey, 0.0),
+                'invoice_total' => (float) ($paidByMonth->get($monthKey)?->total_paid ?? 0.0),
                 'debit_total' => (float) $debitByMonth->get($monthKey, 0.0),
             ];
 
@@ -470,7 +470,7 @@ class FaturaDashboardService
         ];
     }
 
-    private function paidByMonthForUser(int $userId, ?int $bankUserId = null, bool $shouldFilterByBankUser = false)
+    private function paidByMonthForUser(int $userId, ?int $bankUserId = null, bool $shouldFilterByBankUser = false): \Illuminate\Support\Collection
     {
         $query = Fatura::where('user_id', $userId);
 
@@ -480,7 +480,7 @@ class FaturaDashboardService
             $query->whereNull('bank_user_id');
         }
 
-        return $query->pluck('total_paid', 'month_key');
+        return $query->get()->keyBy('month_key');
     }
 
     private function aggregateCategorySpending($rows): array

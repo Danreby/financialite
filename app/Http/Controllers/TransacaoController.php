@@ -16,6 +16,7 @@ use App\Services\DashboardInsightsService;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
 use App\Http\Requests\Fatura\FaturaUpdateRequest;
 use App\Http\Requests\Fatura\PayMonthRequest;
+use App\Http\Requests\Fatura\PayPartialRequest;
 use App\Http\Requests\Fatura\FaturaImportRequest;
 use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use Illuminate\Http\Request;
@@ -251,6 +252,58 @@ class TransacaoController extends Controller
             $this->notifications->error($user, 'Erro ao registrar pagamentos', 'Ocorreu um erro inesperado ao registrar os pagamentos do mês.');
 
             return $this->serverError('Erro ao registrar pagamentos do mês.');
+        }
+    }
+
+    public function payPartial(PayPartialRequest $request): JsonResponse
+    {
+        $this->authorize('update', Transacao::class);
+
+        $user = $request->user();
+        $data = $request->validated();
+        $bankUserId = $data['bank_user_id'] ?? null;
+        $bankUser = null;
+
+        if ($bankUserId) {
+            $bankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
+            $this->authorize('view', $bankUser);
+        }
+
+        $bankAccount = null;
+        if (!empty($data['bank_account_id'])) {
+            $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
+        }
+
+        try {
+            $result = $this->paymentService->payPartialForUser(
+                $user,
+                $data['month'],
+                (float) $data['amount'],
+                $bankUser,
+                $bankAccount
+            );
+
+            $formattedAmount = number_format($result['amount_paid_now'], 2, ',', '.');
+            $this->notifications->info(
+                $user,
+                'Pagamento parcial registrado',
+                "Pagamento de R$ {$formattedAmount} registrado para {$data['month']}."
+            );
+
+            return $this->success([
+                'message'         => 'Pagamento parcial registrado com sucesso.',
+                'total_paid'      => $result['total_paid'],
+                'total_due'       => $result['total_due'],
+                'amount_paid_now' => $result['amount_paid_now'],
+                'is_fully_paid'   => $result['is_fully_paid'],
+            ]);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->notifications->error($user, 'Erro ao registrar pagamento', 'Ocorreu um erro ao registrar o pagamento parcial.');
+
+            return $this->serverError('Erro ao registrar pagamento parcial.');
         }
     }
 

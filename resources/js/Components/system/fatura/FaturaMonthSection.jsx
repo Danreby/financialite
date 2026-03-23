@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import FaturaItemRow from "@/Components/system/fatura/FaturaItemRow";
 import FaturaPayModal from "@/Components/system/fatura/FaturaPayModal";
+import FaturaPaymentSummaryCard from "@/Components/system/fatura/FaturaPaymentSummaryCard";
 import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
-import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import ScrollArea from "@/Components/common/ScrollArea";
 import BareButton from "@/Components/common/buttons/BareButton";
 import Tooltip from "@/Components/common/Tooltip";
@@ -11,6 +11,7 @@ import { formatCurrency } from "@/Lib/formatters";
 export default function FaturaMonthSection({
   month_label,
   total_spent,
+  total_paid = 0,
   items = [],
   month_key,
   bankUserId = null,
@@ -20,13 +21,15 @@ export default function FaturaMonthSection({
   onPaid,
   onUpdated,
   is_paid = false,
+  is_partially_paid = false,
   due_day = null,
   closing_day = null,
   isCurrentPending = false,
 }) {
   const [showPayModal, setShowPayModal] = useState(false);
-  const [sortField, setSortField] = useState("date"); 
-  const [sortDirection, setSortDirection] = useState("desc"); 
+  const [payModalInitialMode, setPayModalInitialMode] = useState("full");
+  const [sortField, setSortField] = useState("date");
+  const [sortDirection, setSortDirection] = useState("desc");
   const [selectedItem, setSelectedItem] = useState(null);
 
   const sortedItems = useMemo(() => {
@@ -55,37 +58,44 @@ export default function FaturaMonthSection({
 
   return (
 	<section className="space-y-3 sm:space-y-4 lg:space-y-5 2xl:space-y-5">
-      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex-1 flex justify-start items-center gap-3 sm:gap-4">
-          <div className="inline-flex flex-col items-start px-4 py-2">
-            {closing_day && (
-              <p className="mt-0.5 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
-                Fechamento: todo dia <span className="font-semibold">{closing_day}</span>
-              </p>
-            )}
-            {due_day && (
-						<p className="mt-0.5 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
-                Vencimento: todo dia <span className="font-semibold">{due_day}</span>
-              </p>
-            )}
-					<p className="mt-1 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
-              Total de despesas do mês{}:
-              <span className="ml-1 font-semibold themed-amount">
-                {formatCurrency(total_spent)}
-              </span>
-            </p>
-          </div>
+      {/* Closing / due day info strip */}
+      {(closing_day || due_day || total_spent > 0) && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+          {closing_day && (
+            <span>
+              Fechamento: todo dia <span className="font-semibold">{closing_day}</span>
+            </span>
+          )}
+          {due_day && (
+            <span>
+              Vencimento: todo dia <span className="font-semibold">{due_day}</span>
+            </span>
+          )}
+          {total_spent > 0 && (
+            <span>
+              Total de despesas:{" "}
+              <span className="font-semibold themed-amount">{formatCurrency(total_spent)}</span>
+            </span>
+          )}
         </div>
-        {isCurrentPending && (
-          <PrimaryButton
-            type="button"
-            onClick={() => setShowPayModal(true)}
-            className="shrink-0 rounded-full px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-wide focus:ring-theme-accent focus:ring-offset-2 dark:ring-offset-[#050505] w-full sm:w-auto"
-          >
-            Pagar
-          </PrimaryButton>
-        )}
-      </div>
+      )}
+
+      <FaturaPaymentSummaryCard
+        monthLabel={month_label}
+        totalSpent={total_spent}
+        totalPaid={total_paid}
+        isPaid={is_paid}
+        isPartiallyPaid={is_partially_paid}
+        isCurrentPending={isCurrentPending}
+        onPayFull={() => {
+          setPayModalInitialMode("full");
+          setShowPayModal(true);
+        }}
+        onPayPartial={() => {
+          setPayModalInitialMode("partial");
+          setShowPayModal(true);
+        }}
+      />
 
       <div className="rounded-2xl bg-white themed-card px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-gray-500 dark:shadow-gray-900 dark:bg-[#080808]">
         {items.length === 0 ? (
@@ -94,7 +104,6 @@ export default function FaturaMonthSection({
           </p>
         ) : (
           <>
-            {/* estudar essa linha */}
 						<div className="flex items-center justify-between px-3 pt-3 pb-2 text-[11px] sm:text-xs lg:text-sm 2xl:text-sm text-gray-500 dark:text-gray-400">
               <span className="font-semibold uppercase tracking-wide">Ordenar</span>
               <div className="flex items-center gap-2">
@@ -161,10 +170,13 @@ export default function FaturaMonthSection({
         monthKey={month_key}
         monthLabel={month_label}
         items={items}
+        totalSpent={total_spent}
+        totalPaid={total_paid}
         bankUserId={bankUserId}
         bankAccounts={bankAccounts}
         debitAccounts={debitAccounts}
         onPaid={onPaid}
+        initialMode={payModalInitialMode}
       />
       <FaturaDetailModal
         isOpen={!!selectedItem}

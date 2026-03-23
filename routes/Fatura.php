@@ -25,6 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 		Route::post('/pay-month', [TransacaoController::class, 'payMonth'])
 			->middleware('action.limit:pay_month,10')
 			->name('pay_month');
+		Route::post('/pay-partial', [TransacaoController::class, 'payPartial'])
+			->middleware('action.limit:pay_partial,10')
+			->name('pay_partial');
 		Route::post('/{id}/restore', [TransacaoController::class, 'restore'])
 			->middleware('action.limit:restore,20')
 			->name('restore');

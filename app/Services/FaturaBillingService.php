@@ -185,13 +185,18 @@ class FaturaBillingService
                 $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
                 return (float) $transacao->amount / $totalInstallments;
             });
-            $isPaid = $paidByMonth ? $paidByMonth->has($yearMonth) : false;
+
+            $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
+            $isPaid = $faturaPayment && $faturaPayment->paid_at !== null;
+            $totalPaid = $faturaPayment ? (float) ($faturaPayment->total_paid ?? 0.0) : 0.0;
 
             return [
-                'month_key' => $yearMonth,
-                'month_label' => $label,
-                'total_spent' => (float) $totalSpent,
-                'is_paid' => $isPaid,
+                'month_key'          => $yearMonth,
+                'month_label'        => $label,
+                'total_spent'        => (float) $totalSpent,
+                'total_paid'         => $totalPaid,
+                'is_paid'            => $isPaid,
+                'is_partially_paid'  => !$isPaid && $totalPaid > 0,
                 'items' => $items->map(function ($entry) {
                     $fatura = $entry['transacao'];
                     $installmentIndex = $entry['installment_index'];

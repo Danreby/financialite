@@ -7,6 +7,7 @@ import { formatCurrency } from "@/Lib/formatters";
 export default function FaturaMonthCarousel({
   months = [],
   total_spent,
+  total_paid = 0,
   selectedMonthKey,
   onChangeMonth,
 }) {
@@ -49,6 +50,12 @@ export default function FaturaMonthCarousel({
   const next = months[effectiveIndex + 1] || null;
 
   const isPaid = current?.is_paid;
+  const isPartiallyPaid = current?.is_partially_paid;
+  const currentTotalPaid = current?.total_paid ?? total_paid ?? 0;
+  const currentTotalSpent = current?.total_spent ?? total_spent ?? 0;
+
+  const partialProgressPercent =
+    currentTotalSpent > 0 ? Math.round(Math.min(currentTotalPaid / currentTotalSpent, 1) * 100) : 0;
 
   const canPrev = !!prev;
   const canNext = !!next;
@@ -126,12 +133,16 @@ export default function FaturaMonthCarousel({
             className={`inline-flex flex-col items-center rounded-full px-4 py-2 sm:px-6 sm:py-2 lg:px-8 lg:py-3 2xl:px-8 2xl:py-3 shadow-sm ring-1 bg-gradient-to-r dark:bg-gradient-to-r ${
               isPaid
                 ? "from-emerald-50 via-white to-emerald-50 ring-emerald-200 dark:from-[#052e26] dark:via-[#050505] dark:to-[#052e26] dark:ring-emerald-900/50"
+                : isPartiallyPaid
+                ? "from-amber-50 via-white to-amber-50 ring-amber-200 dark:from-[#2e2200] dark:via-[#0b0b0b] dark:to-[#2e2200] dark:ring-amber-900/40"
                 : "themed-carousel-unpaid from-[var(--theme-accentLight)] via-white to-[var(--theme-accentLight)] ring-theme-accent/20 dark:via-[#0b0b0b] dark:ring-theme-accent/15"
             }`}
           >
             {isPaid ? (
-              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                Paga
+              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Paga</span>
+            ) : isPartiallyPaid ? (
+              <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                {partialProgressPercent}% pago
               </span>
             ) : (
               <div />
@@ -140,14 +151,27 @@ export default function FaturaMonthCarousel({
 					className={`mt-1 text-lg sm:text-xl md:text-2xl lg:text-3xl 2xl:text-3xl font-bold tracking-tight ${
                 isPaid
                   ? "text-emerald-600 dark:text-emerald-400"
+                  : isPartiallyPaid
+                  ? "text-amber-700 dark:text-amber-300"
                   : "text-gray-900 dark:text-gray-50"
               }`}
             >
 				  {capitalizeFirst(formatMonthLabel(current.month_key, current.month_label))}
             </span>
-				<span className={`font-semibold text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "themed-amount"}`}>
-              {formatCurrency(total_spent)}
+				<span className={`font-semibold text-xl sm:text-2xl lg:text-3xl 2xl:text-3xl ${isPaid ? "text-emerald-600 dark:text-emerald-400" : isPartiallyPaid ? "text-amber-700 dark:text-amber-300" : "themed-amount"}`}>
+              {formatCurrency(currentTotalSpent)}
             </span>
+            {/* Mini progress bar for partial payments */}
+            {isPartiallyPaid && !isPaid && currentTotalSpent > 0 && (
+              <div className="mt-2 w-full max-w-[120px]">
+                <div className="h-1 w-full rounded-full bg-amber-200 dark:bg-amber-900/40 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-amber-500 dark:bg-amber-400 transition-all duration-500"
+                    style={{ width: `${partialProgressPercent}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
 
