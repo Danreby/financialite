@@ -103,6 +103,8 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
     private function buildExpensesByCategory(int $userId, Carbon $targetMonth, Carbon $targetMonthEnd): array
     {
+        $monthKey = $targetMonth->format('Y-m');
+
         $debitTransactions = Transacao::with('category')
             ->forUser($userId)
             ->where('type', 'debit')
@@ -112,6 +114,12 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
+            ->where(function ($q) use ($monthKey) {
+                $q->where(function ($sub) use ($monthKey) {
+                    $sub->where('is_recurring', false)
+                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $monthKey));
+                })->orWhere('is_recurring', true);
+            })
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
 
@@ -128,13 +136,22 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         }
 
         foreach ($creditTransactions as $t) {
-            $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $targetMonth->format('Y-m'));
+            if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                $parcela = $t->parcelas->firstWhere('month_key', $monthKey);
+                $amount = $parcela
+                    ? (float) $t->getInstallmentAmount($parcela->installment_number)
+                    : (float) $t->getInstallmentAmount();
+            } else {
+                $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $monthKey);
+                $amount = (float) $t->getInstallmentAmount($installmentNumber);
+            }
+
             $allRows->push([
                 'category_id' => $t->category_id,
                 'category_name' => optional($t->category)->name ?? 'Sem categoria',
                 'category_icon' => optional($t->category)->icon,
                 'category_color' => optional($t->category)->color,
-                'amount' => (float) $t->getInstallmentAmount($installmentNumber),
+                'amount' => $amount,
             ]);
         }
 
@@ -157,6 +174,8 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
     private function buildCalendar(int $userId, Carbon $targetMonth, Carbon $targetMonthEnd): array
     {
+        $monthKey = $targetMonth->format('Y-m');
+
         $debitTransactions = Transacao::with(['category', 'bankUser.card'])
             ->forUser($userId)
             ->where('type', 'debit')
@@ -167,6 +186,12 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
+            ->where(function ($q) use ($monthKey) {
+                $q->where(function ($sub) use ($monthKey) {
+                    $sub->where('is_recurring', false)
+                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $monthKey));
+                })->orWhere('is_recurring', true);
+            })
             ->orderByDesc('created_at')
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
@@ -185,13 +210,20 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             $dateKey = $cursor->format('Y-m-d');
             $dayTransactions = $grouped->get($dateKey, collect());
 
-            $items = $dayTransactions->map(function (Transacao $t) use ($targetMonth) {
-                $installmentNumber = $t->type === 'credit'
-                    ? $this->billing->resolveInstallmentNumberForMonth($t, $targetMonth->format('Y-m'))
-                    : null;
-                $displayAmount = $t->type === 'credit'
-                    ? (float) $t->getInstallmentAmount($installmentNumber)
-                    : (float) $t->amount;
+            $items = $dayTransactions->map(function (Transacao $t) use ($monthKey) {
+                if ($t->type === 'credit') {
+                    if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                        $parcela = $t->parcelas->firstWhere('month_key', $monthKey);
+                        $displayAmount = $parcela
+                            ? (float) $t->getInstallmentAmount($parcela->installment_number)
+                            : (float) $t->getInstallmentAmount();
+                    } else {
+                        $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $monthKey);
+                        $displayAmount = (float) $t->getInstallmentAmount($installmentNumber);
+                    }
+                } else {
+                    $displayAmount = (float) $t->amount;
+                }
 
                 return [
                     'id' => $t->id,
@@ -225,27 +257,47 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
     private function buildExpensesByCard(int $userId, Carbon $targetMonth, Carbon $targetMonthEnd): array
     {
+        $monthKey = $targetMonth->format('Y-m');
+
         $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
             ->whereNotNull('bank_user_id')
+            ->where(function ($q) use ($monthKey) {
+                $q->where(function ($sub) use ($monthKey) {
+                    $sub->where('is_recurring', false)
+                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $monthKey));
+                })->orWhere('is_recurring', true);
+            })
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
 
         return $creditTransactions->groupBy('bank_user_id')
-            ->map(function ($items) use ($targetMonth) {
+            ->map(function ($items) use ($monthKey) {
                 $first = $items->first();
                 $cardName = optional($first->bankUser?->card)->name ?? 'Cartão desconhecido';
 
-                $transactions = $items->map(function (Transacao $t) use ($targetMonth) {
-                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $targetMonth->format('Y-m'));
+                $transactions = $items->map(function (Transacao $t) use ($monthKey) {
+                    $totalInstallments = max((int) ($t->total_installments ?? 1), 1);
+
+                    if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                        $parcela = $t->parcelas->firstWhere('month_key', $monthKey);
+                        $installmentNumber = $parcela ? $parcela->installment_number : 1;
+                        $amount = $parcela
+                            ? (float) $t->getInstallmentAmount($parcela->installment_number)
+                            : (float) $t->getInstallmentAmount();
+                    } else {
+                        $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $monthKey);
+                        $amount = (float) $t->getInstallmentAmount($installmentNumber);
+                    }
+
                     return [
                         'id' => $t->id,
                         'title' => $t->title,
-                        'amount' => round((float) $t->getInstallmentAmount($installmentNumber), 2),
+                        'amount' => round($amount, 2),
                         'total_amount' => (float) $t->amount,
-                        'installments' => $installments > 1
-                            ? "{$t->current_installment}/{$t->total_installments}"
+                        'installments' => $totalInstallments > 1
+                            ? "{$installmentNumber}/{$totalInstallments}"
                             : null,
                         'category_name' => optional($t->category)->name,
                         'category_icon' => optional($t->category)->icon,
@@ -345,6 +397,14 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $threeMonthsAgo = $targetMonth->copy()->subMonths(3)->startOfMonth();
         $targetMonthEnd = $targetMonth->copy()->endOfMonth();
 
+        // Build the list of month keys in the 4-month range.
+        $monthKeys = [];
+        $cursor = $threeMonthsAgo->copy();
+        while ($cursor->lte($targetMonth)) {
+            $monthKeys[] = $cursor->format('Y-m');
+            $cursor->addMonth();
+        }
+
         $debitTransactions = Transacao::with('category')
             ->forUser($userId)
             ->where('type', 'debit')
@@ -354,18 +414,13 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
-            ->get()
-            ->filter(function (Transacao $t) use ($threeMonthsAgo, $targetMonth) {
-                $cursor = $threeMonthsAgo->copy();
-                $limit = $targetMonth->copy();
-                while ($cursor->lte($limit)) {
-                    if ($this->billing->faturaAppliesToMonth($t, $cursor)) {
-                        return true;
-                    }
-                    $cursor->addMonth();
-                }
-                return false;
-            });
+            ->where(function ($q) use ($monthKeys) {
+                $q->where(function ($sub) use ($monthKeys) {
+                    $sub->where('is_recurring', false)
+                        ->whereHas('parcelas', fn ($pq) => $pq->whereIn('month_key', $monthKeys));
+                })->orWhere('is_recurring', true);
+            })
+            ->get();
 
         $allRows = collect();
 
@@ -382,25 +437,34 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         }
 
         foreach ($creditTransactions as $t) {
-            $firstMonthKey = $this->billing->resolveBillingMonthKey($t);
-            $first = Carbon::createFromFormat('Y-m', $firstMonthKey)->startOfMonth();
-
-            $cursor = $threeMonthsAgo->copy()->startOfMonth();
-            $limit = $targetMonth->copy()->startOfMonth();
-
-            while ($cursor->lte($limit)) {
-                if ($this->billing->faturaAppliesToMonth($t, $cursor)) {
-                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $cursor->format('Y-m'));
+            if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                // Iterate only parcelas within the target month range.
+                foreach ($t->parcelas->whereIn('month_key', $monthKeys) as $parcela) {
                     $allRows->push([
                         'category_id' => $t->category_id,
                         'category_name' => optional($t->category)->name ?? 'Sem categoria',
                         'category_icon' => optional($t->category)->icon,
                         'category_color' => optional($t->category)->color,
-                        'month_key' => $cursor->format('Y-m'),
-                        'amount' => (float) $t->getInstallmentAmount($installmentNumber),
+                        'month_key' => $parcela->month_key,
+                        'amount' => (float) $t->getInstallmentAmount($parcela->installment_number),
                     ]);
                 }
-                $cursor->addMonth();
+            } else {
+                // Recurring or no parcelas: check each month via billing service.
+                foreach ($monthKeys as $mk) {
+                    $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
+                    if ($this->billing->faturaAppliesToMonth($t, $mkCarbon)) {
+                        $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $mk);
+                        $allRows->push([
+                            'category_id' => $t->category_id,
+                            'category_name' => optional($t->category)->name ?? 'Sem categoria',
+                            'category_icon' => optional($t->category)->icon,
+                            'category_color' => optional($t->category)->color,
+                            'month_key' => $mk,
+                            'amount' => (float) $t->getInstallmentAmount($installmentNumber),
+                        ]);
+                    }
+                }
             }
         }
 

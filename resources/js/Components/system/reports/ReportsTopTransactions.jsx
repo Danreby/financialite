@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import CategoryBadge from '@/Components/common/CategoryBadge'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
@@ -10,7 +10,19 @@ function formatDate(dateString) {
 }
 
 export default function ReportsTopTransactions({ transactions = [], onSelect, limit = 8 }) {
-  const top = [...transactions]
+  // Deduplicate: for installment transactions, keep only one entry per base transaction id.
+  const deduped = useMemo(() => {
+    const seen = new Map()
+    for (const tx of transactions) {
+      const baseId = String(tx.id).replace(/-\d+$/, '')
+      if (!seen.has(baseId)) {
+        seen.set(baseId, tx)
+      }
+    }
+    return [...seen.values()]
+  }, [transactions])
+
+  const top = [...deduped]
     .sort((a, b) => {
       const av = a.type === 'credit' ? (a.installment_amount ?? a.amount) : a.amount
       const bv = b.type === 'credit' ? (b.installment_amount ?? b.amount) : b.amount

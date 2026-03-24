@@ -158,6 +158,12 @@ class FaturaDashboardService
         $creditEntriesForMonth = (clone $base)
             ->with(['category', 'bankUser', 'parcelas'])
             ->where('type', 'credit')
+            ->where(function ($q) use ($effectiveMonthKey) {
+                $q->where(function ($sub) use ($effectiveMonthKey) {
+                    $sub->where('is_recurring', false)
+                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $effectiveMonthKey));
+                })->orWhere('is_recurring', true);
+            })
             ->get()
             ->filter(function (Transacao $transacao) use ($targetMonth) {
                 return $this->billing->faturaAppliesToMonth($transacao, $targetMonth);
@@ -175,8 +181,15 @@ class FaturaDashboardService
         })->values()->all();
 
         $creditRows = $creditEntriesForMonth->map(function (Transacao $transacao) use ($effectiveMonthKey) {
-            $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $effectiveMonthKey);
-            $installmentAmount = (float) $transacao->getInstallmentAmount($installmentNumber);
+            if (!$transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
+                $parcela = $transacao->parcelas->firstWhere('month_key', $effectiveMonthKey);
+                $installmentAmount = $parcela
+                    ? (float) $transacao->getInstallmentAmount($parcela->installment_number)
+                    : (float) $transacao->getInstallmentAmount();
+            } else {
+                $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $effectiveMonthKey);
+                $installmentAmount = (float) $transacao->getInstallmentAmount($installmentNumber);
+            }
 
             return [
                 'category_id' => $transacao->category_id,
@@ -392,9 +405,24 @@ class FaturaDashboardService
             ->whereBetween('created_at', [$startMonth, $endMonth])
             ->get();
 
+        // Build month keys for the range.
+        $monthKeys = [];
+        $mkCursor = $startMonth->copy()->startOfMonth();
+        $mkEnd = $endMonth->copy()->startOfMonth();
+        while ($mkCursor->lte($mkEnd)) {
+            $monthKeys[] = $mkCursor->format('Y-m');
+            $mkCursor->addMonth();
+        }
+
         $creditEntries = (clone $base)
             ->with(['category', 'bankUser', 'parcelas'])
             ->where('type', 'credit')
+            ->where(function ($q) use ($monthKeys) {
+                $q->where(function ($sub) use ($monthKeys) {
+                    $sub->where('is_recurring', false)
+                        ->whereHas('parcelas', fn ($pq) => $pq->whereIn('month_key', $monthKeys));
+                })->orWhere('is_recurring', true);
+            })
             ->get()
             ->filter(function (Transacao $transacao) use ($startMonth, $endMonth) {
                 $cursor = $startMonth->copy()->startOfMonth();

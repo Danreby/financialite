@@ -57,6 +57,14 @@ class FaturaBillingService
 
     public function faturaAppliesToMonth(Transacao $transacao, Carbon $targetMonth): bool
     {
+        $monthKey = $targetMonth->format('Y-m');
+
+        // Fast path: non-recurring transactions with parcelas — direct lookup.
+        if (!$transacao->is_recurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+            return $transacao->parcelas->contains('month_key', $monthKey);
+        }
+
+        // Fallback: recurring or transactions without parcelas.
         $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
 
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
@@ -89,20 +97,26 @@ class FaturaBillingService
             return (float) $transacao->amount;
         }
 
-        // Resolve which installment corresponds to the target month.
-        $targetInstallment = $monthKey
-            ? $this->resolveInstallmentNumberForMonth($transacao, $monthKey)
-            : null;
+        // Try to find the target parcela via month_key first, then fallback.
+        $targetInstallment = null;
 
-        if ($targetInstallment) {
-            // Check if this specific parcela is already paid (avoid double-payment).
+        if ($monthKey) {
             if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
-                $parcela = $transacao->parcelas->firstWhere('installment_number', $targetInstallment);
-                if ($parcela && $parcela->status === 'paid') {
-                    return 0.0;
+                $parcela = $transacao->parcelas->firstWhere('month_key', $monthKey);
+                if ($parcela) {
+                    if ($parcela->status === 'paid') {
+                        return 0.0;
+                    }
+                    $targetInstallment = $parcela->installment_number;
                 }
             }
 
+            if (!$targetInstallment) {
+                $targetInstallment = $this->resolveInstallmentNumberForMonth($transacao, $monthKey);
+            }
+        }
+
+        if ($targetInstallment) {
             $installmentAmount = (float) $transacao->getInstallmentAmount($targetInstallment);
             $this->markParcelaAsPaid($transacao, $targetInstallment);
 
@@ -161,6 +175,15 @@ class FaturaBillingService
             return null;
         }
 
+        // Fast path: direct parcela lookup by month_key.
+        if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+            $parcela = $transacao->parcelas->firstWhere('month_key', $yearMonth);
+            if ($parcela) {
+                return $parcela->installment_number;
+            }
+        }
+
+        // Fallback: Carbon arithmetic.
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
         $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
         $current = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
@@ -189,6 +212,28 @@ class FaturaBillingService
             $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
             $isRecurring = (bool) $transacao->is_recurring;
 
+            // Non-recurring with parcelas: iterate parcelas directly (O(1) per parcela).
+            if (!$isRecurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+                foreach ($transacao->parcelas as $parcela) {
+                    if (!$parcela->month_key) {
+                        continue;
+                    }
+
+                    $parcelaMonth = Carbon::createFromFormat('Y-m', $parcela->month_key)->startOfMonth();
+                    if ($parcelaMonth->gt($projectionEnd)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'transacao' => $transacao,
+                        'month_key' => $parcela->month_key,
+                        'installment_index' => $parcela->installment_number,
+                    ]);
+                }
+                continue;
+            }
+
+            // Fallback: recurring or transactions without parcelas.
             $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
             $month = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
 

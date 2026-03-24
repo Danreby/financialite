@@ -90,6 +90,9 @@ class FaturaService implements FaturaServiceInterface
         $totalInstallments = max((int) $transacao->total_installments, 1);
         $totalAmount = (float) $transacao->amount;
 
+        // Use the billing service to determine the first billing month consistently.
+        $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($transacao);
+
         if ($totalInstallments <= 1 && !$transacao->is_recurring) {
             TransacaoParcela::create([
                 'transacao_id' => $transacao->id,
@@ -98,6 +101,7 @@ class FaturaService implements FaturaServiceInterface
                 'due_date' => $transacao->created_at
                     ? $transacao->created_at->toDateString()
                     : Carbon::today()->toDateString(),
+                'month_key' => $firstBillingMonthKey,
                 'status' => $transacao->status === 'paid' ? 'paid' : 'pending',
                 'paid_date' => $transacao->status === 'paid' ? ($transacao->paid_date ?? now())->toDateString() : null,
             ]);
@@ -120,11 +124,8 @@ class FaturaService implements FaturaServiceInterface
             : null;
 
         $dueDay = $cardUser->due_day ?? $cardUser->closing_day ?? (int) $createdAt->format('d');
-        $closingDay = $cardUser->closing_day ?? $dueDay;
 
-        $firstBillingMonth = $createdAt->day <= $closingDay
-            ? $createdAt->copy()->startOfMonth()
-            : $createdAt->copy()->addMonth()->startOfMonth();
+        $firstBillingMonth = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
 
         $parcelas = [];
         for ($i = 1; $i <= $totalInstallments; $i++) {
@@ -134,6 +135,7 @@ class FaturaService implements FaturaServiceInterface
             }
 
             $parcelMonth = $firstBillingMonth->copy()->addMonths($i - 1);
+            $monthKey = $parcelMonth->format('Y-m');
             $maxDay = (int) $parcelMonth->copy()->endOfMonth()->format('d');
             $actualDueDay = min($dueDay, $maxDay);
             $dueDate = $parcelMonth->copy()->setDay($actualDueDay);
@@ -143,6 +145,7 @@ class FaturaService implements FaturaServiceInterface
                 'installment_number' => $i,
                 'amount' => $parcelaAmount,
                 'due_date' => $dueDate->toDateString(),
+                'month_key' => $monthKey,
                 'status' => 'pending',
                 'paid_date' => null,
                 'created_at' => now(),

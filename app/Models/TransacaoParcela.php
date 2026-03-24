@@ -17,6 +17,7 @@ class TransacaoParcela extends Model
         'installment_number',
         'amount',
         'due_date',
+        'month_key',
         'status',
         'paid_date',
     ];

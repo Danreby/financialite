@@ -14,7 +14,7 @@ class FaturaExportService
 
     public function exportForUser(int $userId, ?int $bankUserId = null, ?int $categoryId = null): Collection
     {
-        $transactions = Transacao::with(['bankUser.card', 'category'])
+        $transactions = Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->forUser($userId)
             ->forBankUser($bankUserId)
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
@@ -32,20 +32,32 @@ class FaturaExportService
                 continue;
             }
 
+            $isRecurring = (bool) $transacao->is_recurring;
+
+            // Non-recurring with parcelas: iterate parcelas directly.
+            if (!$isRecurring && $transacao->parcelas->isNotEmpty()) {
+                foreach ($transacao->parcelas as $parcela) {
+                    $installmentAmount = (float) $transacao->getInstallmentAmount($parcela->installment_number);
+                    $rows->push($this->buildRow($transacao, $parcela->month_key, $parcela->installment_number, $installmentAmount));
+                }
+                continue;
+            }
+
+            // Fallback: recurring or transactions without parcelas.
             $firstMonthKey    = $this->billing->resolveBillingMonthKey($transacao);
             $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
-            $installmentAmount = (float) $transacao->amount / $totalInstallments;
-            $isRecurring       = (bool) $transacao->is_recurring;
 
             $cursor = Carbon::createFromFormat('Y-m', $firstMonthKey)->startOfMonth();
 
             if ($isRecurring) {
                 while ($cursor->format('Y-m') <= $currentMonth) {
+                    $installmentAmount = (float) $transacao->getInstallmentAmount();
                     $rows->push($this->buildRow($transacao, $cursor->format('Y-m'), null, $installmentAmount));
                     $cursor->addMonthNoOverflow();
                 }
             } else {
                 for ($i = 1; $i <= $totalInstallments; $i++) {
+                    $installmentAmount = (float) $transacao->getInstallmentAmount($i);
                     $rows->push($this->buildRow($transacao, $cursor->format('Y-m'), $i, $installmentAmount));
                     $cursor->addMonthNoOverflow();
                 }
