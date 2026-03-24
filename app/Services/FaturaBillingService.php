@@ -284,15 +284,47 @@ class FaturaBillingService
 
             $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
             $totalPaid = $faturaPayment ? (float) ($faturaPayment->total_paid ?? 0.0) : 0.0;
-            // Strict: fully paid only when paid_at is set AND total_paid covers the full amount.
+
+            // A month is considered paid when it has a payment record with paid_at set.
+            // We do NOT compare total_paid vs total_spent for the "paid" flag, because
+            // recurring transaction amount changes retroactively alter total_spent
+            // while total_paid reflects the amount at the time of payment.
             $isPaid = $faturaPayment
                 && $faturaPayment->paid_at !== null
-                && $totalPaid >= $totalSpent - 0.01;
-            // Reopened: was previously marked as paid but new charges appeared after the payment.
-            $hasRemainingPostPayment = $faturaPayment
-                && $faturaPayment->paid_at !== null
-                && !$isPaid
                 && $totalPaid > 0;
+
+            // Reopened: new NON-recurring charges appeared after the payment,
+            // but only if the gap actually comes from new installment items,
+            // not from a recurring price change.
+            $hasNewNonRecurringCharges = false;
+            if ($faturaPayment && $faturaPayment->paid_at !== null && $totalPaid > 0) {
+                $nonRecurringSpent = $items->sum(function ($entry) {
+                    $t = $entry['transacao'];
+                    if ($t->is_recurring) {
+                        return 0.0;
+                    }
+                    $installmentNumber = $entry['installment_index'];
+                    if ($t->relationLoaded('parcelas') && $t->parcelas->isNotEmpty()) {
+                        $parcela = $t->parcelas->firstWhere('installment_number', $installmentNumber);
+                        if ($parcela) {
+                            return (float) $parcela->amount;
+                        }
+                    }
+                    return (float) $t->getInstallmentAmount($installmentNumber);
+                });
+                $recurringSpent = $totalSpent - $nonRecurringSpent;
+                // If non-recurring portion alone exceeds what's paid minus recurring,
+                // there are genuinely new charges.
+                $paidForNonRecurring = max(0, $totalPaid - $recurringSpent);
+                $hasNewNonRecurringCharges = $nonRecurringSpent > $paidForNonRecurring + 0.01;
+            }
+
+            $hasRemainingPostPayment = $hasNewNonRecurringCharges;
+
+            // If there are genuinely new non-recurring charges, reopen the month.
+            if ($hasRemainingPostPayment) {
+                $isPaid = false;
+            }
 
             return [
                 'month_key'                   => $yearMonth,
@@ -368,38 +400,34 @@ class FaturaBillingService
 
         $effectiveGroup = $groupsCollection->firstWhere('month_key', $currentMonthKey);
 
-        if (!$effectiveGroup || ($effectiveGroup['is_paid'] ?? false)) {
-            $targetMonth = null;
-
-            try {
-                $targetMonth = Carbon::createFromFormat('Y-m', $currentMonthKey)->startOfMonth();
-            } catch (\Throwable $e) {
-                $targetMonth = Carbon::today()->startOfMonth();
-            }
-
-            $unpaidGroups = $groupsCollection->filter(function ($group) {
-                return !($group['is_paid'] ?? false);
-            });
-
-            if ($unpaidGroups->isNotEmpty()) {
-                $effectiveGroup = $unpaidGroups->sortBy(function ($group) use ($targetMonth) {
-                    $groupMonth = Carbon::createFromFormat('Y-m', $group['month_key'])->startOfMonth();
-                    return $targetMonth->diffInMonths($groupMonth);
-                })->first();
-            } else {
-                $effectiveGroup = null;
-            }
-        }
-
-        $effectiveMonthKey = $currentMonthKey;
-
+        // If the current month group exists and is not paid, use it directly.
         if ($effectiveGroup && !($effectiveGroup['is_paid'] ?? false)) {
-            $effectiveMonthKey = $effectiveGroup['month_key'] ?? $currentMonthKey;
+            return [
+                'group' => $effectiveGroup,
+                'month_key' => $currentMonthKey,
+            ];
         }
 
+        // Current month is paid or doesn't exist — look for the nearest FUTURE
+        // unpaid group only. Past months that became "unpaid" due to recurring
+        // amount changes should not steal the dashboard display.
+        $unpaidGroups = $groupsCollection->filter(function ($group) use ($currentMonthKey) {
+            return !($group['is_paid'] ?? false) && $group['month_key'] >= $currentMonthKey;
+        });
+
+        if ($unpaidGroups->isNotEmpty()) {
+            $effectiveGroup = $unpaidGroups->sortBy('month_key')->first();
+
+            return [
+                'group' => $effectiveGroup,
+                'month_key' => $effectiveGroup['month_key'],
+            ];
+        }
+
+        // Everything is paid — return the current month group (or null) with zero pending.
         return [
             'group' => $effectiveGroup,
-            'month_key' => $effectiveMonthKey,
+            'month_key' => $currentMonthKey,
         ];
     }
 
