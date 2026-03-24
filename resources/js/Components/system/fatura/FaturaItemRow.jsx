@@ -7,6 +7,7 @@ export default function FaturaItemRow({
   title,
   description,
   amount,
+  installment_amount,
   type,
   status,
   created_at,
@@ -28,8 +29,9 @@ export default function FaturaItemRow({
 
   const totalInstallmentsNumber = Math.max(Number(total_installments || 1), 1);
   const rawAmountNumber = Number(amount || 0) || 0;
-  const displayedAmount =
-    totalInstallmentsNumber > 1 ? rawAmountNumber / totalInstallmentsNumber : rawAmountNumber;
+  const displayedAmount = installment_amount != null ? Number(installment_amount) : (
+    totalInstallmentsNumber > 1 ? rawAmountNumber / totalInstallmentsNumber : rawAmountNumber
+  );
 
   const dayLabel = formatDayLabel(created_at);
 

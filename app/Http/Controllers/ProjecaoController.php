@@ -41,7 +41,7 @@ class ProjecaoController extends Controller
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        $allCreditTxs = Transacao::with(['bankUser.card', 'category'])
+        $allCreditTxs = Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->where('user_id', $user->id)
             ->where('type', 'credit')
             ->orderByDesc('created_at')
@@ -50,7 +50,7 @@ class ProjecaoController extends Controller
         $creditTransactions = $allCreditTxs->map(function ($tx) use ($today) {
             $totalInstallments = max((int) ($tx->total_installments ?? 1), 1);
             $isRecurring       = (bool) $tx->is_recurring;
-            $amountPerMonth    = round((float) $tx->amount / $totalInstallments, 2);
+            $amountPerMonth    = (float) $tx->getInstallmentAmount();
 
             $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($tx);
             $firstBillingMonth    = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();

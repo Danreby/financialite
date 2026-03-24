@@ -155,10 +155,11 @@ export default function FaturaDetailModal({
   const realTransacaoId = transacao_id || id;
   const totalInstallmentsNumber = Math.max(Number(total_installments || 1), 1);
   const rawAmountNumber = Number(amount || 0) || 0;
-  const installmentAmount =
+  const installmentAmount = item.installment_amount ?? (
     totalInstallmentsNumber > 1
       ? rawAmountNumber / totalInstallmentsNumber
-      : rawAmountNumber;
+      : rawAmountNumber
+  );
   const hasInstallments = totalInstallmentsNumber > 1;
   const statusLabel =
     status === "paid"

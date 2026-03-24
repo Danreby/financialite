@@ -85,6 +85,8 @@ class FaturaBillingService
             $transacao->status = 'paid';
             $transacao->paid_date = now()->toDateString();
 
+            $this->markParcelaAsPaid($transacao, 1);
+
             return (float) $transacao->amount;
         }
 
@@ -95,12 +97,25 @@ class FaturaBillingService
             $transacao->current_installment = $currentInstallment;
         }
 
+        $this->markParcelaAsPaid($transacao, $currentInstallment);
+
         if ($currentInstallment >= $totalInstallments) {
             $transacao->status = 'paid';
             $transacao->paid_date = now()->toDateString();
         }
 
         return $installmentAmount;
+    }
+
+    private function markParcelaAsPaid(Transacao $transacao, int $installmentNumber): void
+    {
+        $transacao->parcelas()
+            ->where('installment_number', $installmentNumber)
+            ->where('status', '!=', 'paid')
+            ->update([
+                'status' => 'paid',
+                'paid_date' => now()->toDateString(),
+            ]);
     }
 
     public function resolveInstallmentNumberForMonth(Transacao $transacao, string $yearMonth): ?int

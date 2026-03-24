@@ -127,7 +127,7 @@ class FaturaController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $fatura = Transacao::with(['bankUser.card', 'user'])->findOrFail($id);
+        $fatura = Transacao::with(['bankUser.card', 'user', 'parcelas'])->findOrFail($id);
 
         $this->authorize('view', $fatura);
 
@@ -151,7 +151,7 @@ class FaturaController extends Controller
 
         try {
             $fatura = $this->faturaService->createForUser($user, $data);
-            $fatura->load(['bankUser.card', 'user']);
+            $fatura->load(['bankUser.card', 'user', 'parcelas']);
             return $this->success($fatura, 201);
         } catch (\Throwable $e) {
             report($e);
@@ -177,7 +177,7 @@ class FaturaController extends Controller
 
         try {
             $fatura = $this->faturaService->updateForUser($fatura, $data);
-            $fatura->load(['bankUser.card', 'user']);
+            $fatura->load(['bankUser.card', 'user', 'parcelas']);
             return $this->success($fatura);
         } catch (\Throwable $e) {
             report($e);

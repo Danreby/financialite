@@ -177,12 +177,7 @@ class BudgetCalculationService
 
     private function calculateInstallmentAmount(Transacao $transaction): float
     {
-        $amount = (float) $transaction->amount;
-        $totalInstallments = (int) ($transaction->total_installments ?? 1);
-
-        $totalInstallments = max($totalInstallments, 1);
-
-        return $amount / $totalInstallments;
+        return (float) $transaction->getInstallmentAmount();
     }
 
     private function mergeCategorySpending(

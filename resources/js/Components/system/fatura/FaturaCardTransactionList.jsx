@@ -9,7 +9,7 @@ function TransactionRow({ item }) {
       ? item.display_installment ||
         Math.min((item.current_installment || 0) + 1, totalInstallments)
       : 1;
-  const installmentAmount = (item.amount || 0) / totalInstallments;
+  const installmentAmount = item.installment_amount ?? (item.amount || 0) / totalInstallments;
   const remainingInstallments = Math.max(
     totalInstallments - (logicalInstallment - 1),
     0
