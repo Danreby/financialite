@@ -22,6 +22,7 @@ import ResumoCalendar from '@/Components/system/resumo/ResumoCalendar'
 import ResumoExpensesByCard from '@/Components/system/resumo/ResumoExpensesByCard'
 import ResumoExpensesByBank from '@/Components/system/resumo/ResumoExpensesByBank'
 import ResumoCategoryAverages from '@/Components/system/resumo/ResumoCategoryAverages'
+import CalendarSummaryPanel from '@/Components/system/resumo/CalendarSummaryPanel'
 
 import ResumoReceitasTab from '@/Components/system/resumo/ResumoReceitasTab'
 
@@ -341,16 +342,12 @@ function DespesasTab({ data, isLoading }) {
 function CalendarioTab({ data, monthKey }) {
   return (
     <FadeInContainer stagger className="flex flex-col gap-4 lg:gap-5">
-      <FadeInItem>
-        <ResumoCalendar days={data.calendar} monthKey={monthKey} />
-      </FadeInItem>
-
-      <FadeInContainer stagger className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
-        <FadeInItem className="lg:col-span-2">
-          <ResumoIncomeSection incomes={data.incomes} />
+      <FadeInContainer stagger className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
+        <FadeInItem>
+          <ResumoCalendar days={data.calendar} monthKey={monthKey} />
         </FadeInItem>
         <FadeInItem>
-          <ResumoExpensesByCategory expenses={data.expenses_by_category} />
+          <CalendarSummaryPanel data={data} />
         </FadeInItem>
       </FadeInContainer>
     </FadeInContainer>

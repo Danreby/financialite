@@ -72,7 +72,7 @@ class FaturaExportService
             $invoiceMonthLabel = ucfirst($invoiceCarbon->translatedFormat('F Y'));
 
             $computedInstallmentAmount = $installmentAmount
-                ?? ((float) $fatura->amount / max((int) ($fatura->total_installments ?? 1), 1));
+                ?? ((float) $fatura->getInstallmentAmount());
         } else {
             $invoiceMonthKey   = $yearMonth;
             $invoiceMonthLabel = $monthLabel;

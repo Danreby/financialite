@@ -109,7 +109,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             ->whereBetween('created_at', [$targetMonth, $targetMonthEnd])
             ->get();
 
-        $creditTransactions = Transacao::with(['category', 'bankUser'])
+        $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
             ->get()
@@ -128,13 +128,13 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         }
 
         foreach ($creditTransactions as $t) {
-            $installments = max((int) ($t->total_installments ?? 1), 1);
+            $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $targetMonth->format('Y-m'));
             $allRows->push([
                 'category_id' => $t->category_id,
                 'category_name' => optional($t->category)->name ?? 'Sem categoria',
                 'category_icon' => optional($t->category)->icon,
                 'category_color' => optional($t->category)->color,
-                'amount' => (float) $t->amount / $installments,
+                'amount' => (float) $t->getInstallmentAmount($installmentNumber),
             ]);
         }
 
@@ -164,7 +164,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             ->orderByDesc('created_at')
             ->get();
 
-        $creditTransactions = Transacao::with(['category', 'bankUser.card'])
+        $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
             ->orderByDesc('created_at')
@@ -185,10 +185,12 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             $dateKey = $cursor->format('Y-m-d');
             $dayTransactions = $grouped->get($dateKey, collect());
 
-            $items = $dayTransactions->map(function (Transacao $t) {
-                $installments = max((int) ($t->total_installments ?? 1), 1);
+            $items = $dayTransactions->map(function (Transacao $t) use ($targetMonth) {
+                $installmentNumber = $t->type === 'credit'
+                    ? $this->billing->resolveInstallmentNumberForMonth($t, $targetMonth->format('Y-m'))
+                    : null;
                 $displayAmount = $t->type === 'credit'
-                    ? (float) $t->amount / $installments
+                    ? (float) $t->getInstallmentAmount($installmentNumber)
                     : (float) $t->amount;
 
                 return [
@@ -223,7 +225,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
     private function buildExpensesByCard(int $userId, Carbon $targetMonth, Carbon $targetMonthEnd): array
     {
-        $creditTransactions = Transacao::with(['category', 'bankUser.card'])
+        $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
             ->whereNotNull('bank_user_id')
@@ -231,16 +233,16 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
 
         return $creditTransactions->groupBy('bank_user_id')
-            ->map(function ($items) {
+            ->map(function ($items) use ($targetMonth) {
                 $first = $items->first();
                 $cardName = optional($first->bankUser?->card)->name ?? 'Cartão desconhecido';
 
-                $transactions = $items->map(function (Transacao $t) {
-                    $installments = max((int) ($t->total_installments ?? 1), 1);
+                $transactions = $items->map(function (Transacao $t) use ($targetMonth) {
+                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $targetMonth->format('Y-m'));
                     return [
                         'id' => $t->id,
                         'title' => $t->title,
-                        'amount' => round((float) $t->amount / $installments, 2),
+                        'amount' => round((float) $t->getInstallmentAmount($installmentNumber), 2),
                         'total_amount' => (float) $t->amount,
                         'installments' => $installments > 1
                             ? "{$t->current_installment}/{$t->total_installments}"
@@ -349,7 +351,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             ->whereBetween('created_at', [$threeMonthsAgo, $targetMonthEnd])
             ->get();
 
-        $creditTransactions = Transacao::with(['category', 'bankUser'])
+        $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
             ->get()
@@ -380,7 +382,6 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         }
 
         foreach ($creditTransactions as $t) {
-            $installments = max((int) ($t->total_installments ?? 1), 1);
             $firstMonthKey = $this->billing->resolveBillingMonthKey($t);
             $first = Carbon::createFromFormat('Y-m', $firstMonthKey)->startOfMonth();
 
@@ -389,13 +390,14 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
             while ($cursor->lte($limit)) {
                 if ($this->billing->faturaAppliesToMonth($t, $cursor)) {
+                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $cursor->format('Y-m'));
                     $allRows->push([
                         'category_id' => $t->category_id,
                         'category_name' => optional($t->category)->name ?? 'Sem categoria',
                         'category_icon' => optional($t->category)->icon,
                         'category_color' => optional($t->category)->color,
                         'month_key' => $cursor->format('Y-m'),
-                        'amount' => (float) $t->amount / $installments,
+                        'amount' => (float) $t->getInstallmentAmount($installmentNumber),
                     ]);
                 }
                 $cursor->addMonth();

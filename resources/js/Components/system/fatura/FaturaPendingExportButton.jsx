@@ -35,7 +35,7 @@ export default function FaturaPendingExportButton({ monthlyGroups = [] }) {
 
         const totalInstallments = Math.max(Number(item.total_installments || 1), 1);
         const amountNumber = Number(item.amount || 0) || 0;
-        const monthlyAmount = amountNumber / totalInstallments;
+        const monthlyAmount = item.installment_amount ?? amountNumber / totalInstallments;
 
         if (!rowsMap.has(rowKey)) {
           const baseRow = { label };

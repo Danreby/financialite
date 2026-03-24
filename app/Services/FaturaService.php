@@ -5,12 +5,18 @@ namespace App\Services;
 use App\Contracts\Services\FaturaServiceInterface;
 use App\Models\BankUser;
 use App\Models\Transacao;
+use App\Models\TransacaoParcela;
+use App\Models\CardUser;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 
 class FaturaService implements FaturaServiceInterface
 {
+    public function __construct(private FaturaBillingService $billing)
+    {
+    }
+
     public function createForUser(Authenticatable $user, array $data): Transacao
     {
         $debitAccountId = $data['debit_account_id'] ?? null;
@@ -40,6 +46,8 @@ class FaturaService implements FaturaServiceInterface
         return DB::transaction(function () use ($data, $debitAccountId, $user, $amount) {
             $fatura = Transacao::create($data);
 
+            $this->createParcelas($fatura);
+
             if ($debitAccountId && $amount > 0) {
                 $bankAccount = BankUser::forUser($user->id)->findOrFail($debitAccountId);
                 $bankAccount->balance = max(0, (float) $bankAccount->balance - $amount);
@@ -53,6 +61,9 @@ class FaturaService implements FaturaServiceInterface
     public function updateForUser(Transacao $fatura, array $data): Transacao
     {
         return DB::transaction(function () use ($fatura, $data) {
+            $oldAmount = (float) $fatura->amount;
+            $oldInstallments = (int) $fatura->total_installments;
+
             $fatura->update($data);
 
             if ($fatura->is_recurring) {
@@ -62,8 +73,84 @@ class FaturaService implements FaturaServiceInterface
                 $fatura->save();
             }
 
+            $newAmount = (float) $fatura->amount;
+            $newInstallments = (int) $fatura->total_installments;
+
+            if ($oldAmount !== $newAmount || $oldInstallments !== $newInstallments) {
+                $fatura->parcelas()->delete();
+                $this->createParcelas($fatura);
+            }
+
             return $fatura->refresh();
         });
+    }
+
+    public function createParcelas(Transacao $transacao): void
+    {
+        $totalInstallments = max((int) $transacao->total_installments, 1);
+        $totalAmount = (float) $transacao->amount;
+
+        if ($totalInstallments <= 1 && !$transacao->is_recurring) {
+            TransacaoParcela::create([
+                'transacao_id' => $transacao->id,
+                'installment_number' => 1,
+                'amount' => $totalAmount,
+                'due_date' => $transacao->created_at
+                    ? $transacao->created_at->toDateString()
+                    : Carbon::today()->toDateString(),
+                'status' => $transacao->status === 'paid' ? 'paid' : 'pending',
+                'paid_date' => $transacao->status === 'paid' ? ($transacao->paid_date ?? now())->toDateString() : null,
+            ]);
+            return;
+        }
+
+        if ($transacao->is_recurring) {
+            return;
+        }
+
+        $baseAmount = round($totalAmount / $totalInstallments, 2);
+        $remainder = round($totalAmount - ($baseAmount * $totalInstallments), 2);
+
+        $createdAt = $transacao->created_at
+            ? ($transacao->created_at instanceof Carbon ? $transacao->created_at : Carbon::parse($transacao->created_at))
+            : Carbon::today();
+
+        $cardUser = $transacao->bank_user_id
+            ? CardUser::find($transacao->bank_user_id)
+            : null;
+
+        $dueDay = $cardUser->due_day ?? $cardUser->closing_day ?? (int) $createdAt->format('d');
+        $closingDay = $cardUser->closing_day ?? $dueDay;
+
+        $firstBillingMonth = $createdAt->day <= $closingDay
+            ? $createdAt->copy()->startOfMonth()
+            : $createdAt->copy()->addMonth()->startOfMonth();
+
+        $parcelas = [];
+        for ($i = 1; $i <= $totalInstallments; $i++) {
+            $parcelaAmount = $baseAmount;
+            if ($i === $totalInstallments) {
+                $parcelaAmount = round($parcelaAmount + $remainder, 2);
+            }
+
+            $parcelMonth = $firstBillingMonth->copy()->addMonths($i - 1);
+            $maxDay = (int) $parcelMonth->copy()->endOfMonth()->format('d');
+            $actualDueDay = min($dueDay, $maxDay);
+            $dueDate = $parcelMonth->copy()->setDay($actualDueDay);
+
+            $parcelas[] = [
+                'transacao_id' => $transacao->id,
+                'installment_number' => $i,
+                'amount' => $parcelaAmount,
+                'due_date' => $dueDate->toDateString(),
+                'status' => 'pending',
+                'paid_date' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        TransacaoParcela::insert($parcelas);
     }
 
     public function deleteForUser(Transacao $fatura): bool
