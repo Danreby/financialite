@@ -395,7 +395,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-kxgL_AuD.js",
+    "file": "assets/Bancos-eelvVxNq.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -503,7 +503,7 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-BXuvEoA0.js",
+    "file": "assets/Dashboard-BO8PWqbz.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
@@ -748,7 +748,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DMT3HebK.js",
+    "file": "assets/app-CjJtiYJv.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
