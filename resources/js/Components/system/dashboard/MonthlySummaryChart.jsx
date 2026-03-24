@@ -64,7 +64,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
   const { chartColors } = useThemeColors()
 
   const labels      = useMemo(() => data.map((d) => d.month_label), [data])
-  const invoiceVals = useMemo(() => data.map((d) => Number(d.invoice_total || 0)), [data])
+  const invoiceVals = useMemo(() => data.map((d) => Number(d.credit_total ?? d.invoice_total ?? 0)), [data])
   const debitVals   = useMemo(() => data.map((d) => Number(d.debit_total   || 0)), [data])
   const monthKeys   = useMemo(() => data.map((d) => d.month_key), [data])
 

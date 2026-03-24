@@ -270,6 +270,15 @@ class FaturaBillingService
             $totalSpent = $items->sum(function ($entry) {
                 $transacao = $entry['transacao'];
                 $installmentNumber = $entry['installment_index'];
+
+                // Use parcela amount directly when available.
+                if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+                    $parcela = $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
+                    if ($parcela) {
+                        return (float) $parcela->amount;
+                    }
+                }
+
                 return (float) $transacao->getInstallmentAmount($installmentNumber);
             });
 
@@ -296,21 +305,25 @@ class FaturaBillingService
                 'items' => $items->map(function ($entry) {
                     $fatura = $entry['transacao'];
                     $installmentIndex = $entry['installment_index'];
-                    $installmentAmount = (float) $fatura->getInstallmentAmount($installmentIndex);
+                    $monthKey = $entry['month_key'];
 
-                    // Determine effective status at the parcela level.
-                    $effectiveStatus = $fatura->status;
+                    // Resolve amount and status from parcela directly.
+                    $parcela = null;
                     $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
 
-                    if ($totalInstallments > 1) {
-                        if ($fatura->relationLoaded('parcelas') && $fatura->parcelas->isNotEmpty()) {
-                            $parcela = $fatura->parcelas->firstWhere('installment_number', $installmentIndex);
-                            if ($parcela) {
-                                $effectiveStatus = $parcela->status;
-                            }
-                        } elseif ((int) ($fatura->current_installment ?? 0) >= $installmentIndex) {
-                            $effectiveStatus = 'paid';
-                        }
+                    if ($fatura->relationLoaded('parcelas') && $fatura->parcelas->isNotEmpty()) {
+                        $parcela = $fatura->parcelas->firstWhere('installment_number', $installmentIndex);
+                    }
+
+                    $installmentAmount = $parcela
+                        ? (float) $parcela->amount
+                        : (float) $fatura->getInstallmentAmount($installmentIndex);
+
+                    $effectiveStatus = $fatura->status;
+                    if ($parcela) {
+                        $effectiveStatus = $parcela->status;
+                    } elseif ($totalInstallments > 1 && (int) ($fatura->current_installment ?? 0) >= $installmentIndex) {
+                        $effectiveStatus = 'paid';
                     }
 
                     return [
@@ -323,10 +336,11 @@ class FaturaBillingService
                         'type' => $fatura->type,
                         'status' => $effectiveStatus,
                         'created_at' => $fatura->created_at,
-                        'paid_date' => $fatura->paid_date,
+                        'paid_date' => $parcela?->paid_date ?? $fatura->paid_date,
+                        'due_date' => $parcela?->due_date?->toDateString(),
                         'total_installments' => $fatura->total_installments,
                         'current_installment' => $fatura->current_installment,
-                        'display_installment' => $this->resolveInstallmentNumberForMonth($fatura, $entry['month_key']),
+                        'display_installment' => $installmentIndex,
                         'is_recurring' => (bool) $fatura->is_recurring,
                         'bank_user_id' => $fatura->bank_user_id,
                         'bank_name' => optional($fatura->bankUser->card ?? null)->name ?? null,

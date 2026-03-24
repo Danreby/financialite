@@ -336,6 +336,49 @@ class FaturaDashboardService
                 return (float) $items->sum('amount');
             });
 
+        // Build credit totals per month from parcelas.
+        $monthKeys = [];
+        $mk = $seriesStart->copy()->startOfMonth();
+        $mkEnd = $seriesEnd->copy()->startOfMonth();
+        while ($mk->lte($mkEnd)) {
+            $monthKeys[] = $mk->format('Y-m');
+            $mk->addMonth();
+        }
+
+        $creditByMonth = collect($monthKeys)->mapWithKeys(fn ($k) => [$k => 0.0]);
+
+        $creditTransactions = Transacao::with('parcelas')
+            ->forUser($user->id)
+            ->forBankUser($bankUserId)
+            ->when($categoryId, function ($q, $categoryId) {
+                $q->where('category_id', $categoryId);
+            })
+            ->where('type', 'credit')
+            ->where(function ($q) use ($monthKeys) {
+                $q->where(function ($sub) use ($monthKeys) {
+                    $sub->where('is_recurring', false)
+                        ->whereHas('parcelas', fn ($pq) => $pq->whereIn('month_key', $monthKeys));
+                })->orWhere('is_recurring', true);
+            })
+            ->get();
+
+        foreach ($creditTransactions as $t) {
+            if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                foreach ($t->parcelas->whereIn('month_key', $monthKeys) as $parcela) {
+                    $creditByMonth[$parcela->month_key] = ($creditByMonth[$parcela->month_key] ?? 0) + (float) $parcela->amount;
+                }
+            } else {
+                // Recurring: add installment amount to each applicable month.
+                $amount = (float) $t->getInstallmentAmount();
+                foreach ($monthKeys as $mk) {
+                    $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
+                    if ($this->billing->faturaAppliesToMonth($t, $mkCarbon)) {
+                        $creditByMonth[$mk] = ($creditByMonth[$mk] ?? 0) + $amount;
+                    }
+                }
+            }
+        }
+
         $months = [];
         $cursor = $seriesStart->copy()->startOfMonth();
         $end = $seriesEnd->copy()->startOfMonth();
@@ -348,6 +391,7 @@ class FaturaDashboardService
                 'month_key' => $monthKey,
                 'month_label' => ucfirst($carbon->translatedFormat('M Y')),
                 'invoice_total' => (float) ($paidByMonth->get($monthKey)?->total_paid ?? 0.0),
+                'credit_total' => round((float) ($creditByMonth[$monthKey] ?? 0.0), 2),
                 'debit_total' => (float) $debitByMonth->get($monthKey, 0.0),
             ];
 
@@ -449,17 +493,46 @@ class FaturaDashboardService
             ];
         })->values()->all();
 
-        $creditRows = $creditEntries->map(function (Transacao $transacao) {
-            $installmentAmount = (float) $transacao->getInstallmentAmount();
+        $creditRows = $creditEntries->flatMap(function (Transacao $transacao) use ($monthKeys) {
+            $rows = [];
 
-            return [
-                'category_id'    => $transacao->category_id,
-                'category_name'  => optional($transacao->category)->name,
-                'category_icon'  => optional($transacao->category)->icon,
-                'category_color' => optional($transacao->category)->color,
-                'amount'         => $installmentAmount,
-                'is_recurring'   => $transacao->is_recurring,
-            ];
+            if (!$transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
+                // Sum parcelas that fall within the period range.
+                $matchingParcelas = $transacao->parcelas->whereIn('month_key', $monthKeys);
+                $totalAmount = $matchingParcelas->sum('amount');
+
+                if ($totalAmount > 0) {
+                    $rows[] = [
+                        'category_id'    => $transacao->category_id,
+                        'category_name'  => optional($transacao->category)->name,
+                        'category_icon'  => optional($transacao->category)->icon,
+                        'category_color' => optional($transacao->category)->color,
+                        'amount'         => (float) $totalAmount,
+                        'is_recurring'   => $transacao->is_recurring,
+                    ];
+                }
+            } else {
+                // Recurring: count how many months in range this applies to.
+                $count = 0;
+                foreach ($monthKeys as $mk) {
+                    $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
+                    if ($this->billing->faturaAppliesToMonth($transacao, $mkCarbon)) {
+                        $count++;
+                    }
+                }
+                if ($count > 0) {
+                    $rows[] = [
+                        'category_id'    => $transacao->category_id,
+                        'category_name'  => optional($transacao->category)->name,
+                        'category_icon'  => optional($transacao->category)->icon,
+                        'category_color' => optional($transacao->category)->color,
+                        'amount'         => (float) $transacao->getInstallmentAmount() * $count,
+                        'is_recurring'   => $transacao->is_recurring,
+                    ];
+                }
+            }
+
+            return $rows;
         })->values()->all();
 
         $allRows = collect($debitRows)->merge($creditRows);

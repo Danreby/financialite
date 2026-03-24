@@ -37,8 +37,11 @@ class FaturaExportService
             // Non-recurring with parcelas: iterate parcelas directly.
             if (!$isRecurring && $transacao->parcelas->isNotEmpty()) {
                 foreach ($transacao->parcelas as $parcela) {
-                    $installmentAmount = (float) $transacao->getInstallmentAmount($parcela->installment_number);
-                    $rows->push($this->buildRow($transacao, $parcela->month_key, $parcela->installment_number, $installmentAmount));
+                    $installmentAmount = (float) $parcela->amount;
+                    $row = $this->buildRow($transacao, $parcela->month_key, $parcela->installment_number, $installmentAmount);
+                    $row['parcela_status'] = $parcela->status;
+                    $row['due_date'] = $parcela->due_date?->toDateString();
+                    $rows->push($row);
                 }
                 continue;
             }
