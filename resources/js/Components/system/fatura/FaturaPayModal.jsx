@@ -209,7 +209,8 @@ export default function FaturaPayModal({
   const fullTotalToPay = useMemo(
     () => pendingItems.reduce((sum, item) => {
       const installments = Math.max(item.total_installments || 1, 1);
-      return sum + (item.amount || 0) / installments;
+      const installmentAmount = item.installment_amount ?? (item.amount || 0) / installments;
+      return sum + installmentAmount;
     }, 0),
     [pendingItems]
   );
