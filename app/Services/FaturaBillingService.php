@@ -302,7 +302,7 @@ class FaturaBillingService
                 'is_paid'                     => $isPaid,
                 'is_partially_paid'           => !$isPaid && $totalPaid > 0,
                 'has_remaining_post_payment'  => $hasRemainingPostPayment,
-                'items' => $items->map(function ($entry) {
+                'items' => $items->map(function ($entry) use ($faturaPayment) {
                     $fatura = $entry['transacao'];
                     $installmentIndex = $entry['installment_index'];
                     $monthKey = $entry['month_key'];
@@ -320,7 +320,12 @@ class FaturaBillingService
                         : (float) $fatura->getInstallmentAmount($installmentIndex);
 
                     $effectiveStatus = $fatura->status;
-                    if ($parcela) {
+                    if ($fatura->is_recurring) {
+                        // Recurring: derive status from month payment state.
+                        $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at)
+                            ? 'paid'
+                            : 'pending';
+                    } elseif ($parcela) {
                         $effectiveStatus = $parcela->status;
                     } elseif ($totalInstallments > 1 && (int) ($fatura->current_installment ?? 0) >= $installmentIndex) {
                         $effectiveStatus = 'paid';

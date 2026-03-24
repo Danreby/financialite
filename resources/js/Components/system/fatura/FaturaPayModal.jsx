@@ -201,9 +201,17 @@ export default function FaturaPayModal({
   const remaining = Math.max(0, totalSpent - totalPaid);
 
   const pendingItems = useMemo(() => {
-    const pending = items.filter((item) => item.status !== "paid");
+    const pending = items.filter((item) => item.status !== "paid" && !item.is_recurring);
     if (!selectedCardId) return pending;
     return pending.filter((item) => String(item.bank_user_id) === selectedCardId);
+  }, [items, selectedCardId]);
+
+  const recurringTotal = useMemo(() => {
+    const recurring = items.filter((item) => item.is_recurring && item.status !== "paid");
+    const filtered = selectedCardId
+      ? recurring.filter((item) => String(item.bank_user_id) === selectedCardId)
+      : recurring;
+    return filtered.reduce((sum, item) => sum + Number(item.installment_amount ?? item.amount ?? 0), 0);
   }, [items, selectedCardId]);
 
   const fullTotalToPay = useMemo(
@@ -211,8 +219,8 @@ export default function FaturaPayModal({
       const installments = Math.max(item.total_installments || 1, 1);
       const installmentAmount = item.installment_amount ?? (item.amount || 0) / installments;
       return sum + installmentAmount;
-    }, 0),
-    [pendingItems]
+    }, 0) + recurringTotal,
+    [pendingItems, recurringTotal]
   );
 
   const selectedCardName = useMemo(() => bankAccounts.find((a) => String(a.id) === selectedCardId)?.name ?? null, [bankAccounts, selectedCardId]);
@@ -226,9 +234,9 @@ export default function FaturaPayModal({
 
   const canProceed = useMemo(() => {
     if (isSubmitting) return false;
-    if (mode === "full") return pendingItems.length > 0;
+    if (mode === "full") return pendingItems.length > 0 || recurringTotal > 0;
     return parsedPartialAmount > 0 && parsedPartialAmount <= remaining + 0.009 && remaining > 0;
-  }, [isSubmitting, mode, pendingItems.length, parsedPartialAmount, remaining]);
+  }, [isSubmitting, mode, pendingItems.length, recurringTotal, parsedPartialAmount, remaining]);
 
   const handleCardSelect = useCallback((v) => setSelectedCardId(v ? String(v) : ""), []);
   const handleBankAccountSelect = useCallback((v) => setSelectedBankAccountId(v ? String(v) : ""), []);

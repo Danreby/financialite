@@ -114,12 +114,6 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
-            ->where(function ($q) use ($monthKey) {
-                $q->where(function ($sub) use ($monthKey) {
-                    $sub->where('is_recurring', false)
-                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $monthKey));
-                })->orWhere('is_recurring', true);
-            })
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
 
@@ -186,12 +180,6 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
-            ->where(function ($q) use ($monthKey) {
-                $q->where(function ($sub) use ($monthKey) {
-                    $sub->where('is_recurring', false)
-                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $monthKey));
-                })->orWhere('is_recurring', true);
-            })
             ->orderByDesc('created_at')
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
@@ -263,12 +251,6 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             ->forUser($userId)
             ->where('type', 'credit')
             ->whereNotNull('bank_user_id')
-            ->where(function ($q) use ($monthKey) {
-                $q->where(function ($sub) use ($monthKey) {
-                    $sub->where('is_recurring', false)
-                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $monthKey));
-                })->orWhere('is_recurring', true);
-            })
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
 
@@ -414,12 +396,6 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
-            ->where(function ($q) use ($monthKeys) {
-                $q->where(function ($sub) use ($monthKeys) {
-                    $sub->where('is_recurring', false)
-                        ->whereHas('parcelas', fn ($pq) => $pq->whereIn('month_key', $monthKeys));
-                })->orWhere('is_recurring', true);
-            })
             ->get();
 
         $allRows = collect();

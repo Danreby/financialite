@@ -21,7 +21,6 @@ class SyncTransacaoParcelasCommand extends Command
         $recreated = 0;
         $skipped = 0;
 
-        // 1. Transactions without any parcelas (non-recurring).
         $withoutParcelas = Transacao::whereDoesntHave('parcelas')
             ->where('is_recurring', false)
             ->get();
@@ -35,7 +34,6 @@ class SyncTransacaoParcelasCommand extends Command
             }
         }
 
-        // 2. Transactions with parcelas that don't match (wrong count or missing month_key).
         $withParcelas = Transacao::with('parcelas')
             ->where('is_recurring', false)
             ->whereHas('parcelas')
@@ -46,17 +44,14 @@ class SyncTransacaoParcelasCommand extends Command
             $parcelas = $transacao->parcelas;
             $needsRecreation = false;
 
-            // Check: parcela count matches total_installments.
             if ($parcelas->count() !== $totalInstallments) {
                 $needsRecreation = true;
             }
 
-            // Check: all parcelas have month_key.
             if (!$needsRecreation && $parcelas->contains(fn ($p) => empty($p->month_key))) {
                 $needsRecreation = true;
             }
 
-            // Check: amounts sum matches transaction amount (within tolerance).
             if (!$needsRecreation) {
                 $parcelasSum = (float) $parcelas->sum('amount');
                 $transacaoAmount = (float) $transacao->amount;
@@ -65,7 +60,6 @@ class SyncTransacaoParcelasCommand extends Command
                 }
             }
 
-            // Check: installment numbers are sequential 1..N.
             if (!$needsRecreation) {
                 $numbers = $parcelas->pluck('installment_number')->sort()->values()->all();
                 $expected = range(1, $totalInstallments);
@@ -75,7 +69,6 @@ class SyncTransacaoParcelasCommand extends Command
             }
 
             if ($needsRecreation) {
-                // Preserve paid status of existing parcelas before recreation.
                 $paidStatuses = $parcelas
                     ->where('status', 'paid')
                     ->pluck('paid_date', 'installment_number')
@@ -84,7 +77,6 @@ class SyncTransacaoParcelasCommand extends Command
                 $transacao->parcelas()->delete();
                 $faturaService->createParcelas($transacao);
 
-                // Re-apply paid status to recreated parcelas.
                 if (!empty($paidStatuses)) {
                     foreach ($paidStatuses as $installmentNumber => $paidDate) {
                         TransacaoParcela::where('transacao_id', $transacao->id)

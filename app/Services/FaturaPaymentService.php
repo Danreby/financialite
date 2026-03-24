@@ -39,7 +39,21 @@ class FaturaPaymentService
         return DB::transaction(function () use ($faturas, $user, $bankUserId, $monthKey, $bankAccount) {
             $totalPaidThisRun = 0.0;
 
+            // Check if this month already has a payment record (re-payment scenario).
+            $existingFatura = Fatura::where([
+                'user_id' => $user->id,
+                'month_key' => $monthKey,
+                'bank_user_id' => $bankUserId,
+            ])->first();
+            $hasExistingPayment = $existingFatura && (float) ($existingFatura->total_paid ?? 0) > 0;
+
             foreach ($faturas as $transacao) {
+                // Recurring transactions were already included in the first payment.
+                // Skip them on re-payment to avoid double-counting in total_paid.
+                if ($transacao->is_recurring && $hasExistingPayment) {
+                    continue;
+                }
+
                 $totalPaidThisRun += $this->billing->applyPaymentForMonth($transacao, $monthKey);
                 $transacao->save();
             }

@@ -158,12 +158,6 @@ class FaturaDashboardService
         $creditEntriesForMonth = (clone $base)
             ->with(['category', 'bankUser', 'parcelas'])
             ->where('type', 'credit')
-            ->where(function ($q) use ($effectiveMonthKey) {
-                $q->where(function ($sub) use ($effectiveMonthKey) {
-                    $sub->where('is_recurring', false)
-                        ->whereHas('parcelas', fn ($pq) => $pq->where('month_key', $effectiveMonthKey));
-                })->orWhere('is_recurring', true);
-            })
             ->get()
             ->filter(function (Transacao $transacao) use ($targetMonth) {
                 return $this->billing->faturaAppliesToMonth($transacao, $targetMonth);
@@ -354,21 +348,16 @@ class FaturaDashboardService
                 $q->where('category_id', $categoryId);
             })
             ->where('type', 'credit')
-            ->where(function ($q) use ($monthKeys) {
-                $q->where(function ($sub) use ($monthKeys) {
-                    $sub->where('is_recurring', false)
-                        ->whereHas('parcelas', fn ($pq) => $pq->whereIn('month_key', $monthKeys));
-                })->orWhere('is_recurring', true);
-            })
             ->get();
 
         foreach ($creditTransactions as $t) {
             if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                // Fast path: direct parcela lookup.
                 foreach ($t->parcelas->whereIn('month_key', $monthKeys) as $parcela) {
                     $creditByMonth[$parcela->month_key] = ($creditByMonth[$parcela->month_key] ?? 0) + (float) $parcela->amount;
                 }
             } else {
-                // Recurring: add installment amount to each applicable month.
+                // Recurring or non-recurring without parcelas: check each month.
                 $amount = (float) $t->getInstallmentAmount();
                 foreach ($monthKeys as $mk) {
                     $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
@@ -461,12 +450,6 @@ class FaturaDashboardService
         $creditEntries = (clone $base)
             ->with(['category', 'bankUser', 'parcelas'])
             ->where('type', 'credit')
-            ->where(function ($q) use ($monthKeys) {
-                $q->where(function ($sub) use ($monthKeys) {
-                    $sub->where('is_recurring', false)
-                        ->whereHas('parcelas', fn ($pq) => $pq->whereIn('month_key', $monthKeys));
-                })->orWhere('is_recurring', true);
-            })
             ->get()
             ->filter(function (Transacao $transacao) use ($startMonth, $endMonth) {
                 $cursor = $startMonth->copy()->startOfMonth();
@@ -579,7 +562,20 @@ class FaturaDashboardService
             $query->whereNull('bank_user_id');
         }
 
-        return $query->get()->keyBy('month_key');
+        $results = $query->get();
+
+        // When not filtering by a specific card, multiple Fatura records may exist
+        // per month_key (one per card). Aggregate them to get the correct totals.
+        if (!$shouldFilterByBankUser) {
+            return $results->groupBy('month_key')->map(function ($faturas) {
+                return (object) [
+                    'total_paid' => (float) $faturas->sum('total_paid'),
+                    'paid_at' => $faturas->max('paid_at'),
+                ];
+            });
+        }
+
+        return $results->keyBy('month_key');
     }
 
     private function aggregateCategorySpending($rows): array
