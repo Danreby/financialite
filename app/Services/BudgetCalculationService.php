@@ -33,7 +33,7 @@ class BudgetCalculationService
             ? CardUser::forUser($user->id)->find($bankUserId)
             : null;
 
-        $allCreditTransactions = Transacao::with(['bankUser.card', 'category'])
+        $allCreditTransactions = Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->where('type', 'credit')
@@ -146,8 +146,19 @@ class BudgetCalculationService
                 continue;
             }
 
-            $totalInstallments = max((int) ($item['total_installments'] ?? 1), 1);
-            $installmentAmount = (float) ($item['amount'] ?? 0) / $totalInstallments;
+            $transacaoId = $item['transacao_id'] ?? null;
+            $displayInstallment = $item['display_installment'] ?? null;
+            $installmentAmount = 0.0;
+
+            if ($transacaoId && $displayInstallment) {
+                $parcela = \App\Models\TransacaoParcela::where('transacao_id', $transacaoId)
+                    ->where('installment_number', $displayInstallment)
+                    ->first();
+                $installmentAmount = $parcela ? (float) $parcela->amount : (float) ($item['amount'] ?? 0) / max((int) ($item['total_installments'] ?? 1), 1);
+            } else {
+                $totalInstallments = max((int) ($item['total_installments'] ?? 1), 1);
+                $installmentAmount = (float) ($item['amount'] ?? 0) / $totalInstallments;
+            }
 
             if (!isset($categorySpending[$categoryId])) {
                 $categorySpending[$categoryId] = 0;
@@ -254,7 +265,7 @@ class BudgetCalculationService
             ->get()
             ->keyBy('category_id');
 
-        $allCreditTransactions = Transacao::with(['bankUser.card'])
+        $allCreditTransactions = Transacao::with(['bankUser.card', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->where('type', 'credit')
@@ -273,8 +284,8 @@ class BudgetCalculationService
                 $targetMonth = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
                 
                 if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
-                    $totalInstallments = max((int) ($transaction->total_installments ?? 1), 1);
-                    $installmentAmount = (float) $transaction->amount / $totalInstallments;
+                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transaction, $monthKey);
+                    $installmentAmount = (float) $transaction->getInstallmentAmount($installmentNumber);
 
                     if (!isset($creditByCategory[$categoryId])) {
                         $creditByCategory[$categoryId] = 0;
@@ -298,7 +309,7 @@ class BudgetCalculationService
         Carbon $periodStart,
         Carbon $periodEnd
     ): float {
-        $allCreditTransactions = Transacao::with(['bankUser.card'])
+        $allCreditTransactions = Transacao::with(['bankUser.card', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->where('type', 'credit')
@@ -317,8 +328,8 @@ class BudgetCalculationService
                 $targetMonth = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
                 
                 if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
-                    $totalInstallments = max((int) ($transaction->total_installments ?? 1), 1);
-                    $installmentAmount = (float) $transaction->amount / $totalInstallments;
+                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transaction, $monthKey);
+                    $installmentAmount = (float) $transaction->getInstallmentAmount($installmentNumber);
                     $total += $installmentAmount;
                 }
             }

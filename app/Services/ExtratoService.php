@@ -62,7 +62,7 @@ class ExtratoService implements ExtratoServiceInterface
         ?string $type,
         ?int $categoryId
     ): \Illuminate\Support\Collection {
-        return Transacao::with(['bankUser.card', 'category'])
+        return Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->forUser($userId)
             ->forBankUser($bankUserId)
             ->when($type && in_array($type, Transacao::VALID_TYPES, true), fn ($q) => $q->where('type', $type))
@@ -99,7 +99,7 @@ class ExtratoService implements ExtratoServiceInterface
     private function mapTransaction(Transacao $t): array
     {
         $installmentAmount = $t->type === 'credit'
-            ? (float) $t->amount / max((int) ($t->total_installments ?? 1), 1)
+            ? (float) $t->getInstallmentAmount()
             : (float) $t->amount;
 
         return [
