@@ -18,6 +18,7 @@ use App\Contracts\Services\ExtratoServiceInterface;
 use App\Contracts\Services\SavingsGoalServiceInterface;
 use App\Contracts\Services\BankAccountServiceInterface;
 use App\Contracts\Services\BankTransferServiceInterface;
+use App\Contracts\Services\ResumoMensalServiceInterface;
 
 use App\Services\FaturaService;
 use App\Services\AnexoService;
@@ -33,6 +34,7 @@ use App\Services\ExtratoService;
 use App\Services\SavingsGoalService;
 use App\Services\BankAccountService;
 use App\Services\BankTransferService;
+use App\Services\ResumoMensalService;
 
 class ServiceBindingProvider extends ServiceProvider
 {
@@ -51,6 +53,7 @@ class ServiceBindingProvider extends ServiceProvider
         SavingsGoalServiceInterface::class => SavingsGoalService::class,
         BankAccountServiceInterface::class => BankAccountService::class,
         BankTransferServiceInterface::class => BankTransferService::class,
+        ResumoMensalServiceInterface::class => ResumoMensalService::class,
     ];
 
     public function register(): void
