@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Fatura;
 
@@ -79,6 +80,32 @@ class Transacao extends Model
     {
         return $this->belongsToMany(Anexo::class, 'anexo_transacao')
             ->withTimestamps();
+    }
+
+    public function parcelas(): HasMany
+    {
+        return $this->hasMany(TransacaoParcela::class, 'transacao_id')
+            ->orderBy('installment_number');
+    }
+
+    public function getInstallmentAmount(?int $installmentNumber = null): float
+    {
+        if ($this->total_installments <= 1) {
+            return (float) $this->amount;
+        }
+
+        if ($installmentNumber !== null && $this->relationLoaded('parcelas')) {
+            $parcela = $this->parcelas->firstWhere('installment_number', $installmentNumber);
+            if ($parcela) {
+                return (float) $parcela->amount;
+            }
+        }
+
+        if ($this->relationLoaded('parcelas') && $this->parcelas->isNotEmpty()) {
+            return (float) $this->parcelas->first()->amount;
+        }
+
+        return (float) $this->amount / max((int) $this->total_installments, 1);
     }
 
     public function getBankAttribute()

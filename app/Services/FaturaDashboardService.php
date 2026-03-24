@@ -27,7 +27,7 @@ class FaturaDashboardService
             $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
-        $baseQuery = Transacao::with(['bankUser.card', 'user', 'category'])
+        $baseQuery = Transacao::with(['bankUser.card', 'user', 'category', 'parcelas'])
             ->withCount('anexos')
             ->forUser($user->id)
             ->filter($filters)
@@ -120,7 +120,7 @@ class FaturaDashboardService
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        $allFaturas = Transacao::with('bankUser')
+        $allFaturas = Transacao::with(['bankUser', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->when($categoryId, function ($q, $categoryId) {
@@ -156,7 +156,7 @@ class FaturaDashboardService
             ->get();
 
         $creditEntriesForMonth = (clone $base)
-            ->with(['category', 'bankUser'])
+            ->with(['category', 'bankUser', 'parcelas'])
             ->where('type', 'credit')
             ->get()
             ->filter(function (Transacao $transacao) use ($targetMonth) {
@@ -174,9 +174,9 @@ class FaturaDashboardService
             ];
         })->values()->all();
 
-        $creditRows = $creditEntriesForMonth->map(function (Transacao $transacao) {
-            $installments = max((int) ($transacao->total_installments ?? 1), 1);
-            $installmentAmount = (float) $transacao->amount / $installments;
+        $creditRows = $creditEntriesForMonth->map(function (Transacao $transacao) use ($effectiveMonthKey) {
+            $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $effectiveMonthKey);
+            $installmentAmount = (float) $transacao->getInstallmentAmount($installmentNumber);
 
             return [
                 'category_id' => $transacao->category_id,
@@ -393,7 +393,7 @@ class FaturaDashboardService
             ->get();
 
         $creditEntries = (clone $base)
-            ->with(['category', 'bankUser'])
+            ->with(['category', 'bankUser', 'parcelas'])
             ->where('type', 'credit')
             ->get()
             ->filter(function (Transacao $transacao) use ($startMonth, $endMonth) {
@@ -422,8 +422,7 @@ class FaturaDashboardService
         })->values()->all();
 
         $creditRows = $creditEntries->map(function (Transacao $transacao) {
-            $installments = max((int) ($transacao->total_installments ?? 1), 1);
-            $installmentAmount = (float) $transacao->amount / $installments;
+            $installmentAmount = (float) $transacao->getInstallmentAmount();
 
             return [
                 'category_id'    => $transacao->category_id,

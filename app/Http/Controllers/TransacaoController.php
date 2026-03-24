@@ -389,7 +389,7 @@ class TransacaoController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'icon', 'color']);
 
-        $txs = Transacao::with(['bankUser.card', 'category'])
+        $txs = Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->where('user_id', $user->id)
             ->where('total_installments', '>', 1)
             ->orderByDesc('created_at')
@@ -400,9 +400,7 @@ class TransacaoController extends Controller
             $currentInstallment = (int) ($tx->current_installment ?? 0);
             $remaining          = max($totalInstallments - $currentInstallment, 0);
             $amount             = (float) $tx->amount;
-            $installmentAmount  = $totalInstallments > 0
-                ? round($amount / $totalInstallments, 2)
-                : $amount;
+            $installmentAmount  = (float) $tx->getInstallmentAmount();
 
             $createdAt = \Carbon\Carbon::parse($tx->created_at);
             $dueDay    = $tx->bankUser?->due_day ?? 1;
@@ -433,6 +431,13 @@ class TransacaoController extends Controller
                 'category_icon'          => $tx->category?->icon,
                 'category_color'         => $tx->category?->color,
                 'type'                   => $tx->type ?? 'credit',
+                'parcelas'               => $tx->parcelas->map(fn ($p) => [
+                    'installment_number' => $p->installment_number,
+                    'amount'             => (float) $p->amount,
+                    'due_date'           => $p->due_date?->format('Y-m-d'),
+                    'status'             => $p->status,
+                    'paid_date'          => $p->paid_date?->format('Y-m-d'),
+                ])->values()->toArray(),
             ];
         });
 

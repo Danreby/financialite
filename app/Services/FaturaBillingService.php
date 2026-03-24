@@ -74,7 +74,7 @@ class FaturaBillingService
     public function applyPaymentForMonth(Transacao $transacao): float
     {
         $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
-        $installmentAmount = (float) $transacao->amount / $totalInstallments;
+        $installmentAmount = (float) $transacao->getInstallmentAmount();
         $isRecurring = (bool) $transacao->is_recurring;
 
         if ($isRecurring) {
@@ -173,8 +173,8 @@ class FaturaBillingService
 
             $totalSpent = $items->sum(function ($entry) {
                 $transacao = $entry['transacao'];
-                $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
-                return (float) $transacao->amount / $totalInstallments;
+                $installmentNumber = $entry['installment_index'];
+                return (float) $transacao->getInstallmentAmount($installmentNumber);
             });
 
             $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
@@ -200,6 +200,7 @@ class FaturaBillingService
                 'items' => $items->map(function ($entry) {
                     $fatura = $entry['transacao'];
                     $installmentIndex = $entry['installment_index'];
+                    $installmentAmount = (float) $fatura->getInstallmentAmount($installmentIndex);
 
                     return [
                         'id' => $fatura->id . '-' . $installmentIndex,
@@ -207,6 +208,7 @@ class FaturaBillingService
                         'title' => $fatura->title,
                         'description' => $fatura->description,
                         'amount' => (float) $fatura->amount,
+                        'installment_amount' => $installmentAmount,
                         'type' => $fatura->type,
                         'status' => $fatura->status,
                         'created_at' => $fatura->created_at,

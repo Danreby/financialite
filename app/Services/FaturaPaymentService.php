@@ -19,7 +19,7 @@ class FaturaPaymentService
     {
         $bankUserId = $cardUser?->id;
 
-        $query = Transacao::with('bankUser')
+        $query = Transacao::with(['bankUser', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->notStatus('paid');
@@ -76,7 +76,7 @@ class FaturaPaymentService
 
         $targetMonth = now()->createFromFormat('Y-m', $monthKey)->startOfMonth();
 
-        $allTransacoes = Transacao::with('bankUser')
+        $allTransacoes = Transacao::with(['bankUser', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
             ->get();
@@ -84,8 +84,8 @@ class FaturaPaymentService
         $totalDue = 0.0;
         foreach ($allTransacoes as $transacao) {
             if ($this->billing->faturaAppliesToMonth($transacao, $targetMonth)) {
-                $installments = max((int) ($transacao->total_installments ?? 1), 1);
-                $totalDue += (float) $transacao->amount / $installments;
+                $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $monthKey);
+                $totalDue += (float) $transacao->getInstallmentAmount($installmentNumber);
             }
         }
 
