@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\Services\IncomeServiceInterface;
 use App\Contracts\Services\ResumoMensalServiceInterface;
 use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Category;
+use App\Models\Income;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +19,7 @@ class ResumoMensalController extends Controller
 {
     public function __construct(
         private ResumoMensalServiceInterface $resumoService,
+        private IncomeServiceInterface $incomeService,
     ) {
         $this->middleware('auth');
     }
@@ -47,10 +50,46 @@ class ResumoMensalController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'icon', 'color', 'type']);
 
+        $incomes = $this->incomeService->listForUser($user->id)
+            ->map(function (Income $income) {
+                return [
+                    'id' => $income->id,
+                    'title' => $income->title,
+                    'description' => $income->description,
+                    'amount' => (float) $income->amount,
+                    'type' => $income->type,
+                    'type_label' => $income->type_label,
+                    'payment_day_type' => $income->payment_day_type,
+                    'payment_day_value' => $income->payment_day_value,
+                    'payment_day_label' => $income->payment_day_label,
+                    'is_active' => $income->is_active,
+                    'is_recurring' => $income->is_recurring,
+                    'received_at' => $income->received_at?->toDateString(),
+                    'bank_user_id' => $income->bank_user_id,
+                    'bank_account_id' => $income->bank_account_id,
+                    'bank_name' => optional($income->bankUser?->card)->name,
+                    'bank_account_name' => optional($income->bankAccount?->bank)->name,
+                ];
+            });
+
+        $totalMonthly = $this->incomeService->totalMonthlyIncome($user->id);
+
+        $incomesByType = $incomes->groupBy('type')->map(function ($items, $type) {
+            return [
+                'type' => $type,
+                'label' => $items->first()['type_label'] ?? $type,
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+            ];
+        })->values();
+
         return Inertia::render('ResumoMensal', [
             'bankAccounts' => $bankAccounts,
             'bankAccountsList' => $bankAccountsList,
             'categories' => $categories,
+            'incomes' => $incomes->values(),
+            'totalMonthly' => (float) $totalMonthly,
+            'incomesByType' => $incomesByType,
         ]);
     }
 

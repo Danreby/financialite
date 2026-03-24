@@ -14,7 +14,6 @@ const links = [
   { href: () => route('contas.index'), label: 'Contas' },
   { href: () => route('extrato.index'), label: 'Extrato' },
   { href: () => route('resumo-mensal.index'), label: 'Resumo Mensal' },
-  { href: () => route('receitas.index'), label: 'Receitas' },
   { href: () => route('reports.index'), label: 'Relatórios' },
   { href: () => route('about'), label: 'Sobre' },
   { href: () => route('settings'), label: 'Configurações' },

@@ -1,29 +1,34 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import axios from 'axios'
-import { Head, router } from '@inertiajs/react'
+import { router } from '@inertiajs/react'
 import { toast } from 'react-toastify'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
-import { formatCurrencyBRL } from '@/Lib/formatters'
-import IncomeForm from '@/Components/system/income/IncomeForm'
-import IncomeCard from '@/Components/system/income/IncomeCard'
+import ScrollArea from '@/Components/common/ScrollArea'
 import Modal from '@/Components/common/Modal'
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
-import ScrollArea from '@/Components/common/ScrollArea'
+import IncomeForm from '@/Components/system/income/IncomeForm'
+import IncomeCard from '@/Components/system/income/IncomeCard'
 import ReceitasHeroCard from '@/Components/system/receitas/ReceitasHeroCard'
 import ReceitasTypeBreakdown from '@/Components/system/receitas/ReceitasTypeBreakdown'
 import ReceitasFilterBar from '@/Components/system/receitas/ReceitasFilterBar'
 
-export default function ReceitasMensais({
-  incomes: initialIncomes = [],
+export default function ResumoReceitasTab({
+  initialIncomes = [],
+  initialTotal = 0,
   bankAccounts = [],
   bankAccountsList = [],
-  totalMonthly: initialTotal = 0,
-  incomesByType: initialByType = [],
 }) {
   const [incomes, setIncomes] = useState(initialIncomes)
   const [totalMonthly, setTotalMonthly] = useState(initialTotal)
-  const [incomesByType, setIncomesByType] = useState(initialByType)
+
+  const incomesByType = useMemo(() => {
+    const grouped = {}
+    for (const i of incomes) {
+      if (!grouped[i.type]) grouped[i.type] = []
+      grouped[i.type].push(i)
+    }
+    return grouped
+  }, [incomes])
 
   const [showForm, setShowForm] = useState(false)
   const [editingIncome, setEditingIncome] = useState(null)
@@ -34,20 +39,9 @@ export default function ReceitasMensais({
   const [filterStatus, setFilterStatus] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  const refreshData = useCallback(() => {
-    router.reload({ only: ['incomes', 'totalMonthly', 'incomesByType'], preserveState: true })
-  }, [])
-
   const refreshTotals = (updatedIncomes) => {
     const active = updatedIncomes.filter(i => i.is_active)
     setTotalMonthly(active.reduce((s, i) => s + Number(i.amount || 0), 0))
-    const byType = {}
-    for (const i of updatedIncomes) {
-      if (!byType[i.type]) byType[i.type] = { type: i.type, label: i.type_label, total: 0, count: 0 }
-      byType[i.type].total += Number(i.amount || 0)
-      byType[i.type].count++
-    }
-    setIncomesByType(Object.values(byType))
   }
 
   const handleCreated = (income) => {
@@ -124,21 +118,8 @@ export default function ReceitasMensais({
   const inactiveCount = incomes.length - activeCount
 
   return (
-    <AuthenticatedLayout>
-      <Head title="Receitas Mensais" />
-
-      <FadeInContainer className="w-full max-w-[1920px] mx-auto pb-8">
-        <FadeInItem type="fast">
-          <header className="mb-6">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-gray-100">
-              Receitas Mensais
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Gerencie todas as suas fontes de renda
-            </p>
-          </header>
-        </FadeInItem>
-
+    <>
+      <FadeInContainer stagger className="flex flex-col gap-4 lg:gap-5">
         <FadeInContainer stagger className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
           <FadeInItem className="lg:col-span-2">
             <ReceitasHeroCard
@@ -156,7 +137,7 @@ export default function ReceitasMensais({
           </FadeInItem>
         </FadeInContainer>
 
-        <FadeInItem className="mt-5">
+        <FadeInItem>
           <ReceitasFilterBar
             filterType={filterType}
             filterStatus={filterStatus}
@@ -168,11 +149,11 @@ export default function ReceitasMensais({
           />
         </FadeInItem>
 
-        <FadeInItem className="mt-4">
+        <FadeInItem>
           <div className="themed-card rounded-2xl p-4 sm:p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">
-                {filterType === 'all' ? 'Todas as receitas' : `Receitas: ${incomesByType.find(t => t.type === filterType)?.label || filterType}`}
+                {filterType === 'all' ? 'Todas as receitas' : `Receitas: ${filterType}`}
                 <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">({filteredIncomes.length})</span>
               </h2>
             </div>
@@ -254,6 +235,6 @@ export default function ReceitasMensais({
           </button>
         </div>
       </Modal>
-    </AuthenticatedLayout>
+    </>
   )
 }

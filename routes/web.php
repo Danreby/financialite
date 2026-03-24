@@ -10,7 +10,6 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\ReceitasMensaisController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ProjecaoController;
 use Illuminate\Support\Facades\Route;
@@ -40,7 +39,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/contas', [BillController::class, 'page'])->name('contas.index');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/receitas', [ReceitasMensaisController::class, 'index'])->name('receitas.index');
     Route::get('/projecao', [ProjecaoController::class, 'index'])->name('projecao.index');
     Route::get('/bancos', [BankController::class, 'page'])->name('bancos.index');
     Route::get('/about', [SettingsController::class, 'about'])->name('about');
