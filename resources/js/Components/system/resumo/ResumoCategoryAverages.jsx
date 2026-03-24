@@ -1,6 +1,7 @@
 import React from 'react'
 import { BarChart3, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
+import { getIconEmoji } from '@/Utils/categoryIcons'
 import ScrollArea from '@/Components/common/ScrollArea'
 
 const FALLBACK_COLORS = [
@@ -38,7 +39,7 @@ export default function ResumoCategoryAverages({ averages = [] }) {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     {item.category_icon && (
-                      <span className="text-base">{item.category_icon}</span>
+                      <span className="text-base">{getIconEmoji(item.category_icon) || item.category_icon}</span>
                     )}
                     <span
                       className="w-2 h-2 rounded-full flex-shrink-0"

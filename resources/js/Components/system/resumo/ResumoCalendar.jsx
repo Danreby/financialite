@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, X } from 'lucide-react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
+import { getIconEmoji } from '@/Utils/categoryIcons'
 
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -204,7 +205,7 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       {t.category_icon && (
-                        <span className="text-sm flex-shrink-0">{t.category_icon}</span>
+                        <span className="text-sm flex-shrink-0">{getIconEmoji(t.category_icon) || t.category_icon}</span>
                       )}
                       <div className="min-w-0">
                         <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">

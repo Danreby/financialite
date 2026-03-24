@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { PieChart } from 'lucide-react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
+import { getIconEmoji } from '@/Utils/categoryIcons'
 import ScrollArea from '@/Components/common/ScrollArea'
 
 const FALLBACK_COLORS = [
@@ -38,7 +39,7 @@ export default function ResumoExpensesByCategory({ expenses = [] }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     {expense.category_icon && (
-                      <span className="text-sm flex-shrink-0">{expense.category_icon}</span>
+                      <span className="text-sm flex-shrink-0">{getIconEmoji(expense.category_icon) || expense.category_icon}</span>
                     )}
                     <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                       {expense.category_name}

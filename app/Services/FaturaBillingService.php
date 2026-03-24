@@ -71,14 +71,13 @@ class FaturaBillingService
         return !$targetMonth->lt($first) && !$targetMonth->gt($last);
     }
 
-    public function applyPaymentForMonth(Transacao $transacao): float
+    public function applyPaymentForMonth(Transacao $transacao, ?string $monthKey = null): float
     {
         $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
-        $installmentAmount = (float) $transacao->getInstallmentAmount();
         $isRecurring = (bool) $transacao->is_recurring;
 
         if ($isRecurring) {
-            return $installmentAmount;
+            return (float) $transacao->getInstallmentAmount();
         }
 
         if ($totalInstallments <= 1) {
@@ -90,6 +89,43 @@ class FaturaBillingService
             return (float) $transacao->amount;
         }
 
+        // Resolve which installment corresponds to the target month.
+        $targetInstallment = $monthKey
+            ? $this->resolveInstallmentNumberForMonth($transacao, $monthKey)
+            : null;
+
+        if ($targetInstallment) {
+            // Check if this specific parcela is already paid (avoid double-payment).
+            if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+                $parcela = $transacao->parcelas->firstWhere('installment_number', $targetInstallment);
+                if ($parcela && $parcela->status === 'paid') {
+                    return 0.0;
+                }
+            }
+
+            $installmentAmount = (float) $transacao->getInstallmentAmount($targetInstallment);
+            $this->markParcelaAsPaid($transacao, $targetInstallment);
+
+            // Update current_installment to the highest paid installment.
+            $highestPaid = $transacao->parcelas()
+                ->where('status', 'paid')
+                ->max('installment_number') ?? $targetInstallment;
+            $transacao->current_installment = (int) $highestPaid;
+
+            // Check if all installments are now paid.
+            $unpaidCount = $transacao->parcelas()
+                ->where('status', '!=', 'paid')
+                ->count();
+
+            if ($unpaidCount === 0 || (int) $highestPaid >= $totalInstallments) {
+                $transacao->status = 'paid';
+                $transacao->paid_date = now()->toDateString();
+            }
+
+            return $installmentAmount;
+        }
+
+        // Fallback: sequential payment for data without parcelas.
         $currentInstallment = max((int) ($transacao->current_installment ?? 0), 0);
 
         if ($currentInstallment < $totalInstallments) {
@@ -104,7 +140,7 @@ class FaturaBillingService
             $transacao->paid_date = now()->toDateString();
         }
 
-        return $installmentAmount;
+        return (float) $transacao->getInstallmentAmount($currentInstallment);
     }
 
     private function markParcelaAsPaid(Transacao $transacao, int $installmentNumber): void
@@ -217,6 +253,21 @@ class FaturaBillingService
                     $installmentIndex = $entry['installment_index'];
                     $installmentAmount = (float) $fatura->getInstallmentAmount($installmentIndex);
 
+                    // Determine effective status at the parcela level.
+                    $effectiveStatus = $fatura->status;
+                    $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
+
+                    if ($totalInstallments > 1) {
+                        if ($fatura->relationLoaded('parcelas') && $fatura->parcelas->isNotEmpty()) {
+                            $parcela = $fatura->parcelas->firstWhere('installment_number', $installmentIndex);
+                            if ($parcela) {
+                                $effectiveStatus = $parcela->status;
+                            }
+                        } elseif ((int) ($fatura->current_installment ?? 0) >= $installmentIndex) {
+                            $effectiveStatus = 'paid';
+                        }
+                    }
+
                     return [
                         'id' => $fatura->id . '-' . $installmentIndex,
                         'transacao_id' => $fatura->id,
@@ -225,7 +276,7 @@ class FaturaBillingService
                         'amount' => (float) $fatura->amount,
                         'installment_amount' => $installmentAmount,
                         'type' => $fatura->type,
-                        'status' => $fatura->status,
+                        'status' => $effectiveStatus,
                         'created_at' => $fatura->created_at,
                         'paid_date' => $fatura->paid_date,
                         'total_installments' => $fatura->total_installments,

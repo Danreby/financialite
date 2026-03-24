@@ -40,7 +40,7 @@ class FaturaPaymentService
             $totalPaidThisRun = 0.0;
 
             foreach ($faturas as $transacao) {
-                $totalPaidThisRun += $this->billing->applyPaymentForMonth($transacao);
+                $totalPaidThisRun += $this->billing->applyPaymentForMonth($transacao, $monthKey);
                 $transacao->save();
             }
 
