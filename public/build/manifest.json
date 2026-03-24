@@ -395,7 +395,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-CON-Gyhi.js",
+    "file": "assets/Bancos-kxgL_AuD.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -677,7 +677,7 @@
     ]
   },
   "resources/js/Pages/Relatorio.jsx": {
-    "file": "assets/Relatorio-BoV5SAZS.js",
+    "file": "assets/Relatorio-DrepD_ve.js",
     "name": "Relatorio",
     "src": "resources/js/Pages/Relatorio.jsx",
     "isDynamicEntry": true,
@@ -701,7 +701,7 @@
     ]
   },
   "resources/js/Pages/ResumoMensal.jsx": {
-    "file": "assets/ResumoMensal-Cl-a6N9f.js",
+    "file": "assets/ResumoMensal-DAb_UyU1.js",
     "name": "ResumoMensal",
     "src": "resources/js/Pages/ResumoMensal.jsx",
     "isDynamicEntry": true,
@@ -711,13 +711,13 @@
       "_FadeInContainer-D3o5rAUN.js",
       "_formatters-DEYZwcN3.js",
       "_ScrollArea-DlJvZn9z.js",
+      "_categoryIcons-CwR7tXAh.js",
       "_CategoryBadge-Dj8n3DBb.js",
       "_Modal-Cu5bff06.js",
       "_SecondaryButton-HHSot5S1.js",
       "_IncomeForm-BfolFVUq.js",
       "_PrimaryButton-AWfA-m82.js",
-      "_BareButton-D1pqwGC_.js",
-      "_categoryIcons-CwR7tXAh.js"
+      "_BareButton-D1pqwGC_.js"
     ]
   },
   "resources/js/Pages/Transacao.jsx": {
@@ -748,7 +748,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-3xzTX08L.js",
+    "file": "assets/app-DMT3HebK.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
