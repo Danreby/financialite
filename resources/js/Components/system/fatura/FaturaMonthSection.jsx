@@ -22,6 +22,7 @@ export default function FaturaMonthSection({
   onUpdated,
   is_paid = false,
   is_partially_paid = false,
+  has_remaining_post_payment = false,
   due_day = null,
   closing_day = null,
   isCurrentPending = false,
@@ -86,6 +87,7 @@ export default function FaturaMonthSection({
         totalPaid={total_paid}
         isPaid={is_paid}
         isPartiallyPaid={is_partially_paid}
+        hasRemainingPostPayment={has_remaining_post_payment}
         isCurrentPending={isCurrentPending}
         onPayFull={() => {
           setPayModalInitialMode("full");

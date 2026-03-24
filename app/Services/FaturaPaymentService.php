@@ -51,7 +51,8 @@ class FaturaPaymentService
                     'bank_user_id' => $bankUserId,
                 ]);
 
-                $paid->total_paid = $totalPaidThisRun;
+                // Accumulate: previous partial payments must be preserved.
+                $paid->total_paid = (float) ($paid->total_paid ?? 0.0) + $totalPaidThisRun;
                 $paid->paid_at = now();
                 $paid->save();
 

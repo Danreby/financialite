@@ -31,6 +31,7 @@ export default function FaturaPaymentSummaryCard({
 	totalPaid = 0,
 	isPaid = false,
 	isPartiallyPaid = false,
+	hasRemainingPostPayment = false,
 	isCurrentPending = false,
 	onPayFull,
 	onPayPartial,
@@ -44,6 +45,8 @@ export default function FaturaPaymentSummaryCard({
 			className={`rounded-2xl themed-card shadow-sm overflow-hidden transition-colors ${
 				isPaid
 					? 'bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/50'
+					: hasRemainingPostPayment
+					? 'bg-white dark:bg-[#080808] border border-orange-200/70 dark:border-orange-900/40'
 					: isPartiallyPaid
 					? 'bg-white dark:bg-[#080808] border border-amber-200/70 dark:border-amber-900/40'
 					: 'bg-white dark:bg-[#080808]'
@@ -66,7 +69,13 @@ export default function FaturaPaymentSummaryCard({
 					</div>
 				)}
 
-				{isPartiallyPaid && !isPaid && (
+				{hasRemainingPostPayment && !isPaid && (
+					<span className="rounded-full bg-orange-100 dark:bg-orange-900/30 px-2.5 py-1 text-[11px] font-semibold text-orange-700 dark:text-orange-400">
+						Novas cobranças
+					</span>
+				)}
+
+				{isPartiallyPaid && !isPaid && !hasRemainingPostPayment && (
 					<span className="rounded-full bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
 						Parcial
 					</span>
@@ -139,14 +148,15 @@ export default function FaturaPaymentSummaryCard({
 						/>
 					</div>
 
-					{isCurrentPending && !isPaid && (
+					{/* Pay action buttons — shown whenever the fatura has an outstanding balance */}
+					{!isPaid && (
 						<div className="flex flex-col xs:flex-row gap-2 pt-0.5">
 							<PrimaryButton
 								type="button"
 								onClick={onPayFull}
 								className="flex-1 justify-center rounded-full px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-wide"
 							>
-								{isPartiallyPaid ? 'Pagar restante' : 'Pagar tudo'}
+								{isPartiallyPaid || hasRemainingPostPayment ? 'Pagar restante' : 'Pagar tudo'}
 							</PrimaryButton>
 							<SecondaryButton
 								type="button"

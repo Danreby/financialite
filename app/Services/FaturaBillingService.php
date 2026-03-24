@@ -28,15 +28,6 @@ class FaturaBillingService
             ? $createdAt->format('Y-m')
             : $createdAt->copy()->addMonth()->format('Y-m');
 
-        $fatura = \App\Models\Fatura::where('bank_user_id', $transacao->bank_user_id)
-            ->where('month_key', $monthKey)
-            ->first();
-
-        if ($fatura && $fatura->isPaid()) {
-            $nextMonth = Carbon::createFromFormat('Y-m', $monthKey)->addMonth();
-            return $nextMonth->format('Y-m');
-        }
-
         return $monthKey;
     }
 
@@ -187,16 +178,25 @@ class FaturaBillingService
             });
 
             $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
-            $isPaid = $faturaPayment && $faturaPayment->paid_at !== null;
             $totalPaid = $faturaPayment ? (float) ($faturaPayment->total_paid ?? 0.0) : 0.0;
+            // Strict: fully paid only when paid_at is set AND total_paid covers the full amount.
+            $isPaid = $faturaPayment
+                && $faturaPayment->paid_at !== null
+                && $totalPaid >= $totalSpent - 0.01;
+            // Reopened: was previously marked as paid but new charges appeared after the payment.
+            $hasRemainingPostPayment = $faturaPayment
+                && $faturaPayment->paid_at !== null
+                && !$isPaid
+                && $totalPaid > 0;
 
             return [
-                'month_key'          => $yearMonth,
-                'month_label'        => $label,
-                'total_spent'        => (float) $totalSpent,
-                'total_paid'         => $totalPaid,
-                'is_paid'            => $isPaid,
-                'is_partially_paid'  => !$isPaid && $totalPaid > 0,
+                'month_key'                   => $yearMonth,
+                'month_label'                 => $label,
+                'total_spent'                 => (float) $totalSpent,
+                'total_paid'                  => $totalPaid,
+                'is_paid'                     => $isPaid,
+                'is_partially_paid'           => !$isPaid && $totalPaid > 0,
+                'has_remaining_post_payment'  => $hasRemainingPostPayment,
                 'items' => $items->map(function ($entry) {
                     $fatura = $entry['transacao'];
                     $installmentIndex = $entry['installment_index'];
@@ -277,14 +277,9 @@ class FaturaBillingService
             return 0.0;
         }
 
-        $pending = 0.0;
+        $totalSpent = (float) ($group['total_spent'] ?? 0.0);
+        $totalPaid  = (float) ($group['total_paid']  ?? 0.0);
 
-        foreach ($group['items'] ?? [] as $item) {
-            $totalInstallments = max((int) ($item['total_installments'] ?? 1), 1);
-            $amount = (float) ($item['amount'] ?? 0);
-            $pending += $amount / $totalInstallments;
-        }
-
-        return (float) $pending;
+        return max(0.0, $totalSpent - $totalPaid);
     }
 }

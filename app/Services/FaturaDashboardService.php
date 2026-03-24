@@ -127,7 +127,6 @@ class FaturaDashboardService
                 $q->where('category_id', $categoryId);
             })
             ->where('type', 'credit')
-            ->notStatus('paid')
             ->orderBy('created_at', 'desc')
             ->get();
 
