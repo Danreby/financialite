@@ -19,6 +19,6 @@ Schedule::command('incomes:credit-to-bank')
     ->runInBackground();
 
 Schedule::command('parcelas:sync')
-    ->dailyAt('15:40')
+    ->twiceDaily(0, 12)
     ->withoutOverlapping()
     ->runInBackground();
