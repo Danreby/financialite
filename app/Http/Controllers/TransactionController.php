@@ -23,7 +23,7 @@ class TransactionController extends Controller
 
         $user = $request->user();
 
-        $perPage = 5;
+        $perPage = 15;
 
         $filters = [
             'type' => $request->get('type'),

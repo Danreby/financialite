@@ -35,19 +35,19 @@ export default function TopSpendingCategories({
     }
   }, [activeFilter, data, debitData, creditData])
 
-  const topSix = useMemo(() => {
-    return [...sourceData].sort((a, b) => Number(b.total || 0) - Number(a.total || 0)).slice(0, 6)
+  const prepared = useMemo(() => {
+    const sorted = [...sourceData].sort((a, b) => Number(b.total || 0) - Number(a.total || 0))
+    const grandTotal = sorted.reduce((acc, item) => acc + Number(item.total || 0), 0)
+    return sorted.map((item) => ({
+      ...item,
+      share: grandTotal > 0 ? Math.round((Number(item.total || 0) / grandTotal) * 100) : 0,
+    }))
   }, [sourceData])
 
-  const totalTop = topSix.reduce((acc, item) => acc + Number(item.total || 0), 0)
-
-  const prepared = topSix.map((item) => {
-    const share = totalTop > 0 ? Math.round((Number(item.total || 0) / totalTop) * 100) : 0
-    return {
-      ...item,
-      share,
-    }
-  })
+  const grandTotal = useMemo(
+    () => prepared.reduce((acc, item) => acc + Number(item.total || 0), 0),
+    [prepared],
+  )
 
   const colors = chartColors.palette
 
@@ -103,7 +103,7 @@ export default function TopSpendingCategories({
         <TopSpendingPieChart
           labels={prepared.map((item) => item.category_name || 'Sem categoria')}
           values={prepared.map((item) => Number(item.total || 0))}
-          total={totalTop}
+          total={grandTotal}
           colors={colors}
           items={prepared}
           recurringSpending={activeFilter === 'all' ? recurringSpending : {}}

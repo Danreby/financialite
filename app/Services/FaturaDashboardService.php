@@ -330,7 +330,6 @@ class FaturaDashboardService
                 return (float) $items->sum('amount');
             });
 
-        // Build credit totals per month from parcelas.
         $monthKeys = [];
         $mk = $seriesStart->copy()->startOfMonth();
         $mkEnd = $seriesEnd->copy()->startOfMonth();
@@ -352,12 +351,10 @@ class FaturaDashboardService
 
         foreach ($creditTransactions as $t) {
             if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
-                // Fast path: direct parcela lookup.
                 foreach ($t->parcelas->whereIn('month_key', $monthKeys) as $parcela) {
                     $creditByMonth[$parcela->month_key] = ($creditByMonth[$parcela->month_key] ?? 0) + (float) $parcela->amount;
                 }
             } else {
-                // Recurring or non-recurring without parcelas: check each month.
                 $amount = (float) $t->getInstallmentAmount();
                 foreach ($monthKeys as $mk) {
                     $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
@@ -438,7 +435,6 @@ class FaturaDashboardService
             ->whereBetween('created_at', [$startMonth, $endMonth])
             ->get();
 
-        // Build month keys for the range.
         $monthKeys = [];
         $mkCursor = $startMonth->copy()->startOfMonth();
         $mkEnd = $endMonth->copy()->startOfMonth();
@@ -480,7 +476,6 @@ class FaturaDashboardService
             $rows = [];
 
             if (!$transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
-                // Sum parcelas that fall within the period range.
                 $matchingParcelas = $transacao->parcelas->whereIn('month_key', $monthKeys);
                 $totalAmount = $matchingParcelas->sum('amount');
 
@@ -495,7 +490,6 @@ class FaturaDashboardService
                     ];
                 }
             } else {
-                // Recurring: count how many months in range this applies to.
                 $count = 0;
                 foreach ($monthKeys as $mk) {
                     $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
@@ -564,8 +558,6 @@ class FaturaDashboardService
 
         $results = $query->get();
 
-        // When not filtering by a specific card, multiple Fatura records may exist
-        // per month_key (one per card). Aggregate them to get the correct totals.
         if (!$shouldFilterByBankUser) {
             return $results->groupBy('month_key')->map(function ($faturas) {
                 return (object) [
@@ -594,7 +586,6 @@ class FaturaDashboardService
                 ];
             })
             ->sortByDesc('total')
-            ->take(6)
             ->values()
             ->all();
     }
