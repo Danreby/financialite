@@ -193,16 +193,7 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 									</span>
 								</div>
 							)}
-							{stats.creditCount > 0 && (
-								<div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5">
-									<svg className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
-									</svg>
-									<span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-										{formatCurrencyBRL(stats.creditSum)}
-									</span>
-								</div>
-							)}
+	
 						</div>
 					</header>
 				</FadeInItem>

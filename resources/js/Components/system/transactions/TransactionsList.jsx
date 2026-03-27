@@ -23,7 +23,7 @@ export default function TransactionsList({ transactions = [], onEdit, onDelete, 
 
   return (
     <ScrollArea
-      maxHeightClassName="max-h-[500px] md:max-h-[580px] lg:max-h-[640px]"
+      maxHeightClassName="max-h-[460px] md:max-h-[540px] lg:max-h-[600px]"
       className="divide-y divide-gray-100 dark:divide-white/[0.04]"
     >
       {transactions.map((tx) => (

@@ -59,17 +59,9 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
       tabIndex={onShowDetails ? 0 : undefined}
     >
       {/* Type indicator */}
-      <div className={`hidden sm:flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${
-        isCredit
-          ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
-          : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-      }`}>
+      <div className="hidden sm:flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
         <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          {isCredit ? (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
-          )}
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
         </svg>
       </div>
 
@@ -119,12 +111,8 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
 
       {/* Amount + Date */}
       <div className="flex flex-col items-end text-right flex-shrink-0">
-        <span className={`text-sm font-semibold tabular-nums ${
-          isCredit
-            ? "text-emerald-600 dark:text-emerald-400"
-            : "themed-amount"
-        }`}>
-          {isCredit ? "+" : "-"}{formatCurrency(amount)}
+        <span className="text-sm font-semibold tabular-nums themed-amount">
+          -{formatCurrency(amount)}
         </span>
         <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums">
           {formatDate(created_at)}
