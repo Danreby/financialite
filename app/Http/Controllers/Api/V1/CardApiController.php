@@ -18,6 +18,7 @@ class CardApiController extends Controller
             ->get()
             ->map(fn($cu) => [
                 'id' => $cu->id,
+                'user_id' => $cu->user_id,
                 'card_id' => $cu->card_id,
                 'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
                 'brand' => $cu->card?->brand,
