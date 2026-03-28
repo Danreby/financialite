@@ -56,7 +56,7 @@ class TransacaoApiController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $transacao = Transacao::with(['bankUser.card', 'category', 'anexos'])->findOrFail($id);
+        $transacao = Transacao::with(['bankUser.card', 'category', 'anexos', 'parcelas'])->findOrFail($id);
         $this->authorize('view', $transacao);
 
         return $this->success($transacao);
