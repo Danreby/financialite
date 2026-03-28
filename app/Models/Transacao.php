@@ -146,6 +146,13 @@ class Transacao extends Model
             ->when(isset($filters['is_recurring']) && $filters['is_recurring'] !== null, function (Builder $q) use ($filters) {
                 $value = filter_var($filters['is_recurring'], FILTER_VALIDATE_BOOLEAN);
                 $q->where('is_recurring', $value);
+            })
+            ->when($filters['month'] ?? null, function (Builder $q, $month) {
+                try {
+                    $date = Carbon::createFromFormat('Y-m', $month);
+                    $q->whereYear('created_at', $date->year)
+                      ->whereMonth('created_at', $date->month);
+                } catch (\Throwable $e) {}
             });
     }
 

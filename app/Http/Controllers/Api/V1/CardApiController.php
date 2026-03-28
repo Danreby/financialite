@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\CardUser;
 use App\Models\Card;
+use App\Models\Transacao;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,6 +15,18 @@ class CardApiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        $monthStart = Carbon::now()->startOfMonth();
+
+        // Pre-load current month spending per card_user_id
+        $spendingMap = Transacao::forUser($user->id)
+            ->where('type', 'debit')
+            ->whereYear('created_at', $monthStart->year)
+            ->whereMonth('created_at', $monthStart->month)
+            ->whereNotNull('bank_user_id')
+            ->selectRaw('bank_user_id, SUM(amount) as total')
+            ->groupBy('bank_user_id')
+            ->pluck('total', 'bank_user_id');
+
         $cardUsers = CardUser::with('card')
             ->forUser($user->id)
             ->get()
@@ -25,6 +39,7 @@ class CardApiController extends Controller
                 'due_day' => $cu->due_day,
                 'closing_day' => $cu->closing_day,
                 'credit_limit' => $cu->credit_limit,
+                'current_spending' => (float) ($spendingMap[$cu->id] ?? 0),
             ]);
 
         return $this->success($cardUsers);

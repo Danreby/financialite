@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\CategoryApiController;
 use App\Http\Controllers\Api\V1\NotificationApiController;
 use App\Http\Controllers\Api\V1\ProfileApiController;
 use App\Http\Controllers\Api\V1\CardApiController;
+use App\Http\Controllers\Api\V1\ProjectionsApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/auth')->group(function () {
@@ -29,6 +30,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::post('/auth/refresh-token', [AuthController::class, 'refreshToken']);
 
     Route::get('/dashboard', [DashboardApiController::class, 'index']);
+    Route::get('/projections', [ProjectionsApiController::class, 'index']);
 
     Route::get('/transacoes', [TransacaoApiController::class, 'index']);
     Route::post('/transacoes', [TransacaoApiController::class, 'store']);

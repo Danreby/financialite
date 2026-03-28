@@ -41,7 +41,13 @@ class TransacaoApiController extends Controller
             CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
-        $filters = ['bank_user_id' => $bankUserId, 'category_id' => $categoryId];
+        $filters = [
+            'bank_user_id' => $bankUserId,
+            'category_id' => $categoryId,
+            'type' => $request->input('type'),
+            'month' => $request->input('month'),
+            'status' => $request->input('status'),
+        ];
         $dashboard = $this->dashboardService->buildDashboardData($user, $filters);
         $transactions = $dashboard['base_query']->paginate($request->input('per_page', 15));
 
