@@ -149,7 +149,7 @@ class Transacao extends Model
             })
             ->when($filters['month'] ?? null, function (Builder $q, $month) {
                 try {
-                    $date = Carbon::createFromFormat('Y-m', $month);
+                    $date = Carbon::createFromFormat('Y-m-d', $month . '-01');
                     $q->whereYear('created_at', $date->year)
                       ->whereMonth('created_at', $date->month);
                 } catch (\Throwable $e) {}
