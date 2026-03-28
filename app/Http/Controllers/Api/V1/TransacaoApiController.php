@@ -13,6 +13,7 @@ use App\Models\Transacao;
 use App\Services\FaturaService;
 use App\Services\FaturaDashboardService;
 use App\Services\FaturaPaymentService;
+use App\Services\FaturaBillingService;
 use App\Services\FaturaExportService;
 use App\Services\DashboardInsightsService;
 use App\Services\NotificationService;
@@ -29,6 +30,7 @@ class TransacaoApiController extends Controller
         private FaturaExportService $exportService,
         private DashboardInsightsService $insights,
         private NotificationService $notifications,
+        private FaturaBillingService $billingService,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -52,6 +54,44 @@ class TransacaoApiController extends Controller
         $transactions = $dashboard['base_query']->paginate($request->input('per_page', 15));
 
         return $this->success($transactions);
+    }
+
+    public function faturas(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $month = $request->input('month');
+        $bankUserId = $request->input('bank_user_id');
+        $categoryId = $request->input('category_id');
+
+        if ($request->filled('bank_user_id')) {
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
+        }
+
+        $filters = [
+            'bank_user_id' => $bankUserId,
+            'category_id' => $categoryId,
+            'type' => 'credit',
+        ];
+
+        $dashboard = $this->dashboardService->buildDashboardData($user, $filters);
+        $monthlyGroups = $dashboard['monthly_groups'] ?? [];
+
+        // If a month is specified, return only that month's data
+        if ($month) {
+            $monthData = collect($monthlyGroups)->firstWhere('month_key', $month);
+            return $this->success($monthData ?? [
+                'month_key' => $month,
+                'month_label' => $month,
+                'total_spent' => 0,
+                'total_paid' => 0,
+                'is_paid' => false,
+                'is_partially_paid' => false,
+                'has_remaining_post_payment' => false,
+                'items' => [],
+            ]);
+        }
+
+        return $this->success($monthlyGroups);
     }
 
     public function show(Request $request, int $id): JsonResponse

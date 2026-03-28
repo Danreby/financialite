@@ -38,6 +38,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::get('/transacoes/insights', [TransacaoApiController::class, 'insights']);
     Route::get('/transacoes/top-spending', [TransacaoApiController::class, 'topSpending']);
     Route::get('/transacoes/export', [TransacaoApiController::class, 'export']);
+    Route::get('/transacoes/faturas', [TransacaoApiController::class, 'faturas']);
     Route::post('/transacoes/pay-month', [TransacaoApiController::class, 'payMonth']);
     Route::get('/transacoes/{id}', [TransacaoApiController::class, 'show']);
     Route::put('/transacoes/{id}', [TransacaoApiController::class, 'update']);
