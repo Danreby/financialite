@@ -23,7 +23,7 @@ class CardUpdateRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:255',
-                'unique:cards,name,' . $cardId,
+                Rule::unique('cards', 'name')->ignore($cardId)->whereNull('deleted_at'),
                 new SafeString(255),
             ],
             'due_day' => [
