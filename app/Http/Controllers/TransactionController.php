@@ -126,11 +126,13 @@ class TransactionController extends Controller
 
         $months = Transacao::where('user_id', $user->id)
             ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key")
-            ->groupBy('month_key')
-            ->orderBy('month_key', 'desc')
-            ->get()
-            ->map(function ($row) {
-                $key = $row->month_key;
+            ->groupByRaw("DATE_FORMAT(created_at, '%Y-%m')")
+            ->orderByRaw("DATE_FORMAT(created_at, '%Y-%m') DESC")
+            ->pluck('month_key')
+            ->filter()
+            ->unique()
+            ->values()
+            ->map(function (string $key) {
                 try {
                     $label = Carbon::createFromFormat('Y-m', $key)->translatedFormat('F Y');
                 } catch (\Throwable $e) {
@@ -142,8 +144,7 @@ class TransactionController extends Controller
                     'month_label' => ucfirst($label),
                     'is_paid' => false,
                 ];
-            })
-            ->values();
+            });
 
         return Inertia::render('Transacao', [
             'transactions' => $transactions,
