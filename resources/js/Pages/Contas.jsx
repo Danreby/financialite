@@ -96,10 +96,8 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 
 		let dueDate;
 		if (bill.next_due_date) {
-			// Use server-computed due date for the current (unpaid) period
 			dueDate = bill.next_due_date;
 		} else if (bill.recurrence_type === 'monthly') {
-			// Fallback: compute current period's due day (do not advance past today)
 			const d = new Date(today.getFullYear(), today.getMonth(), bill.due_day);
 			dueDate = d.toISOString().split('T')[0];
 		} else if (bill.start_date) {
@@ -252,6 +250,7 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 										onChange={(e) => setSearch(e.target.value)}
 										placeholder="Buscar conta..."
 										className="w-full sm:w-56 rounded-xl border border-gray-300 bg-white px-3 py-2 pl-9 text-xs sm:text-sm shadow-sm focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+										maxLength={255}
 									/>
 									<svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
 										<path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />

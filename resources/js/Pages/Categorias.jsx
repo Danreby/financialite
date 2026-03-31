@@ -169,7 +169,6 @@ export default function Categorias({ categories }) {
 			<Head title="Categorias" />
 
 			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-4 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
-				{/* Header */}
 				<FadeInItem type="fast">
 					<header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<div>
@@ -190,7 +189,6 @@ export default function Categorias({ categories }) {
 					</header>
 				</FadeInItem>
 
-				{/* Stats bar */}
 				<FadeInItem type="subtle">
 					<div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 						<StatMini
@@ -239,10 +237,8 @@ export default function Categorias({ categories }) {
 					</div>
 				</FadeInItem>
 
-				{/* Search + Grid */}
 				<FadeInItem type="subtle">
 					<div className="rounded-2xl p-4 sm:p-5 shadow-md themed-card space-y-4">
-						{/* Search */}
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 							<div className="flex items-center gap-2.5">
 								<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20 flex-shrink-0">
@@ -265,6 +261,7 @@ export default function Categorias({ categories }) {
 									value={searchQuery}
 									onChange={(e) => setSearchQuery(e.target.value)}
 									className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 py-2 text-xs sm:text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-100 dark:placeholder-gray-500"
+									maxLength={255}
 								/>
 								<svg
 									className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
@@ -309,7 +306,6 @@ export default function Categorias({ categories }) {
 					</div>
 				</FadeInItem>
 
-				{/* Icon palette preview */}
 				{AVAILABLE_ICONS.length > 0 && (
 					<FadeInItem type="subtle">
 						<div className="rounded-2xl p-4 sm:p-5 shadow-md themed-card">
