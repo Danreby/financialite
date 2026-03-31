@@ -68,7 +68,7 @@ class FaturaBillingService
         $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
 
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-        $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+        $first = Carbon::parse($firstBillingMonthKey . '-01');
 
         if ($transacao->is_recurring) {
             return !$targetMonth->lt($first);
@@ -185,8 +185,8 @@ class FaturaBillingService
 
         // Fallback: Carbon arithmetic.
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-        $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
-        $current = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+        $first = Carbon::parse($firstBillingMonthKey . '-01');
+        $current = Carbon::parse($yearMonth . '-01');
 
         if ($current->lt($first)) {
             return null;
@@ -219,7 +219,7 @@ class FaturaBillingService
                         continue;
                     }
 
-                    $parcelaMonth = Carbon::createFromFormat('Y-m', $parcela->month_key)->startOfMonth();
+                    $parcelaMonth = Carbon::parse($parcela->month_key . '-01');
                     if ($parcelaMonth->gt($projectionEnd)) {
                         continue;
                     }
@@ -235,7 +235,7 @@ class FaturaBillingService
 
             // Fallback: recurring or transactions without parcelas.
             $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-            $month = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+            $month = Carbon::parse($firstBillingMonthKey . '-01');
 
             $installmentIndex = 1;
 
@@ -264,7 +264,7 @@ class FaturaBillingService
         $grouped = $entries->groupBy('month_key');
 
         $result = $grouped->map(function ($items, $yearMonth) use ($paidByMonth) {
-            $carbon = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+            $carbon = Carbon::parse($yearMonth . '-01');
             $label = ucfirst($carbon->translatedFormat('F Y'));
 
             $totalSpent = $items->sum(function ($entry) {

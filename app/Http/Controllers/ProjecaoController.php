@@ -53,7 +53,7 @@ class ProjecaoController extends Controller
             $amountPerMonth    = (float) $tx->getInstallmentAmount();
 
             $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($tx);
-            $firstBillingMonth    = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+            $firstBillingMonth    = Carbon::parse($firstBillingMonthKey . '-01');
 
             $completionMonth = null;
             if (!$isRecurring) {

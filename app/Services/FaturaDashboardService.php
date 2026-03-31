@@ -141,7 +141,7 @@ class FaturaDashboardService
         $targetMonth = null;
 
         try {
-            $targetMonth = Carbon::createFromFormat('Y-m', $effectiveMonthKey)->startOfMonth();
+            $targetMonth = Carbon::parse($effectiveMonthKey . '-01');
         } catch (\Throwable $e) {
             $targetMonth = Carbon::today()->startOfMonth();
         }
@@ -357,7 +357,7 @@ class FaturaDashboardService
             } else {
                 $amount = (float) $t->getInstallmentAmount();
                 foreach ($monthKeys as $mk) {
-                    $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
+                    $mkCarbon = Carbon::parse($mk . '-01');
                     if ($this->billing->faturaAppliesToMonth($t, $mkCarbon)) {
                         $creditByMonth[$mk] = ($creditByMonth[$mk] ?? 0) + $amount;
                     }
@@ -419,8 +419,8 @@ class FaturaDashboardService
         ?int $bankUserId = null,
         ?int $categoryId = null
     ): array {
-        $startMonth = Carbon::createFromFormat('Y-m', $monthFrom)->startOfMonth();
-        $endMonth = Carbon::createFromFormat('Y-m', $monthTo)->endOfMonth();
+        $startMonth = Carbon::parse($monthFrom . '-01');
+        $endMonth = Carbon::parse($monthTo . '-01')->endOfMonth();
 
         $base = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
@@ -492,7 +492,7 @@ class FaturaDashboardService
             } else {
                 $count = 0;
                 foreach ($monthKeys as $mk) {
-                    $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
+                    $mkCarbon = Carbon::parse($mk . '-01');
                     if ($this->billing->faturaAppliesToMonth($transacao, $mkCarbon)) {
                         $count++;
                     }
@@ -526,8 +526,8 @@ class FaturaDashboardService
         $nonRecurringPercentage = $totalAmount > 0 ? round(($totalNonRecurring / $totalAmount) * 100, 1) : 0;
 
         $locale = config('app.locale', 'pt_BR');
-        $fromLabel = ucfirst(Carbon::createFromFormat('Y-m', $monthFrom)->locale($locale)->translatedFormat('M Y'));
-        $toLabel = ucfirst(Carbon::createFromFormat('Y-m', $monthTo)->locale($locale)->translatedFormat('M Y'));
+        $fromLabel = ucfirst(Carbon::parse($monthFrom . '-01')->locale($locale)->translatedFormat('M Y'));
+        $toLabel = ucfirst(Carbon::parse($monthTo . '-01')->locale($locale)->translatedFormat('M Y'));
         $periodLabel = $monthFrom === $monthTo ? $fromLabel : "{$fromLabel} — {$toLabel}";
 
         return [

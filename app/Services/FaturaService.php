@@ -125,7 +125,7 @@ class FaturaService implements FaturaServiceInterface
 
         $dueDay = $cardUser->due_day ?? $cardUser->closing_day ?? (int) $createdAt->format('d');
 
-        $firstBillingMonth = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+        $firstBillingMonth = Carbon::parse($firstBillingMonthKey . '-01');
 
         $parcelas = [];
         for ($i = 1; $i <= $totalInstallments; $i++) {

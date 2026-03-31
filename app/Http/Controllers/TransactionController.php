@@ -38,7 +38,7 @@ class TransactionController extends Controller
         $monthRange = null;
         if ($monthKey) {
             try {
-                $monthDate = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
+                $monthDate = Carbon::parse($monthKey . '-01');
                 $monthRange = [
                     $monthDate->copy()->startOfMonth(),
                     $monthDate->copy()->endOfMonth(),
@@ -134,7 +134,7 @@ class TransactionController extends Controller
             ->values()
             ->map(function (string $key) {
                 try {
-                    $label = Carbon::createFromFormat('Y-m', $key)->translatedFormat('F Y');
+                    $label = Carbon::parse($key . '-01')->translatedFormat('F Y');
                 } catch (\Throwable $e) {
                     $label = $key;
                 }

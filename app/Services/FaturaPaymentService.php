@@ -6,6 +6,7 @@ use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\Transacao;
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ class FaturaPaymentService
 
         $allFaturas = $query->get();
 
-        $targetMonth = now()->createFromFormat('Y-m', $monthKey)->startOfMonth();
+        $targetMonth = Carbon::parse($monthKey . '-01');
 
         $faturas = $allFaturas->filter(function (Transacao $transacao) use ($targetMonth) {
             return $this->billing->faturaAppliesToMonth($transacao, $targetMonth);
@@ -88,7 +89,7 @@ class FaturaPaymentService
     ): array {
         $bankUserId = $cardUser?->id;
 
-        $targetMonth = now()->createFromFormat('Y-m', $monthKey)->startOfMonth();
+        $targetMonth = Carbon::parse($monthKey . '-01');
 
         $allTransacoes = Transacao::with(['bankUser', 'parcelas'])
             ->forUser($user->id)

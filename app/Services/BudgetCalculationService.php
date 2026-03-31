@@ -276,7 +276,7 @@ class BudgetCalculationService
             if (!$categoryId) continue;
 
             foreach ($monthKeys as $monthKey) {
-                $targetMonth = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
+                $targetMonth = Carbon::parse($monthKey . '-01');
                 
                 if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
                     $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transaction, $monthKey);
@@ -320,7 +320,7 @@ class BudgetCalculationService
 
         foreach ($allCreditTransactions as $transaction) {
             foreach ($monthKeys as $monthKey) {
-                $targetMonth = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
+                $targetMonth = Carbon::parse($monthKey . '-01');
                 
                 if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
                     $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transaction, $monthKey);

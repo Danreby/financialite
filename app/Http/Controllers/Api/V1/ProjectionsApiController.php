@@ -48,7 +48,7 @@ class ProjectionsApiController extends Controller
             $amountPerMonth    = (float) $tx->getInstallmentAmount();
 
             $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($tx);
-            $firstBillingMonth    = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+            $firstBillingMonth    = Carbon::parse($firstBillingMonthKey . '-01');
 
             if (!$isRecurring) {
                 $completionMonth = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
@@ -90,7 +90,7 @@ class ProjectionsApiController extends Controller
 
             $debitTotal = 0.0;
             foreach ($projectedTransactions as $tx) {
-                $firstMonth = Carbon::createFromFormat('Y-m', $tx['first_billing_month'])->startOfMonth();
+                $firstMonth = Carbon::parse($tx['first_billing_month'] . '-01');
 
                 if ($tx['is_recurring']) {
                     if ($month->gte($firstMonth)) {
