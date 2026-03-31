@@ -113,20 +113,3 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::get('card-users/stats', [CardUserController::class, 'stats'])->name('api.card-users.stats');
     Route::apiResource('card-users', CardUserController::class);
 });
-
-
-// TEMPORARY DIAGNOSTIC ROUTE - remove after fixing production DB
-Route::middleware(['auth:sanctum'])->get('v1/diagnose', function () {
-    $tables = [
-        'users', 'personal_access_tokens', 'cards', 'card_user', 'banks', 'bank_user',
-        'transacoes', 'faturas', 'fatura_transacao', 'transacao_parcelas',
-        'categories', 'incomes', 'bills', 'bill_payments', 'budgets',
-        'budget_categories', 'savings_goals', 'bank_transfers', 'anexos',
-        'anexo_transacao', 'notifications', 'cache', 'jobs',
-    ];
-    $result = [];
-    foreach ($tables as $table) {
-        $result[$table] = \Illuminate\Support\Facades\Schema::hasTable($table) ? 'OK' : 'MISSING';
-    }
-    return response()->json(['tables' => $result]);
-});

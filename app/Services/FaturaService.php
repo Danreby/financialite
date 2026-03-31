@@ -90,7 +90,6 @@ class FaturaService implements FaturaServiceInterface
         $totalInstallments = max((int) $transacao->total_installments, 1);
         $totalAmount = (float) $transacao->amount;
 
-        // Use the billing service to determine the first billing month consistently.
         $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($transacao);
 
         if ($totalInstallments <= 1 && !$transacao->is_recurring) {

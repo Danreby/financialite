@@ -34,7 +34,6 @@ class FaturaExportService
 
             $isRecurring = (bool) $transacao->is_recurring;
 
-            // Non-recurring with parcelas: iterate parcelas directly.
             if (!$isRecurring && $transacao->parcelas->isNotEmpty()) {
                 foreach ($transacao->parcelas as $parcela) {
                     $installmentAmount = (float) $parcela->amount;
@@ -46,7 +45,6 @@ class FaturaExportService
                 continue;
             }
 
-            // Fallback: recurring or transactions without parcelas.
             $firstMonthKey    = $this->billing->resolveBillingMonthKey($transacao);
             $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
 
