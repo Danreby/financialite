@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import { FeatureCard, SocialCard, TechCard } from '@/Components/system/about/AboutCards'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
 import { useFadeInAnimation } from '@/Hooks/useFadeInAnimation'
+import { QRCodeSVG } from 'qrcode.react'
 
 export default function About() {
   const { featureVariants } = useFadeInAnimation()
@@ -163,30 +164,22 @@ export default function About() {
         <FadeInItem>
           <section className="rounded-2xl p-6 sm:p-8 lg:p-10 shadow-md themed-card">
             <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              QR Code (LivePix)
+              QR Code
             </h2>
 
-            <div className="w-full rounded-lg overflow-hidden border dark:border-gray-800">
-              <iframe
-                src="https://widget.livepix.gg/embed/640ac0aa-59b7-4e4a-b3df-cad657ba9252"
-                title="LivePix QR Code"
-                className="w-full h-[420px] sm:h-[360px] md:h-[420px]"
-                style={{ border: 0 }}
-                loading="lazy"
-                sandbox="allow-scripts allow-same-origin allow-popups"
-              />
-            </div>
-
-            <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-              Caso o qr code não seja exibido corretamente, abra em nova aba:{' '}
-              <a
-                href="https://widget.livepix.gg/embed/640ac0aa-59b7-4e4a-b3df-cad657ba9252"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
-                Abrir LivePix em nova aba
-              </a>
+            <div className="flex flex-col items-center gap-4">
+              <div className="rounded-2xl bg-white p-4 shadow-md">
+                <QRCodeSVG
+                  value="00020126580014BR.GOV.BCB.PIX0136b82b0e92-1e07-4bf8-bc71-0f50d637dabc5204000053039865802BR5921Bernardo Santos Rolim6009SAO PAULO62140510PJqP5lNZeX63043E21"
+                  size={220}
+                  level="M"
+                  includeMargin={false}
+                />
+              </div>
+              {/* <div className="text-center space-y-1">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Bernardo Santos Rolim</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Nubank · Chave aleatória</p>
+              </div> */}
             </div>
           </section>
         </FadeInItem>
