@@ -144,7 +144,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       if (t.total_installments && t.total_installments > 1) summary.installments_count++;
       
       if (t.category?.name) summary.categories_count.add(t.category.name);
-      if (t.bank_user?.card?.name) summary.cards_count.add(t.bank_user.card.name);
+      if (t.bank_user?.bank?.name) summary.cards_count.add(t.bank_user.bank.name);
 
       // Período
       if (t.created_at) {
@@ -211,7 +211,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     const grouped = {};
 
     transactions.forEach(t => {
-      const bankName = t.bank_user?.card?.name || 'Sem cartão';
+      const bankName = t.bank_user?.bank?.name || 'Sem cartão';
       if (!grouped[bankName]) {
         grouped[bankName] = {
           bank: bankName,
@@ -360,128 +360,170 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
 
   // Criar aba de Resumo Executivo
   const createExecutiveSummarySheet = (summary, monthlyData) => {
-    const data = [
-      ['RELATÓRIO FINANCEIRO - RESUMO EXECUTIVO'],
-      [],
-      ['Período:', summary.period_start && summary.period_end 
-        ? `${summary.period_start.toLocaleDateString('pt-BR')} a ${summary.period_end.toLocaleDateString('pt-BR')}`
-        : 'N/A'
-      ],
-      ['Data de Geração:', new Date().toLocaleString('pt-BR')],
-      [],
-      ['VISÃO GERAL'],
-      ['Total de Transações', summary.total_transactions],
-      ['Total de Categorias', summary.categories_count],
-      ['Total de Cartões', summary.cards_count],
-      ['Transações Recorrentes', summary.recurring_count],
-      ['Transações Parceladas', summary.installments_count],
-      [],
-      ['TOTALIZADORES FINANCEIROS'],
-      ['Total de Receitas', summary.total_income],
-      ['Total de Despesas', summary.total_expenses],
-      ['Saldo Líquido', summary.net_balance],
-      [],
-      ['CRÉDITO (Despesas no Cartão)'],
-      ['Total em Crédito', summary.total_credit],
-      ['Crédito Pago', summary.paid_expenses],
-      ['Crédito Pendente', summary.pending_expenses],
-      [],
-      ['DÉBITO (Receitas/Despesas à Vista)'],
-      ['Total em Débito', summary.total_debit],
-      ['Débito Pago', summary.paid_income],
-      ['Débito Pendente', summary.pending_income],
-      [],
-      ['MÉDIAS'],
-      ['Ticket Médio de Receita', summary.average_income],
-      ['Ticket Médio de Despesa', summary.average_expense],
-      [],
-      ['ANÁLISE DE RECORRÊNCIA'],
-      ['Gastos Recorrentes', summary.recurring_amount],
-      ['Gastos Não Recorrentes', summary.non_recurring_amount],
-      ['% Recorrentes', summary.recurring_percentage / 100],
-      ['% Não Recorrentes', summary.non_recurring_percentage / 100],
-      [],
-      ['CONTAS VENCIDAS'],
-      ['Quantidade Vencida', summary.overdue_count],
-      ['Valor Total Vencido', summary.overdue_amount],
-      [],
-      ['RESUMO MENSAL'],
-      ['Mês', 'Total', 'Crédito', 'Débito', 'Pago', 'Pendente', 'Qtd Transações']
-    ];
+    const rows = [];
+    const sectionHeaderRows = [];
+    const tableHeaderRows = [];
+    const currencyCells = [];
+    const percentCells = [];
+    let netBalanceRow = -1;
+    let taxaPoupancaRow = -1;
 
-    // Adicionar dados mensais
+    const pushRow = (row) => { rows.push(row); return rows.length - 1; };
+
+    pushRow(['RELATÓRIO FINANCEIRO - RESUMO EXECUTIVO']);
+    pushRow([]);
+    pushRow(['Período:', summary.period_start && summary.period_end
+      ? `${summary.period_start.toLocaleDateString('pt-BR')} a ${summary.period_end.toLocaleDateString('pt-BR')}`
+      : 'N/A',
+    ]);
+    pushRow(['Data de Geração:', new Date().toLocaleString('pt-BR')]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['VISÃO GERAL']));
+    pushRow(['Total de Transações', summary.total_transactions]);
+    pushRow(['Total de Categorias', summary.categories_count]);
+    pushRow(['Total de Cartões/Contas', summary.cards_count]);
+    pushRow(['Transações Recorrentes', summary.recurring_count]);
+    pushRow(['Transações Parceladas', summary.installments_count]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['TOTALIZADORES FINANCEIROS']));
+    let r = pushRow(['Total de Receitas', summary.total_income]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['Total de Despesas', summary.total_expenses]);
+    currencyCells.push([r, 1]);
+    netBalanceRow = pushRow(['Saldo Líquido', summary.net_balance]);
+    currencyCells.push([netBalanceRow, 1]);
+    const savingsRate = summary.total_income > 0 ? (summary.net_balance / summary.total_income) : 0;
+    taxaPoupancaRow = pushRow(['Taxa de Poupança', savingsRate]);
+    percentCells.push([taxaPoupancaRow, 1]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['CRÉDITO (Despesas no Cartão)']));
+    r = pushRow(['Total em Crédito', summary.total_credit]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['Crédito Pago', summary.paid_expenses]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['Crédito Pendente', summary.pending_expenses]);
+    currencyCells.push([r, 1]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['DÉBITO (Receitas/Débito à Vista)']));
+    r = pushRow(['Total em Débito', summary.total_debit]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['Débito Pago', summary.paid_income]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['Débito Pendente', summary.pending_income]);
+    currencyCells.push([r, 1]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['MÉDIAS']));
+    r = pushRow(['Ticket Médio de Receita', summary.average_income]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['Ticket Médio de Despesa', summary.average_expense]);
+    currencyCells.push([r, 1]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['ANÁLISE DE RECORRÊNCIA']));
+    r = pushRow(['Gastos Recorrentes', summary.recurring_amount]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['Gastos Não Recorrentes', summary.non_recurring_amount]);
+    currencyCells.push([r, 1]);
+    r = pushRow(['% Recorrentes', summary.recurring_percentage / 100]);
+    percentCells.push([r, 1]);
+    r = pushRow(['% Não Recorrentes', summary.non_recurring_percentage / 100]);
+    percentCells.push([r, 1]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['CONTAS VENCIDAS']));
+    pushRow(['Quantidade Vencida', summary.overdue_count]);
+    r = pushRow(['Valor Total Vencido', summary.overdue_amount]);
+    currencyCells.push([r, 1]);
+    pushRow([]);
+
+    sectionHeaderRows.push(pushRow(['RESUMO MENSAL']));
+    const monthHeaderIdx = pushRow(['Mês', 'Total', 'Crédito', 'Débito', 'Pago', 'Pendente', 'Qtd Transações']);
+    tableHeaderRows.push(monthHeaderIdx);
+    const monthlyStart = rows.length;
     monthlyData.forEach(month => {
-      data.push([
+      const mIdx = pushRow([
         month.month,
         month.total_amount,
         month.total_credit,
         month.total_debit,
         month.paid_amount,
         month.pending_amount,
-        month.count
+        month.count,
       ]);
+      [1, 2, 3, 4, 5].forEach(c => currencyCells.push([mIdx, c]));
     });
 
-    const ws = XLSX.utils.aoa_to_sheet(data);
+    const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Larguras das colunas
     ws['!cols'] = [
-      { wch: 30 },
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 }
+      { wch: 32 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+      { wch: 15 }, { wch: 15 }, { wch: 15 },
     ];
 
-    // Aplicar estilos
-    applyStyle(ws, 'A1', { ...styles.title, alignment: { horizontal: "center" } });
+    // Título com merge
+    applyStyle(ws, XLSX.utils.encode_cell({ r: 0, c: 0 }), {
+      ...styles.title, alignment: { horizontal: 'center', vertical: 'center' },
+    });
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
-    // Títulos de seções
-    ['A6', 'A13', 'A17', 'A21', 'A25', 'A28', 'A32', 'A37'].forEach(cell => {
-      applyStyle(ws, cell, styles.subHeader);
+    // Cabeçalhos de seção
+    sectionHeaderRows.forEach(rowIdx => {
+      const cell = XLSX.utils.encode_cell({ r: rowIdx, c: 0 });
+      if (ws[cell]) applyStyle(ws, cell, styles.subHeader);
     });
 
     // Cabeçalho da tabela mensal
-    const headerRow = 41;
-    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
-      applyStyle(ws, `${col}${headerRow}`, styles.header);
-    });
-
-    // Formatar valores monetários
-    const currencyRows = [14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 33, 34, 39];
-    currencyRows.forEach(row => {
-      const cell = `B${row}`;
-      if (ws[cell] && typeof ws[cell].v === 'number') {
-        applyStyle(ws, cell, styles.currency);
-      }
-    });
-
-    // Formatar percentuais
-    [35, 36].forEach(row => {
-      const cell = `B${row}`;
-      if (ws[cell] && typeof ws[cell].v === 'number') {
-        applyStyle(ws, cell, styles.percentage);
-      }
-    });
-
-    // Formatar tabela mensal
-    const monthlyStartRow = headerRow + 1;
-    monthlyData.forEach((_, idx) => {
-      const row = monthlyStartRow + idx;
-      ['B', 'C', 'D', 'E', 'F'].forEach(col => {
-        const cell = `${col}${row}`;
-        if (ws[cell] && typeof ws[cell].v === 'number') {
-          applyStyle(ws, cell, styles.currency);
-        }
+    tableHeaderRows.forEach(rowIdx => {
+      ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+        applyStyle(ws, `${col}${rowIdx + 1}`, styles.header);
       });
-      
-      // Linhas alternadas
+    });
+
+    // Formatação de moeda
+    currencyCells.forEach(([rowIdx, colIdx]) => {
+      const cell = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+      if (ws[cell] && typeof ws[cell].v === 'number') applyStyle(ws, cell, styles.currency);
+    });
+
+    // Formatação de porcentagem
+    percentCells.forEach(([rowIdx, colIdx]) => {
+      const cell = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+      if (ws[cell]) applyStyle(ws, cell, styles.percentage);
+    });
+
+    // Colorir Saldo Líquido (verde se positivo, vermelho se negativo)
+    const netCell = XLSX.utils.encode_cell({ r: netBalanceRow, c: 1 });
+    if (ws[netCell]) {
+      const netVal = summary.net_balance;
+      applyStyle(ws, netCell, {
+        numFmt: 'R$ #,##0.00',
+        alignment: { horizontal: 'right' },
+        font: { bold: true, color: { rgb: netVal >= 0 ? '276221' : '9C0006' } },
+        fill: { patternType: 'solid', fgColor: { rgb: netVal >= 0 ? 'C6EFCE' : 'FFC7CE' } },
+      });
+    }
+
+    // Colorir Taxa de Poupança
+    const taxaCell = XLSX.utils.encode_cell({ r: taxaPoupancaRow, c: 1 });
+    if (ws[taxaCell]) {
+      applyStyle(ws, taxaCell, {
+        numFmt: '0.00%',
+        alignment: { horizontal: 'center' },
+        font: { bold: true, color: { rgb: savingsRate >= 0 ? '276221' : '9C0006' } },
+      });
+    }
+
+    // Linhas alternadas na tabela mensal
+    monthlyData.forEach((_, idx) => {
+      const rowIdx = monthlyStart + idx;
       if (idx % 2 === 1) {
         ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
-          applyStyle(ws, `${col}${row}`, styles.alternateRow);
+          applyStyle(ws, `${col}${rowIdx + 1}`, styles.alternateRow);
         });
       }
     });
@@ -501,33 +543,43 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       'Descrição',
       'Valor Total',
       'Valor Parcela',
-      'Parcela Atual',
+      'Nº Parcela',
       'Total Parcelas',
       'Recorrente',
-      'Banco',
+      'Cartão',
       'Categoria',
-      'Mês Fatura'
+      'Mês Fatura',
+      'Data Vencimento',
     ];
+
+    const formatDateBR = (dateStr) => {
+      if (!dateStr) return '';
+      const parts = String(dateStr).split('-');
+      if (parts.length !== 3) return dateStr;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    };
 
     const data = [headers];
 
     transactions.forEach(t => {
+      const effectiveStatus = t.parcela_status || t.status || '';
       data.push([
         t.id || '',
         t.created_at_formatted || '',
         t.month_label || '',
         t.type === 'credit' ? 'Crédito' : t.type === 'debit' ? 'Débito' : t.type || '',
-        t.status === 'paid' ? 'Pago' : t.status === 'pending' ? 'Pendente' : t.status || '',
+        effectiveStatus === 'paid' ? 'Pago' : effectiveStatus === 'pending' ? 'Pendente' : effectiveStatus,
         t.title || '',
         t.description || '',
         parseFloat(t.amount) || 0,
         parseFloat(t.installment_amount) || parseFloat(t.amount) || 0,
-        t.current_installment || '',
+        t.display_installment || t.current_installment || '',
         t.total_installments || '',
         t.is_recurring ? 'Sim' : 'Não',
-        t.bank_user?.card?.name || '',
+        t.bank_user?.bank?.name || '',
         t.category?.name || '',
-        t.invoice_month_label || t.month_label || ''
+        t.invoice_month_label || t.month_label || '',
+        formatDateBR(t.due_date),
       ]);
     });
 
@@ -539,18 +591,25 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       { wch: 16 }, // Data
       { wch: 15 }, // Mês/Ano
       { wch: 10 }, // Tipo
-      { wch: 10 }, // Status
+      { wch: 11 }, // Status
       { wch: 30 }, // Título
       { wch: 40 }, // Descrição
       { wch: 15 }, // Valor Total
       { wch: 15 }, // Valor Parcela
-      { wch: 12 }, // Parcela Atual
+      { wch: 11 }, // Nº Parcela
       { wch: 12 }, // Total Parcelas
       { wch: 10 }, // Recorrente
-      { wch: 20 }, // Banco
-      { wch: 20 }, // Categoria
-      { wch: 15 }  // Mês Fatura
+      { wch: 22 }, // Cartão
+      { wch: 22 }, // Categoria
+      { wch: 15 }, // Mês Fatura
+      { wch: 16 }, // Data Vencimento
     ];
+
+    // Linha de cabeçalho com altura maior
+    ws['!rows'] = [{ hpx: 28 }];
+
+    // Congelar primeira linha
+    ws['!sheetViews'] = [{ state: 'frozen', ySplit: 1, topLeftCell: 'A2', activeCell: 'A2' }];
 
     // Aplicar filtro automático
     ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: data.length - 1, c: headers.length - 1 } }) };
@@ -564,7 +623,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     // Estilizar dados
     transactions.forEach((t, rowIdx) => {
       const row = rowIdx + 1;
-      
+
       // Valores monetários
       [7, 8].forEach(colIdx => {
         const cell = XLSX.utils.encode_cell({ r: row, c: colIdx });
@@ -584,6 +643,27 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
         const cell = XLSX.utils.encode_cell({ r: row, c: colIdx });
         applyStyle(ws, cell, { border: styles.border });
       });
+
+      // Cor do Status (sobrescreve linhas alternadas)
+      const statusCell = XLSX.utils.encode_cell({ r: row, c: 4 });
+      if (ws[statusCell]) {
+        const statusVal = ws[statusCell].v;
+        if (statusVal === 'Pago') {
+          applyStyle(ws, statusCell, {
+            fill: { patternType: 'solid', fgColor: { rgb: 'C6EFCE' } },
+            font: { bold: false, color: { rgb: '276221' } },
+            border: styles.border,
+            alignment: { horizontal: 'center' },
+          });
+        } else if (statusVal === 'Pendente') {
+          applyStyle(ws, statusCell, {
+            fill: { patternType: 'solid', fgColor: { rgb: 'FFEB9C' } },
+            font: { bold: false, color: { rgb: '9C5700' } },
+            border: styles.border,
+            alignment: { horizontal: 'center' },
+          });
+        }
+      }
     });
 
     return ws;
@@ -659,6 +739,9 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     // Aplicar filtro
     ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: data.length - 2, c: headers.length - 1 } }) };
 
+    ws['!rows'] = [{ hpx: 28 }];
+    ws['!sheetViews'] = [{ state: 'frozen', ySplit: 1, topLeftCell: 'A2', activeCell: 'A2' }];
+
     // Estilizar cabeçalho
     headers.forEach((_, idx) => {
       const cell = XLSX.utils.encode_cell({ r: 0, c: idx });
@@ -711,10 +794,10 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     return ws;
   };
 
-  // Criar aba de Análise por Banco
+  // Criar aba de Análise por Cartão
   const createBankAnalysisSheet = (bankData, totalAmount) => {
     const headers = [
-      'Banco',
+      'Cartão',
       'Total',
       'Crédito',
       'Débito',
@@ -780,6 +863,9 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
 
     // Aplicar filtro
     ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: data.length - 2, c: headers.length - 1 } }) };
+
+    ws['!rows'] = [{ hpx: 28 }];
+    ws['!sheetViews'] = [{ state: 'frozen', ySplit: 1, topLeftCell: 'A2', activeCell: 'A2' }];
 
     // Estilizar cabeçalho
     headers.forEach((_, idx) => {
@@ -854,7 +940,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
         idx + 1,
         t.title || '',
         t.category?.name || 'Sem categoria',
-        t.bank_user?.card?.name || 'Sem cartão',
+        t.bank_user?.bank?.name || 'Sem cartão',
         t.display_amount,
         t.created_at_formatted || '',
         t.status === 'paid' ? 'Pago' : t.status === 'pending' ? 'Pendente' : t.status || '',
@@ -877,6 +963,9 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       { wch: 10 }, // Tipo
       { wch: 10 }  // Recorrente
     ];
+
+    ws['!rows'] = [{ hpx: 28 }];
+    ws['!sheetViews'] = [{ state: 'frozen', ySplit: 1, topLeftCell: 'A2', activeCell: 'A2' }];
 
     // Estilizar cabeçalho
     headers.forEach((_, idx) => {
@@ -1058,6 +1147,124 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     return ws;
   };
 
+  // Criar aba de Fluxo de Caixa Mensal
+  const createCashflowSheet = (monthlyData) => {
+    const headers = [
+      'Mês',
+      'Receitas',
+      'Despesas',
+      'Saldo do Mês',
+      'Saldo Acumulado',
+      'Taxa de Poupança',
+      'Qtd Transações',
+    ];
+
+    const data = [headers];
+    let cumulative = 0;
+
+    monthlyData.forEach(month => {
+      const income = month.total_debit;
+      const expenses = month.total_credit;
+      const net = income - expenses;
+      cumulative += net;
+      const savingsRate = income > 0 ? net / income : (expenses > 0 ? -1 : 0);
+      data.push([month.month, income, expenses, net, cumulative, savingsRate, month.count]);
+    });
+
+    const totalIncome = monthlyData.reduce((s, m) => s + m.total_debit, 0);
+    const totalExpenses = monthlyData.reduce((s, m) => s + m.total_credit, 0);
+    const totalNet = totalIncome - totalExpenses;
+    const totalSavingsRate = totalIncome > 0 ? totalNet / totalIncome : 0;
+    const totalCount = monthlyData.reduce((s, m) => s + m.count, 0);
+    data.push(['TOTAL', totalIncome, totalExpenses, totalNet, totalNet, totalSavingsRate, totalCount]);
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    ws['!cols'] = [
+      { wch: 18 }, { wch: 16 }, { wch: 16 },
+      { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 14 },
+    ];
+    ws['!rows'] = [{ hpx: 28 }];
+    ws['!sheetViews'] = [{ state: 'frozen', ySplit: 1, topLeftCell: 'A2', activeCell: 'A2' }];
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: data.length - 2, c: headers.length - 1 } }) };
+
+    headers.forEach((_, idx) => {
+      applyStyle(ws, XLSX.utils.encode_cell({ r: 0, c: idx }), styles.header);
+    });
+
+    let runningCumulative = 0;
+    monthlyData.forEach((month, rowIdx) => {
+      const row = rowIdx + 1;
+      const net = month.total_debit - month.total_credit;
+      runningCumulative += net;
+
+      // Moeda: Receitas, Despesas, Saldo do Mês, Saldo Acumulado
+      [1, 2, 3, 4].forEach(colIdx => {
+        const cell = XLSX.utils.encode_cell({ r: row, c: colIdx });
+        if (ws[cell]) applyStyle(ws, cell, styles.currency);
+      });
+
+      // Percentual: Taxa de Poupança
+      const pctCell = XLSX.utils.encode_cell({ r: row, c: 5 });
+      if (ws[pctCell]) applyStyle(ws, pctCell, styles.percentage);
+
+      // Linhas alternadas (apenas nas colunas não coloridas)
+      if (rowIdx % 2 === 1) {
+        [0, 1, 2, 5, 6].forEach(colIdx => {
+          applyStyle(ws, XLSX.utils.encode_cell({ r: row, c: colIdx }), styles.alternateRow);
+        });
+      }
+
+      // Bordas
+      headers.forEach((_, colIdx) => {
+        applyStyle(ws, XLSX.utils.encode_cell({ r: row, c: colIdx }), { border: styles.border });
+      });
+
+      // Colorir Saldo do Mês (verde = superávit, vermelho = déficit)
+      const netCell = XLSX.utils.encode_cell({ r: row, c: 3 });
+      if (ws[netCell]) {
+        applyStyle(ws, netCell, {
+          numFmt: 'R$ #,##0.00',
+          alignment: { horizontal: 'right' },
+          font: { bold: false, color: { rgb: net >= 0 ? '276221' : '9C0006' } },
+          fill: { patternType: 'solid', fgColor: { rgb: net >= 0 ? 'C6EFCE' : 'FFC7CE' } },
+          border: styles.border,
+        });
+      }
+
+      // Colorir Saldo Acumulado
+      const cumCell = XLSX.utils.encode_cell({ r: row, c: 4 });
+      if (ws[cumCell]) {
+        applyStyle(ws, cumCell, {
+          numFmt: 'R$ #,##0.00',
+          alignment: { horizontal: 'right' },
+          font: { bold: false, color: { rgb: runningCumulative >= 0 ? '276221' : '9C0006' } },
+          border: styles.border,
+        });
+      }
+    });
+
+    // Linha de total
+    const totalRow = data.length - 1;
+    headers.forEach((_, colIdx) => {
+      const cell = XLSX.utils.encode_cell({ r: totalRow, c: colIdx });
+      applyStyle(ws, cell, styles.totalRow);
+      if ([1, 2, 3, 4].includes(colIdx)) applyStyle(ws, cell, { ...styles.totalRow, ...styles.currency });
+      if (colIdx === 5) applyStyle(ws, cell, { ...styles.totalRow, ...styles.percentage });
+    });
+
+    const totalNetCell = XLSX.utils.encode_cell({ r: totalRow, c: 3 });
+    if (ws[totalNetCell]) {
+      applyStyle(ws, totalNetCell, {
+        ...styles.totalRow,
+        numFmt: 'R$ #,##0.00',
+        font: { bold: true, color: { rgb: totalNet >= 0 ? '276221' : '9C0006' } },
+      });
+    }
+
+    return ws;
+  };
+
   const exportDetailedReport = async () => {
     try {
       if (!data || data.length === 0) {
@@ -1088,7 +1295,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       XLSX.utils.book_append_sheet(workbook, categorySheet, 'Análise por Categoria');
 
       const bankSheet = createBankAnalysisSheet(bankData, summary.total_expenses);
-      XLSX.utils.book_append_sheet(workbook, bankSheet, 'Análise por Banco');
+      XLSX.utils.book_append_sheet(workbook, bankSheet, 'Análise por Cartão');
 
       const topSheet = createTopTransactionsSheet(topTransactions);
       XLSX.utils.book_append_sheet(workbook, topSheet, 'Top 20 Transações');
@@ -1100,6 +1307,9 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
         const trendsSheet = createTrendsSheet(trendsData);
         XLSX.utils.book_append_sheet(workbook, trendsSheet, 'Tendências');
       }
+
+      const cashflowSheet = createCashflowSheet(monthlyData);
+      XLSX.utils.book_append_sheet(workbook, cashflowSheet, 'Fluxo de Caixa');
 
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
