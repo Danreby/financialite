@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
+import { useCurrencyInput } from '@/Hooks/useCurrencyInput';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
@@ -8,7 +9,7 @@ const formatCurrency = (value) =>
 export default function BankTransferForm({ accounts = [], onSuccess }) {
   const [fromId, setFromId] = useState('');
   const [toId, setToId] = useState('');
-  const [amount, setAmount] = useState('');
+  const { displayValue: amount, numericValue: amountNumeric, handleChange: handleAmountChange, reset: resetAmount } = useCurrencyInput('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
@@ -18,7 +19,7 @@ export default function BankTransferForm({ accounts = [], onSuccess }) {
   const resetForm = () => {
     setFromId('');
     setToId('');
-    setAmount('');
+    resetAmount();
     setDescription('');
     setErrors({});
   };
@@ -35,7 +36,7 @@ export default function BankTransferForm({ accounts = [], onSuccess }) {
       setErrors({ general: 'As contas de origem e destino devem ser diferentes.' });
       return;
     }
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amountNumeric || amountNumeric <= 0) {
       setErrors({ amount: 'Informe um valor válido.' });
       return;
     }
@@ -48,7 +49,7 @@ export default function BankTransferForm({ accounts = [], onSuccess }) {
       const data = await bankTransferService.create({
         from_bank_user_id: parseInt(fromId, 10),
         to_bank_user_id: parseInt(toId, 10),
-        amount: parseFloat(amount),
+        amount: amountNumeric,
         description: description.trim() || null,
       });
 
@@ -147,11 +148,10 @@ export default function BankTransferForm({ accounts = [], onSuccess }) {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">R$</span>
               <input
                 id="transfer_amount"
-                type="number"
-                step="0.01"
-                min="0.01"
+                type="text"
+                inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={handleAmountChange}
                 placeholder="0,00"
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-100 dark:placeholder-gray-500"
               />
