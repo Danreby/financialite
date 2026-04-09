@@ -25,6 +25,7 @@ class CategoryStoreRequest extends FormRequest
                 'max:255',
                 new SafeString(255),
                 Rule::unique('categories')
+                    ->whereNull('deleted_at')
                     ->where(fn ($query) => $query->where('user_id', $userId)),
             ],
             'color' => [

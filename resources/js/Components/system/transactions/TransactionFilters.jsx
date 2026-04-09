@@ -54,7 +54,6 @@ export default function TransactionFilters({
 
   return (
     <div className="flex flex-col gap-3 mb-4">
-      {/* Search + Month + Filter toggle */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,6 +65,7 @@ export default function TransactionFilters({
             onChange={(e) => onSearchChange?.(e.target.value)}
             className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 py-2 text-xs shadow-sm themed-focus dark:border-gray-700/60 dark:bg-[#0a0a0a] dark:text-gray-100 transition-colors"
             placeholder="Buscar transações..."
+            maxLength={255}
           />
         </div>
 
@@ -98,7 +98,6 @@ export default function TransactionFilters({
         </button>
       </div>
 
-      {/* Order buttons */}
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
           Ordenar
@@ -134,7 +133,6 @@ export default function TransactionFilters({
         </div>
       </div>
 
-      {/* Active filter chips */}
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
           {activeFilters.map((chip) => (
@@ -165,7 +163,6 @@ export default function TransactionFilters({
         </div>
       )}
 
-      {/* Collapsible filter panel */}
       <AnimatePresence initial={false}>
         {filtersOpen && (
           <motion.div

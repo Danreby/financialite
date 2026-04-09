@@ -59,16 +59,14 @@ class FaturaBillingService
     {
         $monthKey = $targetMonth->format('Y-m');
 
-        // Fast path: non-recurring transactions with parcelas — direct lookup.
         if (!$transacao->is_recurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
             return $transacao->parcelas->contains('month_key', $monthKey);
         }
 
-        // Fallback: recurring or transactions without parcelas.
         $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
 
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-        $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+        $first = Carbon::parse($firstBillingMonthKey . '-01');
 
         if ($transacao->is_recurring) {
             return !$targetMonth->lt($first);
@@ -97,7 +95,6 @@ class FaturaBillingService
             return (float) $transacao->amount;
         }
 
-        // Try to find the target parcela via month_key first, then fallback.
         $targetInstallment = null;
 
         if ($monthKey) {
@@ -120,13 +117,11 @@ class FaturaBillingService
             $installmentAmount = (float) $transacao->getInstallmentAmount($targetInstallment);
             $this->markParcelaAsPaid($transacao, $targetInstallment);
 
-            // Update current_installment to the highest paid installment.
             $highestPaid = $transacao->parcelas()
                 ->where('status', 'paid')
                 ->max('installment_number') ?? $targetInstallment;
             $transacao->current_installment = (int) $highestPaid;
 
-            // Check if all installments are now paid.
             $unpaidCount = $transacao->parcelas()
                 ->where('status', '!=', 'paid')
                 ->count();
@@ -139,7 +134,6 @@ class FaturaBillingService
             return $installmentAmount;
         }
 
-        // Fallback: sequential payment for data without parcelas.
         $currentInstallment = max((int) ($transacao->current_installment ?? 0), 0);
 
         if ($currentInstallment < $totalInstallments) {
@@ -175,7 +169,6 @@ class FaturaBillingService
             return null;
         }
 
-        // Fast path: direct parcela lookup by month_key.
         if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
             $parcela = $transacao->parcelas->firstWhere('month_key', $yearMonth);
             if ($parcela) {
@@ -183,10 +176,9 @@ class FaturaBillingService
             }
         }
 
-        // Fallback: Carbon arithmetic.
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-        $first = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
-        $current = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+        $first = Carbon::parse($firstBillingMonthKey . '-01');
+        $current = Carbon::parse($yearMonth . '-01');
 
         if ($current->lt($first)) {
             return null;
@@ -212,14 +204,13 @@ class FaturaBillingService
             $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
             $isRecurring = (bool) $transacao->is_recurring;
 
-            // Non-recurring with parcelas: iterate parcelas directly (O(1) per parcela).
             if (!$isRecurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
                 foreach ($transacao->parcelas as $parcela) {
                     if (!$parcela->month_key) {
                         continue;
                     }
 
-                    $parcelaMonth = Carbon::createFromFormat('Y-m', $parcela->month_key)->startOfMonth();
+                    $parcelaMonth = Carbon::parse($parcela->month_key . '-01');
                     if ($parcelaMonth->gt($projectionEnd)) {
                         continue;
                     }
@@ -233,9 +224,8 @@ class FaturaBillingService
                 continue;
             }
 
-            // Fallback: recurring or transactions without parcelas.
             $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-            $month = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+            $month = Carbon::parse($firstBillingMonthKey . '-01');
 
             $installmentIndex = 1;
 
@@ -264,14 +254,13 @@ class FaturaBillingService
         $grouped = $entries->groupBy('month_key');
 
         $result = $grouped->map(function ($items, $yearMonth) use ($paidByMonth) {
-            $carbon = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+            $carbon = Carbon::parse($yearMonth . '-01');
             $label = ucfirst($carbon->translatedFormat('F Y'));
 
             $totalSpent = $items->sum(function ($entry) {
                 $transacao = $entry['transacao'];
                 $installmentNumber = $entry['installment_index'];
 
-                // Use parcela amount directly when available.
                 if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
                     $parcela = $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
                     if ($parcela) {
@@ -285,17 +274,10 @@ class FaturaBillingService
             $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
             $totalPaid = $faturaPayment ? (float) ($faturaPayment->total_paid ?? 0.0) : 0.0;
 
-            // A month is considered paid when it has a payment record with paid_at set.
-            // We do NOT compare total_paid vs total_spent for the "paid" flag, because
-            // recurring transaction amount changes retroactively alter total_spent
-            // while total_paid reflects the amount at the time of payment.
             $isPaid = $faturaPayment
                 && $faturaPayment->paid_at !== null
                 && $totalPaid > 0;
 
-            // Reopened: new NON-recurring charges appeared after the payment,
-            // but only if the gap actually comes from new installment items,
-            // not from a recurring price change.
             $hasNewNonRecurringCharges = false;
             if ($faturaPayment && $faturaPayment->paid_at !== null && $totalPaid > 0) {
                 $nonRecurringSpent = $items->sum(function ($entry) {
@@ -313,15 +295,12 @@ class FaturaBillingService
                     return (float) $t->getInstallmentAmount($installmentNumber);
                 });
                 $recurringSpent = $totalSpent - $nonRecurringSpent;
-                // If non-recurring portion alone exceeds what's paid minus recurring,
-                // there are genuinely new charges.
                 $paidForNonRecurring = max(0, $totalPaid - $recurringSpent);
                 $hasNewNonRecurringCharges = $nonRecurringSpent > $paidForNonRecurring + 0.01;
             }
 
             $hasRemainingPostPayment = $hasNewNonRecurringCharges;
 
-            // If there are genuinely new non-recurring charges, reopen the month.
             if ($hasRemainingPostPayment) {
                 $isPaid = false;
             }
@@ -339,7 +318,6 @@ class FaturaBillingService
                     $installmentIndex = $entry['installment_index'];
                     $monthKey = $entry['month_key'];
 
-                    // Resolve amount and status from parcela directly.
                     $parcela = null;
                     $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
 
@@ -353,7 +331,6 @@ class FaturaBillingService
 
                     $effectiveStatus = $fatura->status;
                     if ($fatura->is_recurring) {
-                        // Recurring: derive status from month payment state.
                         $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at)
                             ? 'paid'
                             : 'pending';
@@ -400,7 +377,6 @@ class FaturaBillingService
 
         $effectiveGroup = $groupsCollection->firstWhere('month_key', $currentMonthKey);
 
-        // If the current month group exists and is not paid, use it directly.
         if ($effectiveGroup && !($effectiveGroup['is_paid'] ?? false)) {
             return [
                 'group' => $effectiveGroup,
@@ -408,9 +384,6 @@ class FaturaBillingService
             ];
         }
 
-        // Current month is paid or doesn't exist — look for the nearest FUTURE
-        // unpaid group only. Past months that became "unpaid" due to recurring
-        // amount changes should not steal the dashboard display.
         $unpaidGroups = $groupsCollection->filter(function ($group) use ($currentMonthKey) {
             return !($group['is_paid'] ?? false) && $group['month_key'] >= $currentMonthKey;
         });
@@ -424,7 +397,6 @@ class FaturaBillingService
             ];
         }
 
-        // Everything is paid — return the current month group (or null) with zero pending.
         return [
             'group' => $effectiveGroup,
             'month_key' => $currentMonthKey,

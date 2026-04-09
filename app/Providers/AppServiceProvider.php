@@ -24,7 +24,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        // Define the 'api' rate limiter used by throttle:api in routes/api.php
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
         });

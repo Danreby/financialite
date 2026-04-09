@@ -42,10 +42,10 @@ function formatShortDate(dateStr) {
 }
 
 export default function Parcelamentos({ installments = [], bankAccounts = [], categories = [] }) {
-  const [filterStatus, setFilterStatus] = useState('active') // 'all' | 'active' | 'overdue' | 'paid'
+  const [filterStatus, setFilterStatus] = useState('active')
   const [filterCard, setFilterCard] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
-  const [sortBy, setSortBy] = useState('remaining_desc') // remaining_desc | amount_desc | completion_asc | title_asc
+  const [sortBy, setSortBy] = useState('remaining_desc')
   const [searchQuery, setSearchQuery] = useState('')
 
   const filtered = useMemo(() => {
@@ -95,7 +95,6 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
       <Head title="Parcelamentos" />
 
       <FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-4 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
-        {/* Header */}
         <FadeInItem type="fast">
           <header className="space-y-1">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Parcelamentos</h1>
@@ -105,7 +104,6 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
           </header>
         </FadeInItem>
 
-        {/* Overview stats */}
         <FadeInItem type="subtle">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <StatCard label="Em aberto" value={stats.active} highlight icon="🔄" />
@@ -116,11 +114,9 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
           </div>
         </FadeInItem>
 
-        {/* Filters */}
         <FadeInItem type="subtle">
           <div className="rounded-2xl p-3 sm:p-4 shadow-md themed-card">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:flex-wrap">
-              {/* Status tabs */}
               <div className="flex gap-1 flex-wrap">
                 {[
                   { value: 'active', label: 'Em aberto' },
@@ -144,7 +140,6 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 flex-1">
-                {/* Search */}
                 <div className="relative flex-1 min-w-[160px]">
                   <input
                     type="text"
@@ -152,13 +147,13 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-100 dark:placeholder-gray-500"
+                    maxLength={255}
                   />
                   <svg className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                   </svg>
                 </div>
 
-                {/* Card filter */}
                 {bankAccounts.length > 0 && (
                   <select
                     value={filterCard}
@@ -172,7 +167,6 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
                   </select>
                 )}
 
-                {/* Category filter */}
                 {categories.length > 0 && (
                   <select
                     value={filterCategory}
@@ -186,7 +180,6 @@ export default function Parcelamentos({ installments = [], bankAccounts = [], ca
                   </select>
                 )}
 
-                {/* Sort */}
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}

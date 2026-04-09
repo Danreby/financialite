@@ -6,6 +6,7 @@ use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\Transacao;
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ class FaturaPaymentService
 
         $allFaturas = $query->get();
 
-        $targetMonth = now()->createFromFormat('Y-m', $monthKey)->startOfMonth();
+        $targetMonth = Carbon::parse($monthKey . '-01');
 
         $faturas = $allFaturas->filter(function (Transacao $transacao) use ($targetMonth) {
             return $this->billing->faturaAppliesToMonth($transacao, $targetMonth);
@@ -39,7 +40,6 @@ class FaturaPaymentService
         return DB::transaction(function () use ($faturas, $user, $bankUserId, $monthKey, $bankAccount) {
             $totalPaidThisRun = 0.0;
 
-            // Check if this month already has a payment record (re-payment scenario).
             $existingFatura = Fatura::where([
                 'user_id' => $user->id,
                 'month_key' => $monthKey,
@@ -48,8 +48,6 @@ class FaturaPaymentService
             $hasExistingPayment = $existingFatura && (float) ($existingFatura->total_paid ?? 0) > 0;
 
             foreach ($faturas as $transacao) {
-                // Recurring transactions were already included in the first payment.
-                // Skip them on re-payment to avoid double-counting in total_paid.
                 if ($transacao->is_recurring && $hasExistingPayment) {
                     continue;
                 }
@@ -65,7 +63,6 @@ class FaturaPaymentService
                     'bank_user_id' => $bankUserId,
                 ]);
 
-                // Accumulate: previous partial payments must be preserved.
                 $paid->total_paid = (float) ($paid->total_paid ?? 0.0) + $totalPaidThisRun;
                 $paid->paid_at = now();
                 $paid->save();
@@ -88,7 +85,7 @@ class FaturaPaymentService
     ): array {
         $bankUserId = $cardUser?->id;
 
-        $targetMonth = now()->createFromFormat('Y-m', $monthKey)->startOfMonth();
+        $targetMonth = Carbon::parse($monthKey . '-01');
 
         $allTransacoes = Transacao::with(['bankUser', 'parcelas'])
             ->forUser($user->id)

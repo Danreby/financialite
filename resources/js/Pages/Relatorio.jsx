@@ -45,7 +45,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		const load = async () => {
 			setIsLoading(true);
 			try {
-				// Single consolidated request instead of 2 separate ones
 				const response = await axios.get(route("reports.data"), {
 					params: {
 						bank_user_id: selectedBankId || undefined,
@@ -165,7 +164,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		[periodGroups, selectedPeriodKey],
 	);
 
-	// Extract available years from all period data
 	const availableYears = useMemo(() => {
 		const years = new Set()
 		periodGroups.forEach((g) => {
@@ -175,7 +173,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		return [...years].sort((a, b) => b.localeCompare(a))
 	}, [periodGroups])
 
-	// Year-filtered data used by all display components
 	const filteredPeriodGroups = useMemo(() => {
 		if (!selectedYear) return periodGroups
 		return periodGroups.filter((g) => (g.key || '').startsWith(selectedYear))
@@ -205,7 +202,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 		const averageTicket = totalCount > 0 ? totalAmount / totalCount : 0;
 		const topExpense = [...groups].sort((a, b) => (b.total_amount || 0) - (a.total_amount || 0))[0];
 
-		// Use monthly average expense vs declared monthly income for a meaningful savings rate
 		const periodCount = Math.max(groups.length, 1);
 		const avgMonthlyExpense = totalAmount / periodCount;
 		const savingsRate = totalMonthlyIncome > 0
@@ -261,7 +257,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				<FadeInItem type="subtle"><section className="rounded-2xl p-3 shadow-md themed-card sm:p-3 lg:p-4 space-y-3">
 				<div className="flex flex-col gap-2 text-xs sm:text-sm">
 					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap sm:gap-2">
-						{/* Card filter */}
 						<div className="flex w-full flex-col gap-1 sm:w-auto">
 							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
 								💳 Cartão
@@ -281,7 +276,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							</select>
 						</div>
 
-						{/* Category filter */}
 						<div className="flex w-full flex-col gap-1 sm:w-auto">
 							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
 								📂 Categoria
@@ -301,7 +295,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							</select>
 						</div>
 
-						{/* Year filter */}
 						<div className="flex w-full flex-col gap-1 sm:w-auto">
 							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
 								📅 Ano
@@ -320,7 +313,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							</select>
 						</div>
 
-						{/* Search */}
 						<div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-1 sm:max-w-xs">
 							<label className="text-[10px] sm:text-[11px] font-semibold text-gray-600 dark:text-gray-300 sm:hidden">
 								🔍 Buscar transação
@@ -336,6 +328,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 									placeholder="Buscar por título..."
 									className="w-full rounded-lg border border-gray-300 bg-white pl-8 pr-3 py-1.5 text-xs sm:text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 dark:placeholder-gray-500"
 									aria-label="Buscar transação"
+									maxLength={255}
 								/>
 								{transactionSearch && (
 									<button
@@ -352,7 +345,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 							</div>
 						</div>
 
-						{/* Clear filters */}
 						{(selectedBankId || selectedCategoryId || selectedYear || transactionSearch) && (
 							<button
 								type="button"
@@ -375,7 +367,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				</div>
 			</section>
 		</FadeInItem>
-
 			<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
 				<FadeInItem type="feature">
 					<ReportsPeriodSelector
@@ -421,7 +412,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				</FadeInItem>
 			</FadeInContainer>
 
-			{/* Category & Card Breakdowns */}
 			{!isLoading && filteredAllTransactions.length > 0 && (
 				<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
 					<FadeInItem type="feature">
@@ -433,7 +423,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				</FadeInContainer>
 			)}
 
-			{/* Spending trend chart + top transactions */}
 			{!isLoading && filteredAllTransactions.length > 0 && (
 				<FadeInContainer stagger className="grid grid-cols-1 gap-3 lg:grid-cols-2">
 					<FadeInItem type="feature">
@@ -449,7 +438,6 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 				</FadeInContainer>
 			)}
 
-			{/* Month over month comparison */}
 			{!isLoading && filteredMonthlySummary.length >= 2 && (
 				<FadeInItem type="feature">
 					<ReportsMonthComparison monthlySummary={filteredMonthlySummary} />

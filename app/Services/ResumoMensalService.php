@@ -23,7 +23,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $userId = $user->id;
         $monthKey = $filters['month_key'] ?? Carbon::today()->format('Y-m');
 
-        $targetMonth = Carbon::createFromFormat('Y-m', $monthKey)->startOfMonth();
+        $targetMonth = Carbon::parse($monthKey . '-01');
         $targetMonthEnd = $targetMonth->copy()->endOfMonth();
 
         $incomes = $this->buildIncomes($userId, $targetMonth);
@@ -414,7 +414,6 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
         foreach ($creditTransactions as $t) {
             if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
-                // Iterate only parcelas within the target month range.
                 foreach ($t->parcelas->whereIn('month_key', $monthKeys) as $parcela) {
                     $allRows->push([
                         'category_id' => $t->category_id,
@@ -426,9 +425,8 @@ class ResumoMensalService implements ResumoMensalServiceInterface
                     ]);
                 }
             } else {
-                // Recurring or no parcelas: check each month via billing service.
                 foreach ($monthKeys as $mk) {
-                    $mkCarbon = Carbon::createFromFormat('Y-m', $mk)->startOfMonth();
+                    $mkCarbon = Carbon::parse($mk . '-01');
                     if ($this->billing->faturaAppliesToMonth($t, $mkCarbon)) {
                         $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $mk);
                         $allRows->push([

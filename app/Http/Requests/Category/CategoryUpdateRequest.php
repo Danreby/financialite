@@ -30,6 +30,7 @@ class CategoryUpdateRequest extends FormRequest
                 new SafeString(255),
                 Rule::unique('categories')
                     ->ignore($categoryId)
+                    ->whereNull('deleted_at')
                     ->where(fn ($query) => $query->where('user_id', $userId)),
             ],
             'color' => [

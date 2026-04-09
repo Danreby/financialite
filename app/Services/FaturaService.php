@@ -90,7 +90,6 @@ class FaturaService implements FaturaServiceInterface
         $totalInstallments = max((int) $transacao->total_installments, 1);
         $totalAmount = (float) $transacao->amount;
 
-        // Use the billing service to determine the first billing month consistently.
         $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($transacao);
 
         if ($totalInstallments <= 1 && !$transacao->is_recurring) {
@@ -125,7 +124,7 @@ class FaturaService implements FaturaServiceInterface
 
         $dueDay = $cardUser->due_day ?? $cardUser->closing_day ?? (int) $createdAt->format('d');
 
-        $firstBillingMonth = Carbon::createFromFormat('Y-m', $firstBillingMonthKey)->startOfMonth();
+        $firstBillingMonth = Carbon::parse($firstBillingMonthKey . '-01');
 
         $parcelas = [];
         for ($i = 1; $i <= $totalInstallments; $i++) {

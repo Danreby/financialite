@@ -31,7 +31,6 @@ export default function ReceitasFilterBar({
 
   return (
     <div className="rounded-2xl themed-card p-4 sm:p-5 flex flex-col gap-4">
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         <input
@@ -42,6 +41,7 @@ export default function ReceitasFilterBar({
           className="w-full pl-9 pr-8 py-2.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-800 border-0 
                      text-gray-700 dark:text-gray-300 placeholder-gray-400
                      focus:ring-2 focus:ring-emerald-500/40 transition"
+          maxLength={255}
         />
         {searchTerm && (
           <button
@@ -53,7 +53,6 @@ export default function ReceitasFilterBar({
         )}
       </div>
 
-      {/* Type pills */}
       <div className="flex flex-wrap gap-1.5 sm:gap-2">
         {TYPE_PILLS.filter(p => !p.value || incomesByType[p.value]?.length).map((pill) => {
           const isActive = filterType === pill.value
@@ -73,7 +72,6 @@ export default function ReceitasFilterBar({
         })}
       </div>
 
-      {/* Status + clear */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex gap-1.5">
           {STATUS_OPTIONS.map((opt) => {

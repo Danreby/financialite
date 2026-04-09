@@ -34,7 +34,6 @@ class FaturaExportService
 
             $isRecurring = (bool) $transacao->is_recurring;
 
-            // Non-recurring with parcelas: iterate parcelas directly.
             if (!$isRecurring && $transacao->parcelas->isNotEmpty()) {
                 foreach ($transacao->parcelas as $parcela) {
                     $installmentAmount = (float) $parcela->amount;
@@ -46,11 +45,10 @@ class FaturaExportService
                 continue;
             }
 
-            // Fallback: recurring or transactions without parcelas.
             $firstMonthKey    = $this->billing->resolveBillingMonthKey($transacao);
             $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
 
-            $cursor = Carbon::createFromFormat('Y-m', $firstMonthKey)->startOfMonth();
+            $cursor = Carbon::parse($firstMonthKey . '-01');
 
             if ($isRecurring) {
                 while ($cursor->format('Y-m') <= $currentMonth) {
@@ -83,7 +81,7 @@ class FaturaExportService
 
         if ($fatura->type === 'credit') {
             $invoiceMonthKey = $overrideInvoiceMonth ?? $this->billing->resolveBillingMonthKey($fatura);
-            $invoiceCarbon   = Carbon::createFromFormat('Y-m', $invoiceMonthKey)->startOfMonth();
+            $invoiceCarbon   = Carbon::parse($invoiceMonthKey . '-01');
             $invoiceMonthLabel = ucfirst($invoiceCarbon->translatedFormat('F Y'));
 
             $computedInstallmentAmount = $installmentAmount
