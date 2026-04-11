@@ -36,26 +36,44 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // Return JSON errors for all API requests so the mobile app can display them
         $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
-            if ($request->expectsJson() || $request->is('api/*')) {
-                $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-                $isDebug = config('app.debug', false);
-
-                $body = [
-                    'message' => $status >= 500
-                        ? 'Erro interno do servidor. Contate o suporte.'
-                        : $e->getMessage(),
-                    // Always expose the exception class + message for API clients (no trace)
-                    'error' => class_basename($e) . ': ' . $e->getMessage(),
-                ];
-
-                // In debug mode also add the full exception for local development
-                if ($isDebug) {
-                    $body['exception'] = get_class($e);
-                    $body['file'] = $e->getFile();
-                    $body['line'] = $e->getLine();
-                }
-
-                return response()->json($body, $status ?: 500);
+            if (!$request->expectsJson() && !$request->is('api/*')) {
+                return null;
             }
+
+            // Let Laravel handle ValidationException natively (returns 422 with field errors)
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return null;
+            }
+
+            // Let Laravel handle AuthenticationException natively (returns 401)
+            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                return null;
+            }
+
+            // Determine proper HTTP status code
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                $status = $e->getStatusCode();
+            } elseif (property_exists($e, 'status')) {
+                $status = $e->status;
+            } else {
+                $status = 500;
+            }
+
+            $isDebug = config('app.debug', false);
+
+            $body = [
+                'message' => $status >= 500
+                    ? 'Erro interno do servidor. Contate o suporte.'
+                    : $e->getMessage(),
+                'error' => class_basename($e) . ': ' . $e->getMessage(),
+            ];
+
+            if ($isDebug) {
+                $body['exception'] = get_class($e);
+                $body['file'] = $e->getFile();
+                $body['line'] = $e->getLine();
+            }
+
+            return response()->json($body, $status ?: 500);
         });
     })->create();
