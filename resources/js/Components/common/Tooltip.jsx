@@ -22,10 +22,10 @@ export default function Tooltip({ label, position = "top", children }) {
   }
 
   return (
-    <div className="relative inline-flex group">
+    <div className="relative inline-flex group/tooltip">
       {children}
       <div
-        className={`pointer-events-none absolute z-30 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[10px] font-medium text-gray-100 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition ${positionClasses}`}
+        className={`pointer-events-none absolute z-30 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[10px] font-medium text-gray-100 shadow-lg opacity-0 group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100 transition ${positionClasses}`}
       >
         {label}
       </div>

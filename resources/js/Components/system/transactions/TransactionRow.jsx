@@ -58,14 +58,12 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
       role={onShowDetails ? "button" : undefined}
       tabIndex={onShowDetails ? 0 : undefined}
     >
-      {/* Type indicator */}
       <div className="hidden sm:flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
         <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
         </svg>
       </div>
 
-      {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -109,7 +107,6 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
         </div>
       </div>
 
-      {/* Amount + Date */}
       <div className="flex flex-col items-end text-right flex-shrink-0">
         <span className="text-sm font-semibold tabular-nums themed-amount">
           -{formatCurrency(amount)}
@@ -119,8 +116,7 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
         </span>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="hidden sm:flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <Tooltip label="Editar">
           <button
             type="button"
