@@ -65,8 +65,6 @@ export default function TransactionFilters({
 }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  /* Only bank, category and recurrence count as "secondary" filters
-     (type and status are shown as quick-pills, so not in active chips) */
   const activeChips = useMemo(() => {
     const chips = [];
     if (selectedBankId) {
@@ -92,9 +90,7 @@ export default function TransactionFilters({
 
   return (
     <div className="flex flex-col gap-3 mb-5">
-      {/* Row 1 – search + month + sort */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-        {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
           <input
@@ -116,7 +112,6 @@ export default function TransactionFilters({
           )}
         </div>
 
-        {/* Month picker */}
         {months.length > 0 && (
           <FaturaMonthDropdownGrid
             months={months}
@@ -125,7 +120,6 @@ export default function TransactionFilters({
           />
         )}
 
-        {/* Sort */}
         <div className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 dark:border-gray-700/60 dark:bg-[#0a0a0a] flex-shrink-0">
           <ArrowDownUp className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
           {orderOptions.map((opt) => {
@@ -157,7 +151,6 @@ export default function TransactionFilters({
         </div>
       </div>
 
-      {/* Row 2 – quick-filter pills for Type & Status */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex-shrink-0 mr-1">
           Tipo
@@ -176,7 +169,6 @@ export default function TransactionFilters({
         <FilterPill label="Pagas" active={selectedStatus === "paid"} onClick={() => onStatusChange?.(selectedStatus === "paid" ? "" : "paid")} />
         <FilterPill label="Vencidas" active={selectedStatus === "overdue"} onClick={() => onStatusChange?.(selectedStatus === "overdue" ? "" : "overdue")} />
 
-        {/* Advanced filters toggle */}
         <button
           type="button"
           onClick={() => setAdvancedOpen((v) => !v)}
@@ -197,7 +189,6 @@ export default function TransactionFilters({
         </button>
       </div>
 
-      {/* Active chips from advanced filters */}
       {activeChips.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
           {activeChips.map((chip) => (
@@ -215,7 +206,6 @@ export default function TransactionFilters({
         </div>
       )}
 
-      {/* Advanced filter panel */}
       <AnimatePresence initial={false}>
         {advancedOpen && (
           <motion.div

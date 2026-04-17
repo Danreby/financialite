@@ -120,7 +120,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 			return;
 		}
 
-		// Dia de vencimento é obrigatório
 		if (!dueDay || dueDay.trim() === "") {
 			toast.error("O dia de vencimento é obrigatório.");
 			document.getElementById("due_day")?.focus();
@@ -135,7 +134,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 			return;
 		}
 
-		// Dia de fechamento é obrigatório
 		if (!closingDay || closingDay.trim() === "") {
 			toast.error("O dia de fechamento é obrigatório.");
 			document.getElementById("closing_day")?.focus();

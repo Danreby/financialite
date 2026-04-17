@@ -118,11 +118,9 @@ export default function ResumoMensal({
       <Head title="Resumo Mensal" />
 
       <div className="w-full max-w-[1920px] mx-auto pb-8">
-        {/* Header with month nav + tab bar */}
         <FadeInContainer>
           <FadeInItem type="fast">
             <header className="flex flex-col gap-4 mb-5">
-              {/* Title row */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 dark:text-gray-100">
@@ -133,7 +131,6 @@ export default function ResumoMensal({
                   </p>
                 </div>
 
-                {/* Month navigator */}
                 <div className="flex items-center gap-1 themed-card rounded-xl px-1 py-1">
                   <button
                     type="button"
@@ -157,7 +154,6 @@ export default function ResumoMensal({
                 </div>
               </div>
 
-              {/* Tab bar */}
               <nav className="flex gap-1 p-1 rounded-xl themed-card overflow-x-auto scrollbar-custom" role="tablist">
                 {TABS.map((tab) => {
                   const Icon = tab.icon
@@ -200,7 +196,6 @@ export default function ResumoMensal({
           </FadeInItem>
         </FadeInContainer>
 
-        {/* Loading overlay */}
         <AnimatePresence>
           {isLoading && !data && (
             <motion.div
@@ -214,7 +209,6 @@ export default function ResumoMensal({
           )}
         </AnimatePresence>
 
-        {/* Tab panels */}
         {data && (
           <div className="relative overflow-hidden">
             <AnimatePresence mode="wait" custom={tabDirection}>
@@ -286,7 +280,6 @@ export default function ResumoMensal({
   )
 }
 
-/* ─── Overview Tab ────────────────────────────────────────────────── */
 function OverviewTab({ data, isLoading }) {
   return (
     <FadeInContainer stagger className="flex flex-col gap-4 lg:gap-5">
@@ -310,7 +303,6 @@ function OverviewTab({ data, isLoading }) {
   )
 }
 
-/* ─── Despesas Tab ────────────────────────────────────────────────── */
 function DespesasTab({ data, isLoading }) {
   return (
     <FadeInContainer stagger className="flex flex-col gap-4 lg:gap-5">
@@ -338,7 +330,6 @@ function DespesasTab({ data, isLoading }) {
   )
 }
 
-/* ─── Calendário Tab ──────────────────────────────────────────────── */
 function CalendarioTab({ data, monthKey }) {
   return (
     <FadeInContainer stagger className="flex flex-col gap-4 lg:gap-5">

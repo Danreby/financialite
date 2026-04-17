@@ -3,7 +3,6 @@ import { Receipt } from "lucide-react";
 import TransactionRow from "@/Components/system/transactions/TransactionRow";
 import { formatCurrencyBRL } from "@/Lib/formatters";
 
-/* ─── Group transactions by calendar date ─────────────────────── */
 function groupByDate(transactions) {
   const groups = new Map();
   for (const tx of transactions) {
@@ -12,7 +11,7 @@ function groupByDate(transactions) {
     if (!groups.has(dateKey)) groups.set(dateKey, []);
     groups.get(dateKey).push(tx);
   }
-  return [...groups.entries()]; // [dateKey, tx[]]
+  return [...groups.entries()];
 }
 
 function formatGroupLabel(dateKey) {
@@ -64,7 +63,6 @@ export default function TransactionsList({ transactions = [], onEdit, onDelete, 
                 -{formatCurrencyBRL(debitTotal)}
               </span>
             </div>
-            {/* Transactions */}
             <div className="rounded-xl border border-gray-100 dark:border-gray-800/60 divide-y divide-gray-100 dark:divide-gray-800/40 overflow-hidden">
               {txList.map((tx) => (
                 <TransactionRow

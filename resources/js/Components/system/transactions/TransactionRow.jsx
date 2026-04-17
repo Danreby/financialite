@@ -6,7 +6,6 @@ import EditIcon from "@/Components/common/icons/EditIcon";
 import { getIconEmoji } from "@/Utils/categoryIcons";
 import { formatCurrency, formatDate } from "@/Lib/formatters";
 
-/* ─── Status badge ───────────────────────────────────────────── */
 const STATUS_CONFIG = {
   overdue: { label: "Vencida", cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
   unpaid:  { label: "Pendente", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
@@ -23,7 +22,6 @@ function StatusBadge({ status }) {
   );
 }
 
-/* ─── Category dot ───────────────────────────────────────────── */
 function CategoryDot({ icon, name, color }) {
   const emoji = icon ? (getIconEmoji(icon) || icon) : null;
   return (
@@ -76,7 +74,6 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
       role={onShowDetails ? "button" : undefined}
       tabIndex={onShowDetails ? 0 : undefined}
     >
-      {/* ── Type icon ── */}
       <div
         className={`hidden sm:flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${
           isCredit
@@ -87,14 +84,12 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
         {isCredit ? <CreditCard className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}
       </div>
 
-      {/* ── Mobile type accent bar ── */}
       <div
         className={`sm:hidden absolute left-0 top-2 bottom-2 w-1 rounded-r-full ${
           isCredit ? "bg-purple-400" : "bg-red-400"
         }`}
       />
 
-      {/* ── Main content ── */}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px] sm:max-w-none">
@@ -141,7 +136,6 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
         </div>
       </div>
 
-      {/* ── Amount & Date ── */}
       <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-1">
         <span
           className={`text-sm font-bold tabular-nums ${
@@ -157,7 +151,6 @@ export default function TransactionRow({ transaction, onEdit, onDelete, onShowDe
         </span>
       </div>
 
-      {/* ── Action buttons (hover) ── */}
       <div className="hidden sm:flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <Tooltip label="Editar">
           <button
