@@ -4,8 +4,17 @@ namespace App\Observers;
 
 use App\Models\Transacao;
 use App\Services\BudgetAlertService;
+use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 
-class TransacaoObserver
+/**
+ * Observes Transacao lifecycle events to trigger real-time budget alerts.
+ *
+ * Implements ShouldHandleEventsAfterCommit so that the budget check and
+ * notification creation happen AFTER the outer DB transaction commits,
+ * preventing stale reads and ensuring notifications are not rolled back
+ * alongside a failed transacao save.
+ */
+class TransacaoObserver implements ShouldHandleEventsAfterCommit
 {
     public function __construct(private BudgetAlertService $budgetAlert) {}
 
@@ -31,6 +40,12 @@ class TransacaoObserver
             return;
         }
 
-        $this->budgetAlert->checkForUser($user);
+        try {
+            $this->budgetAlert->checkForUser($user);
+        } catch (\Throwable $e) {
+            // Budget alerts are non-critical; log and continue so the main
+            // request is never broken by a notification failure.
+            report($e);
+        }
     }
 }

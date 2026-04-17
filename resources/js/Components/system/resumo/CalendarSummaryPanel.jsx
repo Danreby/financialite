@@ -10,6 +10,7 @@ import {
   ArrowDownRight,
 } from 'lucide-react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
+import { getIconEmoji } from '@/Utils/categoryIcons'
 
 function StatCard({ icon: Icon, label, value, color = 'gray', subtext }) {
   const colorMap = {
@@ -169,7 +170,11 @@ export default function CalendarSummaryPanel({ data = {} }) {
                 <div key={cat.category_id ?? idx} className="group">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      {cat.category_icon && <span className="text-xs">{cat.category_icon}</span>}
+                      {cat.category_icon && (
+                        <span className="text-xs flex-shrink-0">
+                          {getIconEmoji(cat.category_icon) || cat.category_icon}
+                        </span>
+                      )}
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
                         {cat.category_name}
                       </span>

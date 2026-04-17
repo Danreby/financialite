@@ -186,8 +186,17 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
         $allTransactions = $debitTransactions->merge($creditTransactions);
 
-        $grouped = $allTransactions->groupBy(function ($t) {
+        // Credit transactions that "apply" to the target month via installments may have been
+        // created in a previous month. To ensure they appear on the calendar, we pin their
+        // display date to the 1st of the target month when their actual created_at falls
+        // outside the displayed month range.
+        $grouped = $allTransactions->groupBy(function ($t) use ($targetMonth, $targetMonthEnd) {
             $date = $t->created_at instanceof Carbon ? $t->created_at : Carbon::parse($t->created_at);
+
+            if ($t->type === 'credit' && ($date->lt($targetMonth) || $date->gt($targetMonthEnd))) {
+                return $targetMonth->format('Y-m-d');
+            }
+
             return $date->format('Y-m-d');
         });
 

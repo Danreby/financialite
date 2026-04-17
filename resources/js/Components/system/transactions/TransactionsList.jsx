@@ -1,17 +1,41 @@
-import React from "react";
-import ScrollArea from "@/Components/common/ScrollArea";
+import React, { useMemo } from "react";
+import { Receipt } from "lucide-react";
 import TransactionRow from "@/Components/system/transactions/TransactionRow";
+import { formatCurrencyBRL } from "@/Lib/formatters";
+
+/* ─── Group transactions by calendar date ─────────────────────── */
+function groupByDate(transactions) {
+  const groups = new Map();
+  for (const tx of transactions) {
+    const raw = tx.created_at ?? tx.date ?? "";
+    const dateKey = raw ? raw.slice(0, 10) : "—";
+    if (!groups.has(dateKey)) groups.set(dateKey, []);
+    groups.get(dateKey).push(tx);
+  }
+  return [...groups.entries()]; // [dateKey, tx[]]
+}
+
+function formatGroupLabel(dateKey) {
+  if (!dateKey || dateKey === "—") return "Sem data";
+  try {
+    const [y, m, d] = dateKey.split("-");
+    const dt = new Date(Number(y), Number(m) - 1, Number(d));
+    return dt.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+  } catch {
+    return dateKey;
+  }
+}
 
 export default function TransactionsList({ transactions = [], onEdit, onDelete, onShowDetails }) {
+  const groups = useMemo(() => groupByDate(transactions), [transactions]);
+
   if (!transactions.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-white/5">
-          <svg className="h-6 w-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
+      <div className="flex flex-col items-center justify-center py-14 text-center">
+        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-white/5">
+          <Receipt className="h-7 w-7 text-gray-300 dark:text-gray-600" />
         </div>
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+        <p className="text-sm font-semibold text-gray-600 dark:text-gray-300">
           Nenhuma transação encontrada
         </p>
         <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
@@ -22,19 +46,39 @@ export default function TransactionsList({ transactions = [], onEdit, onDelete, 
   }
 
   return (
-    <ScrollArea
-      maxHeightClassName="max-h-[460px] md:max-h-[540px] lg:max-h-[600px]"
-      className="divide-y divide-gray-100 dark:divide-white/[0.04]"
-    >
-      {transactions.map((tx) => (
-        <TransactionRow
-          key={tx.id}
-          transaction={tx}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onShowDetails={onShowDetails}
-        />
-      ))}
-    </ScrollArea>
+    <div className="space-y-4">
+      {groups.map(([dateKey, txList]) => {
+        const dayTotal = txList.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+        const debitTotal = txList
+          .filter((tx) => tx.type !== "credit")
+          .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+
+        return (
+          <div key={dateKey}>
+            {/* Date group header */}
+            <div className="flex items-center justify-between px-1 mb-1">
+              <span className="text-[11px] font-semibold capitalize text-gray-500 dark:text-gray-400">
+                {formatGroupLabel(dateKey)}
+              </span>
+              <span className="text-[11px] font-semibold tabular-nums text-red-500 dark:text-red-400">
+                -{formatCurrencyBRL(debitTotal)}
+              </span>
+            </div>
+            {/* Transactions */}
+            <div className="rounded-xl border border-gray-100 dark:border-gray-800/60 divide-y divide-gray-100 dark:divide-gray-800/40 overflow-hidden">
+              {txList.map((tx) => (
+                <TransactionRow
+                  key={tx.id}
+                  transaction={tx}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onShowDetails={onShowDetails}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }

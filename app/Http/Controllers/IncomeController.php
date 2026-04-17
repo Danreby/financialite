@@ -58,7 +58,15 @@ class IncomeController extends Controller
             $income = $this->incomeService->createForUser($user, $data);
             $income->load('bankUser.card');
 
-            $this->notifications->info($user, 'Renda cadastrada', "A renda \"{$income->title}\" foi adicionada.");
+            $notificationTitle = $data['is_active'] ?? true
+                ? 'Renda cadastrada'
+                : 'Entrada avulsa registrada';
+
+            $notificationMessage = $data['is_active'] ?? true
+                ? "A renda \"{$income->title}\" foi adicionada."
+                : "A entrada \"{$income->title}\" foi registrada.";
+
+            $this->notifications->info($user, $notificationTitle, $notificationMessage);
 
             return $this->success($income, 201);
         } catch (\Throwable $e) {

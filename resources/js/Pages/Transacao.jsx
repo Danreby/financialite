@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import { Head, router } from "@inertiajs/react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { ArrowDownLeft, CreditCard, Wallet } from "lucide-react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import TransactionsList from "@/Components/system/transactions/TransactionsList";
 import EditTransactionModal from "@/Components/system/transactions/EditTransactionModal";
@@ -167,37 +168,73 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 		<AuthenticatedLayout>
 			<Head title="Transações" />
 
-			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-3 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
+			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-4 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
+				{/* ── Header ── */}
 				<FadeInItem type="fast">
-					<header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between pt-1 sm:pt-1.5">
-						<div>
-							<h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">
-								Transações
-							</h1>
-							<p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-								{stats.total} transaç{stats.total === 1 ? "ão" : "ões"} encontrada{stats.total === 1 ? "" : "s"}
-								{stats.lastPage > 1 && (
-									<span> · Página {stats.currentPage} de {stats.lastPage}</span>
-								)}
-							</p>
-						</div>
-
-						<div className="flex items-center gap-3">
-							{stats.debitCount > 0 && (
-								<div className="flex items-center gap-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 px-2.5 py-1.5">
-									<svg className="h-3.5 w-3.5 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
-									</svg>
-									<span className="text-xs font-semibold text-red-600 dark:text-red-400 tabular-nums">
-										{formatCurrencyBRL(stats.debitSum)}
-									</span>
-								</div>
+					<header className="flex flex-col gap-1 pt-1 sm:pt-1.5">
+						<h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">
+							Transações
+						</h1>
+						<p className="text-xs text-gray-500 dark:text-gray-400">
+							{stats.total} transaç{stats.total === 1 ? "ão" : "ões"} encontrada{stats.total === 1 ? "" : "s"}
+							{stats.lastPage > 1 && (
+								<span> · Página {stats.currentPage} de {stats.lastPage}</span>
 							)}
-	
-						</div>
+						</p>
 					</header>
 				</FadeInItem>
 
+				{/* ── Stat cards ── */}
+				<FadeInItem type="subtle">
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+						{/* Debit */}
+						<div className="flex items-center gap-3 rounded-2xl themed-card p-4">
+							<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30">
+								<ArrowDownLeft className="h-5 w-5 text-red-600 dark:text-red-400" />
+							</div>
+							<div className="min-w-0">
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+									Débito ({stats.debitCount})
+								</p>
+								<p className="text-lg font-bold text-red-600 dark:text-red-400 tabular-nums">
+									{formatCurrencyBRL(stats.debitSum)}
+								</p>
+							</div>
+						</div>
+
+						{/* Credit */}
+						<div className="flex items-center gap-3 rounded-2xl themed-card p-4">
+							<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
+								<CreditCard className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+							</div>
+							<div className="min-w-0">
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+									Crédito ({stats.creditCount})
+								</p>
+								<p className="text-lg font-bold text-purple-600 dark:text-purple-400 tabular-nums">
+									{formatCurrencyBRL(stats.creditSum)}
+								</p>
+							</div>
+						</div>
+
+						{/* Total */}
+						<div className="flex items-center gap-3 rounded-2xl themed-card p-4">
+							<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
+								<Wallet className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+							</div>
+							<div className="min-w-0">
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+									Total na página
+								</p>
+								<p className="text-lg font-bold text-gray-900 dark:text-gray-100 tabular-nums">
+									{formatCurrencyBRL(stats.debitSum + stats.creditSum)}
+								</p>
+							</div>
+						</div>
+					</div>
+				</FadeInItem>
+
+				{/* ── Filters + List ── */}
 				<FadeInItem type="subtle">
 					<section className="rounded-2xl p-4 shadow-md themed-card sm:p-5">
 					<TransactionFilters

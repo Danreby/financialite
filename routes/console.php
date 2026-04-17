@@ -22,3 +22,10 @@ Schedule::command('parcelas:sync')
     ->twiceDaily(0, 12)
     ->withoutOverlapping()
     ->runInBackground();
+
+// Budget threshold check: primarily handled in real-time via TransacaoObserver.
+// This hourly fallback catches edge cases (imports, bulk updates, job failures).
+Schedule::command('budget:check-threshold')
+    ->hourly()
+    ->withoutOverlapping()
+    ->runInBackground();
