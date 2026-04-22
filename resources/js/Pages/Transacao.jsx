@@ -49,7 +49,6 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 		const currentPage = transactions?.current_page ?? 1;
 		const lastPage = transactions?.last_page ?? 1;
 
-		// Per-page page sums (informational)
 		let pageDebitSum = 0;
 		let pageCreditSum = 0;
 		for (const tx of initialTransactions) {
@@ -58,7 +57,6 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 			else pageDebitSum += amt;
 		}
 
-		// Full-filter totals from backend
 		const debitTotal  = Number(filterTotals?.debit_total  ?? 0);
 		const creditTotal = Number(filterTotals?.credit_total ?? 0);
 		const debitCount  = Number(filterTotals?.debit_count  ?? 0);
@@ -212,7 +210,7 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 									</div>
 									<div>
 										<p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">
-											Total filtrado
+											Total
 										</p>
 										<p className="text-2xl font-extrabold tabular-nums text-gray-900 dark:text-gray-100 leading-none">
 											{formatCurrencyBRL(stats.netTotal)}

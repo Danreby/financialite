@@ -6,7 +6,6 @@ use App\Http\Controllers\BankController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransacaoController;
-use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
@@ -36,7 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/accounts', [CardController::class, 'accounts'])->name('accounts.index');
     Route::get('/categorias', [CategoryController::class, 'page'])->name('categorias.index');
     Route::get('/parcelamentos', [TransacaoController::class, 'installments'])->name('parcelamentos.index');
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions', [TransacaoController::class, 'transactionsList'])->name('transactions.index');
     Route::get('/contas', [BillController::class, 'page'])->name('contas.index');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/projecao', [ProjecaoController::class, 'index'])->name('projecao.index');
