@@ -58,6 +58,33 @@ class TransactionController extends Controller
         $search = trim((string) $request->get('search', ''));
         $search = e($search);
 
+        $filterTotalsRow = Transacao::query()
+            ->forUser($user->id)
+            ->filter($filters)
+            ->when($monthRange, function ($q) use ($monthRange) {
+                [$start, $end] = $monthRange;
+                $q->whereBetween('created_at', [$start, $end]);
+            })
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            })
+            ->selectRaw("
+                COUNT(*) as total_count,
+                SUM(CASE WHEN type = 'debit'  THEN amount ELSE 0 END) as debit_total,
+                SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as credit_total,
+                SUM(CASE WHEN type = 'debit'  THEN 1 ELSE 0 END) as debit_count,
+                SUM(CASE WHEN type = 'credit' THEN 1 ELSE 0 END) as credit_count
+            ")
+            ->first();
+
+        $filterTotals = [
+            'total_count'  => (int)   ($filterTotalsRow->total_count  ?? 0),
+            'debit_total'  => (float) ($filterTotalsRow->debit_total  ?? 0),
+            'credit_total' => (float) ($filterTotalsRow->credit_total ?? 0),
+            'debit_count'  => (int)   ($filterTotalsRow->debit_count  ?? 0),
+            'credit_count' => (int)   ($filterTotalsRow->credit_count ?? 0),
+        ];
+
         $transactions = Transacao::with(['bankUser.card', 'category'])
             ->withCount('anexos')
             ->forUser($user->id)
@@ -151,6 +178,7 @@ class TransactionController extends Controller
             'bankAccounts' => $bankAccounts,
             'categories' => $categories,
             'months' => $months,
+            'filterTotals' => $filterTotals,
             'filters' => [
                 'type' => $filters['type'] ?? null,
                 'bank_user_id' => $filters['bank_user_id'] ?? null,
