@@ -179,7 +179,7 @@ export default function FinancialHealthScore({
             </div>
           </div>
 
-          <div className="max-h-[320px] overflow-y-auto scrollbar-custom space-y-3 sm:space-y-4 pr-1">
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-3 sm:space-y-4 pr-1">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 sm:mb-3">
               Fatores Avaliados
             </div>

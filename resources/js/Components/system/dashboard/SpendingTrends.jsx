@@ -1,6 +1,5 @@
 import React from 'react'
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight, BarChart3 } from 'lucide-react'
-import ScrollArea from '@/Components/common/ScrollArea'
 
 export default function SpendingTrends({ 
   currentMonth = 0, 
@@ -137,11 +136,11 @@ export default function SpendingTrends({
       </div>
 
       {categoryTrends.length > 0 && (
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 flex flex-col">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             Por Categoria
           </div>
-          <ScrollArea className="space-y-3 max-h-[300px]">
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-3">
               {categoryTrends.map((trend, index) => {
                 const trendInfo = calculateChange(trend.current, trend.previous)
                 const TrendIcon = getTrendIcon(trendInfo.direction)
@@ -167,7 +166,7 @@ export default function SpendingTrends({
                   </div>
                 )
               })}
-          </ScrollArea>
+          </div>
         </div>
       )}
 

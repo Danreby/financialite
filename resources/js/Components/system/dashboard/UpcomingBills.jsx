@@ -131,7 +131,7 @@ export default function UpcomingBills({
       </div>
 
       {unpaidBills.length > 0 ? (
-        <ScrollArea maxHeightClassName="max-h-[676px]" className="flex-1 -mx-6 px-6">
+        <ScrollArea maxHeightClassName="" className="flex-1 -mx-6 px-6">
           <div className="space-y-3">
             {unpaidBills.map((bill) => {
               const statusInfo = getStatusInfo(bill)
