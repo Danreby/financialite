@@ -503,7 +503,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             />
           </FadeInItem>
 
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 h-full">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1 flex flex-col">
             <BudgetProgress
               totalBudget={dashboardInsights?.budget_progress?.total_budget ?? 0}
               totalSpent={dashboardInsights?.budget_progress?.total_spent ?? 0}
@@ -512,7 +512,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             />
           </FadeInItem>
 
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 h-full">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1 flex flex-col">
             <UpcomingBills
               bills={dashboardInsights?.upcoming_bills ?? []}
               onPayClick={handleBillPayClick}
@@ -525,7 +525,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             />
           </FadeInItem>
 
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 h-full">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1 flex flex-col">
             <SpendingTrends
               currentMonth={dashboardInsights?.spending_trends?.current_month ?? 0}
               previousMonth={dashboardInsights?.spending_trends?.previous_month ?? 0}
