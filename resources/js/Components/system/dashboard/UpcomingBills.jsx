@@ -92,7 +92,7 @@ export default function UpcomingBills({
   ).length
 
   return (
-    <div className="themed-card rounded-xl p-6 flex-1 flex flex-col">
+    <div className="themed-card rounded-xl p-6 flex-1 min-h-0 flex flex-col">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -131,7 +131,7 @@ export default function UpcomingBills({
       </div>
 
       {unpaidBills.length > 0 ? (
-        <ScrollArea maxHeightClassName="" className="flex-1 -mx-6 px-6">
+        <ScrollArea maxHeightClassName="" className="flex-1 min-h-0 -mx-6 px-6">
           <div className="space-y-3">
             {unpaidBills.map((bill) => {
               const statusInfo = getStatusInfo(bill)

@@ -55,7 +55,7 @@ export default function SpendingTrends({
   }
 
   return (
-    <div className="themed-card rounded-xl p-6 flex-1 flex flex-col">
+    <div className="themed-card rounded-xl p-6 flex-1 min-h-0 flex flex-col">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-[var(--theme-accent)]" />
