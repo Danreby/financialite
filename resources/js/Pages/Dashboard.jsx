@@ -485,8 +485,8 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           </FadeInItem>
         </FadeInContainer>
 
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
-          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5 items-stretch">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1 h-full">
             <FinancialHealthScore
               score={dashboardInsights?.financial_health?.score ?? 0}
               hasData={dashboardInsights?.financial_health?.has_data ?? false}
@@ -503,7 +503,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             />
           </FadeInItem>
 
-          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1 h-full">
             <BudgetProgress
               totalBudget={dashboardInsights?.budget_progress?.total_budget ?? 0}
               totalSpent={dashboardInsights?.budget_progress?.total_spent ?? 0}
@@ -512,7 +512,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             />
           </FadeInItem>
 
-          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1 h-full">
             <UpcomingBills
               bills={dashboardInsights?.upcoming_bills ?? []}
               onPayClick={handleBillPayClick}
@@ -525,7 +525,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             />
           </FadeInItem>
 
-          <FadeInItem className="lg:col-span-1 xl:col-span-1">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1 h-full">
             <SpendingTrends
               currentMonth={dashboardInsights?.spending_trends?.current_month ?? 0}
               previousMonth={dashboardInsights?.spending_trends?.previous_month ?? 0}

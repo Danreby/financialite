@@ -179,7 +179,7 @@ export default function FinancialHealthScore({
             </div>
           </div>
 
-          <div className="flex-1 space-y-3 sm:space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-3 sm:space-y-4 pr-1">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 sm:mb-3">
               Fatores Avaliados
             </div>
@@ -220,71 +220,71 @@ export default function FinancialHealthScore({
                 </div>
               )
             })}
-          </div>
 
-          {hasMissingData && (
-            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-2">
-                Melhore sua análise
+            {hasMissingData && (
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-2">
+                  Melhore sua análise
+                </div>
+                <div className="space-y-1.5">
+                  {missingEntries.map(([key]) => (
+                    <div key={key} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      <span>{MISSING_DATA_LABELS[key]}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-1.5">
-                {missingEntries.map(([key]) => (
-                  <div key={key} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                    <span className="text-amber-500 mt-0.5">•</span>
-                    <span>{MISSING_DATA_LABELS[key]}</span>
+            )}
+
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                Recomendações
+              </div>
+              <div className="space-y-2">
+                {score < 60 && factors.savingsRate < 10 && !missingData?.incomes && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                    <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                    <span>Tente poupar pelo menos 10% da sua renda mensal</span>
                   </div>
-                ))}
+                )}
+                {factors.emergencyFund < 3 && !missingData?.transactions && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                    <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                    <span>Construa um fundo de emergência para 3-6 meses de despesas</span>
+                  </div>
+                )}
+                {factors.budgetAdherence < 70 && !missingData?.budget && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                    <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                    <span>Revise seu orçamento e ajuste categorias conforme necessário</span>
+                  </div>
+                )}
+                {factors.budgetUsage < 10 && !missingData?.budget && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                    <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                    <span>Seus gastos estão em ou acima do limite do orçamento — revise suas despesas deste mês</span>
+                  </div>
+                )}
+                {factors.recurringControl < 60 && !missingData?.bills && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                    <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                    <span>Mais de 40% da sua renda está comprometida com despesas fixas — considere revisar suas obrigações recorrentes</span>
+                  </div>
+                )}
+                {score >= 80 && (
+                  <div className="text-xs text-green-600 dark:text-green-400 flex items-start gap-2">
+                    <CheckCircle className="w-3 h-3 mt-0.5" />
+                    <span>Parabéns! Você está mantendo uma excelente saúde financeira</span>
+                  </div>
+                )}
+                {score > 0 && score < 80 && !hasMissingData && factors.savingsRate >= 10 && factors.emergencyFund >= 3 && factors.budgetAdherence >= 70 && factors.budgetUsage >= 10 && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                    <span className="text-[var(--theme-accent)] mt-0.5">•</span>
+                    <span>Continue mantendo seus gastos sob controle para melhorar sua pontuação</span>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-              Recomendações
-            </div>
-            <div className="space-y-2">
-              {score < 60 && factors.savingsRate < 10 && !missingData?.incomes && (
-                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
-                  <span>Tente poupar pelo menos 10% da sua renda mensal</span>
-                </div>
-              )}
-              {factors.emergencyFund < 3 && !missingData?.transactions && (
-                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
-                  <span>Construa um fundo de emergência para 3-6 meses de despesas</span>
-                </div>
-              )}
-              {factors.budgetAdherence < 70 && !missingData?.budget && (
-                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
-                  <span>Revise seu orçamento e ajuste categorias conforme necessário</span>
-                </div>
-              )}
-              {factors.budgetUsage < 10 && !missingData?.budget && (
-                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
-                  <span>Seus gastos estão em ou acima do limite do orçamento — revise suas despesas deste mês</span>
-                </div>
-              )}
-              {factors.recurringControl < 60 && !missingData?.bills && (
-                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
-                  <span>Mais de 40% da sua renda está comprometida com despesas fixas — considere revisar suas obrigações recorrentes</span>
-                </div>
-              )}
-              {score >= 80 && (
-                <div className="text-xs text-green-600 dark:text-green-400 flex items-start gap-2">
-                  <CheckCircle className="w-3 h-3 mt-0.5" />
-                  <span>Parabéns! Você está mantendo uma excelente saúde financeira</span>
-                </div>
-              )}
-              {score > 0 && score < 80 && !hasMissingData && factors.savingsRate >= 10 && factors.emergencyFund >= 3 && factors.budgetAdherence >= 70 && factors.budgetUsage >= 10 && (
-                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-[var(--theme-accent)] mt-0.5">•</span>
-                  <span>Continue mantendo seus gastos sob controle para melhorar sua pontuação</span>
-                </div>
-              )}
             </div>
           </div>
         </>

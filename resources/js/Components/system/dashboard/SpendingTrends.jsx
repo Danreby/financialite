@@ -137,7 +137,7 @@ export default function SpendingTrends({
       </div>
 
       {categoryTrends.length > 0 && (
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             Por Categoria
           </div>
