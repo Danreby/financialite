@@ -108,7 +108,7 @@ export default function FinancialHealthScore({
   const progress = (score / 100) * circumference
 
   return (
-    <div className="themed-card rounded-xl p-4 sm:p-6 h-full flex flex-col">
+    <div className="themed-card rounded-xl p-4 sm:p-6 h-full flex flex-col overflow-hidden">
       <div className="mb-4 sm:mb-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accent)]" />

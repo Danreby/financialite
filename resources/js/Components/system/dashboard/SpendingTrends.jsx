@@ -56,7 +56,7 @@ export default function SpendingTrends({
   }
 
   return (
-    <div className="themed-card rounded-xl p-6 h-full flex flex-col">
+    <div className="themed-card rounded-xl p-6 h-full flex flex-col min-h-0 overflow-hidden">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-[var(--theme-accent)]" />
@@ -171,7 +171,7 @@ export default function SpendingTrends({
         </div>
       )}
 
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
           {monthChange.direction === 'up' && (
             <p className="flex items-center gap-2">
