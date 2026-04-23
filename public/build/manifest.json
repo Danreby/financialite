@@ -289,7 +289,7 @@
     "src": "_vendor-VYesxZYF.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Bv7Xfp69.css",
+    "file": "assets/app-CxxKTqgp.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -395,7 +395,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-DULyVm7y.js",
+    "file": "assets/Bancos-F2GG2Xbb.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -416,7 +416,7 @@
       "_DangerButton-Dq4p_r43.js"
     ],
     "css": [
-      "assets/app-Bv7Xfp69.css"
+      "assets/app-CxxKTqgp.css"
     ]
   },
   "resources/js/Pages/Cartoes.jsx": {
@@ -503,7 +503,7 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-vrZvJ8BP.js",
+    "file": "assets/Dashboard-D4qJaK6v.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
@@ -748,7 +748,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-CbO5SyDD.js",
+    "file": "assets/app-fBGN3qev.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -782,7 +782,7 @@
       "resources/js/Pages/Transacao.jsx"
     ],
     "css": [
-      "assets/app-Bv7Xfp69.css"
+      "assets/app-CxxKTqgp.css"
     ]
   }
 }
