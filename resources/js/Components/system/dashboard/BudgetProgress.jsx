@@ -30,7 +30,7 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
   }
 
   return (
-    <div className="themed-card rounded-xl p-4 sm:p-6 h-full flex flex-col min-h-0 overflow-hidden">
+    <div className="themed-card rounded-xl p-4 sm:p-6 h-full flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
           Orçamento Mensal

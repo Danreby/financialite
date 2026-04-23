@@ -485,8 +485,8 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           </FadeInItem>
         </FadeInContainer>
 
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5 items-stretch">
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 max-h-[640px]">
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
+          <FadeInItem className="lg:col-span-1 xl:col-span-1">
             <FinancialHealthScore
               score={dashboardInsights?.financial_health?.score ?? 0}
               hasData={dashboardInsights?.financial_health?.has_data ?? false}

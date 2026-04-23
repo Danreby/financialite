@@ -92,7 +92,7 @@ export default function UpcomingBills({
   ).length
 
   return (
-    <div className="themed-card rounded-xl p-6 h-full flex flex-col min-h-0 overflow-hidden">
+    <div className="themed-card rounded-xl p-6 h-full flex flex-col">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
