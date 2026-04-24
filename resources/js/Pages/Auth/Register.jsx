@@ -5,11 +5,13 @@ import { toast } from 'react-toastify'
 import GuestLayout from '@/Layouts/GuestLayout'
 import AuthCard from '@/Components/auth/AuthCard'
 import AuthHeader from '@/Components/auth/AuthHeader'
+import AuthAlert from '@/Components/auth/AuthAlert'
 import FormField from '@/Components/auth/FormField'
 import GoogleButton from '@/Components/auth/GoogleButton'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import EyeIcon from '@/Components/common/icons/EyeIcon'
 import useGoogleAuth from '@/Hooks/useGoogleAuth'
+import useAuthErrors from '@/Hooks/useAuthErrors'
 
 const errorMessages = {
   'validation.unique': 'Este email já está cadastrado.',
@@ -36,20 +38,23 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
   const { triggerGoogleLogin, isLoading: googleLoading } = useGoogleAuth('login')
+  const { isGoogleOnly, isDuplicateGoogle, isDuplicateEmail, emailMessage, humanizeError } = useAuthErrors(errors)
+
+  const emailHasInlineAlert = isDuplicateGoogle || isDuplicateEmail
 
   useEffect(() => {
-    if (Object.keys(errors).length > 0) {
-      if (errors.email?.includes('unique') || errors.email?.includes('cadastrado')) {
-        toast.error('Este email já está cadastrado. Tente fazer login ou use outro email.')
-      } else if (errors.email) {
-        toast.error(getErrorMessage(errors.email))
-      } else if (errors.password) {
-        toast.error(getErrorMessage(errors.password))
-      } else if (errors.name) {
-        toast.error(getErrorMessage(errors.name))
-      } else {
-        toast.error('Por favor, corrija os erros no formulário.')
-      }
+    if (!Object.keys(errors).length) return
+
+    if (emailHasInlineAlert) return
+
+    if (errors.email) {
+      toast.error(emailMessage ?? getErrorMessage(errors.email))
+    } else if (errors.password) {
+      toast.error(humanizeError(errors.password))
+    } else if (errors.name) {
+      toast.error(getErrorMessage(errors.name))
+    } else {
+      toast.error('Por favor, corrija os erros no formulário.')
     }
   }, [errors])
 
@@ -82,10 +87,11 @@ export default function Register() {
 
           <motion.form
             onSubmit={submit}
-            className="space-y-6 px-4"
+            className="space-y-5 px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
+            noValidate
           >
             <FormField
               id="name"
@@ -98,12 +104,25 @@ export default function Register() {
               type="text"
             />
 
+            <AuthAlert
+              variant="warning"
+              show={isDuplicateGoogle}
+              message="Este email já tem uma conta Google vinculada."
+              action={{ label: 'Entrar com Google →', href: route('login') }}
+            />
+            <AuthAlert
+              variant="info"
+              show={isDuplicateEmail && !isDuplicateGoogle}
+              message="Este email já está cadastrado."
+              action={{ label: 'Fazer login →', href: route('login') }}
+            />
+
             <FormField
               id="email"
               label="E-mail"
               value={data.email}
               onChange={(e) => setData('email', e.target.value)}
-              error={errors.email}
+              error={emailHasInlineAlert ? null : errors.email}
               autoComplete="username"
               type="email"
             />
@@ -188,14 +207,12 @@ export default function Register() {
             </div>
           </motion.form>
 
-          {/* Google OAuth divider */}
           <div className="flex items-center gap-3 my-5 px-4">
             <div className="flex-1 h-px bg-gray-700" />
             <span className="text-xs text-gray-500 uppercase tracking-wider">ou</span>
             <div className="flex-1 h-px bg-gray-700" />
           </div>
 
-          {/* Google button */}
           <div className="px-4">
             <GoogleButton
               onClick={triggerGoogleLogin}

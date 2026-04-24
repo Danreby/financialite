@@ -117,9 +117,30 @@ export default function useGoogleAuth(mode = 'login') {
                 return;
             }
 
-            const msg = error?.response?.data?.message
-                || error?.message
-                || 'Erro ao conectar com o Google.';
+            // Classify HTTP errors from the backend into friendly messages
+            const status  = error?.response?.status
+            const backendMsg = error?.response?.data?.message
+
+            let msg
+            if (backendMsg) {
+                msg = backendMsg
+            } else if (status === 401 || status === 403) {
+                msg = 'Não foi possível autenticar com o Google. Tente novamente.'
+            } else if (status === 409) {
+                msg = 'Este email do Google já está vinculado a outra conta.'
+            } else if (status === 422) {
+                // Validation error — use first message from errors bag if available
+                const firstError = error?.response?.data?.errors
+                    ? Object.values(error.response.data.errors).flat()[0]
+                    : null
+                msg = firstError ?? 'Dados inválidos recebidos do Google.'
+            } else if (status >= 500) {
+                msg = 'Erro no servidor. Tente novamente mais tarde.'
+            } else if (error?.message?.includes('Network Error') || error?.message?.includes('timeout')) {
+                msg = 'Erro de conexão. Verifique sua internet e tente novamente.'
+            } else {
+                msg = error?.message || 'Erro ao conectar com o Google.'
+            }
 
             toast.error(msg);
         } finally {

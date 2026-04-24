@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuestLayout from '@/Layouts/GuestLayout';
 import AuthCard from '@/Components/auth/AuthCard';
+import AuthAlert from '@/Components/auth/AuthAlert';
 import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 
@@ -88,7 +89,7 @@ export default function ForgotPassword({ status }) {
 
                         <motion.form
                             onSubmit={submit}
-                            className="space-y-5"
+                            className="space-y-4"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.15 }}
@@ -109,6 +110,21 @@ export default function ForgotPassword({ status }) {
                                     autoComplete: 'email',
                                     inputMode: 'email',
                                 }}
+                            />
+
+                            {/* Inline error (e.g. invalid email format) */}
+                            <AuthAlert
+                                variant="error"
+                                show={!!errors.email}
+                                message={errors.email}
+                            />
+
+                            {/* Hint for Google-only users */}
+                            <AuthAlert
+                                variant="info"
+                                show={!sent}
+                                message="Se você entrou pelo Google, prefira usar o login com Google diretamente."
+                                action={{ label: 'Ir para o login →', href: route('login') }}
                             />
 
                             <PrimaryButton

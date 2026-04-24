@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
         ];
     }
@@ -27,11 +28,11 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'O e-mail é obrigatório.',
-            'email.email' => 'Informe um e-mail válido.',
-            'email.max' => 'O e-mail não pode ter mais de :max caracteres.',
+            'email.required'    => 'O e-mail é obrigatório.',
+            'email.email'       => 'Informe um e-mail válido.',
+            'email.max'         => 'O e-mail não pode ter mais de :max caracteres.',
             'password.required' => 'A senha é obrigatória.',
-            'password.max' => 'A senha não pode ter mais de :max caracteres.',
+            'password.max'      => 'A senha não pode ter mais de :max caracteres.',
         ];
     }
 
@@ -41,6 +42,14 @@ class LoginRequest extends FormRequest
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
+
+            $user = User::where('email', strtolower(trim($this->input('email'))))->first();
+
+            if ($user && ! $user->hasPasswordSet() && $user->hasGoogleLinked()) {
+                throw ValidationException::withMessages([
+                    'email' => 'google_only_account',
+                ]);
+            }
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
@@ -70,6 +79,6 @@ class LoginRequest extends FormRequest
 
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }
