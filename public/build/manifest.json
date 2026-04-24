@@ -395,7 +395,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-C9EKBhdH.js",
+    "file": "assets/Bancos-ByTMcqwK.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -597,7 +597,7 @@
     ]
   },
   "resources/js/Pages/Profile/Edit.jsx": {
-    "file": "assets/Edit-D5O46XnT.js",
+    "file": "assets/Edit-D_k1eT7_.js",
     "name": "Edit",
     "src": "resources/js/Pages/Profile/Edit.jsx",
     "isDynamicEntry": true,
@@ -637,7 +637,7 @@
     ]
   },
   "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx": {
-    "file": "assets/UpdatePasswordForm-CFWUnWR3.js",
+    "file": "assets/UpdatePasswordForm-B_oPkeTq.js",
     "name": "UpdatePasswordForm",
     "src": "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx",
     "isDynamicEntry": true,
@@ -748,7 +748,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-D0dWtvf7.js",
+    "file": "assets/app-DxSP_fIR.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
