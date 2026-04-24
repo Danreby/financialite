@@ -64,6 +64,10 @@ Route::middleware('auth')->group(function () {
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
+    Route::post('password/set', [PasswordController::class, 'set'])
+        ->middleware('throttle:5,1')
+        ->name('password.set');
+
     Route::post('auth/google/link', [GoogleAuthController::class, 'linkAccount'])
         ->middleware('throttle:10,1')
         ->name('google.link');

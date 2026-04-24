@@ -3,11 +3,14 @@ import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
 import EyeIcon from '@/Components/common/icons/EyeIcon';
 import { Transition } from '@headlessui/react';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 export default function UpdatePasswordForm({ className = '' }) {
+    const { auth } = usePage().props;
+    const hasPassword = auth?.user?.has_password ?? true;
+
     const passwordInput = useRef();
     const currentPasswordInput = useRef();
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -19,6 +22,7 @@ export default function UpdatePasswordForm({ className = '' }) {
         setData,
         errors,
         put,
+        post,
         reset,
         processing,
         recentlySuccessful,
@@ -31,46 +35,65 @@ export default function UpdatePasswordForm({ className = '' }) {
     const updatePassword = (e) => {
         e.preventDefault();
 
-        put(route('password.update'), {
-            preserveScroll: true,
-            onSuccess: () => {
-                reset();
-                toast.success('Senha atualizada com sucesso!');
-            },
-            onError: (errors) => {
-                if (errors.password) {
-                    reset('password', 'password_confirmation');
-                    passwordInput.current.focus();
-                }
-
-                if (errors.current_password) {
-                    reset('current_password');
-                    currentPasswordInput.current.focus();
-                }
-                toast.error('Erro ao atualizar senha. Verifique os dados.');
-            },
-        });
+        if (hasPassword) {
+            put(route('password.update'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    reset();
+                    toast.success('Senha atualizada com sucesso!');
+                },
+                onError: (errors) => {
+                    if (errors.password) {
+                        reset('password', 'password_confirmation');
+                        passwordInput.current.focus();
+                    }
+                    if (errors.current_password) {
+                        reset('current_password');
+                        currentPasswordInput.current.focus();
+                    }
+                    toast.error('Erro ao atualizar senha. Verifique os dados.');
+                },
+            });
+        } else {
+            post(route('password.set'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    reset();
+                    toast.success('Senha definida com sucesso!');
+                },
+                onError: (errors) => {
+                    if (errors.password) {
+                        reset('password', 'password_confirmation');
+                        passwordInput.current.focus();
+                    }
+                    toast.error('Erro ao definir senha. Verifique os dados.');
+                },
+            });
+        }
     };
 
     return (
         <section className={className}>
             <header>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Atualizar senha
+                    {hasPassword ? 'Atualizar senha' : 'Definir senha'}
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                    Use uma senha longa e única para manter sua conta segura.
+                    {hasPassword
+                        ? 'Use uma senha longa e única para manter sua conta segura.'
+                        : 'Defina uma senha para poder acessar sua conta sem o Google.'}
                 </p>
             </header>
 
             <form onSubmit={updatePassword} className="mt-6 space-y-6">
+                {hasPassword && (
                 <div>
                     <FloatLabelField
                         id="current_password"
                         name="current_password"
                         type={showCurrentPassword ? 'text' : 'password'}
-                        label="Current Password"
+                        label="Senha atual"
                         value={data.current_password}
                         onChange={(e) =>
                             setData('current_password', e.target.value)
@@ -97,13 +120,14 @@ export default function UpdatePasswordForm({ className = '' }) {
                         className="mt-2"
                     />
                 </div>
+                )}
 
                 <div>
                     <FloatLabelField
                         id="password"
                         name="password"
                         type={showPassword ? 'text' : 'password'}
-                        label="New Password"
+                        label="Nova senha"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         error={errors.password}
@@ -131,7 +155,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         id="password_confirmation"
                         name="password_confirmation"
                         type={showPasswordConfirmation ? 'text' : 'password'}
-                        label="Confirm Password"
+                        label="Confirmar nova senha"
                         value={data.password_confirmation}
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
@@ -159,7 +183,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
+                    <PrimaryButton disabled={processing}>{hasPassword ? 'Atualizar' : 'Definir senha'}</PrimaryButton>
 
                     <Transition
                         show={recentlySuccessful}
