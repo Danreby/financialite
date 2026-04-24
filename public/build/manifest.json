@@ -1,4 +1,11 @@
 {
+  "_AuthAlert-Df3nrAJP.js": {
+    "file": "assets/AuthAlert-Df3nrAJP.js",
+    "name": "AuthAlert",
+    "imports": [
+      "_vendor-CJV9r1gU.js"
+    ]
+  },
   "_AuthCard-DJacKbx-.js": {
     "file": "assets/AuthCard-DJacKbx-.js",
     "name": "AuthCard",
@@ -263,8 +270,12 @@
     "file": "assets/formatters-DEYZwcN3.js",
     "name": "formatters"
   },
-  "_useGoogleAuth-xDKsLqeP.js": {
-    "file": "assets/useGoogleAuth-xDKsLqeP.js",
+  "_useAuthErrors-DssjiyZB.js": {
+    "file": "assets/useAuthErrors-DssjiyZB.js",
+    "name": "useAuthErrors"
+  },
+  "_useGoogleAuth-DFTtMfQc.js": {
+    "file": "assets/useGoogleAuth-DFTtMfQc.js",
     "name": "useGoogleAuth",
     "imports": [
       "_vendor-CJV9r1gU.js"
@@ -289,7 +300,7 @@
     "src": "_vendor-VYesxZYF.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-D0RLG2x_.css",
+    "file": "assets/app-Cn2G-D4f.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -323,7 +334,7 @@
     ]
   },
   "resources/js/Pages/Auth/ForgotPassword.jsx": {
-    "file": "assets/ForgotPassword-BLR8ESDR.js",
+    "file": "assets/ForgotPassword-D0mI_5cY.js",
     "name": "ForgotPassword",
     "src": "resources/js/Pages/Auth/ForgotPassword.jsx",
     "isDynamicEntry": true,
@@ -331,12 +342,13 @@
       "_vendor-CJV9r1gU.js",
       "_GuestLayout-t3voc-WK.js",
       "_AuthCard-DJacKbx-.js",
+      "_AuthAlert-Df3nrAJP.js",
       "_FloatLabelField-C-aGnPJE.js",
       "_PrimaryButton-B6CZxwAS.js"
     ]
   },
   "resources/js/Pages/Auth/Login.jsx": {
-    "file": "assets/Login-SWM54jm8.js",
+    "file": "assets/Login-BKqyjZHe.js",
     "name": "Login",
     "src": "resources/js/Pages/Auth/Login.jsx",
     "isDynamicEntry": true,
@@ -344,16 +356,18 @@
       "_vendor-CJV9r1gU.js",
       "_GuestLayout-t3voc-WK.js",
       "_AuthCard-DJacKbx-.js",
+      "_AuthAlert-Df3nrAJP.js",
       "_FormField-D_L3Z2hs.js",
-      "_useGoogleAuth-xDKsLqeP.js",
+      "_useGoogleAuth-DFTtMfQc.js",
       "_PrimaryButton-B6CZxwAS.js",
       "_EyeIcon-D_Y7YIGF.js",
+      "_useAuthErrors-DssjiyZB.js",
       "_InputError-BHmoPJI9.js",
       "_FloatLabelField-C-aGnPJE.js"
     ]
   },
   "resources/js/Pages/Auth/Register.jsx": {
-    "file": "assets/Register-CheEcksk.js",
+    "file": "assets/Register-CYdHgyiG.js",
     "name": "Register",
     "src": "resources/js/Pages/Auth/Register.jsx",
     "isDynamicEntry": true,
@@ -361,25 +375,31 @@
       "_vendor-CJV9r1gU.js",
       "_GuestLayout-t3voc-WK.js",
       "_AuthCard-DJacKbx-.js",
+      "_AuthAlert-Df3nrAJP.js",
       "_FormField-D_L3Z2hs.js",
-      "_useGoogleAuth-xDKsLqeP.js",
+      "_useGoogleAuth-DFTtMfQc.js",
       "_PrimaryButton-B6CZxwAS.js",
       "_EyeIcon-D_Y7YIGF.js",
+      "_useAuthErrors-DssjiyZB.js",
       "_InputError-BHmoPJI9.js",
       "_FloatLabelField-C-aGnPJE.js"
     ]
   },
   "resources/js/Pages/Auth/ResetPassword.jsx": {
-    "file": "assets/ResetPassword-CGEiF8v7.js",
+    "file": "assets/ResetPassword-v_b4-Vp7.js",
     "name": "ResetPassword",
     "src": "resources/js/Pages/Auth/ResetPassword.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-CJV9r1gU.js",
-      "_InputError-BHmoPJI9.js",
+      "_GuestLayout-t3voc-WK.js",
+      "_AuthCard-DJacKbx-.js",
+      "_AuthAlert-Df3nrAJP.js",
+      "_FormField-D_L3Z2hs.js",
       "_PrimaryButton-B6CZxwAS.js",
-      "_FloatLabelField-C-aGnPJE.js",
-      "_GuestLayout-t3voc-WK.js"
+      "_EyeIcon-D_Y7YIGF.js",
+      "_InputError-BHmoPJI9.js",
+      "_FloatLabelField-C-aGnPJE.js"
     ]
   },
   "resources/js/Pages/Auth/VerifyEmail.jsx": {
@@ -395,7 +415,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-ByTMcqwK.js",
+    "file": "assets/Bancos-D2l7q4k5.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -416,7 +436,7 @@
       "_DangerButton-Dq4p_r43.js"
     ],
     "css": [
-      "assets/app-D0RLG2x_.css"
+      "assets/app-Cn2G-D4f.css"
     ]
   },
   "resources/js/Pages/Cartoes.jsx": {
@@ -467,7 +487,7 @@
     ]
   },
   "resources/js/Pages/Config.jsx": {
-    "file": "assets/Config-CCES_l8b.js",
+    "file": "assets/Config-CcLdzLlZ.js",
     "name": "Config",
     "src": "resources/js/Pages/Config.jsx",
     "isDynamicEntry": true,
@@ -477,7 +497,7 @@
       "_PrimaryButton-B6CZxwAS.js",
       "_FloatLabelField-C-aGnPJE.js",
       "_EyeIcon-D_Y7YIGF.js",
-      "_useGoogleAuth-xDKsLqeP.js",
+      "_useGoogleAuth-DFTtMfQc.js",
       "_BareButton-Blgmqygz.js"
     ]
   },
@@ -748,7 +768,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DxSP_fIR.js",
+    "file": "assets/app-BjXT5AvJ.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -782,7 +802,7 @@
       "resources/js/Pages/Transacao.jsx"
     ],
     "css": [
-      "assets/app-D0RLG2x_.css"
+      "assets/app-Cn2G-D4f.css"
     ]
   }
 }
