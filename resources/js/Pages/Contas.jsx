@@ -436,6 +436,19 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 				isOpen={!!historyBill}
 				onClose={() => setHistoryBill(null)}
 				bill={historyBill}
+				onPaymentUpdated={async () => {
+					const billId = historyBill?.id;
+					try {
+						const response = await axios.get(route('bills.index'));
+						const data = response.data;
+						const fresh = Array.isArray(data) ? data : (data?.data ?? []);
+						setBills(fresh);
+						const refreshed = fresh.find((b) => b.id === billId);
+						if (refreshed) setHistoryBill(refreshed);
+					} catch {
+						//
+					}
+				}}
 			/>
 
 			<Modal

@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import axios from 'axios';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -10,7 +11,9 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Modal from '@/Components/common/Modal';
 import { formatCurrency } from '@/Utils/bills';
-import { CheckCircle2, Clock, AlertCircle, TrendingUp, Banknote, CalendarDays, Hash } from 'lucide-react';
+import { getIconEmoji } from '@/Utils/categoryIcons';
+import { CheckCircle2, Clock, AlertCircle, TrendingUp, Banknote, CalendarDays, Hash, Pencil, X, Save } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -46,8 +49,12 @@ function formatDateBR(dateStr) {
     return d.toLocaleDateString('pt-BR');
 }
 
-export default function BillHistoryModal({ isOpen, onClose, bill }) {
+export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdated }) {
     const dark = isDark();
+
+    const [editingPaymentId, setEditingPaymentId] = useState(null);
+    const [editForm, setEditForm] = useState({ amount_paid: '', paid_date: '', notes: '' });
+    const [saving, setSaving] = useState(false);
 
     const history = useMemo(() => (bill?.payment_history || []), [bill]);
     const stats = useMemo(() => (bill?.payment_stats || {}), [bill]);
@@ -127,6 +134,47 @@ export default function BillHistoryModal({ isOpen, onClose, bill }) {
 
     if (!bill) return null;
 
+    const openEdit = (p) => {
+        setEditingPaymentId(p.id);
+        setEditForm({
+            amount_paid: String(p.amount_paid).replace('.', ','),
+            paid_date: p.paid_date || p.due_date,
+            notes: p.notes || '',
+        });
+    };
+
+    const cancelEdit = () => {
+        setEditingPaymentId(null);
+    };
+
+    const saveEdit = async (paymentId) => {
+        if (saving) return;
+        const normalized = editForm.amount_paid.replace(/\./g, '').replace(',', '.');
+        const parsed = parseFloat(normalized);
+        if (isNaN(parsed) || parsed <= 0) {
+            toast.error('Informe um valor válido.');
+            return;
+        }
+        setSaving(true);
+        try {
+            await axios.patch(route('bills.payment.update', [bill.id, paymentId]), {
+                amount_paid: parsed,
+                paid_date: editForm.paid_date,
+                notes: editForm.notes || null,
+            });
+            toast.success('Pagamento atualizado.');
+            setEditingPaymentId(null);
+            onPaymentUpdated?.();
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Erro ao atualizar pagamento.';
+            toast.error(msg);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const billIcon = bill.category?.icon ? (getIconEmoji(bill.category.icon) || bill.category.icon) : '📋';
+
     const statCards = [
         {
             icon: <Hash className="w-4 h-4" />,
@@ -162,7 +210,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill }) {
                         className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-lg"
                         style={{ backgroundColor: (bill.color || '#3b82f6') + '20', color: bill.color || '#3b82f6' }}
                     >
-                        {bill.category?.icon ? bill.category.icon : '📋'}
+                        {billIcon}
                     </div>
                     <div className="min-w-0">
                         <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{bill.title}</p>
@@ -208,14 +256,77 @@ export default function BillHistoryModal({ isOpen, onClose, bill }) {
                                         <th className="text-right px-3 py-2.5 font-medium">Previsto</th>
                                         <th className="text-right px-3 py-2.5 font-medium">Pago</th>
                                         <th className="text-center px-3 py-2.5 font-medium">Status</th>
+                                        <th className="w-10"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                     {history.map((p) => {
                                         const s = STATUS_STYLE[p.status] || STATUS_STYLE.paid;
                                         const diff = p.amount_paid - (p.amount_due || bill?.amount || p.amount_paid);
+                                        const isEditing = editingPaymentId === p.id;
+
+                                        if (isEditing) {
+                                            return (
+                                                <tr key={p.id} className="bg-theme-accent/5 dark:bg-theme-accent/10">
+                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 font-medium">{formatDateBR(p.due_date)}</td>
+                                                    <td className="px-3 py-2 hidden sm:table-cell">
+                                                        <input
+                                                            type="date"
+                                                            value={editForm.paid_date}
+                                                            onChange={(e) => setEditForm((f) => ({ ...f, paid_date: e.target.value }))}
+                                                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-theme-accent"
+                                                        />
+                                                    </td>
+                                                    <td className="px-3 py-2 text-right text-gray-500 dark:text-gray-400">{formatCurrency(p.amount_due || bill?.amount)}</td>
+                                                    <td className="px-3 py-2 text-right">
+                                                        <input
+                                                            type="text"
+                                                            inputMode="decimal"
+                                                            value={editForm.amount_paid}
+                                                            onChange={(e) => {
+                                                                let v = e.target.value.replace(/[^0-9.,]/g, '');
+                                                                setEditForm((f) => ({ ...f, amount_paid: v }));
+                                                            }}
+                                                            className="w-24 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-right text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-theme-accent"
+                                                        />
+                                                    </td>
+                                                    <td className="px-3 py-2">
+                                                        <input
+                                                            type="text"
+                                                            value={editForm.notes}
+                                                            onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+                                                            placeholder="Obs..."
+                                                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-theme-accent"
+                                                        />
+                                                    </td>
+                                                    <td className="px-2 py-2">
+                                                        <div className="flex items-center gap-1 justify-end">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => saveEdit(p.id)}
+                                                                disabled={saving}
+                                                                className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors disabled:opacity-50"
+                                                                title="Salvar"
+                                                            >
+                                                                <Save className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={cancelEdit}
+                                                                disabled={saving}
+                                                                className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                                                title="Cancelar"
+                                                            >
+                                                                <X className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+
                                         return (
-                                            <tr key={p.id} className="bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                            <tr key={p.id} className="bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors group/row">
                                                 <td className="px-3 py-2.5 text-gray-700 dark:text-gray-300 font-medium">{formatDateBR(p.due_date)}</td>
                                                 <td className="px-3 py-2.5 text-gray-500 dark:text-gray-400 hidden sm:table-cell">{formatDateBR(p.paid_date)}</td>
                                                 <td className="px-3 py-2.5 text-right text-gray-500 dark:text-gray-400">{formatCurrency(p.amount_due || bill?.amount)}</td>
@@ -229,6 +340,18 @@ export default function BillHistoryModal({ isOpen, onClose, bill }) {
                                                         {s.icon}
                                                         {s.label}
                                                     </span>
+                                                </td>
+                                                <td className="px-2 py-2.5">
+                                                    {p.status === 'paid' && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openEdit(p)}
+                                                            className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-gray-400 hover:text-theme-accent hover:bg-theme-accent/10 opacity-0 group-hover/row:opacity-100 transition-all"
+                                                            title="Editar pagamento"
+                                                        >
+                                                            <Pencil className="w-3 h-3" />
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

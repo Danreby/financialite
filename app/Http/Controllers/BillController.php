@@ -176,6 +176,29 @@ class BillController extends Controller
         return $this->success($payment);
     }
 
+    public function updatePayment(Request $request, Bill $bill, BillPayment $payment): JsonResponse
+    {
+        $this->authorize('update', $bill);
+
+        if ($payment->bill_id !== $bill->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'amount_paid' => ['required', 'numeric', 'min:0'],
+            'paid_date'   => ['nullable', 'date'],
+            'notes'       => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $payment->update([
+            'amount_paid' => $validated['amount_paid'],
+            'paid_date'   => $validated['paid_date'] ?? $payment->paid_date,
+            'notes'       => $validated['notes'] ?? null,
+        ]);
+
+        return $this->success($payment->fresh());
+    }
+
     public function toggleStatus(Request $request, Bill $bill): JsonResponse
     {
         $this->authorize('update', $bill);
