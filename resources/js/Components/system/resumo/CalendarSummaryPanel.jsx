@@ -78,7 +78,6 @@ export default function CalendarSummaryPanel({ data = {} }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Month overview stats */}
       <div className="themed-card rounded-2xl p-4 sm:p-5">
         <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
           <BarChart3 className="w-4 h-4 text-[var(--theme-accent)]" />
@@ -115,7 +114,6 @@ export default function CalendarSummaryPanel({ data = {} }) {
         </div>
       </div>
 
-      {/* Calendar insights */}
       {calendarStats && (
         <div className="themed-card rounded-2xl p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
@@ -154,7 +152,6 @@ export default function CalendarSummaryPanel({ data = {} }) {
         </div>
       )}
 
-      {/* Top categories */}
       {topCategories.length > 0 && (
         <div className="themed-card rounded-2xl p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
@@ -199,7 +196,6 @@ export default function CalendarSummaryPanel({ data = {} }) {
         </div>
       )}
 
-      {/* Cards summary */}
       {topCards.length > 0 && (
         <div className="themed-card rounded-2xl p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">

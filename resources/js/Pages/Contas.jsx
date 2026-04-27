@@ -192,7 +192,6 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 
 			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-4 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
 
-				{/* Header */}
 				<FadeInItem type="fast">
 					<header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 						<div>
@@ -214,7 +213,6 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 					</header>
 				</FadeInItem>
 
-				{/* Stats cards */}
 				<FadeInItem type="subtle">
 					<div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
 						<div className="rounded-xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
@@ -297,10 +295,8 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 					</div>
 				</FadeInItem>
 
-				{/* Category breakdown + Bill list */}
 				<div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
 
-					{/* Category spending breakdown */}
 					{stats.topCategories.length > 0 && (
 						<FadeInItem type="subtle" className="xl:col-span-1">
 							<div className="rounded-2xl shadow-md themed-card h-full">
@@ -339,7 +335,6 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 						</FadeInItem>
 					)}
 
-					{/* Bill list */}
 					<FadeInItem type="subtle" className={stats.topCategories.length > 0 ? 'xl:col-span-3' : 'xl:col-span-4'}>
 						<div className="rounded-2xl shadow-md themed-card overflow-hidden">
 							<div className="p-3 sm:p-4 border-b border-gray-200/70 dark:border-gray-800">
