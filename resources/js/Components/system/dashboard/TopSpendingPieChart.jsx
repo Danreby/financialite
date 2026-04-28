@@ -80,9 +80,10 @@ export default function TopSpendingPieChart({
   const showRecurring   = recurringPct > 0 || nonRecurringPct > 0
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col items-center gap-3">
-        <div className="relative h-44 w-44 mx-auto flex-shrink-0">
+    <div className="flex flex-row gap-3 items-start">
+      {/* Left: donut + recurring pills */}
+      <div className="flex flex-col items-center gap-2 flex-shrink-0">
+        <div className="relative h-[118px] w-[118px]">
           <Doughnut key={donutKey} data={chartData} options={options} />
 
           <AnimatePresence mode="wait">
@@ -94,10 +95,10 @@ export default function TopSpendingPieChart({
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none"
             >
-              <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">
                 Total
               </span>
-              <span className="text-base font-bold text-gray-900 dark:text-gray-100 mt-0.5 tabular-nums">
+              <span className="text-xs font-bold text-gray-900 dark:text-gray-100 mt-0.5 tabular-nums leading-tight text-center px-2">
                 {formatCurrencyBRL(total)}
               </span>
             </motion.div>
@@ -106,29 +107,29 @@ export default function TopSpendingPieChart({
 
         {showRecurring && (
           <motion.div
-            initial={{ opacity: 0, y: 4 }}
+            initial={{ opacity: 0, y: 3 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, delay: 0.1 }}
-            className="flex items-center justify-center gap-2 flex-wrap"
+            transition={{ duration: 0.22, delay: 0.1 }}
+            className="flex flex-col gap-1 w-full"
           >
             {recurringPct > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/25 dark:text-purple-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0" />
-                Recorrentes {recurringPct.toFixed(0)}%
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/25 dark:text-purple-300">
+                <span className="w-1 h-1 rounded-full bg-purple-500 flex-shrink-0" />
+                Recorr. {recurringPct.toFixed(0)}%
               </span>
             )}
             {nonRecurringPct > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/25 dark:text-orange-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
-                Variáveis {nonRecurringPct.toFixed(0)}%
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/25 dark:text-orange-300">
+                <span className="w-1 h-1 rounded-full bg-orange-500 flex-shrink-0" />
+                Variáv. {nonRecurringPct.toFixed(0)}%
               </span>
             )}
           </motion.div>
         )}
       </div>
 
-      <ScrollArea maxHeightClassName="max-h-[240px]" className="w-full pr-1">
-        <ul className="space-y-1.5">
+      <ScrollArea maxHeightClassName="max-h-[170px]" className="flex-1 min-w-0 pr-0.5">
+        <ul className="space-y-1">
           <AnimatePresence initial={false}>
             {items.map((item, index) => {
               const color = colors[index % colors.length]
@@ -138,47 +139,41 @@ export default function TopSpendingPieChart({
               return (
                 <motion.li
                   key={item.category_id ?? `none-${index}`}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2, delay: index * 0.035 }}
-                  className="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
+                  initial={{ opacity: 0, x: 6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -6 }}
+                  transition={{ duration: 0.18, delay: index * 0.03 }}
+                  className="rounded-lg px-1.5 py-1 hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
                 >
-                  <div
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-sm"
-                    style={{ backgroundColor: color + (dark ? '28' : '18'), color }}
-                  >
-                    {iconEmoji || (
-                      <span
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: color }}
-                      />
-                    )}
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <div
+                      className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[11px]"
+                      style={{ backgroundColor: color + (dark ? '28' : '18'), color }}
+                    >
+                      {iconEmoji || (
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+                      )}
+                    </div>
+                    <span className="flex-1 min-w-0 text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
+                      {item.category_name || 'Sem categoria'}
+                    </span>
+                    <span className="text-[11px] font-semibold text-gray-900 dark:text-gray-100 flex-shrink-0 tabular-nums">
+                      {formatCurrencyBRL(item.total || 0)}
+                    </span>
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5 gap-1">
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
-                        {item.category_name || 'Sem categoria'}
-                      </span>
-                      <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 flex-shrink-0 tabular-nums">
-                        {formatCurrencyBRL(item.total || 0)}
-                      </span>
+                  <div className="flex items-center gap-1 pl-[26px]">
+                    <div className="h-1 flex-1 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: color }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(share, 100)}%` }}
+                        transition={{ duration: 0.45, delay: 0.08 + index * 0.04, ease: 'easeOut' }}
+                      />
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-1 flex-1 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: color }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(share, 100)}%` }}
-                          transition={{ duration: 0.5, delay: 0.1 + index * 0.04, ease: 'easeOut' }}
-                        />
-                      </div>
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500 tabular-nums w-7 text-right flex-shrink-0">
-                        {share}%
-                      </span>
-                    </div>
+                    <span className="text-[9px] text-gray-400 dark:text-gray-500 tabular-nums w-6 text-right flex-shrink-0">
+                      {share}%
+                    </span>
                   </div>
                 </motion.li>
               )
