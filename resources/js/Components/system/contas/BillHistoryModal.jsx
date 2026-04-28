@@ -64,11 +64,11 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
             .sort((a, b) => a.due_date.localeCompare(b.due_date))
             .slice(-12);
 
-        const tooltipBg  = dark ? 'rgba(15,15,23,0.96)' : 'rgba(255,255,255,0.98)';
+        const tooltipBg = dark ? 'rgba(15,15,23,0.96)' : 'rgba(255,255,255,0.98)';
         const tooltipBdr = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
         const tooltipTxt = dark ? '#f9fafb' : '#111827';
-        const gridColor  = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-        const tickColor  = dark ? '#9ca3af' : '#6b7280';
+        const gridColor = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+        const tickColor = dark ? '#9ca3af' : '#6b7280';
 
         return {
             labels: sorted.map((p) => formatMonthShort(p.due_date)),

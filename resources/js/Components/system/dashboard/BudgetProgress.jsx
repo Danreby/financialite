@@ -1,145 +1,178 @@
 import React from 'react'
-import { TrendingUp, TrendingDown, AlertCircle, Settings } from 'lucide-react'
+import { Settings, Target, AlertCircle } from 'lucide-react'
+import { getIconEmoji } from '@/Utils/categoryIcons'
+
+const ARC_R   = 44
+const ARC_LEN = Math.PI * ARC_R
+
+function SemiGauge({ pct, strokeColor }) {
+  const fillLen = (Math.min(pct, 100) / 100) * ARC_LEN
+  return (
+    <svg viewBox="0 0 100 66" fill="none" className="w-full">
+      <path
+        d="M 6 52 A 44 44 0 0 0 94 52"
+        stroke="currentColor"
+        className="text-gray-200 dark:text-white/[0.08]"
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 6 52 A 44 44 0 0 0 94 52"
+        stroke={strokeColor}
+        strokeWidth="9"
+        strokeLinecap="round"
+        strokeDasharray={String(ARC_LEN)}
+        strokeDashoffset={String(ARC_LEN - fillLen)}
+        style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1)' }}
+      />
+    </svg>
+  )
+}
+
+const fmt = (v) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
+
+const rowColor = (spent, limit) => {
+  if (limit === 0) return '#9ca3af'
+  const p = (spent / limit) * 100
+  if (p >= 100) return '#ef4444'
+  if (p >= 80)  return '#f59e0b'
+  return 'var(--theme-accent)'
+}
 
 export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpent = 0, onConfigureClick = null }) {
-  const percentage = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0
-  const remaining = Math.max(totalBudget - totalSpent, 0)
-  const isOverBudget = totalSpent > totalBudget
-
-  const getStatusColor = (spent, limit) => {
-    if (limit === 0) return 'text-gray-500'
-    const pct = (spent / limit) * 100
-    if (pct >= 100) return 'text-red-500'
-    if (pct >= 80) return 'text-yellow-500'
-    return 'text-green-500'
-  }
-
-  const getProgressColor = (spent, limit) => {
-    if (limit === 0) return 'bg-gray-400'
-    const pct = (spent / limit) * 100
-    if (pct >= 100) return 'bg-red-500'
-    if (pct >= 80) return 'bg-yellow-500'
-    return 'bg-[var(--theme-accent)]'
-  }
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value)
-  }
+  const pct        = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0
+  const remaining  = Math.max(totalBudget - totalSpent, 0)
+  const overBudget = totalSpent > totalBudget && totalBudget > 0
+  const warn       = pct >= 80 && !overBudget
+  const noBudget   = totalBudget === 0
+  const gaugeColor = overBudget ? '#ef4444' : warn ? '#f59e0b' : 'var(--theme-accent)'
 
   return (
-    <div className="themed-card rounded-xl p-4 sm:p-6 flex-1 min-h-0 flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Orçamento Mensal
-        </h3>
+    <div className="themed-card rounded-2xl p-4 flex-1 min-h-0 flex flex-col">
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          {isOverBudget && (
-            <div className="flex items-center gap-1 text-red-500 text-sm">
-              <AlertCircle className="w-4 h-4" />
-              <span className="font-medium">Excedido</span>
-            </div>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20">
+            <Target className="w-3.5 h-3.5 text-theme-accent" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">Orçamento</h3>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">Mensal</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {overBudget && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/25 text-red-500 dark:text-red-400 text-[11px] font-medium">
+              <AlertCircle className="w-3 h-3" />
+              Excedido
+            </span>
           )}
           {typeof onConfigureClick === 'function' && (
             <button
               onClick={onConfigureClick}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               title="Configurar orçamento"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
 
-      <div className="mb-4 sm:mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0 mb-2">
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            Orçamento Total
+      {noBudget ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
+            <Target className="w-5 h-5 text-gray-400 dark:text-gray-500" />
           </div>
-          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {formatCurrency(totalSpent)} / {formatCurrency(totalBudget)}
+          <div>
+            <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Sem orçamento definido</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 max-w-[180px]">
+              Configure limites por categoria para controlar seus gastos
+            </p>
           </div>
+          {typeof onConfigureClick === 'function' && (
+            <button onClick={onConfigureClick} className="text-[11px] font-medium text-theme-accent hover:underline">
+              Configurar agora →
+            </button>
+          )}
         </div>
-        
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-3 overflow-hidden">
-          <div
-            className={`h-full transition-all duration-500 ${
-              isOverBudget ? 'bg-red-500' : 'bg-[var(--theme-accent)]'
-            }`}
-            style={{ width: `${Math.min(percentage, 100)}%` }}
-          />
-        </div>
-
-        <div className="flex items-center justify-between mt-2">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            {percentage.toFixed(1)}% utilizado
-          </div>
-          <div className={`text-xs font-medium ${
-            isOverBudget ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'
-          }`}>
-            {isOverBudget ? (
-              <span className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                {formatCurrency(Math.abs(remaining))} acima
+      ) : (
+        <>
+          <div className="relative px-2">
+            <SemiGauge pct={pct} strokeColor={gaugeColor} />
+            <div className="absolute bottom-0 inset-x-0 flex flex-col items-center pb-2">
+              <span
+                className="text-2xl font-bold tabular-nums leading-none"
+                style={{ color: overBudget ? '#ef4444' : warn ? '#f59e0b' : undefined }}
+              >
+                {Math.round(Math.min(pct, 999))}%
               </span>
-            ) : (
-              <span className="flex items-center gap-1">
-                <TrendingDown className="w-3 h-3" />
-                {formatCurrency(remaining)} restante
-              </span>
-            )}
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">utilizado</span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {budgets.length > 0 && (
-        <div className="flex-1 min-h-0 space-y-3 sm:space-y-4 overflow-y-auto scrollbar-custom">
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Por Categoria
+          <div className="grid grid-cols-3 gap-1.5 mt-3 mb-4">
+            <div className="rounded-xl bg-gray-50 dark:bg-white/[0.04] px-2 py-2 text-center">
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 leading-tight mb-0.5">Gasto</p>
+              <p className="text-[11px] font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-tight">{fmt(totalSpent)}</p>
+            </div>
+            <div className="rounded-xl bg-gray-50 dark:bg-white/[0.04] px-2 py-2 text-center">
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 leading-tight mb-0.5">Limite</p>
+              <p className="text-[11px] font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-tight">{fmt(totalBudget)}</p>
+            </div>
+            <div className={`rounded-xl px-2 py-2 text-center ${overBudget ? 'bg-red-50 dark:bg-red-900/20' : 'bg-green-50 dark:bg-green-900/20'}`}>
+              <p className={`text-[9px] leading-tight mb-0.5 ${overBudget ? 'text-red-400' : 'text-green-500'}`}>
+                {overBudget ? 'Excesso' : 'Restante'}
+              </p>
+              <p className={`text-[11px] font-bold tabular-nums leading-tight ${overBudget ? 'text-red-600 dark:text-red-400' : 'text-green-700 dark:text-green-400'}`}>
+                {fmt(overBudget ? totalSpent - totalBudget : remaining)}
+              </p>
+            </div>
           </div>
-          {budgets.map((budget, index) => {
-            const categoryPct = budget.limit > 0 ? (budget.spent / budget.limit) * 100 : 0
-            
-            return (
-              <div key={index} className="space-y-1">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0 text-sm">
-                  <span className="text-gray-700 dark:text-gray-300 truncate max-w-full sm:max-w-[150px]">
-                    {budget.categoryName || 'Sem categoria'}
-                  </span>
-                  <span className={`text-xs font-medium ${getStatusColor(budget.spent, budget.limit)}`}>
-                    {formatCurrency(budget.spent)} / {formatCurrency(budget.limit)}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-500 ${getProgressColor(budget.spent, budget.limit)}`}
-                    style={{ width: `${Math.min(categoryPct, 100)}%` }}
-                  />
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {categoryPct.toFixed(0)}%
-                </div>
+
+          {budgets.length > 0 && (
+            <>
+              <div className="border-t border-gray-100 dark:border-white/[0.06] pt-3 mb-2.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  Por categoria
+                </span>
               </div>
-            )
-          })}
-        </div>
-      )}
-
-      {budgets.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-6">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
-            <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 dark:text-gray-600" />
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-            Nenhum orçamento definido
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">
-            Configure orçamentos por categoria para acompanhar seus gastos
-          </p>
-        </div>
+              <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-2.5">
+                {budgets.map((budget, i) => {
+                  const categoryPct = budget.limit > 0 ? Math.min((budget.spent / budget.limit) * 100, 100) : 0
+                  const accent      = rowColor(budget.spent, budget.limit)
+                  const icon        = budget.categoryIcon ? getIconEmoji(budget.categoryIcon) : null
+                  return (
+                    <div key={i}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {icon && <span className="text-[11px] leading-none flex-shrink-0">{icon}</span>}
+                        <span className="flex-1 min-w-0 text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate">
+                          {budget.categoryName || 'Sem categoria'}
+                        </span>
+                        <span className="text-[10px] tabular-nums text-gray-500 dark:text-gray-400 flex-shrink-0">
+                          {fmt(budget.spent)}<span className="mx-0.5 text-gray-300 dark:text-gray-600">/</span>{fmt(budget.limit)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-1.5 flex-1 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${categoryPct}%`, backgroundColor: accent }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500 w-7 text-right flex-shrink-0 tabular-nums">
+                          {categoryPct.toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </>
       )}
     </div>
   )

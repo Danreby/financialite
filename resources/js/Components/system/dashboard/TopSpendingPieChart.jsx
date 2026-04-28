@@ -90,7 +90,6 @@ export default function TopSpendingPieChart({
   return (
     <>
       <div className="flex flex-row gap-3 h-full">
-        {/* Left: donut + recurring pills */}
         <div className="flex flex-col items-center gap-2 flex-shrink-0 justify-center">
           <div className="relative h-[148px] w-[148px]">
             <Doughnut key={donutKey} data={chartData} options={options} />
@@ -137,7 +136,6 @@ export default function TopSpendingPieChart({
           )}
         </div>
 
-        {/* Right: scrollable category list */}
         <ScrollArea maxHeightClassName="h-full" className="flex-1 min-w-0 pr-0.5">
           <ul className="space-y-1">
             <AnimatePresence initial={false}>
@@ -193,13 +191,12 @@ export default function TopSpendingPieChart({
         </ScrollArea>
       </div>
 
-      {/* Portal tooltip — renders at document.body, immune to any overflow/stacking context */}
       {mounted && createPortal(
         <div
           className="fixed z-[9999] pointer-events-none transition-opacity duration-150"
           style={{
             left: tip.x,
-            top:  tip.y,
+            top: tip.y,
             opacity: tip.visible ? 1 : 0,
             transform: 'translate(-50%, calc(-100% - 10px))',
           }}
