@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js'
 import { motion, AnimatePresence } from 'framer-motion'
-import CategoryBadge from '@/Components/common/CategoryBadge'
+import { getIconEmoji } from '@/Utils/categoryIcons'
 import ScrollArea from '@/Components/common/ScrollArea'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
@@ -29,13 +29,13 @@ export default function TopSpendingPieChart({
         backgroundColor: values.length
           ? labels.map((_, i) => colors[i % colors.length])
           : [dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'],
-        borderColor: 'transparent',
-        borderWidth: 0,
-        hoverBorderColor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
-        hoverBorderWidth: 2,
-        cutout: '70%',
-        borderRadius: values.length ? 3 : 0,
-        spacing: values.length ? 2 : 0,
+        borderColor: dark ? 'rgba(17,24,39,1)' : 'rgba(249,250,251,1)',
+        borderWidth: values.length ? 2 : 0,
+        hoverBorderColor: dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.18)',
+        hoverBorderWidth: 3,
+        cutout: '68%',
+        borderRadius: values.length ? 4 : 0,
+        spacing: values.length ? 3 : 0,
       },
     ],
   }), [labels, values, colors, dark])
@@ -47,7 +47,7 @@ export default function TopSpendingPieChart({
   const options = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 550, easing: 'easeOutQuart' },
+    animation: { duration: 500, easing: 'easeOutQuart' },
     plugins: {
       legend: { display: false },
       tooltip: {
@@ -57,7 +57,7 @@ export default function TopSpendingPieChart({
         borderWidth: 1,
         titleColor: tooltipTxt,
         bodyColor: dark ? '#9ca3af' : '#4b5563',
-        padding: { top: 9, bottom: 9, left: 13, right: 15 },
+        padding: { top: 10, bottom: 10, left: 14, right: 14 },
         cornerRadius: 10,
         boxPadding: 5,
         usePointStyle: true,
@@ -80,24 +80,24 @@ export default function TopSpendingPieChart({
   const showRecurring   = recurringPct > 0 || nonRecurringPct > 0
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-      <div className="flex flex-col items-center gap-3 lg:w-[190px] lg:flex-shrink-0">
-        <div className="relative h-44 w-full max-w-[180px] lg:h-48">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col items-center gap-3">
+        <div className="relative h-44 w-44 mx-auto flex-shrink-0">
           <Doughnut key={donutKey} data={chartData} options={options} />
 
           <AnimatePresence mode="wait">
             <motion.div
               key={total}
-              initial={{ opacity: 0, scale: 0.85 }}
+              initial={{ opacity: 0, scale: 0.88 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+              exit={{ opacity: 0, scale: 0.88 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none"
             >
-              <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">
                 Total
               </span>
-              <span className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-0.5">
+              <span className="text-base font-bold text-gray-900 dark:text-gray-100 mt-0.5 tabular-nums">
                 {formatCurrencyBRL(total)}
               </span>
             </motion.div>
@@ -106,73 +106,79 @@ export default function TopSpendingPieChart({
 
         {showRecurring && (
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="w-full space-y-2 pt-2 border-t border-gray-200 dark:border-white/[0.07]"
+            transition={{ duration: 0.28, delay: 0.1 }}
+            className="flex items-center justify-center gap-2 flex-wrap"
           >
-            <RecurringRow
-              color="bg-purple-500"
-              label="Recorrentes"
-              pct={recurringPct}
-            />
-            <RecurringRow
-              color="bg-orange-500"
-              label="Não recorrentes"
-              pct={nonRecurringPct}
-            />
+            {recurringPct > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/25 dark:text-purple-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0" />
+                Recorrentes {recurringPct.toFixed(0)}%
+              </span>
+            )}
+            {nonRecurringPct > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/25 dark:text-orange-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
+                Variáveis {nonRecurringPct.toFixed(0)}%
+              </span>
+            )}
           </motion.div>
         )}
       </div>
 
-      <ScrollArea maxHeightClassName="max-h-[280px]" className="flex-1 min-w-0 pr-1">
-        <ul className="space-y-2.5">
+      <ScrollArea maxHeightClassName="max-h-[240px]" className="w-full pr-1">
+        <ul className="space-y-1.5">
           <AnimatePresence initial={false}>
             {items.map((item, index) => {
               const color = colors[index % colors.length]
               const share = item.share || 0
+              const iconEmoji = item.category_icon ? getIconEmoji(item.category_icon) : null
+
               return (
                 <motion.li
                   key={item.category_id ?? `none-${index}`}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  transition={{ duration: 0.22, delay: index * 0.04 }}
-                  className="flex flex-col gap-1"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, delay: index * 0.035 }}
+                  className="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                  <div
+                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-sm"
+                    style={{ backgroundColor: color + (dark ? '28' : '18'), color }}
+                  >
+                    {iconEmoji || (
                       <span
-                        className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                        className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: color }}
-                        aria-hidden
                       />
-                      <CategoryBadge
-                        name={item.category_name || 'Sem categoria'}
-                        icon={item.category_icon}
-                        color={item.category_color}
-                        size="sm"
-                        className="max-w-[140px] truncate"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0 text-[11px]">
-                      <span className="text-gray-400 dark:text-gray-500 tabular-nums">
-                        {share}%
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5 gap-1">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
+                        {item.category_name || 'Sem categoria'}
                       </span>
-                      <span className="font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                      <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 flex-shrink-0 tabular-nums">
                         {formatCurrencyBRL(item.total || 0)}
                       </span>
                     </div>
-                  </div>
-
-                  <div className="h-1 w-full rounded-full bg-gray-100 dark:bg-white/[0.06] overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: color }}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(share, 100)}%` }}
-                      transition={{ duration: 0.5, delay: 0.1 + index * 0.04, ease: 'easeOut' }}
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1 flex-1 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: color }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(share, 100)}%` }}
+                          transition={{ duration: 0.5, delay: 0.1 + index * 0.04, ease: 'easeOut' }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500 tabular-nums w-7 text-right flex-shrink-0">
+                        {share}%
+                      </span>
+                    </div>
                   </div>
                 </motion.li>
               )
@@ -180,20 +186,6 @@ export default function TopSpendingPieChart({
           </AnimatePresence>
         </ul>
       </ScrollArea>
-    </div>
-  )
-}
-
-function RecurringRow({ color, label, pct }) {
-  return (
-    <div className="flex items-center justify-between text-xs gap-2">
-      <div className="flex items-center gap-1.5 min-w-0">
-        <span className={`h-2 w-2 rounded-full flex-shrink-0 ${color}`} aria-hidden />
-        <span className="text-gray-600 dark:text-gray-400 truncate">{label}</span>
-      </div>
-      <span className="font-medium text-gray-800 dark:text-gray-200 tabular-nums flex-shrink-0">
-        {pct.toFixed(1)}%
-      </span>
     </div>
   )
 }
