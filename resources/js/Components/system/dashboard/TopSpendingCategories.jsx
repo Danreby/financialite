@@ -115,15 +115,17 @@ export default function TopSpendingCategories({
             </p>
           </div>
         ) : (
-          <TopSpendingPieChart
-            labels={prepared.map((item) => item.category_name || 'Sem categoria')}
-            values={prepared.map((item) => Number(item.total || 0))}
-            total={grandTotal}
-            colors={colors}
-            items={prepared}
-            recurringSpending={activeFilter === 'all' ? recurringSpending : {}}
-            nonRecurringSpending={activeFilter === 'all' ? nonRecurringSpending : {}}
-          />
+          <div className="flex-1 min-h-0">
+            <TopSpendingPieChart
+              labels={prepared.map((item) => item.category_name || 'Sem categoria')}
+              values={prepared.map((item) => Number(item.total || 0))}
+              total={grandTotal}
+              colors={colors}
+              items={prepared}
+              recurringSpending={activeFilter === 'all' ? recurringSpending : {}}
+              nonRecurringSpending={activeFilter === 'all' ? nonRecurringSpending : {}}
+            />
+          </div>
         )}
       </div>
     </div>
