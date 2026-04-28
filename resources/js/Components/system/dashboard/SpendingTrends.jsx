@@ -27,11 +27,11 @@ export default function SpendingTrends({
   hasData = true,
 }) {
   const vsMonth = calcChange(currentMonth, previousMonth)
-  const vsAvg   = calcChange(currentMonth, threeMonthAvg)
+  const vsAvg = calcChange(currentMonth, threeMonthAvg)
 
-  const compMax    = Math.max(currentMonth, previousMonth, 1)
-  const currentPct = Math.round((currentMonth  / compMax) * 100)
-  const prevPct    = Math.round((previousMonth / compMax) * 100)
+  const compMax = Math.max(currentMonth, previousMonth, 1)
+  const currentPct = Math.round((currentMonth / compMax) * 100)
+  const prevPct = Math.round((previousMonth / compMax) * 100)
 
   const MonthIcon = DirIcon(vsMonth.dir)
 
@@ -101,7 +101,7 @@ export default function SpendingTrends({
           <div className="grid grid-cols-2 gap-2 mb-4">
             {[
               { label: 'vs Mês anterior', change: vsMonth, ref: previousMonth },
-              { label: 'vs Média 3m',     change: vsAvg,   ref: threeMonthAvg },
+              { label: 'vs Média 3m', change: vsAvg, ref: threeMonthAvg },
             ].map(({ label, change, ref }) => {
               const Icon = DirIcon(change.dir)
               return (
@@ -126,7 +126,7 @@ export default function SpendingTrends({
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-0.5">
                 {categoryTrends.map((trend, i) => {
-                  const t    = calcChange(trend.current, trend.previous)
+                  const t = calcChange(trend.current, trend.previous)
                   const Icon = DirIcon(t.dir)
                   const icon = trend.categoryIcon ? getIconEmoji(trend.categoryIcon) : null
                   return (
@@ -154,8 +154,8 @@ export default function SpendingTrends({
             <div className={`rounded-xl px-3 py-2 flex items-center gap-2 ${vsMonth.dir === 'up' ? 'bg-red-50 dark:bg-red-900/15' : vsMonth.dir === 'down' ? 'bg-green-50 dark:bg-green-900/15' : 'bg-gray-50 dark:bg-white/[0.04]'}`}>
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${vsMonth.dir === 'up' ? 'bg-red-500' : vsMonth.dir === 'down' ? 'bg-green-500' : 'bg-gray-400'}`} />
               <p className={`text-[11px] font-medium ${vsMonth.dir === 'up' ? 'text-red-700 dark:text-red-300' : vsMonth.dir === 'down' ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400'}`}>
-                {vsMonth.dir === 'up'      && `Você gastou ${vsMonth.val.toFixed(1)}% a mais este mês`}
-                {vsMonth.dir === 'down'    && `Você economizou ${vsMonth.val.toFixed(1)}% este mês`}
+                {vsMonth.dir === 'up' && `Você gastou ${vsMonth.val.toFixed(1)}% a mais este mês`}
+                {vsMonth.dir === 'down' && `Você economizou ${vsMonth.val.toFixed(1)}% este mês`}
                 {vsMonth.dir === 'neutral' && 'Gastos estáveis comparado ao mês anterior'}
               </p>
             </div>

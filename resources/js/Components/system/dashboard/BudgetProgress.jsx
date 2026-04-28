@@ -36,22 +36,20 @@ const rowColor = (spent, limit) => {
   if (limit === 0) return '#9ca3af'
   const p = (spent / limit) * 100
   if (p >= 100) return '#ef4444'
-  if (p >= 80)  return '#f59e0b'
+  if (p >= 80) return '#f59e0b'
   return 'var(--theme-accent)'
 }
 
 export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpent = 0, onConfigureClick = null }) {
-  const pct        = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0
-  const remaining  = Math.max(totalBudget - totalSpent, 0)
+  const pct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0
+  const remaining = Math.max(totalBudget - totalSpent, 0)
   const overBudget = totalSpent > totalBudget && totalBudget > 0
-  const warn       = pct >= 80 && !overBudget
-  const noBudget   = totalBudget === 0
+  const warn = pct >= 80 && !overBudget
+  const noBudget = totalBudget === 0
   const gaugeColor = overBudget ? '#ef4444' : warn ? '#f59e0b' : 'var(--theme-accent)'
 
   return (
     <div className="themed-card rounded-2xl p-4 flex-1 min-h-0 flex flex-col">
-
-      {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20">
@@ -142,8 +140,8 @@ export default function BudgetProgress({ budgets = [], totalBudget = 0, totalSpe
               <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-2.5">
                 {budgets.map((budget, i) => {
                   const categoryPct = budget.limit > 0 ? Math.min((budget.spent / budget.limit) * 100, 100) : 0
-                  const accent      = rowColor(budget.spent, budget.limit)
-                  const icon        = budget.categoryIcon ? getIconEmoji(budget.categoryIcon) : null
+                  const accent = rowColor(budget.spent, budget.limit)
+                  const icon = budget.categoryIcon ? getIconEmoji(budget.categoryIcon) : null
                   return (
                     <div key={i}>
                       <div className="flex items-center gap-1.5 mb-1">

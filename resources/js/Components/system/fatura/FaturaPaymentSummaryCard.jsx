@@ -148,7 +148,6 @@ export default function FaturaPaymentSummaryCard({
 						/>
 					</div>
 
-					{/* Pay action buttons — shown whenever the fatura has an outstanding balance */}
 					{!isPaid && (
 						<div className="flex flex-col xs:flex-row gap-2 pt-0.5">
 							<PrimaryButton

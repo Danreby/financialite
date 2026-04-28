@@ -59,7 +59,6 @@ export default function FaturaMonthSection({
 
   return (
 	<section className="space-y-3 sm:space-y-4 lg:space-y-5 2xl:space-y-5">
-      {/* Closing / due day info strip */}
       {(closing_day || due_day || total_spent > 0) && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
           {closing_day && (

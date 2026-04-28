@@ -28,7 +28,7 @@ function ensureVerticalHighlight() {
       const x = scales.x.getPixelForValue(idx)
       ctx.save()
       ctx.strokeStyle = opts?.lineColor ?? 'rgba(99,102,241,0.35)'
-      ctx.lineWidth   = 1.5
+      ctx.lineWidth = 1.5
       ctx.setLineDash([4, 3])
       ctx.beginPath()
       ctx.moveTo(x, chartArea.top)
