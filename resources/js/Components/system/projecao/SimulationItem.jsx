@@ -14,7 +14,7 @@ export default function SimulationItem({ simulation, onRemove }) {
         is_recurring, type, bankName, categoryName, categoryColor, startMonth,
     } = simulation;
 
-    const isCredit    = type === 'credit';
+    const isCredit = type === 'credit';
     const isRecurring = is_recurring ?? false;
 
     const endMonth = (() => {

@@ -54,7 +54,6 @@ export default function TransactionsList({ transactions = [], onEdit, onDelete, 
 
         return (
           <div key={dateKey}>
-            {/* Date group header */}
             <div className="flex items-center justify-between px-1 mb-1">
               <span className="text-[11px] font-semibold capitalize text-gray-500 dark:text-gray-400">
                 {formatGroupLabel(dateKey)}

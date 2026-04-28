@@ -2,19 +2,19 @@ import React from 'react'
 import { Search, X } from 'lucide-react'
 
 const TYPE_PILLS = [
-  { value: '',           label: 'Todas' },
-  { value: 'salary',     label: '💰 Salário' },
-  { value: 'freelance',  label: '💻 Freelance' },
+  { value: '', label: 'Todas' },
+  { value: 'salary', label: '💰 Salário' },
+  { value: 'freelance', label: '💻 Freelance' },
   { value: 'investment', label: '📈 Investimento' },
-  { value: 'rental',     label: '🏠 Aluguel' },
-  { value: 'benefit',    label: '🎁 Benefício' },
-  { value: 'pix',        label: '⚡ Pix' },
-  { value: 'other',      label: '📋 Outros' },
+  { value: 'rental', label: '🏠 Aluguel' },
+  { value: 'benefit', label: '🎁 Benefício' },
+  { value: 'pix', label: '⚡ Pix' },
+  { value: 'other', label: '📋 Outros' },
 ]
 
 const STATUS_OPTIONS = [
-  { value: '',         label: 'Todas' },
-  { value: 'active',   label: 'Ativas' },
+  { value: '', label: 'Todas' },
+  { value: 'active', label: 'Ativas' },
   { value: 'inactive', label: 'Inativas' },
 ]
 

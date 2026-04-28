@@ -17,9 +17,9 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
     );
 
     const visibleMonths = months.filter((m) => m.combinedTotal > 0 || m.isCurrentMonth);
-    const hasAny        = visibleMonths.length > 0;
-    const hasSimulated  = (totals.simulatedAll ?? 0) > 0;
-    const hasRecurring  = months.some((m) => (m.realRecurringTotal ?? 0) > 0);
+    const hasAny = visibleMonths.length > 0;
+    const hasSimulated = (totals.simulatedAll ?? 0) > 0;
+    const hasRecurring = months.some((m) => (m.realRecurringTotal ?? 0) > 0);
 
     return (
         <div className="flex flex-col gap-0">
