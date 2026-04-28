@@ -83,7 +83,7 @@ export default function TopSpendingPieChart({
     <div className="flex flex-row gap-3 h-full">
       {/* Left: donut + recurring pills */}
       <div className="flex flex-col items-center gap-2 flex-shrink-0 justify-center">
-        <div className="relative h-[118px] w-[118px]">
+        <div className="relative h-[148px] w-[148px]">
           <Doughnut key={donutKey} data={chartData} options={options} />
 
           <AnimatePresence mode="wait">
