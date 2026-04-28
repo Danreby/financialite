@@ -461,7 +461,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           </FadeInItem>
         </FadeInContainer>
 
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 lg:items-start">
+        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
           <FadeInItem className="lg:col-span-2 themed-card rounded-2xl overflow-hidden">
             <MonthlySummaryChart
               data={monthlySummary}
@@ -470,7 +470,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             />
           </FadeInItem>
 
-          <FadeInItem>
+          <FadeInItem className="h-full">
             <TopSpendingCategories
               data={activeTopSpending}
               debitData={activeDebitSpending}

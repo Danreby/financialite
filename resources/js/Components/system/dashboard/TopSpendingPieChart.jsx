@@ -80,9 +80,9 @@ export default function TopSpendingPieChart({
   const showRecurring   = recurringPct > 0 || nonRecurringPct > 0
 
   return (
-    <div className="flex flex-row gap-3 items-start">
+    <div className="flex flex-row gap-3 h-full">
       {/* Left: donut + recurring pills */}
-      <div className="flex flex-col items-center gap-2 flex-shrink-0">
+      <div className="flex flex-col items-center gap-2 flex-shrink-0 justify-center">
         <div className="relative h-[118px] w-[118px]">
           <Doughnut key={donutKey} data={chartData} options={options} />
 
@@ -128,7 +128,7 @@ export default function TopSpendingPieChart({
         )}
       </div>
 
-      <ScrollArea maxHeightClassName="max-h-[170px]" className="flex-1 min-w-0 pr-0.5">
+      <ScrollArea maxHeightClassName="h-full" className="flex-1 min-w-0 pr-0.5">
         <ul className="space-y-1">
           <AnimatePresence initial={false}>
             {items.map((item, index) => {

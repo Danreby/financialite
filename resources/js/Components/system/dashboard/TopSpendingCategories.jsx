@@ -54,7 +54,7 @@ export default function TopSpendingCategories({
     : `Sem transações de ${activeFilter === 'debit' ? 'débito' : 'crédito'} neste período.`
 
   return (
-    <div className="relative rounded-2xl themed-card overflow-hidden">
+    <div className="relative rounded-2xl themed-card overflow-hidden h-full flex flex-col">
       <LoadingOverlay visible={isLoading} message="Carregando..." />
 
       <div className="px-4 pt-4 pb-3 border-b border-gray-100 dark:border-white/[0.06]">
@@ -104,9 +104,9 @@ export default function TopSpendingCategories({
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="flex-1 overflow-hidden p-4 flex flex-col">
         {prepared.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-10 text-center gap-3">
+          <div className="flex flex-col items-center justify-center flex-1 py-10 text-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
               <BarChart3 className="w-5 h-5 text-gray-400 dark:text-gray-500" />
             </div>
