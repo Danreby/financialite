@@ -26,14 +26,14 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
         simulatedTotal,
         combinedTotal,
         installmentBreakdown  = [],
-        recurringBreakdown    = [],
-        simulationBreakdown   = [],
+        recurringBreakdown = [],
+        simulationBreakdown = [],
     } = data;
 
-    const safeMax      = maxValue > 0 ? maxValue : 1;
-    const combinedPct  = Math.min((combinedTotal / safeMax) * 100, 100);
-    const realRatio    = combinedTotal > 0 ? (realTotal / combinedTotal) * 100 : 0;
-    const simulRatio   = combinedTotal > 0 ? (simulatedTotal / combinedTotal) * 100 : 0;
+    const safeMax = maxValue > 0 ? maxValue : 1;
+    const combinedPct = Math.min((combinedTotal / safeMax) * 100, 100);
+    const realRatio = combinedTotal > 0 ? (realTotal / combinedTotal) * 100 : 0;
+    const simulRatio = combinedTotal > 0 ? (simulatedTotal / combinedTotal) * 100 : 0;
     const hasSimulated = simulatedTotal > 0;
 
     const hasBreakdown = installmentBreakdown.length > 0

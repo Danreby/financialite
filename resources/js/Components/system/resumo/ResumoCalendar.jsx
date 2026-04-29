@@ -56,7 +56,6 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
 
   return (
     <div className="themed-card rounded-2xl overflow-hidden">
-      {/* Header */}
       <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -77,7 +76,6 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
         </div>
       </div>
 
-      {/* Weekday headers */}
       <div className="grid grid-cols-7 px-3 sm:px-4 pt-3">
         {WEEKDAY_LABELS.map(label => (
           <div
@@ -89,7 +87,6 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
         ))}
       </div>
 
-      {/* Calendar grid */}
       <div className="grid grid-cols-7 px-3 sm:px-4 pb-3 sm:pb-4 gap-px">
         {paddingDays.map(p => (
           <div key={p.key} className="aspect-square" />
@@ -129,7 +126,6 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
                 {day.day}
               </span>
 
-              {/* Transaction indicators */}
               {hasTransactions && (
                 <div className="flex items-center gap-0.5 mt-0.5">
                   {day.count <= 3 ? (
@@ -148,7 +144,6 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
                 </div>
               )}
 
-              {/* Amount on desktop */}
               {hasTransactions && (
                 <span className="hidden sm:block text-[7px] sm:text-[8px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 leading-none truncate max-w-full">
                   {formatCurrencyBRL(day.total)}
@@ -159,7 +154,6 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
         })}
       </div>
 
-      {/* Selected day detail */}
       <AnimatePresence>
         {selectedDayData && selectedDayData.transactions.length > 0 && (
           <motion.div

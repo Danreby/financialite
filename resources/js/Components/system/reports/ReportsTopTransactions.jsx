@@ -10,8 +10,7 @@ function formatDate(dateString) {
 }
 
 export default function ReportsTopTransactions({ transactions = [], onSelect, limit = 8 }) {
-  // Deduplicate: for installment transactions, keep only one entry per base transaction id.
-  const deduped = useMemo(() => {
+    const deduped = useMemo(() => {
     const seen = new Map()
     for (const tx of transactions) {
       const baseId = String(tx.id).replace(/-\d+$/, '')

@@ -254,7 +254,7 @@ export default function About() {
                 { name: 'Inertia.js', icon: '🔗' },
                 { name: 'MySQL', icon: '🗄️' },
                 { name: 'Vite', icon: '⚡' },
-                { name: 'Flutter', icon: '📱' },
+                // { name: 'Flutter', icon: '📱' },
                 { name: 'Framer Motion', icon: '✨' },
                 { name: 'JavaScript', icon: '📝' },
               ].map((tech, index) => (

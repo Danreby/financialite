@@ -6,19 +6,19 @@ import { getIconEmoji } from '@/Utils/categoryIcons';
 const CURRENT_MONTH = () => new Date().toISOString().slice(0, 7);
 
 const initialForm = () => ({
-    title:         '',
-    amount:        '',
-    installments:  '1',
-    mode:          'installment',
-    type:          'credit',
+    title: '',
+    amount: '',
+    installments: '1',
+    mode: 'installment',
+    type: 'credit',
     bankAccountId: '',
-    categoryId:    '',
-    startMonth:    CURRENT_MONTH(),
+    categoryId: '',
+    startMonth: CURRENT_MONTH(),
 });
 
 const MODES = [
     { value: 'installment', label: 'Parcelado',  icon: '💳' },
-    { value: 'recurring',   label: 'Recorrente', icon: '🔁' },
+    { value: 'recurring', label: 'Recorrente', icon: '🔁' },
 ];
 
 export default function SimulationPanel({ bankAccounts = [], categories = [], onAdd }) {
@@ -28,12 +28,12 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
     const handleDecimalKeyDown = useDecimalInput();
     const handleNumericKeyDown = useNumericInput();
 
-    const isRecurring        = form.mode === 'recurring';
-    const parsedAmount       = parseFloat(form.amount.replace(',', '.')) || 0;
+    const isRecurring = form.mode === 'recurring';
+    const parsedAmount = parseFloat(form.amount.replace(',', '.')) || 0;
     const parsedInstallments = isRecurring
         ? 1
         : Math.max(1, Math.min(360, parseInt(form.installments, 10) || 1));
-    const installmentAmount  = parsedAmount > 0 ? parsedAmount / parsedInstallments : 0;
+    const installmentAmount = parsedAmount > 0 ? parsedAmount / parsedInstallments : 0;
 
     const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -42,23 +42,23 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
         if (!form.title.trim() || parsedAmount <= 0) return;
 
         const selectedCategory = categories.find((c) => String(c.id) === String(form.categoryId));
-        const selectedCard     = bankAccounts.find((b) => String(b.id) === String(form.bankAccountId));
+        const selectedCard = bankAccounts.find((b) => String(b.id) === String(form.bankAccountId));
 
         onAdd({
-            id:               crypto.randomUUID(),
-            title:            form.title.trim(),
-            amount:           parsedAmount,
-            installments:     parsedInstallments,
+            id: crypto.randomUUID(),
+            title: form.title.trim(),
+            amount: parsedAmount,
+            installments: parsedInstallments,
             installmentAmount: isRecurring ? parsedAmount : installmentAmount,
-            is_recurring:     isRecurring,
-            type:             form.type,
-            bankAccountId:    form.bankAccountId,
-            bankName:         selectedCard?.name ?? null,
-            categoryId:       form.categoryId,
-            categoryName:     selectedCategory?.name ?? null,
-            categoryColor:    selectedCategory?.color ?? null,
-            categoryIcon:     selectedCategory?.icon ?? null,
-            startMonth:       form.startMonth,
+            is_recurring: isRecurring,
+            type: form.type,
+            bankAccountId: form.bankAccountId,
+            bankName: selectedCard?.name ?? null,
+            categoryId: form.categoryId,
+            categoryName: selectedCategory?.name ?? null,
+            categoryColor: selectedCategory?.color ?? null,
+            categoryIcon: selectedCategory?.icon ?? null,
+            startMonth: form.startMonth,
         });
 
         setForm(initialForm());

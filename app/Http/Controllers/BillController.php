@@ -176,6 +176,29 @@ class BillController extends Controller
         return $this->success($payment);
     }
 
+    public function updatePayment(Request $request, Bill $bill, BillPayment $payment): JsonResponse
+    {
+        $this->authorize('update', $bill);
+
+        if ($payment->bill_id !== $bill->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'amount_paid' => ['required', 'numeric', 'min:0'],
+            'paid_date'   => ['nullable', 'date'],
+            'notes'       => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $payment->update([
+            'amount_paid' => $validated['amount_paid'],
+            'paid_date'   => $validated['paid_date'] ?? $payment->paid_date,
+            'notes'       => $validated['notes'] ?? null,
+        ]);
+
+        return $this->success($payment->fresh());
+    }
+
     public function toggleStatus(Request $request, Bill $bill): JsonResponse
     {
         $this->authorize('update', $bill);
@@ -208,7 +231,7 @@ class BillController extends Controller
         return Bill::forUser($userId)
             ->with([
                 'category:id,name,color,icon',
-                'payments' => fn ($q) => $q->where('status', 'paid')->latest('due_date'),
+                'payments' => fn ($q) => $q->latest('due_date'),
             ])
             ->orderBy('due_day')
             ->orderBy('created_at', 'desc')
@@ -221,6 +244,39 @@ class BillController extends Controller
     {
         $data = $bill->toArray();
         unset($data['payments']);
+
+        $paidPayments = $bill->relationLoaded('payments')
+            ? $bill->payments->where('status', 'paid')->sortByDesc('due_date')
+            : collect();
+
+        $currentYear = Carbon::now()->year;
+        $totalPaidThisYear = $paidPayments
+            ->filter(fn ($p) => Carbon::parse($p->due_date)->year === $currentYear)
+            ->sum(fn ($p) => (float) $p->amount_paid);
+
+        $avgPaid = $paidPayments->count() > 0
+            ? round($paidPayments->avg(fn ($p) => (float) $p->amount_paid), 2)
+            : 0;
+
+        $lastPayment = $paidPayments->first();
+
+        $data['payment_stats'] = [
+            'payments_count'      => $paidPayments->count(),
+            'total_paid_this_year' => round($totalPaidThisYear, 2),
+            'avg_paid'            => $avgPaid,
+            'last_payment_date'   => $lastPayment?->due_date?->format('Y-m-d'),
+            'last_payment_amount' => $lastPayment ? (float) $lastPayment->amount_paid : null,
+        ];
+
+        $data['payment_history'] = $paidPayments->take(24)->values()->map(fn ($p) => [
+            'id'          => $p->id,
+            'due_date'    => $p->due_date->format('Y-m-d'),
+            'paid_date'   => $p->paid_date?->format('Y-m-d'),
+            'amount_due'  => (float) $p->amount_due,
+            'amount_paid' => (float) $p->amount_paid,
+            'status'      => $p->status,
+            'notes'       => $p->notes,
+        ])->all();
 
         if ($bill->status !== 'active' || !$bill->due_day) {
             $data['is_paid_this_period'] = false;

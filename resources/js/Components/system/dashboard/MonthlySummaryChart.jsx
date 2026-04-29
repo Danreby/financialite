@@ -28,7 +28,7 @@ function ensureVerticalHighlight() {
       const x = scales.x.getPixelForValue(idx)
       ctx.save()
       ctx.strokeStyle = opts?.lineColor ?? 'rgba(99,102,241,0.35)'
-      ctx.lineWidth   = 1.5
+      ctx.lineWidth = 1.5
       ctx.setLineDash([4, 3])
       ctx.beginPath()
       ctx.moveTo(x, chartArea.top)
@@ -42,37 +42,37 @@ ensureVerticalHighlight()
 
 function buildGradient(ctx, chartArea, hex, maxAlpha) {
   if (!ctx || !chartArea) return hex
-  const g    = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
+  const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
   const base = hex?.startsWith('#') ? hex : '#6366f1'
-  const a    = (v) => Math.round(v * 255).toString(16).padStart(2, '0')
-  g.addColorStop(0,    base + a(maxAlpha))
+  const a = (v) => Math.round(v * 255).toString(16).padStart(2, '0')
+  g.addColorStop(0, base + a(maxAlpha))
   g.addColorStop(0.55, base + a(maxAlpha * 0.38))
-  g.addColorStop(1,    base + a(0))
+  g.addColorStop(1, base + a(0))
   return g
 }
 
 const isDark = () => document.documentElement.classList.contains('dark')
 
 const MODES = [
-  { value: 'both',    label: 'Ambos'   },
+  { value: 'both', label: 'Ambos' },
   { value: 'invoice', label: 'Crédito' },
-  { value: 'debit',   label: 'Débito'  },
+  { value: 'debit', label: 'Débito' },
 ]
 
 export default function MonthlySummaryChart({ data = [], onMonthClick, selectedMonthKey }) {
   const [mode, setMode] = useState('both')
   const { chartColors } = useThemeColors()
 
-  const labels      = useMemo(() => data.map((d) => d.month_label), [data])
+  const labels = useMemo(() => data.map((d) => d.month_label), [data])
   const invoiceVals = useMemo(() => data.map((d) => Number(d.credit_total ?? d.invoice_total ?? 0)), [data])
-  const debitVals   = useMemo(() => data.map((d) => Number(d.debit_total   || 0)), [data])
-  const monthKeys   = useMemo(() => data.map((d) => d.month_key), [data])
+  const debitVals = useMemo(() => data.map((d) => Number(d.debit_total   || 0)), [data])
+  const monthKeys = useMemo(() => data.map((d) => d.month_key), [data])
 
-  const showInvoice    = mode !== 'debit'
-  const showDebit      = mode !== 'invoice'
+  const showInvoice = mode !== 'debit'
+  const showDebit = mode !== 'invoice'
   const selectedIndex  = selectedMonthKey ? monthKeys.indexOf(selectedMonthKey) : -1
-  const dark           = isDark()
-  const primaryColor   = chartColors.primary?.startsWith('#') ? chartColors.primary : '#6366f1'
+  const dark = isDark()
+  const primaryColor = chartColors.primary?.startsWith('#') ? chartColors.primary : '#6366f1'
   const secondaryColor = dark ? '#60a5fa' : '#3b82f6'
 
   const gradientPlugin = useMemo(() => ({
@@ -80,9 +80,9 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
     beforeDatasetsUpdate(chart) {
       const { ctx, chartArea } = chart
       if (!chartArea) return
-      const d   = document.documentElement.classList.contains('dark')
+      const d = document.documentElement.classList.contains('dark')
       const alpha = d ? 0.27 : 0.19
-      const key   = `${Math.round(chartArea.width)}x${Math.round(chartArea.height)}_${primaryColor}_${secondaryColor}_${d}`
+      const key = `${Math.round(chartArea.width)}x${Math.round(chartArea.height)}_${primaryColor}_${secondaryColor}_${d}`
       if (chart._gk !== key) {
         chart._gk = key
         chart._gradients = [
@@ -126,12 +126,12 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
     ],
   }), [labels, invoiceVals, debitVals, primaryColor, secondaryColor, showInvoice, showDebit, selectedIndex, dark])
 
-  const gridColor    = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
-  const tickColor    = dark ? '#4b5563' : '#9ca3af'
-  const tooltipBg    = dark ? 'rgba(15,15,23,0.96)'    : 'rgba(255,255,255,0.98)'
-  const tooltipBdr   = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'
+  const gridColor = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+  const tickColor = dark ? '#4b5563' : '#9ca3af'
+  const tooltipBg = dark ? 'rgba(15,15,23,0.96)'    : 'rgba(255,255,255,0.98)'
+  const tooltipBdr = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'
   const tooltipTitle = dark ? '#f9fafb' : '#111827'
-  const tooltipBody  = dark ? '#9ca3af' : '#4b5563'
+  const tooltipBody = dark ? '#9ca3af' : '#4b5563'
 
   const options = useMemo(() => ({
     responsive: true,

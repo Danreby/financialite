@@ -117,7 +117,6 @@ export default function useGoogleAuth(mode = 'login') {
                 return;
             }
 
-            // Classify HTTP errors from the backend into friendly messages
             const status  = error?.response?.status
             const backendMsg = error?.response?.data?.message
 

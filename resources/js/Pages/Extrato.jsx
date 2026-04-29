@@ -63,7 +63,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
       <Head title="Extrato" />
 
       <FadeInContainer type="container" stagger className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-3 space-y-4 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
-        {/* Header */}
         <FadeInItem type="fast">
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -78,7 +77,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
               <ExtratoPeriodBadge startDate={filters.startDate} endDate={filters.endDate} />
             </div>
 
-            {/* Quick period selection */}
             <ExtratoQuickPeriod
               startDate={filters.startDate}
               endDate={filters.endDate}
@@ -87,7 +85,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
           </div>
         </FadeInItem>
 
-        {/* Filters */}
         <FadeInItem type="subtle">
           <ExtratoFilters
             startDate={filters.startDate}
@@ -114,21 +111,18 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
 
         {!loading && (
           <>
-            {/* Income bar */}
             {incomes.length > 0 && (
               <FadeInItem type="item">
                 <ExtratoIncomeBar incomes={incomes} />
               </FadeInItem>
             )}
 
-            {/* Summary cards */}
             {summary && (
               <FadeInItem type="item">
                 <ExtratoSummary summary={summary} />
               </FadeInItem>
             )}
 
-            {/* Spending overview + category breakdown */}
             {summary && transactions.length > 0 && (
               <FadeInContainer stagger className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <FadeInItem type="feature">
@@ -140,7 +134,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
               </FadeInContainer>
             )}
 
-            {/* Actions bar */}
             <FadeInItem type="item">
               <ExtratoActionsBar
                 transactionCount={totalTransactions}
@@ -148,7 +141,6 @@ export default function Extrato({ bankAccounts = [], categories = [] }) {
               />
             </FadeInItem>
 
-            {/* Transactions list */}
             <FadeInItem type="item">
               <ExtratoTransactionsContainer
                 transactions={transactions}

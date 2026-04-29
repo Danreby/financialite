@@ -8,8 +8,8 @@ import { formatCurrency, formatDate } from "@/Lib/formatters";
 
 const STATUS_CONFIG = {
   overdue: { label: "Vencida", cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
-  unpaid:  { label: "Pendente", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
-  paid:    { label: "Paga",    cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+  unpaid: { label: "Pendente", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+  paid: { label: "Paga", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
 };
 
 function StatusBadge({ status }) {

@@ -2,13 +2,13 @@ import React from 'react'
 import { formatCurrencyBRL } from '@/Lib/formatters'
 
 const TYPE_CONFIG = {
-  salary:     { label: 'Salário',      emoji: '💰', color: 'bg-emerald-500' },
-  freelance:  { label: 'Freelance',    emoji: '💻', color: 'bg-blue-500' },
+  salary: { label: 'Salário', emoji: '💰', color: 'bg-emerald-500' },
+  freelance: { label: 'Freelance', emoji: '💻', color: 'bg-blue-500' },
   investment: { label: 'Investimento', emoji: '📈', color: 'bg-violet-500' },
-  rental:     { label: 'Aluguel',      emoji: '🏠', color: 'bg-amber-500' },
-  benefit:    { label: 'Benefício',    emoji: '🎁', color: 'bg-pink-500' },
-  pix:        { label: 'Pix',          emoji: '⚡', color: 'bg-teal-500' },
-  other:      { label: 'Outros',       emoji: '📋', color: 'bg-gray-500' },
+  rental: { label: 'Aluguel', emoji: '🏠', color: 'bg-amber-500' },
+  benefit: { label: 'Benefício', emoji: '🎁', color: 'bg-pink-500' },
+  pix: { label: 'Pix', emoji: '⚡', color: 'bg-teal-500' },
+  other: { label: 'Outros', emoji: '📋', color: 'bg-gray-500' },
 }
 
 export default function ReceitasTypeBreakdown({ incomesByType = {}, totalMonthly = 0 }) {

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { formatCurrency, formatDueDay, getNextDueInfo } from '@/Utils/bills';
 import { getIconEmoji } from '@/Utils/categoryIcons';
+import { History } from 'lucide-react';
 
 const STATUS_MAP = {
 	active: { label: 'Ativa', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -13,9 +14,10 @@ const RECURRENCE_MAP = {
 	none: 'Única',
 };
 
-export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, saving }) {
+export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, onHistory, saving }) {
 	const dueInfo = getNextDueInfo(bill);
 	const statusInfo = STATUS_MAP[bill.status] || STATUS_MAP.active;
+	const stats = bill.payment_stats || {};
 
 	return (
 		<motion.div
@@ -157,6 +159,15 @@ export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, savi
 						</button>
 						<button
 							type="button"
+							onClick={() => onHistory?.(bill)}
+							disabled={saving}
+							className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-gray-500 hover:text-blue-500 hover:bg-blue-50 transition-colors dark:text-gray-400 dark:hover:bg-blue-900/20"
+							title="Histórico de pagamentos"
+						>
+							<History className="w-4 h-4" />
+						</button>
+						<button
+							type="button"
 							onClick={() => onDelete(bill)}
 							disabled={saving}
 							className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors dark:text-gray-400 dark:hover:bg-red-900/20"
@@ -169,6 +180,25 @@ export default function BillCard({ bill, onEdit, onPay, onToggle, onDelete, savi
 					</div>
 				</div>
 			</div>
+
+			{stats.payments_count > 0 && (
+				<div className="px-3 pb-3 sm:px-4 sm:pb-3.5 -mt-1">
+					<div className="flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-800 text-[11px] text-gray-400 dark:text-gray-500">
+						<span className="flex items-center gap-0.5">
+							<svg className="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+							{stats.payments_count} pag{stats.payments_count !== 1 ? 'amentos' : 'amento'}
+						</span>
+						<span className="text-gray-200 dark:text-gray-700">·</span>
+						<span>Média: <span className="font-medium text-gray-600 dark:text-gray-400">{formatCurrency(stats.avg_paid)}</span></span>
+						{stats.last_payment_date && (
+							<>
+								<span className="text-gray-200 dark:text-gray-700">·</span>
+								<span className="hidden sm:inline">Últ: <span className="font-medium text-gray-600 dark:text-gray-400">{new Date(stats.last_payment_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span></span>
+							</>
+						)}
+					</div>
+				</div>
+			)}
 		</motion.div>
 	);
 }

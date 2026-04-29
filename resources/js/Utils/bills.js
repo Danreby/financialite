@@ -14,7 +14,6 @@ export function getNextDueInfo(bill) {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
-	// Bill already paid for the current billing period
 	if (bill.is_paid_this_period) {
 		if (!bill.next_due_date) return { paid: true, text: 'Pago', daysUntil: null };
 		const nextDue = new Date(bill.next_due_date + 'T00:00:00');
@@ -27,12 +26,10 @@ export function getNextDueInfo(bill) {
 		};
 	}
 
-	// Use server-computed next_due_date when available (may be in the past = overdue)
 	let dueDate;
 	if (bill.next_due_date) {
 		dueDate = new Date(bill.next_due_date + 'T00:00:00');
 	} else {
-		// Fallback: compute from due_day only (no payment info)
 		dueDate = new Date(today.getFullYear(), today.getMonth(), bill.due_day);
 		if (dueDate < today) {
 			dueDate = new Date(today.getFullYear(), today.getMonth() + 1, bill.due_day);

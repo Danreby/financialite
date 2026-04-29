@@ -8,13 +8,14 @@ import Modal from '@/Components/common/Modal';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 import DangerButton from '@/Components/common/buttons/DangerButton';
-import StatsCard from '@/Components/common/StatsCard';
 import ScrollArea from '@/Components/common/ScrollArea';
 import BillForm from '@/Components/system/BillForm';
 import BillPaymentForm from '@/Components/system/BillPaymentForm';
 import BillCard from '@/Components/system/contas/BillCard';
+import BillHistoryModal from '@/Components/system/contas/BillHistoryModal';
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer';
 import { formatCurrency, getNextDueInfo } from '@/Utils/bills';
+import { ReceiptText, Wallet, AlertTriangle, CalendarClock, TrendingUp, CreditCard } from 'lucide-react';
 
 export default function Contas({ bills: initialBills = [], categories = [] }) {
 	const [bills, setBills] = useState(initialBills);
@@ -26,6 +27,7 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 	const [editingBill, setEditingBill] = useState(null);
 	const [payingBill, setPayingBill] = useState(null);
 	const [deletingBill, setDeletingBill] = useState(null);
+	const [historyBill, setHistoryBill] = useState(null);
 
 	const loadBills = useCallback(async () => {
 		try {
@@ -43,6 +45,16 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 			.filter((b) => b.recurrence_type === 'monthly')
 			.reduce((acc, b) => acc + (parseFloat(b.amount) || 0), 0);
 
+		const totalYearly = active
+			.filter((b) => b.recurrence_type === 'yearly')
+			.reduce((acc, b) => acc + (parseFloat(b.amount) || 0), 0);
+
+		const annualCost = totalMonthly * 12 + totalYearly;
+
+		const totalPaidThisYear = bills.reduce((acc, b) => {
+			return acc + (b.payment_stats?.total_paid_this_year ?? 0);
+		}, 0);
+
 		let overdue = 0;
 		let upcoming = 0;
 		active.forEach((b) => {
@@ -52,7 +64,18 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 			else if (typeof info.daysUntil === 'number' && info.daysUntil <= 7) upcoming++;
 		});
 
-		return { total: bills.length, active: active.length, totalMonthly, overdue, upcoming };
+		const categoryMap = {};
+		active.filter((b) => b.recurrence_type === 'monthly').forEach((b) => {
+			const key = b.category?.name || 'Sem categoria';
+			const color = b.category?.color || '#6b7280';
+			if (!categoryMap[key]) categoryMap[key] = { name: key, color, amount: 0 };
+			categoryMap[key].amount += parseFloat(b.amount) || 0;
+		});
+		const topCategories = Object.values(categoryMap)
+			.sort((a, b) => b.amount - a.amount)
+			.slice(0, 4);
+
+		return { total: bills.length, active: active.length, totalMonthly, annualCost, totalPaidThisYear, overdue, upcoming, topCategories };
 	}, [bills]);
 
 	const filteredBills = useMemo(() => {
@@ -136,6 +159,10 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 		setDeletingBill(bill);
 	};
 
+	const handleHistory = (bill) => {
+		setHistoryBill(bill);
+	};
+
 	const confirmDelete = async () => {
 		if (!deletingBill) return;
 		setSaving(true);
@@ -164,10 +191,12 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 			<Head title="Contas a Pagar" />
 
 			<FadeInContainer className="w-full max-w-[1450px] 2xl:max-w-[1500px] mx-auto px-3 py-2 space-y-4 sm:px-4 sm:py-3 lg:px-5 lg:py-4">
+
 				<FadeInItem type="fast">
 					<header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+							<h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+								<ReceiptText className="w-6 h-6 text-theme-accent" />
 								Contas a Pagar
 							</h1>
 							<p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -185,115 +214,207 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 				</FadeInItem>
 
 				<FadeInItem type="subtle">
-					<div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-						<StatsCard
-							icon="📋"
-							label="Total de Contas"
-							value={stats.active}
-							subText={`${stats.total} cadastradas`}
-							colorClass="bg-blue-100 dark:bg-blue-900/30"
-						/>
-						<StatsCard
-							icon="💰"
-							label="Custo Mensal"
-							value={formatCurrency(stats.totalMonthly)}
-							colorClass="bg-emerald-100 dark:bg-emerald-900/30"
-						/>
-						<StatsCard
-							icon="⚠️"
-							label="Vencidas"
-							value={stats.overdue}
-							subText={stats.overdue > 0 ? 'Atenção!' : 'Nenhuma'}
-							colorClass={stats.overdue > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-gray-100 dark:bg-gray-800'}
-						/>
-						<StatsCard
-							icon="📅"
-							label="Próximos 7 dias"
-							value={stats.upcoming}
-							subText="a vencer"
-							colorClass="bg-amber-100 dark:bg-amber-900/30"
-						/>
-					</div>
-				</FadeInItem>
-
-				<FadeInItem type="subtle">
-					<div className="rounded-2xl shadow-md themed-card overflow-hidden">
-						<div className="p-3 sm:p-4 border-b border-gray-200/70 dark:border-gray-800">
-							<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-								<div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
-									{filterTabs.map((tab) => (
-										<button
-											key={tab.key}
-											onClick={() => setFilter(tab.key)}
-											className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-												filter === tab.key
-													? 'bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20'
-													: 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-											}`}
-										>
-											{tab.label}
-											<span className={`inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[10px] font-semibold ${
-												filter === tab.key
-													? 'bg-theme-accent/20 text-theme-accent'
-													: 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-											}`}>
-												{tab.count}
-											</span>
-										</button>
-									))}
+					<div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
+						<div className="rounded-xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+							<div className="flex items-center gap-3">
+								<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+									<ReceiptText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
 								</div>
-
-								<div className="relative">
-									<input
-										type="text"
-										value={search}
-										onChange={(e) => setSearch(e.target.value)}
-										placeholder="Buscar conta..."
-										className="w-full sm:w-56 rounded-xl border border-gray-300 bg-white px-3 py-2 pl-9 text-xs sm:text-sm shadow-sm focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-										maxLength={255}
-									/>
-									<svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-										<path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-									</svg>
+								<div className="min-w-0">
+									<p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Contas ativas</p>
+									<p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">{stats.active}</p>
+									<p className="text-[10px] sm:text-[11px] text-gray-400 dark:text-gray-500">{stats.total} cadastradas</p>
 								</div>
 							</div>
 						</div>
 
-						<div className="p-3 sm:p-4">
-							{filteredBills.length > 0 ? (
-								<ScrollArea maxHeightClassName="max-h-[500px] sm:max-h-[560px]" className="pr-1 space-y-2">
-									<AnimatePresence mode="popLayout">
-										{filteredBills.map((bill) => (
-											<BillCard
-												key={bill.id}
-												bill={bill}
-												onEdit={handleEdit}
-												onPay={handlePay}
-												onToggle={handleToggle}
-												onDelete={handleDelete}
-												saving={saving}
-											/>
-										))}
-									</AnimatePresence>
-								</ScrollArea>
-							) : (
-								<div className="flex flex-col items-center justify-center py-12 text-center">
-									<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800 mb-3">
-										<span className="text-2xl">{search ? '🔍' : '📋'}</span>
-									</div>
-									<h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-										{search ? 'Nenhuma conta encontrada' : 'Nenhuma conta cadastrada'}
-									</h3>
-									<p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">
-										{search
-											? 'Tente buscar com outros termos.'
-											: 'Adicione sua primeira conta para começar a acompanhar pagamentos.'}
-									</p>
+						<div className="rounded-xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+							<div className="flex items-center gap-3">
+								<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+									<Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
 								</div>
-							)}
+								<div className="min-w-0">
+									<p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Custo mensal</p>
+									<p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(stats.totalMonthly)}</p>
+									<p className="text-[10px] sm:text-[11px] text-gray-400 dark:text-gray-500">recorrentes</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+							<div className="flex items-center gap-3">
+								<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+									<TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+								</div>
+								<div className="min-w-0">
+									<p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Projeção anual</p>
+									<p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(stats.annualCost)}</p>
+									<p className="text-[10px] sm:text-[11px] text-gray-400 dark:text-gray-500">estimado</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+							<div className="flex items-center gap-3">
+								<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-100 dark:bg-sky-900/30">
+									<CreditCard className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+								</div>
+								<div className="min-w-0">
+									<p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Pago este ano</p>
+									<p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(stats.totalPaidThisYear)}</p>
+									<p className="text-[10px] sm:text-[11px] text-gray-400 dark:text-gray-500">acumulado</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+							<div className="flex items-center gap-3">
+								<div className={`flex h-9 w-9 items-center justify-center rounded-lg ${stats.overdue > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
+									<AlertTriangle className={`w-4 h-4 ${stats.overdue > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`} />
+								</div>
+								<div className="min-w-0">
+									<p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Vencidas</p>
+									<p className={`text-sm sm:text-base font-semibold ${stats.overdue > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>{stats.overdue}</p>
+									<p className="text-[10px] sm:text-[11px] text-gray-400 dark:text-gray-500">{stats.overdue > 0 ? 'Atenção!' : 'Nenhuma'}</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+							<div className="flex items-center gap-3">
+								<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+									<CalendarClock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+								</div>
+								<div className="min-w-0">
+									<p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Próx. 7 dias</p>
+									<p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">{stats.upcoming}</p>
+									<p className="text-[10px] sm:text-[11px] text-gray-400 dark:text-gray-500">a vencer</p>
+								</div>
+							</div>
 						</div>
 					</div>
 				</FadeInItem>
+
+				<div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+
+					{stats.topCategories.length > 0 && (
+						<FadeInItem type="subtle" className="xl:col-span-1">
+							<div className="rounded-2xl shadow-md themed-card h-full">
+								<div className="p-3 sm:p-4 border-b border-gray-200/70 dark:border-gray-800">
+									<h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Por categoria</h2>
+									<p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Contas mensais ativas</p>
+								</div>
+								<div className="p-3 sm:p-4 space-y-3">
+									{stats.topCategories.map((cat) => (
+										<div key={cat.name}>
+											<div className="flex items-center justify-between mb-1">
+												<div className="flex items-center gap-1.5 min-w-0">
+													<span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+													<span className="text-xs text-gray-700 dark:text-gray-300 truncate">{cat.name}</span>
+												</div>
+												<span className="text-xs font-medium text-gray-900 dark:text-gray-100 ml-2">{formatCurrency(cat.amount)}</span>
+											</div>
+											<div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+												<div
+													className="h-1.5 rounded-full transition-all duration-500"
+													style={{
+														width: `${Math.min(100, (cat.amount / stats.totalMonthly) * 100)}%`,
+														backgroundColor: cat.color,
+													}}
+												/>
+											</div>
+										</div>
+									))}
+
+									<div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between text-xs">
+										<span className="text-gray-500 dark:text-gray-400">Total mensal</span>
+										<span className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(stats.totalMonthly)}</span>
+									</div>
+								</div>
+							</div>
+						</FadeInItem>
+					)}
+
+					<FadeInItem type="subtle" className={stats.topCategories.length > 0 ? 'xl:col-span-3' : 'xl:col-span-4'}>
+						<div className="rounded-2xl shadow-md themed-card overflow-hidden">
+							<div className="p-3 sm:p-4 border-b border-gray-200/70 dark:border-gray-800">
+								<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+									<div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+										{filterTabs.map((tab) => (
+											<button
+												key={tab.key}
+												onClick={() => setFilter(tab.key)}
+												className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+													filter === tab.key
+														? 'bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20'
+														: 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+												}`}
+											>
+												{tab.label}
+												<span className={`inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[10px] font-semibold ${
+													filter === tab.key
+														? 'bg-theme-accent/20 text-theme-accent'
+														: 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+												}`}>
+													{tab.count}
+												</span>
+											</button>
+										))}
+									</div>
+
+									<div className="relative">
+										<input
+											type="text"
+											value={search}
+											onChange={(e) => setSearch(e.target.value)}
+											placeholder="Buscar conta..."
+											className="w-full sm:w-56 rounded-xl border border-gray-300 bg-white px-3 py-2 pl-9 text-xs sm:text-sm shadow-sm focus:border-theme-accent focus:ring-1 focus:ring-theme-accent dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+											maxLength={255}
+										/>
+										<svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+											<path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+										</svg>
+									</div>
+								</div>
+							</div>
+
+							<div className="p-3 sm:p-4">
+								{filteredBills.length > 0 ? (
+									<ScrollArea maxHeightClassName="max-h-[560px] sm:max-h-[620px]" className="pr-1 space-y-2">
+										<AnimatePresence mode="popLayout">
+											{filteredBills.map((bill) => (
+												<BillCard
+													key={bill.id}
+													bill={bill}
+													onEdit={handleEdit}
+													onPay={handlePay}
+													onToggle={handleToggle}
+													onDelete={handleDelete}
+													onHistory={handleHistory}
+													saving={saving}
+												/>
+											))}
+										</AnimatePresence>
+									</ScrollArea>
+								) : (
+									<div className="flex flex-col items-center justify-center py-12 text-center">
+										<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800 mb-3">
+											<span className="text-2xl">{search ? '🔍' : '📋'}</span>
+										</div>
+										<h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+											{search ? 'Nenhuma conta encontrada' : 'Nenhuma conta cadastrada'}
+										</h3>
+										<p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">
+											{search
+												? 'Tente buscar com outros termos.'
+												: 'Adicione sua primeira conta para começar a acompanhar pagamentos.'}
+										</p>
+									</div>
+								)}
+							</div>
+						</div>
+					</FadeInItem>
+				</div>
 			</FadeInContainer>
 
 			<BillForm
@@ -309,6 +430,25 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 				onClose={() => setPayingBill(null)}
 				onSuccess={handlePaySuccess}
 				bill={payingBill}
+			/>
+
+			<BillHistoryModal
+				isOpen={!!historyBill}
+				onClose={() => setHistoryBill(null)}
+				bill={historyBill}
+				onPaymentUpdated={async () => {
+					const billId = historyBill?.id;
+					try {
+						const response = await axios.get(route('bills.index'));
+						const data = response.data;
+						const fresh = Array.isArray(data) ? data : (data?.data ?? []);
+						setBills(fresh);
+						const refreshed = fresh.find((b) => b.id === billId);
+						if (refreshed) setHistoryBill(refreshed);
+					} catch {
+						//
+					}
+				}}
 			/>
 
 			<Modal
