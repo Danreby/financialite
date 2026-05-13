@@ -7,8 +7,8 @@ import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import { AVAILABLE_ICONS, AVAILABLE_COLORS } from "@/Utils/categoryIcons";
 
 const TYPE_OPTIONS = [
-	{ value: 'expense', label: 'Despesa', emoji: 'ðŸ“‰' },
-	{ value: 'income', label: 'Receita', emoji: 'ðŸ“ˆ' },
+	{ value: 'expense', label: 'Despesa', emoji: '📉' },
+	{ value: 'income', label: 'Receita', emoji: '📈' },
 ];
 
 export default function CategoryForm({ isOpen, onClose, onSuccess, categories = [] }) {
@@ -40,7 +40,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 		});
 
 		if (alreadyExists) {
-			toast.error("VocÃª jÃ¡ possui uma categoria com esse nome.");
+			toast.error("Você já possui uma categoria com esse nome.");
 			form.elements.namedItem("name")?.focus();
 			return;
 		}
@@ -140,11 +140,10 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 					</div>
 				</div>
 
-				{/* Ãcone */}
 				<div>
 					<div className="flex items-center justify-between mb-2">
 						<label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-							Ãcone
+							Ícone
 						</label>
 						{selectedIcon && (
 							<button
@@ -210,7 +209,6 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 					</div>
 				</div>
 
-				{/* PrÃ©via */}
 				{(selectedIcon || selectedColor) && (
 					<div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
 						<div
@@ -219,13 +217,13 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 						>
 							{selectedIcon
 								? AVAILABLE_ICONS.find(i => i.name === selectedIcon)?.icon
-								: 'ðŸ·ï¸'}
+								: '🏷️'}
 						</div>
 						<div>
-							<p className="text-xs text-gray-500 dark:text-gray-400">PrÃ©via da categoria</p>
+							<p className="text-xs text-gray-500 dark:text-gray-400">Prévia da categoria</p>
 							<p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-								{selectedIcon ? AVAILABLE_ICONS.find(i => i.name === selectedIcon)?.label : 'Sem Ã­cone'}
-								{selectedColor && <span className="ml-1.5 text-xs font-normal text-gray-500">Â· {AVAILABLE_COLORS.find(c => c.hex === selectedColor)?.name}</span>}
+								{selectedIcon ? AVAILABLE_ICONS.find(i => i.name === selectedIcon)?.label : 'Sem ícone'}
+								{selectedColor && <span className="ml-1.5 text-xs font-normal text-gray-500">· {AVAILABLE_COLORS.find(c => c.hex === selectedColor)?.name}</span>}
 							</p>
 						</div>
 					</div>

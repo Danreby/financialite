@@ -55,7 +55,7 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 				}
 			} catch (error) {
 				console.error(error);
-				toast.error("NÃ£o foi possÃ­vel carregar os cartÃµes.");
+				toast.error("Não foi possível carregar os cartões.");
 			}
 		};
 
@@ -115,13 +115,13 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 		toast.dismiss();
 
 		if (!selectedCardId) {
-			toast.error("Selecione um cartÃ£o.");
+			toast.error("Selecione um cartão.");
 			setIsSubmitting(false);
 			return;
 		}
 
 		if (!dueDay || dueDay.trim() === "") {
-			toast.error("O dia de vencimento Ã© obrigatÃ³rio.");
+			toast.error("O dia de vencimento é obrigatório.");
 			document.getElementById("due_day")?.focus();
 			setIsSubmitting(false);
 			return;
@@ -135,7 +135,7 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 		}
 
 		if (!closingDay || closingDay.trim() === "") {
-			toast.error("O dia de fechamento Ã© obrigatÃ³rio.");
+			toast.error("O dia de fechamento é obrigatório.");
 			document.getElementById("closing_day")?.focus();
 			setIsSubmitting(false);
 			return;
@@ -151,7 +151,7 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 		if (creditLimit) {
 			const cleaned = creditLimit.replace(/[^0-9]/g, ""); 
 			if (cleaned.length > 10) {
-				toast.error("O limite de crÃ©dito deve possuir no mÃ¡ximo 10 dÃ­gitos.");
+				toast.error("O limite de crédito deve possuir no máximo 10 dígitos.");
 				document.getElementById("credit_limit")?.focus();
 				setIsSubmitting(false);
 				return;
@@ -159,7 +159,7 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 		}
 
 		if (description && description.trim().length > 255) {
-			toast.error("A descriÃ§Ã£o deve ter no mÃ¡ximo 255 caracteres.");
+			toast.error("A descrição deve ter no máximo 255 caracteres.");
 			document.getElementById("card_description")?.focus();
 			setIsSubmitting(false);
 			return;
@@ -178,9 +178,9 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 				toast.dismiss();
 				const payload = response.data || {};
 				if (payload.already_attached) {
-					toast.info(payload.message || "Este cartÃ£o jÃ¡ estÃ¡ vinculado ao usuÃ¡rio.");
+					toast.info(payload.message || "Este cartão já está vinculado ao usuário.");
 				} else {
-					toast.success("CartÃ£o vinculado com sucesso.");
+					toast.success("Cartão vinculado com sucesso.");
 				}
 				setSelectedCardId("");
 				setBrand("");
@@ -203,29 +203,29 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 						errors.closing_day?.[0] ||
 						errors.card_id?.[0] ||
 						data.message ||
-						"Erro de validaÃ§Ã£o ao vincular cartÃ£o.";
+						"Erro de validação ao vincular cartão.";
 					toast.error(firstError);
 					return;
 				}
-				toast.error("Erro ao vincular cartÃ£o.");
+				toast.error("Erro ao vincular cartão.");
 			});
 	};
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar CartÃ£o">
+		<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar Cartão">
 			<form className="space-y-5" onSubmit={handleSubmit} noValidate>
 
-				{/* CartÃ£o */}
+				{/* Cartão */}
 				<div>
 					<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
 						<CreditCard className="inline w-4 h-4 mr-1.5 mb-0.5 text-gray-400" />
-						CartÃ£o <span className="text-red-500">*</span>
+						Cartão <span className="text-red-500">*</span>
 					</label>
 					<Autocomplete
 						options={cards}
 						value={selectedCardId}
 						onChange={setSelectedCardId}
-						placeholder="Pesquisar cartÃ£o..."
+						placeholder="Pesquisar cartão..."
 						labelKey="label"
 						valueKey="value"
 						name="card_id"
@@ -291,17 +291,17 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 						options={BRAND_OPTIONS}
 						value={brand}
 						onChange={setBrand}
-						placeholder="Bandeira do cartÃ£o..."
+						placeholder="Bandeira do cartão..."
 						labelKey="label"
 						valueKey="value"
 						name="brand"
 					/>
 				</div>
 
-				{/* Limite de crÃ©dito */}
+				{/* Limite de crédito */}
 				<div>
 					<label htmlFor="credit_limit" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
-						Limite de crÃ©dito <span className="text-xs font-normal text-gray-400">(opcional)</span>
+						Limite de crédito <span className="text-xs font-normal text-gray-400">(opcional)</span>
 					</label>
 					<div className="relative">
 						<span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-sm font-semibold text-gray-500 dark:text-gray-400">
@@ -320,17 +320,17 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 					</div>
 				</div>
 
-				{/* ObservaÃ§Ãµes */}
+				{/* Observações */}
 				<div>
 					<label htmlFor="card_description" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
-						ObservaÃ§Ãµes <span className="text-xs font-normal text-gray-400">(opcional)</span>
+						Observações <span className="text-xs font-normal text-gray-400">(opcional)</span>
 					</label>
 					<textarea
 						id="card_description"
 						name="card_description"
 						value={description}
 						onChange={(e) => setDescription(e.target.value.slice(0, 255))}
-						placeholder="Notas sobre este cartÃ£o..."
+						placeholder="Notas sobre este cartão..."
 						maxLength={255}
 						rows={2}
 						className="w-full rounded-xl border border-gray-300 bg-white p-2.5 text-sm shadow-sm resize-none themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
@@ -342,7 +342,7 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 						Cancelar
 					</SecondaryButton>
 					<PrimaryButton type="submit" disabled={isSubmitting}>
-						{isSubmitting ? "Salvando..." : "Vincular CartÃ£o"}
+						{isSubmitting ? "Salvando..." : "Vincular Cartão"}
 					</PrimaryButton>
 				</div>
 			</form>
