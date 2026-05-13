@@ -317,7 +317,7 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           <div className="rounded-xl border border-[var(--theme-accent)]/25 bg-[var(--theme-accent)]/5 p-4 dark:bg-[var(--theme-accent)]/10">
             <div className="mb-3 flex items-center gap-1.5">
               <Layers className="h-3.5 w-3.5 text-[var(--theme-accent)]" />
-              <span className="text-xs font-semibold text-[var(--theme-accent)]">Opções de crédito</span>
+              {/* <span className="text-xs font-semibold text-[var(--theme-accent)]">Opções de crédito</span> */}
             </div>
             <div className="grid grid-cols-2 gap-3">
 
