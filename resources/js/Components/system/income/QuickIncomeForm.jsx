@@ -5,12 +5,12 @@ import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
 import { Wallet } from 'lucide-react'
 
 const AVULSA_TYPES = [
-  { value: 'pix',        label: 'Pix',         icon: '⚡' },
-  { value: 'freelance',  label: 'Freelance',   icon: '💻' },
-  { value: 'benefit',    label: 'Benefício',   icon: '🎁' },
-  { value: 'investment', label: 'Investimento', icon: '📈' },
-  { value: 'rental',     label: 'Aluguel',     icon: '🏠' },
-  { value: 'other',      label: 'Outro',       icon: '💰' },
+  { value: 'pix',        label: 'Pix',          icon: '⚡', gradient: 'from-teal-500 to-cyan-500'       },
+  { value: 'freelance',  label: 'Freelance',    icon: '💻', gradient: 'from-violet-500 to-purple-600'   },
+  { value: 'benefit',    label: 'Benefício',    icon: '🎁', gradient: 'from-pink-500 to-rose-500'       },
+  { value: 'investment', label: 'Investimento', icon: '📈', gradient: 'from-emerald-500 to-green-500'   },
+  { value: 'rental',     label: 'Aluguel',      icon: '🏠', gradient: 'from-amber-500 to-orange-500'    },
+  { value: 'other',      label: 'Outro',        icon: '💰', gradient: 'from-blue-500 to-indigo-500'     },
 ]
 
 function today() {
@@ -23,14 +23,14 @@ export default function QuickIncomeForm({
   onSuccess,
   bankAccountsList = [],
 }) {
-  const [title, setTitle]               = useState('')
-  const [amount, setAmount]             = useState('')
-  const [type, setType]                 = useState('pix')
-  const [receivedAt, setReceivedAt]     = useState(today())
-  const [bankAccountId, setBankAccountId] = useState('')
-  const [description, setDescription]  = useState('')
-  const [saving, setSaving]             = useState(false)
-  const [errors, setErrors]             = useState({})
+  const [title, setTitle]                   = useState('')
+  const [amount, setAmount]                 = useState('')
+  const [type, setType]                     = useState('pix')
+  const [receivedAt, setReceivedAt]         = useState(today())
+  const [bankAccountId, setBankAccountId]   = useState('')
+  const [description, setDescription]       = useState('')
+  const [saving, setSaving]                 = useState(false)
+  const [errors, setErrors]                 = useState({})
 
   const resetForm = useCallback(() => {
     setTitle('')
@@ -84,66 +84,58 @@ export default function QuickIncomeForm({
     }
   }
 
+  const selectedType = AVULSA_TYPES.find((t) => t.value === type)
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Cadastrar Entrada Avulsa"
-      description="Registre uma entrada pontual e, se desejar, credite-a em uma conta bancária."
-      maxWidth="md"
+      title="Nova Entrada"
+      description="Registre uma entrada pontual no seu controle financeiro."
+      maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+
         {errors.general && (
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
             {errors.general[0]}
           </div>
         )}
 
+        {/* ── Type Grid ── */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
+          <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
             Tipo de entrada
-          </label>
-          <div className="grid grid-cols-3 gap-2">
+          </p>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {AVULSA_TYPES.map((t) => (
               <button
                 key={t.value}
                 type="button"
                 onClick={() => setType(t.value)}
-                className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs font-medium transition-all border ${
+                className={`flex flex-col items-center gap-1.5 rounded-xl p-2.5 text-xs font-medium transition-all duration-200 ${
                   type === t.value
-                    ? 'themed-selected border-theme-accent ring-1 ring-theme-accent/30'
-                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-400 dark:hover:border-gray-600'
+                    ? `bg-gradient-to-br ${t.gradient} text-white shadow-md scale-[1.03]`
+                    : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-[#151515]'
                 }`}
               >
-                <span className="text-lg">{t.icon}</span>
-                <span className="truncate w-full text-center">{t.label}</span>
+                <span className="text-xl leading-none">{t.icon}</span>
+                <span className="w-full truncate text-center leading-tight">{t.label}</span>
               </button>
             ))}
           </div>
-          {errors.type && <p className="text-xs text-red-500 mt-1">{errors.type[0]}</p>}
+          {errors.type && <p className="mt-1 text-xs text-red-500">{errors.type[0]}</p>}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-              Título <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Freelance de design"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              maxLength={255}
-              required
-            />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title[0]}</p>}
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-              Valor (R$) <span className="text-red-400">*</span>
-            </label>
+        {/* ── Amount ── */}
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
+            Valor recebido <span className="text-red-400">*</span>
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-gray-400">
+              R$
+            </span>
             <input
               type="number"
               value={amount}
@@ -151,16 +143,34 @@ export default function QuickIncomeForm({
               placeholder="0,00"
               step="0.01"
               min="0.01"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
               required
+              className="w-full rounded-xl border-2 border-gray-200 bg-white py-3.5 pl-12 pr-4 text-xl font-semibold shadow-sm themed-focus placeholder:text-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 dark:placeholder:text-gray-600"
             />
-            {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount[0]}</p>}
           </div>
+          {errors.amount && <p className="mt-1 text-xs text-red-500">{errors.amount[0]}</p>}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* ── Title ── */}
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
+            Título <span className="text-red-400">*</span>
+          </label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={`Ex: ${selectedType?.label ?? 'Descrição da entrada'}…`}
+            maxLength={255}
+            required
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+          />
+          {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
+        </div>
+
+        {/* ── Date + Bank Account ── */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+            <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
               Data de recebimento
             </label>
             <input
@@ -168,21 +178,21 @@ export default function QuickIncomeForm({
               value={receivedAt}
               onChange={(e) => setReceivedAt(e.target.value)}
               max={today()}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             />
-            {errors.received_at && <p className="text-xs text-red-500 mt-1">{errors.received_at[0]}</p>}
+            {errors.received_at && <p className="mt-1 text-xs text-red-500">{errors.received_at[0]}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-              Conta bancária
+            <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
+              Creditar em conta
             </label>
             <select
               value={bankAccountId}
               onChange={(e) => setBankAccountId(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
             >
-              <option value="">Sem crédito em conta</option>
+              <option value="">Não creditar em conta</option>
               {bankAccountsList.map((ba) => (
                 <option key={ba.id} value={ba.id}>
                   {ba.name}
@@ -190,36 +200,39 @@ export default function QuickIncomeForm({
                 </option>
               ))}
             </select>
-            {/* {bankAccountId && (
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
-                <Wallet className="h-3 w-3" />
-                O valor será adicionado ao saldo desta conta.
+            {bankAccountId && (
+              <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                <Wallet className="h-3 w-3 flex-shrink-0" />
+                O valor será adicionado ao saldo desta conta
               </p>
-            )} */}
-            {errors.bank_account_id && <p className="text-xs text-red-500 mt-1">{errors.bank_account_id[0]}</p>}
+            )}
+            {errors.bank_account_id && <p className="mt-1 text-xs text-red-500">{errors.bank_account_id[0]}</p>}
           </div>
         </div>
 
+        {/* ── Description ── */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-            Descrição (opcional)
+          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
+            Descrição{' '}
+            <span className="text-[11px] font-normal text-gray-400">(opcional)</span>
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Detalhes sobre esta entrada..."
+            placeholder="Detalhes sobre esta entrada…"
             rows={2}
             maxLength={1000}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 resize-none"
+            className="w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
           />
         </div>
 
-        <div className="flex justify-end gap-3 pt-2">
+        {/* ── Footer ── */}
+        <div className="flex justify-end gap-3 pt-1">
           <SecondaryButton type="button" onClick={handleClose}>
             Cancelar
           </SecondaryButton>
           <PrimaryButton type="submit" disabled={saving} className="text-white">
-            {saving ? 'Salvando...' : 'Cadastrar Entrada'}
+            {saving ? 'Salvando…' : 'Registrar Entrada'}
           </PrimaryButton>
         </div>
       </form>
