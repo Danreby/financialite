@@ -215,7 +215,6 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="xl" title="Nova Despesa">
       <form className="space-y-5" onSubmit={handleSubmit} noValidate>
 
-        {/* ── Type Selector ── */}
         <div>
           <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
             Tipo de transação <span className="text-red-400 normal-case">*</span>
@@ -272,7 +271,6 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         </div>
 
-        {/* ── Title + Amount ── */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
@@ -312,16 +310,14 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         </div>
 
-        {/* ── Credit-only panel ── */}
         {type === "credit" && (
           <div className="rounded-xl border border-[var(--theme-accent)]/25 bg-[var(--theme-accent)]/5 p-4 dark:bg-[var(--theme-accent)]/10">
-            <div className="mb-3 flex items-center gap-1.5">
+            {/* <div className="mb-3 flex items-center gap-1.5">
               <Layers className="h-3.5 w-3.5 text-[var(--theme-accent)]" />
-              {/* <span className="text-xs font-semibold text-[var(--theme-accent)]">Opções de crédito</span> */}
-            </div>
+              <span className="text-xs font-semibold text-[var(--theme-accent)]">Opções de crédito</span>
+            </div> */}
             <div className="grid grid-cols-2 gap-3">
 
-              {/* Installments */}
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">
                   Parcelas (1–360)
@@ -355,7 +351,6 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
                 )}
               </div>
 
-              {/* Recurring toggle */}
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">
                   Recorrente
@@ -382,7 +377,6 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         )}
 
-        {/* ── Category + Card ── */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
@@ -416,7 +410,6 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         </div>
 
-        {/* ── Debit bank deduction (only for debit) ── */}
         {type === "debit" && debitAccounts.length > 0 && (
           <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-3.5 dark:border-gray-700 dark:bg-gray-900/30">
             <div className="flex items-center justify-between">
@@ -467,7 +460,6 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         )}
 
-        {/* ── Description ── */}
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
             Descrição{" "}
@@ -482,7 +474,6 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           />
         </div>
 
-        {/* ── Footer ── */}
         <div className="flex items-center justify-end gap-3 pt-1">
           <SecondaryButton type="button" onClick={onClose}>
             Cancelar

@@ -117,7 +117,6 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 					/>
 				</div>
 
-				{/* Tipo */}
 				<div>
 					<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
 						Tipo
@@ -174,7 +173,6 @@ export default function CategoryForm({ isOpen, onClose, onSuccess, categories = 
 					</div>
 				</div>
 
-				{/* Cor */}
 				<div>
 					<div className="flex items-center justify-between mb-2">
 						<label className="block text-sm font-medium text-gray-700 dark:text-gray-200">

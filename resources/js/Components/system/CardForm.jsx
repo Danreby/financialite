@@ -215,7 +215,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 		<Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="Adicionar Cartão">
 			<form className="space-y-5" onSubmit={handleSubmit} noValidate>
 
-				{/* Cartão */}
 				<div>
 					<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
 						<CreditCard className="inline w-4 h-4 mr-1.5 mb-0.5 text-gray-400" />
@@ -232,7 +231,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 					/>
 				</div>
 
-				{/* Dias de vencimento e fechamento */}
 				<div className="grid grid-cols-2 gap-3">
 					<div>
 						<label htmlFor="due_day" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
@@ -282,7 +280,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 					</div>
 				</div>
 
-				{/* Bandeira */}
 				<div>
 					<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
 						Bandeira
@@ -298,7 +295,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 					/>
 				</div>
 
-				{/* Limite de crédito */}
 				<div>
 					<label htmlFor="credit_limit" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
 						Limite de crédito <span className="text-xs font-normal text-gray-400">(opcional)</span>
@@ -320,7 +316,6 @@ export default function CardForm({ isOpen, onClose, onSuccess }) {
 					</div>
 				</div>
 
-				{/* Observações */}
 				<div>
 					<label htmlFor="card_description" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
 						Observações <span className="text-xs font-normal text-gray-400">(opcional)</span>
