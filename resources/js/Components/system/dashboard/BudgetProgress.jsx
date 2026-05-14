@@ -193,14 +193,15 @@ export default function BudgetProgress({
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-2.5">
                 {budgets.map((budget, i) => {
-                  const catPct =
+                  const catPctRaw =
                     budget.limit > 0
-                      ? Math.min((budget.spent / budget.limit) * 100, 100)
+                      ? (budget.spent / budget.limit) * 100
                       : 0
+                  const catPct = Math.min(catPctRaw, 100)
                   const accent = rowColor(budget.spent, budget.limit)
                   const icon = budget.categoryIcon ? getIconEmoji(budget.categoryIcon) : null
                   const isOver = budget.spent > budget.limit && budget.limit > 0
-                  const isDone = catPct >= 100
+                  const isDone = catPctRaw >= 100
 
                   return (
                     <div key={i} className="group">
@@ -219,20 +220,21 @@ export default function BudgetProgress({
                         <span className="flex-1 min-w-0 text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate">
                           {budget.categoryName || 'Sem categoria'}
                         </span>
-                        {isDone ? (
-                          isOver ? (
-                            <span className="text-[10px] font-semibold text-red-500 flex-shrink-0">
-                              Excedido
-                            </span>
-                          ) : (
-                            <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0" />
-                          )
-                        ) : (
-                          <span className="text-[10px] tabular-nums text-gray-400 dark:text-gray-500 flex-shrink-0">
-                            {fmt(budget.spent)}
-                            <span className="mx-0.5 opacity-40">/</span>
-                            {fmt(budget.limit)}
-                          </span>
+                        <span
+                          className={`text-[10px] tabular-nums flex-shrink-0 ${
+                            isOver
+                              ? 'font-semibold text-red-500'
+                              : isDone
+                                ? 'font-medium text-green-600 dark:text-green-400'
+                                : 'text-gray-400 dark:text-gray-500'
+                          }`}
+                        >
+                          {fmt(budget.spent)}
+                          <span className="mx-0.5 opacity-40">/</span>
+                          {fmt(budget.limit)}
+                        </span>
+                        {isDone && !isOver && (
+                          <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0" />
                         )}
                       </div>
 
@@ -243,12 +245,18 @@ export default function BudgetProgress({
                             style={{ width: `${catPct}%`, backgroundColor: accent }}
                           />
                         </div>
-                        <span
-                          className="text-[10px] tabular-nums w-7 text-right flex-shrink-0 font-medium"
-                          style={{ color: accent }}
-                        >
-                          {catPct.toFixed(0)}%
-                        </span>
+                        {isOver ? (
+                          <span className="text-[10px] tabular-nums text-right flex-shrink-0 font-semibold text-red-500 whitespace-nowrap">
+                            +{fmt(budget.spent - budget.limit)}
+                          </span>
+                        ) : (
+                          <span
+                            className="text-[10px] tabular-nums w-7 text-right flex-shrink-0 font-medium"
+                            style={{ color: accent }}
+                          >
+                            {catPct.toFixed(0)}%
+                          </span>
+                        )}
                       </div>
                     </div>
                   )
