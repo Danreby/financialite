@@ -47,7 +47,8 @@ class CheckCardClosingDayCommand extends Command
                     $cardUser->user,
                     'Fechamento em 2 dias',
                     "O cartão {$cardName} fecha em 2 dias (dia {$closingDay}). " .
-                    'Compras feitas após o fechamento entrarão na próxima fatura.'
+                    'Compras feitas após o fechamento entrarão na próxima fatura.',
+                    sendEmail: true
                 );
                 $notified2Days++;
                 $this->line("  → Notificado: {$cardUser->user->name} - {$cardName} (2 dias)");
@@ -58,7 +59,8 @@ class CheckCardClosingDayCommand extends Command
                     $cardUser->user,
                     'Fechamento amanhã',
                     "O cartão {$cardName} fecha amanhã (dia {$closingDay}). " .
-                    'Compras feitas após o fechamento entrarão na próxima fatura.'
+                    'Compras feitas após o fechamento entrarão na próxima fatura.',
+                    sendEmail: true
                 );
                 $notified1Day++;
                 $this->line("  → Notificado: {$cardUser->user->name} - {$cardName} (1 dia)");
@@ -69,7 +71,8 @@ class CheckCardClosingDayCommand extends Command
                     $cardUser->user,
                     'Cartão fecha hoje',
                     "O cartão {$cardName} fecha HOJE (dia {$closingDay}). " .
-                    'Compras feitas a partir de agora entrarão na próxima fatura.'
+                    'Compras feitas a partir de agora entrarão na próxima fatura.',
+                    sendEmail: true
                 );
                 $notifiedToday++;
                 $this->line("  → Notificado: {$cardUser->user->name} - {$cardName} (HOJE)");

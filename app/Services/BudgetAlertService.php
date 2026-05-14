@@ -108,7 +108,8 @@ class BudgetAlertService
                 $user,
                 'Orçamento estourado!',
                 "Você gastou R$ {$formattedSpent} de um limite de R$ {$formattedLimit} ({$formattedPct}%). " .
-                'Seu orçamento do mês foi ultrapassado.'
+                'Seu orçamento do mês foi ultrapassado.',
+                sendEmail: true
             );
 
             $this->storeMeta($userId, 'budget_exceeded', $currentMonth);
@@ -129,7 +130,8 @@ class BudgetAlertService
                 "Orçamento a {$intThreshold}%",
                 "Você já utilizou {$formattedPct}% do seu orçamento mensal " .
                 "(R$ {$formattedSpent} de R$ {$formattedLimit}). " .
-                "Restam apenas R$ {$formattedRemaining} disponíveis."
+                "Restam apenas R$ {$formattedRemaining} disponíveis.",
+                sendEmail: true
             );
 
             $this->storeMeta($userId, 'budget_threshold', $currentMonth);

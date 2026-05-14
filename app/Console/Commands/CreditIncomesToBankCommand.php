@@ -82,7 +82,8 @@ class CreditIncomesToBankCommand extends Command
                             number_format($amount, 2, ',', '.'),
                             $income->title,
                             $bankUser->bank?->name ?? 'bancária'
-                        )
+                        ),
+                        sendEmail: true
                     );
                 });
             }

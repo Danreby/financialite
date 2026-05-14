@@ -55,7 +55,8 @@ class CheckUpcomingBillsCommand extends Command
                     $bill->user,
                     'Conta a vencer em 2 dias',
                     "A conta \"{$bill->title}\" vence em " . $nextDueDate->format('d/m/Y') . 
-                    ($bill->amount ? " no valor de R$ " . number_format($bill->amount, 2, ',', '.') : '') . '.'
+                    ($bill->amount ? " no valor de R$ " . number_format($bill->amount, 2, ',', '.') : '') . '.',
+                    sendEmail: true
                 );
                 $notified2Days++;
                 $this->line("  → Notificado: {$bill->user->name} - {$bill->title} (2 dias)");
@@ -66,7 +67,8 @@ class CheckUpcomingBillsCommand extends Command
                     $bill->user,
                     'Conta a vencer amanhã',
                     "A conta \"{$bill->title}\" vence amanhã (" . $nextDueDate->format('d/m/Y') . ')' .
-                    ($bill->amount ? " no valor de R$ " . number_format($bill->amount, 2, ',', '.') : '') . '.'
+                    ($bill->amount ? " no valor de R$ " . number_format($bill->amount, 2, ',', '.') : '') . '.',
+                    sendEmail: true
                 );
                 $notified1Day++;
                 $this->line("  → Notificado: {$bill->user->name} - {$bill->title} (1 dia)");
@@ -77,7 +79,8 @@ class CheckUpcomingBillsCommand extends Command
                     $bill->user,
                     'Conta vence hoje',
                     "A conta \"{$bill->title}\" vence HOJE (" . $nextDueDate->format('d/m/Y') . ')' .
-                    ($bill->amount ? " no valor de R$ " . number_format($bill->amount, 2, ',', '.') : '') . '. Não se esqueça de pagar!'
+                    ($bill->amount ? " no valor de R$ " . number_format($bill->amount, 2, ',', '.') : '') . '. Não se esqueça de pagar!',
+                    sendEmail: true
                 );
                 $notifiedToday++;
                 $this->line("  → Notificado: {$bill->user->name} - {$bill->title} (HOJE)");

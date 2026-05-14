@@ -53,7 +53,8 @@ class CheckInvoiceDueDateCommand extends Command
                     $invoice->user,
                     'Fatura vence em 2 dias',
                     "A fatura do {$bankName} ({$monthLabel}) vence em " . $dueDate->format('d/m/Y') . 
-                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.'
+                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.',
+                    sendEmail: true
                 );
                 $notified2Days++;
                 $this->line("  → Notificado: {$invoice->user->name} - {$bankName} {$monthLabel} (2 dias)");
@@ -67,7 +68,8 @@ class CheckInvoiceDueDateCommand extends Command
                     $invoice->user,
                     'Fatura vence amanhã',
                     "A fatura do {$bankName} ({$monthLabel}) vence amanhã (" . $dueDate->format('d/m/Y') . ')' .
-                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.'
+                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.',
+                    sendEmail: true
                 );
                 $notified1Day++;
                 $this->line("  → Notificado: {$invoice->user->name} - {$bankName} {$monthLabel} (1 dia)");
@@ -81,7 +83,8 @@ class CheckInvoiceDueDateCommand extends Command
                     $invoice->user,
                     'Fatura vence hoje',
                     "A fatura do {$bankName} ({$monthLabel}) vence HOJE (" . $dueDate->format('d/m/Y') . ')' .
-                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '. Não se esqueça de pagar!'
+                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '. Não se esqueça de pagar!',
+                    sendEmail: true
                 );
                 $notifiedToday++;
                 $this->line("  → Notificado: {$invoice->user->name} - {$bankName} {$monthLabel} (HOJE)");

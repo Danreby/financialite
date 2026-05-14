@@ -25,7 +25,7 @@ class NotificationService
         'error'   => ['accent' => '#EF4444', 'bg' => '#FEF2F2'],
     ];
 
-    public function send(Authenticatable|int $user, string $title, string $message, string $type = 'info'): Notification
+    public function send(Authenticatable|int $user, string $title, string $message, string $type = 'info', bool $sendEmail = false): Notification
     {
         $userId = $user instanceof Authenticatable ? $user->getAuthIdentifier() : $user;
 
@@ -36,7 +36,9 @@ class NotificationService
             'type' => $type,
         ]);
 
-        $this->sendEmail($user, $userId, $title, $message, $type);
+        if ($sendEmail) {
+            $this->sendEmail($user, $userId, $title, $message, $type);
+        }
 
         return $notification;
     }
@@ -69,23 +71,23 @@ class NotificationService
         }
     }
 
-    public function success(Authenticatable|int $user, string $title, string $message): Notification
+    public function success(Authenticatable|int $user, string $title, string $message, bool $sendEmail = false): Notification
     {
-        return $this->send($user, $title, $message, 'success');
+        return $this->send($user, $title, $message, 'success', $sendEmail);
     }
 
-    public function info(Authenticatable|int $user, string $title, string $message): Notification
+    public function info(Authenticatable|int $user, string $title, string $message, bool $sendEmail = false): Notification
     {
-        return $this->send($user, $title, $message, 'info');
+        return $this->send($user, $title, $message, 'info', $sendEmail);
     }
 
-    public function warning(Authenticatable|int $user, string $title, string $message): Notification
+    public function warning(Authenticatable|int $user, string $title, string $message, bool $sendEmail = false): Notification
     {
-        return $this->send($user, $title, $message, 'warning');
+        return $this->send($user, $title, $message, 'warning', $sendEmail);
     }
 
-    public function error(Authenticatable|int $user, string $title, string $message): Notification
+    public function error(Authenticatable|int $user, string $title, string $message, bool $sendEmail = false): Notification
     {
-        return $this->send($user, $title, $message, 'error');
+        return $this->send($user, $title, $message, 'error', $sendEmail);
     }
 }
