@@ -278,28 +278,10 @@ class FaturaBillingService
                 && $faturaPayment->paid_at !== null
                 && $totalPaid > 0;
 
-            $hasNewNonRecurringCharges = false;
-            if ($faturaPayment && $faturaPayment->paid_at !== null && $totalPaid > 0) {
-                $nonRecurringSpent = $items->sum(function ($entry) {
-                    $t = $entry['transacao'];
-                    if ($t->is_recurring) {
-                        return 0.0;
-                    }
-                    $installmentNumber = $entry['installment_index'];
-                    if ($t->relationLoaded('parcelas') && $t->parcelas->isNotEmpty()) {
-                        $parcela = $t->parcelas->firstWhere('installment_number', $installmentNumber);
-                        if ($parcela) {
-                            return (float) $parcela->amount;
-                        }
-                    }
-                    return (float) $t->getInstallmentAmount($installmentNumber);
-                });
-                $recurringSpent = $totalSpent - $nonRecurringSpent;
-                $paidForNonRecurring = max(0, $totalPaid - $recurringSpent);
-                $hasNewNonRecurringCharges = $nonRecurringSpent > $paidForNonRecurring + 0.01;
-            }
-
-            $hasRemainingPostPayment = $hasNewNonRecurringCharges;
+            $hasRemainingPostPayment = $faturaPayment
+                && $faturaPayment->paid_at !== null
+                && $totalPaid > 0
+                && $totalSpent > $totalPaid + 0.01;
 
             if ($hasRemainingPostPayment) {
                 $isPaid = false;

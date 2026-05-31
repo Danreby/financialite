@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, CreditCard, Wallet } from 'lucide-react';
+import { AlertCircle, CheckCircle2, CreditCard, Wallet } from 'lucide-react';
 import FaturaProgressRing from '@/Components/system/fatura/FaturaProgressRing';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
@@ -148,7 +148,17 @@ export default function FaturaPaymentSummaryCard({
 						/>
 					</div>
 
-					{!isPaid && (
+					{hasRemainingPostPayment && (
+						<div className="flex items-start gap-2 rounded-xl bg-orange-50/80 dark:bg-orange-900/20 border border-orange-200/80 dark:border-orange-800/40 px-3 py-2.5">
+							<AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-orange-500 dark:text-orange-400" />
+							<p className="text-xs text-orange-700 dark:text-orange-300 font-medium leading-snug">
+								Novas cobranças foram adicionadas após o pagamento desta fatura.
+								Pague o valor restante para quitá-la completamente.
+							</p>
+						</div>
+					)}
+
+					{(!isPaid || hasRemainingPostPayment) && (
 						<div className="flex flex-col xs:flex-row gap-2 pt-0.5">
 							<PrimaryButton
 								type="button"
@@ -168,7 +178,7 @@ export default function FaturaPaymentSummaryCard({
 						</div>
 					)}
 
-					{isPaid && (
+					{isPaid && !hasRemainingPostPayment && (
 						<div className="flex items-center gap-2 rounded-xl bg-emerald-100/70 dark:bg-emerald-900/20 px-3 py-2.5">
 							<CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
 							<p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">

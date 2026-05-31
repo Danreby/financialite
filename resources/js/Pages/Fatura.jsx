@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { AlertTriangle } from 'lucide-react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FaturaMonthSection from '@/Components/system/fatura/FaturaMonthSection';
 import FaturaMonthCarousel from '@/Components/system/fatura/FaturaMonthCarousel';
@@ -254,6 +255,33 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], debitAcc
 						)}
 					</header>
 				</FadeInItem>
+
+				{normalizedMonthlyGroups.some((g) => g.has_remaining_post_payment) && (
+					<FadeInItem type="fast">
+						<div className="flex items-start gap-3 rounded-2xl border border-orange-200/80 dark:border-orange-800/40 bg-orange-50/80 dark:bg-orange-900/20 px-4 py-3">
+							<AlertTriangle className="mt-0.5 w-4 h-4 shrink-0 text-orange-500 dark:text-orange-400" />
+							<div className="flex-1 min-w-0">
+								<p className="text-xs sm:text-sm font-semibold text-orange-800 dark:text-orange-300">
+									Faturas com cobranças pendentes após pagamento
+								</p>
+								<div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+									{normalizedMonthlyGroups
+										.filter((g) => g.has_remaining_post_payment)
+										.map((g) => (
+											<button
+												key={g.month_key}
+												type="button"
+												onClick={() => setSelectedMonthKey(g.month_key)}
+												className="text-xs text-orange-700 dark:text-orange-400 underline underline-offset-2 hover:text-orange-900 dark:hover:text-orange-200 transition-colors"
+											>
+												{g.month_label}
+											</button>
+										))}
+								</div>
+							</div>
+						</div>
+					</FadeInItem>
+				)}
 
 				<FadeInItem type="subtle" className="space-y-3 sm:space-y-4 lg:space-y-5 2xl:space-y-5 pb-4 sm:pb-6 2xl:pb-6">
 					{(!normalizedMonthlyGroups || normalizedMonthlyGroups.length === 0) && (
