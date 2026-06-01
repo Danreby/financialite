@@ -20,6 +20,20 @@ class IncomeService implements IncomeServiceInterface
             ->get();
     }
 
+    /**
+     * Returns only recurring income sources (fontes de renda) for the profile page.
+     * One-time (avulsa) entries are excluded.
+     */
+    public function listRecurringForUser(int $userId): Collection
+    {
+        return Income::forUser($userId)
+            ->where('is_recurring', true)
+            ->with('bankUser.card')
+            ->orderByDesc('is_active')
+            ->orderBy('title')
+            ->get();
+    }
+
     public function createForUser(Authenticatable $user, array $data): Income
     {
         $data['is_active'] = $data['is_active'] ?? true;
@@ -66,8 +80,10 @@ class IncomeService implements IncomeServiceInterface
 
     public function totalMonthlyIncome(int $userId): float
     {
+        // Only count recurring active sources — one-time entries are not monthly income.
         return (float) Income::forUser($userId)
             ->active()
+            ->recurring()
             ->sum('amount');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transacao;
 use App\Models\CardUser;
 use App\Models\Category;
+use App\Models\Income;
 use App\Services\FaturaDashboardService;
 use App\Services\FaturaExportService;
 use App\Services\IncomeService;
@@ -42,7 +43,7 @@ class ReportController extends Controller
 
         $incomeService = app(IncomeService::class);
         $totalMonthlyIncome = $incomeService->totalMonthlyIncome($user->id);
-        $incomes = $incomeService->listForUser($user->id)
+        $incomes = $incomeService->listRecurringForUser($user->id)
             ->map(fn ($income) => [
                 'id'         => $income->id,
                 'title'      => $income->title,
@@ -83,9 +84,28 @@ class ReportController extends Controller
 
         $exportData = $this->exportService->exportForUser($user->id, $bankUserId, $categoryId);
 
+        // One-time income entries (entradas avulsas) grouped for the reports page
+        $oneTimeIncomes = Income::forUser($user->id)
+            ->where('is_recurring', false)
+            ->where('is_active', true)
+            ->whereNotNull('received_at')
+            ->orderByDesc('received_at')
+            ->get()
+            ->map(fn (Income $income) => [
+                'id'          => $income->id,
+                'title'       => $income->title,
+                'description' => $income->description,
+                'amount'      => (float) $income->amount,
+                'type'        => $income->type,
+                'type_label'  => Income::TYPE_LABELS[$income->type] ?? $income->type,
+                'received_at' => $income->received_at?->toDateString(),
+                'month_key'   => $income->received_at?->format('Y-m'),
+            ]);
+
         return $this->success([
-            'stats' => $stats,
-            'export_data' => $exportData,
+            'stats'            => $stats,
+            'export_data'      => $exportData,
+            'one_time_incomes' => $oneTimeIncomes->values(),
         ]);
     }
 }

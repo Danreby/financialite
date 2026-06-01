@@ -10,6 +10,8 @@ interface IncomeServiceInterface
 {
     public function listForUser(int $userId): Collection;
 
+    public function listRecurringForUser(int $userId): Collection;
+
     public function createForUser(Authenticatable $user, array $data): Income;
 
     public function updateForUser(Income $income, array $data): Income;

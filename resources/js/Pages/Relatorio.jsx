@@ -14,6 +14,7 @@ import ReportsCardBreakdown from "@/Components/system/reports/ReportsCardBreakdo
 import ReportsSpendingTrendChart from "@/Components/system/reports/ReportsSpendingTrendChart";
 import ReportsTopTransactions from "@/Components/system/reports/ReportsTopTransactions";
 import ReportsMonthComparison from "@/Components/system/reports/ReportsMonthComparison";
+import ReportsIncomeEntries from "@/Components/system/reports/ReportsIncomeEntries";
 import FaturaDetailModal from "@/Components/system/fatura/FaturaDetailModal";
 import { formatCurrencyBRL } from "@/Lib/formatters";
 import FadeInContainer, { FadeInItem } from "@/Components/common/FadeInContainer";
@@ -39,6 +40,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 	const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [allTransactions, setAllTransactions] = useState([]);
+	const [oneTimeIncomes, setOneTimeIncomes] = useState([]);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -140,6 +142,9 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 
 				const fallbackKey = sortedGroups[sortedGroups.length - 1]?.key || "";
 				setSelectedPeriodKey((prev) => (sortedGroups.some((group) => group.key === prev) ? prev : fallbackKey));
+
+				// One-time (avulsa) income entries from the backend
+				setOneTimeIncomes(Array.isArray(response.data?.one_time_incomes) ? response.data.one_time_incomes : []);
 			} catch (error) {
 				console.error(error);
 				if (error.response?.data?.message) {
@@ -459,6 +464,12 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 					<ReportsMonthlySummary items={filteredMonthlySummary} onSelectPeriod={handleOpenPeriodModal} />
 				</section>
 			</FadeInItem>
+
+			{!isLoading && oneTimeIncomes.length > 0 && (
+				<FadeInItem type="subtle">
+					<ReportsIncomeEntries entries={oneTimeIncomes} selectedYear={selectedYear} />
+				</FadeInItem>
+			)}
 
 		<ReportsPeriodModal
 			isOpen={isPeriodModalOpen}

@@ -37,7 +37,8 @@ class IncomeController extends Controller
     {
         $this->authorize('viewAny', Income::class);
 
-        $incomes = $this->incomeService->listForUser($request->user()->id);
+        // Profile page only shows recurring income sources.
+        $incomes = $this->incomeService->listRecurringForUser($request->user()->id);
 
         return $this->success($incomes);
     }

@@ -60,9 +60,9 @@ export default function QuickIncomeForm({
       amount: parseFloat(amount),
       type,
       is_recurring: false,
-      // Entries via this form are one-time cash inflows, NOT active income sources.
-      // is_active=false ensures they do not appear in income totals or active renda lists.
-      is_active: false,
+      // One-time entries are active so they appear in monthly summaries and reports.
+      // They are separated from recurring income sources by the is_recurring=false flag.
+      is_active: true,
       received_at: receivedAt || null,
       bank_account_id: bankAccountId ? parseInt(bankAccountId, 10) : null,
       payment_day_type: 'fixed',

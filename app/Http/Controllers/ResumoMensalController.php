@@ -50,7 +50,8 @@ class ResumoMensalController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'icon', 'color', 'type']);
 
-        $incomes = $this->incomeService->listForUser($user->id)
+        // Profile / Receitas tab: only recurring income sources.
+        $incomes = $this->incomeService->listRecurringForUser($user->id)
             ->map(function (Income $income) {
                 return [
                     'id' => $income->id,
