@@ -199,6 +199,19 @@ class BillController extends Controller
         return $this->success($payment->fresh());
     }
 
+    public function destroyPayment(Request $request, Bill $bill, BillPayment $payment): JsonResponse
+    {
+        $this->authorize('update', $bill);
+
+        if ($payment->bill_id !== $bill->id) {
+            abort(404);
+        }
+
+        $payment->delete();
+
+        return $this->success(['message' => 'Pagamento removido do histórico.']);
+    }
+
     public function toggleStatus(Request $request, Bill $bill): JsonResponse
     {
         $this->authorize('update', $bill);

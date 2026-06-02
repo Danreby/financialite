@@ -16,6 +16,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
         Route::delete('/{bill}', [BillController::class, 'destroy'])->name('destroy');
         Route::post('/{bill}/pay', [BillController::class, 'markAsPaid'])->name('pay');
         Route::patch('/{bill}/payment/{payment}', [BillController::class, 'updatePayment'])->name('payment.update');
+        Route::delete('/{bill}/payment/{payment}', [BillController::class, 'destroyPayment'])->name('payment.destroy');
         Route::patch('/{bill}/toggle', [BillController::class, 'toggleStatus'])->name('toggle');
     });
 });

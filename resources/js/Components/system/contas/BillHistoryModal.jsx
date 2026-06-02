@@ -12,7 +12,7 @@ import { Bar } from 'react-chartjs-2';
 import Modal from '@/Components/common/Modal';
 import { formatCurrency } from '@/Utils/bills';
 import { getIconEmoji } from '@/Utils/categoryIcons';
-import { CheckCircle2, Clock, AlertCircle, TrendingUp, Banknote, CalendarDays, Hash, Pencil, X, Save } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, TrendingUp, Banknote, CalendarDays, Hash, Pencil, X, Save, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
@@ -55,6 +55,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
     const [editingPaymentId, setEditingPaymentId] = useState(null);
     const [editForm, setEditForm] = useState({ amount_paid: '', paid_date: '', notes: '' });
     const [saving, setSaving] = useState(false);
+    const [deletingPaymentId, setDeletingPaymentId] = useState(null);
 
     const history = useMemo(() => (bill?.payment_history || []), [bill]);
     const stats = useMemo(() => (bill?.payment_stats || {}), [bill]);
@@ -145,6 +146,22 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
 
     const cancelEdit = () => {
         setEditingPaymentId(null);
+    };
+
+    const deletePayment = async (paymentId) => {
+        if (saving) return;
+        setSaving(true);
+        try {
+            await axios.delete(route('bills.payment.destroy', [bill.id, paymentId]));
+            toast.success('Pagamento removido do histórico.');
+            setDeletingPaymentId(null);
+            onPaymentUpdated?.();
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Erro ao remover pagamento.';
+            toast.error(msg);
+        } finally {
+            setSaving(false);
+        }
     };
 
     const saveEdit = async (paymentId) => {
@@ -256,7 +273,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
                                         <th className="text-right px-3 py-2.5 font-medium">Previsto</th>
                                         <th className="text-right px-3 py-2.5 font-medium">Pago</th>
                                         <th className="text-center px-3 py-2.5 font-medium">Status</th>
-                                        <th className="w-10"></th>
+                                        <th className="w-20"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -343,14 +360,46 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
                                                 </td>
                                                 <td className="px-2 py-2.5">
                                                     {p.status === 'paid' && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openEdit(p)}
-                                                            className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-gray-400 hover:text-theme-accent hover:bg-theme-accent/10 opacity-0 group-hover/row:opacity-100 transition-all"
-                                                            title="Editar pagamento"
-                                                        >
-                                                            <Pencil className="w-3 h-3" />
-                                                        </button>
+                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-all">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openEdit(p)}
+                                                                className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-gray-400 hover:text-theme-accent hover:bg-theme-accent/10 transition-colors"
+                                                                title="Editar pagamento"
+                                                            >
+                                                                <Pencil className="w-3 h-3" />
+                                                            </button>
+                                                            {deletingPaymentId === p.id ? (
+                                                                <>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => deletePayment(p.id)}
+                                                                        disabled={saving}
+                                                                        className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                                                                        title="Confirmar remoção"
+                                                                    >
+                                                                        <Trash2 className="w-3 h-3" />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setDeletingPaymentId(null)}
+                                                                        className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                                                        title="Cancelar"
+                                                                    >
+                                                                        <X className="w-3 h-3" />
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setDeletingPaymentId(p.id)}
+                                                                    className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                    title="Remover pagamento"
+                                                                >
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </td>
                                             </tr>
