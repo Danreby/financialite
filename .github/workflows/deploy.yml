@@ -36,6 +36,7 @@ jobs:
           envs: DEPLOY_PATH
           script_stop: true
           script: |
+            export PATH="/opt/cpanel/composer/bin:/usr/local/bin:/usr/bin:$PATH"
             cd "$DEPLOY_PATH"
             git pull origin main
             composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
