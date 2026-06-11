@@ -9,5 +9,6 @@ use Illuminate\Support\Collection;
 interface BankTransferServiceInterface
 {
     public function transfer(Authenticatable $user, array $data): BankTransfer;
+
     public function listForUser(int $userId, ?int $bankUserId = null): Collection;
 }

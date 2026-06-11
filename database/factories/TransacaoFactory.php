@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\BankUser;
-use App\Models\Category;
 use App\Models\Transacao;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,7 +25,7 @@ class TransacaoFactory extends Factory
             'paid_date' => $isDebit ? now() : ($this->faker->boolean(30) ? $this->faker->dateTimeThisMonth() : null),
             'total_installments' => $isDebit ? 1 : $this->faker->randomElement([1, 1, 1, 2, 3, 6, 12]),
             'current_installment' => 0,
-            'is_recurring' => !$isDebit && $this->faker->boolean(20),
+            'is_recurring' => ! $isDebit && $this->faker->boolean(20),
             'bank_user_id' => null,
             'category_id' => null,
         ];

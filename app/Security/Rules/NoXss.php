@@ -37,19 +37,21 @@ class NoXss implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return;
         }
 
         foreach ($this->patterns as $pattern) {
             if (preg_match($pattern, $value)) {
                 $fail('O campo :attribute contém caracteres potencialmente perigosos.');
+
                 return;
             }
         }
 
-        if (!$this->allowSafeHtml && $this->containsHtmlTags($value)) {
+        if (! $this->allowSafeHtml && $this->containsHtmlTags($value)) {
             $fail('O campo :attribute não pode conter tags HTML.');
+
             return;
         }
     }

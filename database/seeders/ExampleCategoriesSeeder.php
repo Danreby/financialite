@@ -12,7 +12,7 @@ class ExampleCategoriesSeeder extends Seeder
     {
         $user = User::first();
 
-        if (!$user) {
+        if (! $user) {
             return;
         }
 

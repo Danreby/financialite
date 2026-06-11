@@ -4,18 +4,16 @@ namespace App\Services;
 
 use App\Contracts\Services\FaturaServiceInterface;
 use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
-use App\Models\CardUser;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 
 class FaturaService implements FaturaServiceInterface
 {
-    public function __construct(private FaturaBillingService $billing)
-    {
-    }
+    public function __construct(private FaturaBillingService $billing) {}
 
     public function createForUser(Authenticatable $user, array $data): Transacao
     {
@@ -92,7 +90,7 @@ class FaturaService implements FaturaServiceInterface
 
         $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($transacao);
 
-        if ($totalInstallments <= 1 && !$transacao->is_recurring) {
+        if ($totalInstallments <= 1 && ! $transacao->is_recurring) {
             TransacaoParcela::create([
                 'transacao_id' => $transacao->id,
                 'installment_number' => 1,
@@ -104,6 +102,7 @@ class FaturaService implements FaturaServiceInterface
                 'status' => $transacao->status === 'paid' ? 'paid' : 'pending',
                 'paid_date' => $transacao->status === 'paid' ? ($transacao->paid_date ?? now())->toDateString() : null,
             ]);
+
             return;
         }
 
@@ -124,7 +123,7 @@ class FaturaService implements FaturaServiceInterface
 
         $dueDay = $cardUser->due_day ?? $cardUser->closing_day ?? (int) $createdAt->format('d');
 
-        $firstBillingMonth = Carbon::parse($firstBillingMonthKey . '-01');
+        $firstBillingMonth = Carbon::parse($firstBillingMonthKey.'-01');
 
         $parcelas = [];
         for ($i = 1; $i <= $totalInstallments; $i++) {

@@ -26,13 +26,14 @@ class NoSqlInjection implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return;
         }
 
         foreach ($this->patterns as $pattern) {
             if (preg_match($pattern, $value)) {
                 $fail('O campo :attribute contém caracteres inválidos.');
+
                 return;
             }
         }

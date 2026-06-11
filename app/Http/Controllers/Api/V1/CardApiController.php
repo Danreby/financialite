@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\CardUser;
 use App\Models\Card;
+use App\Models\CardUser;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -30,11 +30,11 @@ class CardApiController extends Controller
         $cardUsers = CardUser::with('card')
             ->forUser($user->id)
             ->get()
-            ->map(fn($cu) => [
+            ->map(fn ($cu) => [
                 'id' => $cu->id,
                 'user_id' => $cu->user_id,
                 'card_id' => $cu->card_id,
-                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
+                'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
                 'brand' => $cu->card?->brand,
                 'due_day' => $cu->due_day,
                 'closing_day' => $cu->closing_day,
@@ -48,6 +48,7 @@ class CardApiController extends Controller
     public function availableCards(Request $request): JsonResponse
     {
         $cards = Card::orderBy('name')->get(['id', 'name', 'brand', 'description']);
+
         return $this->success($cards);
     }
 

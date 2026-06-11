@@ -6,8 +6,8 @@ use App\Contracts\Services\BankAccountServiceInterface;
 use App\Contracts\Services\BankTransferServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bank\BankStoreRequest;
-use App\Http\Requests\Bank\BankUpdateRequest;
 use App\Http\Requests\Bank\BankTransferRequest;
+use App\Http\Requests\Bank\BankUpdateRequest;
 use App\Models\Bank;
 use App\Models\BankUser;
 use Illuminate\Http\JsonResponse;
@@ -31,6 +31,7 @@ class BankApiController extends Controller
     public function availableBanks(Request $request): JsonResponse
     {
         $banks = Bank::orderBy('name')->get(['id', 'name']);
+
         return $this->success($banks);
     }
 
@@ -57,9 +58,11 @@ class BankApiController extends Controller
 
         try {
             $bankUser = $this->bankAccountService->createForUser($user, $data);
+
             return $this->success($bankUser, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar conta bancária.');
         }
     }
@@ -71,9 +74,11 @@ class BankApiController extends Controller
 
         try {
             $bankUser = $this->bankAccountService->updateBalance($bankUser, $request->validated('balance'));
+
             return $this->success($bankUser);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar conta bancária.');
         }
     }
@@ -85,9 +90,11 @@ class BankApiController extends Controller
 
         try {
             $this->bankAccountService->deleteForUser($bankUser);
+
             return $this->success(['message' => 'Conta bancária removida.']);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao remover conta bancária.');
         }
     }
@@ -98,9 +105,11 @@ class BankApiController extends Controller
 
         try {
             $transfer = $this->bankTransferService->transfer($user, $request->validated());
+
             return $this->success($transfer, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao realizar transferência.');
         }
     }

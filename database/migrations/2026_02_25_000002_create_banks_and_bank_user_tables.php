@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('banks')) {
+        if (! Schema::hasTable('banks')) {
             Schema::create('banks', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->unique();
@@ -18,7 +18,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('bank_user')) {
+        if (! Schema::hasTable('bank_user')) {
             Schema::create('bank_user', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('bank_id');
@@ -31,13 +31,13 @@ return new class extends Migration
                 $table->foreign('user_id', 'bu_user_id_fk')->references('id')->on('users')->cascadeOnDelete();
             });
         } else {
-            if (!Schema::hasColumn('bank_user', 'balance')) {
+            if (! Schema::hasColumn('bank_user', 'balance')) {
                 Schema::table('bank_user', function (Blueprint $table) {
                     $table->decimal('balance', 14, 2)->default(0)->after('user_id');
                 });
             }
 
-            $dbName  = DB::getDatabaseName();
+            $dbName = DB::getDatabaseName();
             $hasUniq = DB::table('information_schema.TABLE_CONSTRAINTS')
                 ->where('CONSTRAINT_SCHEMA', $dbName)
                 ->where('TABLE_NAME', 'bank_user')
@@ -45,7 +45,7 @@ return new class extends Migration
                 ->whereIn('CONSTRAINT_NAME', ['bank_user_bank_id_user_id_unique', 'bank_user_unique'])
                 ->exists();
 
-            if (!$hasUniq) {
+            if (! $hasUniq) {
                 Schema::table('bank_user', function (Blueprint $table) {
                     $table->unique(['bank_id', 'user_id'], 'bank_user_bank_id_user_id_unique');
                 });

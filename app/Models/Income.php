@@ -24,13 +24,13 @@ class Income extends Model
     public const VALID_PAYMENT_DAY_TYPES = ['fixed', 'business_day'];
 
     public const TYPE_LABELS = [
-        'salary'     => 'Salário',
-        'freelance'  => 'Freelance',
+        'salary' => 'Salário',
+        'freelance' => 'Freelance',
         'investment' => 'Investimento',
-        'rental'     => 'Aluguel',
-        'benefit'    => 'Benefício',
-        'other'      => 'Outro',
-        'pix'        => 'Pix',
+        'rental' => 'Aluguel',
+        'benefit' => 'Benefício',
+        'other' => 'Outro',
+        'pix' => 'Pix',
     ];
 
     protected $fillable = [
@@ -52,17 +52,17 @@ class Income extends Model
     ];
 
     protected $casts = [
-        'amount'            => 'decimal:2',
+        'amount' => 'decimal:2',
         'payment_day_value' => 'integer',
-        'is_active'         => 'boolean',
-        'is_recurring'      => 'boolean',
-        'received_at'       => 'date',
-        'user_id'           => 'integer',
-        'bank_user_id'      => 'integer',
-        'bank_account_id'   => 'integer',
-        'created_at'        => 'datetime',
-        'updated_at'        => 'datetime',
-        'deleted_at'        => 'datetime',
+        'is_active' => 'boolean',
+        'is_recurring' => 'boolean',
+        'received_at' => 'date',
+        'user_id' => 'integer',
+        'bank_user_id' => 'integer',
+        'bank_account_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

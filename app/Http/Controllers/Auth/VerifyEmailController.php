@@ -15,18 +15,19 @@ class VerifyEmailController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+        if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
             return redirect()->route('login')->with('error', 'Link de verificação inválido.');
         }
 
-        if (!$request->hasValidSignature()) {
+        if (! $request->hasValidSignature()) {
             return redirect()->route('login')->with('error', 'Link de verificação expirado. Por favor, solicite um novo.');
         }
 
         if ($user->hasVerifiedEmail()) {
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return redirect()->route('login')->with('status', 'Email já verificado! Faça login para continuar.');
             }
+
             return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
         }
 
@@ -34,7 +35,7 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             Auth::login($user);
         }
 

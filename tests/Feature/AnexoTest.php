@@ -15,7 +15,9 @@ class AnexoTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected User $otherUser;
+
     protected Transacao $transacao;
 
     protected function setUp(): void

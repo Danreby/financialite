@@ -14,20 +14,21 @@ use Illuminate\Support\Facades\Log;
 class FaturaImportService
 {
     private const MAX_IMPORT_ROWS = 500;
+
     private const MAX_AMOUNT = 999999999.99;
+
     private const MAX_INSTALLMENTS = 120;
 
     public function __construct(
         private FaturaService $writer,
         private SanitizerInterface $sanitizer
-    ) {
-    }
+    ) {}
 
     public function importRows(Authenticatable $user, array $rows): int
     {
         if (count($rows) > self::MAX_IMPORT_ROWS) {
             throw new DomainException(
-                'O número máximo de registros por importação é ' . self::MAX_IMPORT_ROWS . '.'
+                'O número máximo de registros por importação é '.self::MAX_IMPORT_ROWS.'.'
             );
         }
 
@@ -76,7 +77,7 @@ class FaturaImportService
     private function sanitizeRow(array $row): array
     {
         $sanitized = [];
-        
+
         foreach ($row as $key => $value) {
             if (is_string($value)) {
                 $sanitized[$key] = $this->sanitizer->sanitize($value);
@@ -91,11 +92,11 @@ class FaturaImportService
     private function validateRowStructure(array $row, int $index): void
     {
         $required = ['title', 'amount', 'type'];
-        
+
         foreach ($required as $field) {
-            if (!isset($row[$field]) || $row[$field] === '') {
+            if (! isset($row[$field]) || $row[$field] === '') {
                 throw new DomainException(
-                    "Campo obrigatório '{$field}' não encontrado na linha " . ($index + 2) . '.'
+                    "Campo obrigatório '{$field}' não encontrado na linha ".($index + 2).'.'
                 );
             }
         }
@@ -104,16 +105,16 @@ class FaturaImportService
     private function sanitizeAmount(mixed $amount, int $index): float
     {
         $sanitized = filter_var($amount, FILTER_VALIDATE_FLOAT);
-        
+
         if ($sanitized === false || $sanitized < 0) {
             throw new DomainException(
-                'Valor inválido na linha ' . ($index + 2) . '. O valor deve ser um número positivo.'
+                'Valor inválido na linha '.($index + 2).'. O valor deve ser um número positivo.'
             );
         }
 
         if ($sanitized > self::MAX_AMOUNT) {
             throw new DomainException(
-                'Valor muito alto na linha ' . ($index + 2) . '. O valor máximo permitido é 999.999.999,99.'
+                'Valor muito alto na linha '.($index + 2).'. O valor máximo permitido é 999.999.999,99.'
             );
         }
 
@@ -123,11 +124,11 @@ class FaturaImportService
     private function validateType(string $type, int $index): string
     {
         $type = strtolower(trim($type));
-        
-        if (!in_array($type, Transacao::VALID_TYPES, true)) {
+
+        if (! in_array($type, Transacao::VALID_TYPES, true)) {
             throw new DomainException(
-                'Tipo inválido na linha ' . ($index + 2) . ': ' . $type . 
-                '. Tipos válidos: ' . implode(', ', Transacao::VALID_TYPES)
+                'Tipo inválido na linha '.($index + 2).': '.$type.
+                '. Tipos válidos: '.implode(', ', Transacao::VALID_TYPES)
             );
         }
 
@@ -137,11 +138,11 @@ class FaturaImportService
     private function validateStatus(string $status, int $index): string
     {
         $status = strtolower(trim($status));
-        
-        if (!in_array($status, Transacao::VALID_STATUSES, true)) {
+
+        if (! in_array($status, Transacao::VALID_STATUSES, true)) {
             throw new DomainException(
-                'Status inválido na linha ' . ($index + 2) . ': ' . $status . 
-                '. Status válidos: ' . implode(', ', Transacao::VALID_STATUSES)
+                'Status inválido na linha '.($index + 2).': '.$status.
+                '. Status válidos: '.implode(', ', Transacao::VALID_STATUSES)
             );
         }
 
@@ -155,7 +156,7 @@ class FaturaImportService
         }
 
         $sanitized = filter_var($value, FILTER_VALIDATE_INT);
-        
+
         if ($sanitized === false || $sanitized < 1) {
             return null;
         }
@@ -165,7 +166,7 @@ class FaturaImportService
 
     private function resolveBankUserIdByName(int $userId, ?string $bankUserName, int $index): ?int
     {
-        if (!$bankUserName) {
+        if (! $bankUserName) {
             return null;
         }
 
@@ -176,9 +177,9 @@ class FaturaImportService
             })
             ->first();
 
-        if (!$bankUser) {
+        if (! $bankUser) {
             throw new DomainException(
-                'Cartão não encontrado para o nome informado na linha ' . ($index + 2) . ': ' . $bankUserName
+                'Cartão não encontrado para o nome informado na linha '.($index + 2).': '.$bankUserName
             );
         }
 
@@ -187,7 +188,7 @@ class FaturaImportService
 
     private function resolveCategoryIdByName(int $userId, ?string $categoryName, int $index): ?int
     {
-        if (!$categoryName) {
+        if (! $categoryName) {
             return null;
         }
 
@@ -195,9 +196,9 @@ class FaturaImportService
             ->where('name', $categoryName)
             ->first();
 
-        if (!$category) {
+        if (! $category) {
             throw new DomainException(
-                'Categoria não encontrada para o nome informado na linha ' . ($index + 2) . ': ' . $categoryName
+                'Categoria não encontrada para o nome informado na linha '.($index + 2).': '.$categoryName
             );
         }
 

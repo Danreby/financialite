@@ -43,13 +43,13 @@ class ExtratoService implements ExtratoServiceInterface
             'transactions' => $grouped,
             'incomes' => $incomes->values()->toArray(),
             'summary' => [
-                'total_income'   => round($totalIncome, 2),
+                'total_income' => round($totalIncome, 2),
                 'total_expenses' => round($totalExpenses, 2),
-                'total_paid'     => round($totalPaid, 2),
-                'total_unpaid'   => round($totalUnpaid, 2),
-                'balance'        => round($balance, 2),
-                'start_date'     => $startDate->toDateString(),
-                'end_date'       => $endDate->toDateString(),
+                'total_paid' => round($totalPaid, 2),
+                'total_unpaid' => round($totalUnpaid, 2),
+                'balance' => round($balance, 2),
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
             ],
         ];
     }
@@ -82,17 +82,17 @@ class ExtratoService implements ExtratoServiceInterface
             ->orderBy('title')
             ->get()
             ->map(fn (Income $income) => [
-                'id'                => $income->id,
-                'title'             => $income->title,
-                'description'       => $income->description,
-                'amount'            => (float) $income->amount,
-                'type'              => $income->type,
-                'type_label'        => $income->type_label,
-                'payment_day_type'  => $income->payment_day_type,
+                'id' => $income->id,
+                'title' => $income->title,
+                'description' => $income->description,
+                'amount' => (float) $income->amount,
+                'type' => $income->type,
+                'type_label' => $income->type_label,
+                'payment_day_type' => $income->payment_day_type,
                 'payment_day_value' => $income->payment_day_value,
                 'payment_day_label' => $income->payment_day_label,
-                'is_active'         => $income->is_active,
-                'bank_name'         => optional($income->bankUser?->card)->name,
+                'is_active' => $income->is_active,
+                'bank_name' => optional($income->bankUser?->card)->name,
             ]);
     }
 
@@ -103,24 +103,24 @@ class ExtratoService implements ExtratoServiceInterface
             : (float) $t->amount;
 
         return [
-            'id'                  => $t->id,
-            'title'               => $t->title,
-            'description'         => $t->description,
-            'amount'              => (float) $t->amount,
-            'installment_amount'  => round($installmentAmount, 2),
-            'type'                => $t->type,
-            'status'              => $t->status,
-            'is_recurring'        => (bool) $t->is_recurring,
-            'total_installments'  => $t->total_installments,
+            'id' => $t->id,
+            'title' => $t->title,
+            'description' => $t->description,
+            'amount' => (float) $t->amount,
+            'installment_amount' => round($installmentAmount, 2),
+            'type' => $t->type,
+            'status' => $t->status,
+            'is_recurring' => (bool) $t->is_recurring,
+            'total_installments' => $t->total_installments,
             'current_installment' => $t->current_installment,
-            'created_at'          => $t->created_at?->toIso8601String(),
-            'paid_date'           => $t->paid_date?->toIso8601String(),
-            'bank_user_id'        => $t->bank_user_id,
-            'category_id'         => $t->category_id,
-            'bank_name'           => optional($t->bankUser?->card)->name,
-            'category_name'       => optional($t->category)->name,
-            'category_icon'       => optional($t->category)->icon,
-            'category_color'      => optional($t->category)->color,
+            'created_at' => $t->created_at?->toIso8601String(),
+            'paid_date' => $t->paid_date?->toIso8601String(),
+            'bank_user_id' => $t->bank_user_id,
+            'category_id' => $t->category_id,
+            'bank_name' => optional($t->bankUser?->card)->name,
+            'category_name' => optional($t->category)->name,
+            'category_icon' => optional($t->category)->icon,
+            'category_color' => optional($t->category)->color,
         ];
     }
 
@@ -133,13 +133,14 @@ class ExtratoService implements ExtratoServiceInterface
                     $value = $t['type'] === 'credit'
                         ? ($t['installment_amount'] ?? $t['amount'])
                         : $t['amount'];
+
                     return $t['status'] === 'paid' ? $value : 0;
                 });
 
                 return [
-                    'date'         => $date,
-                    'label'        => ucfirst(Carbon::parse($date)->translatedFormat('D, d M Y')),
-                    'day_total'    => round($dayTotal, 2),
+                    'date' => $date,
+                    'label' => ucfirst(Carbon::parse($date)->translatedFormat('D, d M Y')),
+                    'day_total' => round($dayTotal, 2),
                     'transactions' => $items->values()->toArray(),
                 ];
             })
@@ -150,7 +151,7 @@ class ExtratoService implements ExtratoServiceInterface
 
     private function resolveDate(?string $dateStr, Carbon $fallback): Carbon
     {
-        if (!$dateStr) {
+        if (! $dateStr) {
             return $fallback;
         }
 

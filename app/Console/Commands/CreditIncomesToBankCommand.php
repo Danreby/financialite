@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class CreditIncomesToBankCommand extends Command
 {
-    protected $signature   = 'incomes:credit-to-bank {--dry-run : Preview without making changes}';
+    protected $signature = 'incomes:credit-to-bank {--dry-run : Preview without making changes}';
+
     protected $description = 'Credita automaticamente os valores de receitas recorrentes no saldo da conta bancária vinculada no dia de pagamento configurado';
 
     public function __construct(private NotificationService $notifications)
@@ -21,10 +22,10 @@ class CreditIncomesToBankCommand extends Command
 
     public function handle(): int
     {
-        $today   = Carbon::today();
-        $dryRun  = $this->option('dry-run');
+        $today = Carbon::today();
+        $dryRun = $this->option('dry-run');
         $credited = 0;
-        $skipped  = 0;
+        $skipped = 0;
 
         $this->info($dryRun
             ? "[DRY-RUN] Simulando crédito de receitas para {$today->format('d/m/Y')}..."
@@ -41,17 +42,20 @@ class CreditIncomesToBankCommand extends Command
 
             if (! $bankUser instanceof BankUser) {
                 $skipped++;
+
                 continue;
             }
 
             if ($income->received_at && $income->received_at->isSameDay($today)) {
                 $this->line("  ⏭  Já creditado hoje: [{$income->id}] {$income->title}");
                 $skipped++;
+
                 continue;
             }
 
             if (! $this->isPaymentDay($income, $today)) {
                 $skipped++;
+
                 continue;
             }
 
@@ -123,8 +127,8 @@ class CreditIncomesToBankCommand extends Command
             return null;
         }
 
-        $cursor  = Carbon::create($year, $month, 1)->startOfDay();
-        $end     = $cursor->copy()->endOfMonth();
+        $cursor = Carbon::create($year, $month, 1)->startOfDay();
+        $end = $cursor->copy()->endOfMonth();
         $counted = 0;
 
         while ($cursor->lte($end)) {

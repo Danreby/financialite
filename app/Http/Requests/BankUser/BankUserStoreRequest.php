@@ -3,7 +3,6 @@
 namespace App\Http\Requests\BankUser;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class BankUserStoreRequest extends FormRequest
 {

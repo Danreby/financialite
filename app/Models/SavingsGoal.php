@@ -37,14 +37,14 @@ class SavingsGoal extends Model
     ];
 
     protected $casts = [
-        'target_amount'  => 'decimal:2',
+        'target_amount' => 'decimal:2',
         'current_amount' => 'decimal:2',
-        'is_active'      => 'boolean',
-        'user_id'        => 'integer',
-        'completed_at'   => 'datetime',
-        'created_at'     => 'datetime',
-        'updated_at'     => 'datetime',
-        'deleted_at'     => 'datetime',
+        'is_active' => 'boolean',
+        'user_id' => 'integer',
+        'completed_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

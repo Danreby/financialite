@@ -83,7 +83,7 @@ class AnexoService
             throw new \DomainException('Você não tem permissão para associar este anexo.');
         }
 
-        if (!$anexo->transacoes()->where('transacao_id', $transacaoId)->exists()) {
+        if (! $anexo->transacoes()->where('transacao_id', $transacaoId)->exists()) {
             $anexo->transacoes()->attach($transacaoId);
         }
     }
@@ -117,7 +117,7 @@ class AnexoService
         $query = Anexo::forUser($userId)
             ->orderBy('created_at', 'desc');
 
-        if (!empty($filters['type'])) {
+        if (! empty($filters['type'])) {
             match ($filters['type']) {
                 'image' => $query->images(),
                 'document' => $query->documents(),
@@ -126,8 +126,8 @@ class AnexoService
             };
         }
 
-        if (!empty($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
+        if (! empty($filters['search'])) {
+            $search = '%'.$filters['search'].'%';
             $query->where(function ($q) use ($search) {
                 $q->where('original_name', 'like', $search)
                     ->orWhere('description', 'like', $search);
@@ -146,7 +146,7 @@ class AnexoService
 
     public function download(Anexo $anexo): StreamedResponse
     {
-        if (!$this->fileExistsOnDisk($anexo)) {
+        if (! $this->fileExistsOnDisk($anexo)) {
             throw new \RuntimeException('Arquivo não encontrado no disco.');
         }
 
@@ -158,14 +158,14 @@ class AnexoService
             $anexo->original_name,
             [
                 'Content-Type' => $anexo->mime_type,
-                'Content-Disposition' => 'attachment; filename="' . $anexo->original_name . '"',
+                'Content-Disposition' => 'attachment; filename="'.$anexo->original_name.'"',
             ]
         );
     }
 
     public function inline(Anexo $anexo): StreamedResponse
     {
-        if (!$this->fileExistsOnDisk($anexo)) {
+        if (! $this->fileExistsOnDisk($anexo)) {
             throw new \RuntimeException('Arquivo não encontrado no disco.');
         }
 
@@ -177,7 +177,7 @@ class AnexoService
             $anexo->original_name,
             [
                 'Content-Type' => $anexo->mime_type,
-                'Content-Disposition' => 'inline; filename="' . $anexo->original_name . '"',
+                'Content-Disposition' => 'inline; filename="'.$anexo->original_name.'"',
             ]
         );
     }
@@ -200,6 +200,7 @@ class AnexoService
     public function updateDescription(Anexo $anexo, ?string $description): Anexo
     {
         $anexo->update(['description' => $description]);
+
         return $anexo->refresh();
     }
 
@@ -244,21 +245,21 @@ class AnexoService
     {
         if ($file->getSize() > Anexo::MAX_FILE_SIZE) {
             throw new \DomainException(
-                'O arquivo excede o tamanho máximo permitido de ' . 
-                (Anexo::MAX_FILE_SIZE / 1024 / 1024) . 'MB.'
+                'O arquivo excede o tamanho máximo permitido de '.
+                (Anexo::MAX_FILE_SIZE / 1024 / 1024).'MB.'
             );
         }
 
         $extension = strtolower($file->getClientOriginalExtension());
-        if (!in_array($extension, Anexo::ALLOWED_EXTENSIONS)) {
+        if (! in_array($extension, Anexo::ALLOWED_EXTENSIONS)) {
             throw new \DomainException(
-                'Extensão de arquivo não permitida. Extensões aceitas: ' . 
+                'Extensão de arquivo não permitida. Extensões aceitas: '.
                 implode(', ', Anexo::ALLOWED_EXTENSIONS)
             );
         }
 
         $mimeType = $file->getMimeType();
-        if (!in_array($mimeType, Anexo::ALLOWED_MIME_TYPES)) {
+        if (! in_array($mimeType, Anexo::ALLOWED_MIME_TYPES)) {
             throw new \DomainException(
                 'Tipo de arquivo não permitido.'
             );
@@ -274,7 +275,7 @@ class AnexoService
 
     private function generateStoredName(string $extension): string
     {
-        return Str::uuid()->toString() . '.' . $extension;
+        return Str::uuid()->toString().'.'.$extension;
     }
 
     private function generatePath(int $userId): string
@@ -295,7 +296,7 @@ class AnexoService
             $extension = pathinfo($filename, PATHINFO_EXTENSION);
             $name = pathinfo($filename, PATHINFO_FILENAME);
             $maxNameLength = 255 - strlen($extension) - 1;
-            $filename = substr($name, 0, $maxNameLength) . '.' . $extension;
+            $filename = substr($name, 0, $maxNameLength).'.'.$extension;
         }
 
         return trim($filename);

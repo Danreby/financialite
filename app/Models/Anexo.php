@@ -68,7 +68,7 @@ class Anexo extends Model
 
     public function scopeOfType(Builder $query, string $mimeType): Builder
     {
-        return $query->where('mime_type', 'like', $mimeType . '%');
+        return $query->where('mime_type', 'like', $mimeType.'%');
     }
 
     public function scopeImages(Builder $query): Builder
@@ -101,7 +101,7 @@ class Anexo extends Model
 
     public function getFullPathAttribute(): string
     {
-        return $this->path . '/' . $this->stored_name;
+        return $this->path.'/'.$this->stored_name;
     }
 
     public function getExistsAttribute(): bool
@@ -120,7 +120,7 @@ class Anexo extends Model
             $index++;
         }
 
-        return round($bytes, 2) . ' ' . $units[$index];
+        return round($bytes, 2).' '.$units[$index];
     }
 
     public function getIsImageAttribute(): bool
@@ -168,7 +168,7 @@ class Anexo extends Model
 
     public function getContent(): ?string
     {
-        if (!$this->exists) {
+        if (! $this->exists) {
             return null;
         }
 
@@ -177,7 +177,7 @@ class Anexo extends Model
 
     public function getStream()
     {
-        if (!$this->exists) {
+        if (! $this->exists) {
             return null;
         }
 

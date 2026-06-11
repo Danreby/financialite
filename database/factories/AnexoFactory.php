@@ -15,7 +15,7 @@ class AnexoFactory extends Factory
     {
         $extensions = ['jpg', 'png', 'pdf', 'xlsx', 'csv', 'txt'];
         $extension = $this->faker->randomElement($extensions);
-        
+
         $mimeTypes = [
             'jpg' => 'image/jpeg',
             'png' => 'image/png',
@@ -27,13 +27,13 @@ class AnexoFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'original_name' => $this->faker->word() . '.' . $extension,
-            'stored_name' => Str::uuid()->toString() . '.' . $extension,
+            'original_name' => $this->faker->word().'.'.$extension,
+            'stored_name' => Str::uuid()->toString().'.'.$extension,
             'mime_type' => $mimeTypes[$extension],
             'extension' => $extension,
             'size' => $this->faker->numberBetween(1024, 5 * 1024 * 1024),
             'disk' => 'anexos',
-            'path' => 'users/' . $this->faker->numberBetween(1, 100) . '/' . date('Y') . '/' . date('m'),
+            'path' => 'users/'.$this->faker->numberBetween(1, 100).'/'.date('Y').'/'.date('m'),
             'hash' => hash('sha256', $this->faker->text(100)),
             'description' => $this->faker->optional(0.5)->sentence(),
         ];
@@ -44,8 +44,8 @@ class AnexoFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'extension' => 'jpg',
             'mime_type' => 'image/jpeg',
-            'original_name' => $this->faker->word() . '.jpg',
-            'stored_name' => Str::uuid()->toString() . '.jpg',
+            'original_name' => $this->faker->word().'.jpg',
+            'stored_name' => Str::uuid()->toString().'.jpg',
         ]);
     }
 
@@ -54,8 +54,8 @@ class AnexoFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'extension' => 'pdf',
             'mime_type' => 'application/pdf',
-            'original_name' => $this->faker->word() . '.pdf',
-            'stored_name' => Str::uuid()->toString() . '.pdf',
+            'original_name' => $this->faker->word().'.pdf',
+            'stored_name' => Str::uuid()->toString().'.pdf',
         ]);
     }
 
@@ -64,8 +64,8 @@ class AnexoFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'extension' => 'xlsx',
             'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'original_name' => $this->faker->word() . '.xlsx',
-            'stored_name' => Str::uuid()->toString() . '.xlsx',
+            'original_name' => $this->faker->word().'.xlsx',
+            'stored_name' => Str::uuid()->toString().'.xlsx',
         ]);
     }
 }

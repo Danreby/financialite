@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasColumn('card_user', 'bank_id') && !Schema::hasColumn('card_user', 'card_id')) {
+        if (Schema::hasColumn('card_user', 'bank_id') && ! Schema::hasColumn('card_user', 'card_id')) {
             Schema::table('card_user', function (Blueprint $table) {
                 $table->renameColumn('bank_id', 'card_id');
             });
@@ -17,7 +17,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (Schema::hasColumn('card_user', 'card_id') && !Schema::hasColumn('card_user', 'bank_id')) {
+        if (Schema::hasColumn('card_user', 'card_id') && ! Schema::hasColumn('card_user', 'bank_id')) {
             Schema::table('card_user', function (Blueprint $table) {
                 $table->renameColumn('card_id', 'bank_id');
             });

@@ -32,9 +32,9 @@ class BankStoreRequest extends FormRequest
     {
         return [
             'bank_id.required' => 'Selecione um banco.',
-            'bank_id.integer'  => 'Banco inválido.',
-            'bank_id.exists'   => 'O banco selecionado não existe ou está indisponível.',
-            'balance.min'      => 'O saldo deve ser um valor positivo.',
+            'bank_id.integer' => 'Banco inválido.',
+            'bank_id.exists' => 'O banco selecionado não existe ou está indisponível.',
+            'balance.min' => 'O saldo deve ser um valor positivo.',
         ];
     }
 }

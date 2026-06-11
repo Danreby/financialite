@@ -9,7 +9,6 @@ use App\Models\Transacao;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class ExampleFaturasLastSixMonthsSeeder extends Seeder
 {
@@ -17,13 +16,13 @@ class ExampleFaturasLastSixMonthsSeeder extends Seeder
     {
         $user = User::first();
 
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $bankUser = BankUser::forUser($user->id)->first();
 
-        if (!$bankUser) {
+        if (! $bankUser) {
             return;
         }
 
@@ -54,7 +53,7 @@ class ExampleFaturasLastSixMonthsSeeder extends Seeder
                 $amount = rand(50, 400);
 
                 $transacao = Transacao::create([
-                    'title' => $label . ' ' . $createdAt->translatedFormat('M/Y'),
+                    'title' => $label.' '.$createdAt->translatedFormat('M/Y'),
                     'description' => null,
                     'amount' => $amount,
                     'type' => 'debit',
@@ -92,7 +91,7 @@ class ExampleFaturasLastSixMonthsSeeder extends Seeder
                 $totalInstallments = rand(1, 6);
 
                 $transacao = Transacao::create([
-                    'title' => $label . ' ' . $createdAt->translatedFormat('M/Y'),
+                    'title' => $label.' '.$createdAt->translatedFormat('M/Y'),
                     'description' => null,
                     'amount' => $amount,
                     'type' => 'credit',

@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class GenerateParcelasForExistingTransactions extends Command
 {
     protected $signature = 'parcelas:generate {--regenerate : Regenera todas as parcelas, inclusive existentes}';
+
     protected $description = 'Gera parcelas para transações existentes que ainda não possuem parcelas';
 
     public function handle(FaturaService $faturaService): int
@@ -20,6 +21,7 @@ class GenerateParcelasForExistingTransactions extends Command
 
             if ($transacoes->isEmpty()) {
                 $this->info('Nenhuma transação encontrada.');
+
                 return self::SUCCESS;
             }
 
@@ -48,6 +50,7 @@ class GenerateParcelasForExistingTransactions extends Command
 
         if ($transacoes->isEmpty()) {
             $this->info('Nenhuma transação sem parcelas encontrada.');
+
             return self::SUCCESS;
         }
 

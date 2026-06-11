@@ -2,6 +2,4 @@
 
 namespace App\Models;
 
-class Paid extends Fatura
-{
-}
+class Paid extends Fatura {}

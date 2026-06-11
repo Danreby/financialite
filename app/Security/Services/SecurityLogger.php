@@ -14,9 +14,9 @@ class SecurityLogger implements SecurityLoggerInterface
     public function logAuth(string $event, ?int $userId = null, array $context = []): void
     {
         $context = $this->enrichContext($context, $userId);
-        
+
         $level = $this->getAuthEventLevel($event);
-        
+
         Log::channel($this->channel)->log($level, "Auth event: {$event}", $context);
     }
 
@@ -26,9 +26,9 @@ class SecurityLogger implements SecurityLoggerInterface
             'action' => $action,
             'resource' => $resource,
         ]);
-        
+
         $context = $this->enrichContext($context, $userId);
-        
+
         Log::channel($this->channel)->warning("Authorization denied: {$action} on {$resource}", $context);
     }
 
@@ -36,7 +36,7 @@ class SecurityLogger implements SecurityLoggerInterface
     {
         $context = $this->enrichContext($context);
         $context['alert_type'] = 'suspicious_activity';
-        
+
         Log::channel($this->channel)->warning("Suspicious activity: {$activity}", $context);
     }
 
@@ -46,9 +46,9 @@ class SecurityLogger implements SecurityLoggerInterface
             'identifier' => $this->hashIdentifier($identifier),
             'action' => $action,
         ]);
-        
+
         $context = $this->enrichContext($context);
-        
+
         Log::channel($this->channel)->warning("Rate limit exceeded for action: {$action}", $context);
     }
 
@@ -58,9 +58,9 @@ class SecurityLogger implements SecurityLoggerInterface
             'data_action' => $action,
             'resource' => $resource,
         ]);
-        
+
         $context = $this->enrichContext($context, $userId);
-        
+
         Log::channel($this->channel)->info("Data access: {$action} on {$resource}", $context);
     }
 
@@ -70,9 +70,9 @@ class SecurityLogger implements SecurityLoggerInterface
             'source' => $source,
             'errors' => $this->sanitizeErrors($errors),
         ]);
-        
+
         $context = $this->enrichContext($context);
-        
+
         Log::channel($this->channel)->notice("Validation failure in {$source}", $context);
     }
 
@@ -85,18 +85,18 @@ class SecurityLogger implements SecurityLoggerInterface
             'exception_file' => $exception->getFile(),
             'exception_line' => $exception->getLine(),
         ]);
-        
+
         $context = $this->enrichContext($context);
-        
-        Log::channel($this->channel)->error("Security exception: " . get_class($exception), $context);
+
+        Log::channel($this->channel)->error('Security exception: '.get_class($exception), $context);
     }
 
     public function logCsrfMismatch(array $context = []): void
     {
         $context = $this->enrichContext($context);
         $context['alert_type'] = 'csrf_mismatch';
-        
-        Log::channel($this->channel)->warning("CSRF token mismatch detected", $context);
+
+        Log::channel($this->channel)->warning('CSRF token mismatch detected', $context);
     }
 
     public function logSqlInjectionAttempt(string $input, array $context = []): void
@@ -104,8 +104,8 @@ class SecurityLogger implements SecurityLoggerInterface
         $context = $this->enrichContext($context);
         $context['alert_type'] = 'sql_injection_attempt';
         $context['suspicious_input_hash'] = hash('sha256', $input);
-        
-        Log::channel($this->channel)->error("Potential SQL injection attempt detected", $context);
+
+        Log::channel($this->channel)->error('Potential SQL injection attempt detected', $context);
     }
 
     public function logXssAttempt(string $input, array $context = []): void
@@ -113,20 +113,20 @@ class SecurityLogger implements SecurityLoggerInterface
         $context = $this->enrichContext($context);
         $context['alert_type'] = 'xss_attempt';
         $context['suspicious_input_hash'] = hash('sha256', $input);
-        
-        Log::channel($this->channel)->error("Potential XSS attempt detected", $context);
+
+        Log::channel($this->channel)->error('Potential XSS attempt detected', $context);
     }
 
     protected function enrichContext(array $context, ?int $userId = null): array
     {
         $request = Request::instance();
-        
+
         $resolvedUserId = $userId;
         if ($resolvedUserId === null && Auth::check()) {
             $user = Auth::user();
             $resolvedUserId = $user?->id;
         }
-        
+
         return array_merge([
             'timestamp' => now()->toIso8601String(),
             'ip_address' => $this->hashIp($request->ip()),
@@ -140,36 +140,36 @@ class SecurityLogger implements SecurityLoggerInterface
 
     protected function hashIp(?string $ip): ?string
     {
-        if (!$ip) {
+        if (! $ip) {
             return null;
         }
-        
+
         if (config('app.env') === 'production') {
-            return hash('sha256', $ip . config('app.key'));
+            return hash('sha256', $ip.config('app.key'));
         }
-        
+
         return $ip;
     }
 
     protected function hashIdentifier(string $identifier): string
     {
-        return hash('sha256', $identifier . config('app.key'));
+        return hash('sha256', $identifier.config('app.key'));
     }
 
     protected function sanitizeErrors(array $errors): array
     {
         $sanitized = [];
-        
+
         foreach ($errors as $field => $messages) {
-            $sanitized[$field] = is_array($messages) ? count($messages) . ' error(s)' : 'error';
+            $sanitized[$field] = is_array($messages) ? count($messages).' error(s)' : 'error';
         }
-        
+
         return $sanitized;
     }
 
     protected function getAuthEventLevel(string $event): string
     {
-        return match($event) {
+        return match ($event) {
             'failed_login', 'lockout', 'password_reset_failed' => 'warning',
             'suspicious_login', 'brute_force_detected' => 'error',
             'login', 'logout', 'password_reset' => 'info',

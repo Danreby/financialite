@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Fatura;
 
 class Transacao extends Model
 {
@@ -149,10 +148,11 @@ class Transacao extends Model
             })
             ->when($filters['month'] ?? null, function (Builder $q, $month) {
                 try {
-                    $date = Carbon::createFromFormat('Y-m-d', $month . '-01');
+                    $date = Carbon::createFromFormat('Y-m-d', $month.'-01');
                     $q->whereYear('created_at', $date->year)
-                      ->whereMonth('created_at', $date->month);
-                } catch (\Throwable $e) {}
+                        ->whereMonth('created_at', $date->month);
+                } catch (\Throwable $e) {
+                }
             });
     }
 
@@ -160,6 +160,7 @@ class Transacao extends Model
     {
         $startDate = $start instanceof Carbon ? $start->toDateString() : $start;
         $endDate = $end instanceof Carbon ? $end->toDateString() : $end;
+
         return $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 
@@ -168,6 +169,7 @@ class Transacao extends Model
         if (in_array($status, self::VALID_STATUSES, true)) {
             return $query->where('status', '!=', $status);
         }
+
         return $query;
     }
 

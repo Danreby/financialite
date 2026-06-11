@@ -17,22 +17,20 @@ class SanitizeInput
         'email',
     ];
 
-    public function __construct(protected SanitizerInterface $sanitizer)
-    {
-    }
+    public function __construct(protected SanitizerInterface $sanitizer) {}
 
     public function handle(Request $request, Closure $next): Response
     {
         $input = $request->all();
-        
-        if (!empty($input)) {
+
+        if (! empty($input)) {
             $sanitized = $this->sanitizer->sanitizeArray($input, $this->except);
             $request->merge($sanitized);
         }
 
         $query = $request->query();
-        
-        if (!empty($query) && is_array($query)) {
+
+        if (! empty($query) && is_array($query)) {
             $sanitizedQuery = $this->sanitizer->sanitizeArray($query, $this->except);
             $request->query->replace($sanitizedQuery);
         }

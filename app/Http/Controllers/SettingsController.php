@@ -30,7 +30,7 @@ class SettingsController extends Controller
 
         $validThemes = ['rose', 'black', 'forest', 'gold', 'lavender', 'midnight'];
 
-        if (!in_array($theme, $validThemes, true)) {
+        if (! in_array($theme, $validThemes, true)) {
             return response()->json(['error' => 'Tema inválido.'], 422);
         }
 

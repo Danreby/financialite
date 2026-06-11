@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Bill extends Model
 {
@@ -74,7 +74,7 @@ class Bill extends Model
     public function getNextDueDate(): ?\Carbon\Carbon
     {
         $now = \Carbon\Carbon::now();
-        
+
         if ($this->status !== 'active') {
             return null;
         }
@@ -101,7 +101,7 @@ class Bill extends Model
 
     private function getNextMonthlyDueDate(\Carbon\Carbon $now): \Carbon\Carbon
     {
-        $today   = $now->copy()->startOfDay();
+        $today = $now->copy()->startOfDay();
         $dueDate = $today->copy()->day(min($this->due_day, $today->daysInMonth));
 
         if ($dueDate->lt($today)) {
@@ -117,10 +117,10 @@ class Bill extends Model
 
     private function getNextYearlyDueDate(\Carbon\Carbon $now): \Carbon\Carbon
     {
-        $today      = $now->copy()->startOfDay();
+        $today = $now->copy()->startOfDay();
         $startMonth = $this->start_date->month;
-        $monthDays  = $today->copy()->month($startMonth)->daysInMonth;
-        $dueDate    = $today->copy()->month($startMonth)->day(min($this->due_day, $monthDays));
+        $monthDays = $today->copy()->month($startMonth)->daysInMonth;
+        $dueDate = $today->copy()->month($startMonth)->day(min($this->due_day, $monthDays));
 
         if ($dueDate->lt($today)) {
             $dueDate->addYear();
@@ -145,6 +145,7 @@ class Bill extends Model
             if ($this->start_date && $this->start_date->format('Y-m') === $month->format('Y-m')) {
                 return $this->start_date;
             }
+
             return null;
         }
 

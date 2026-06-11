@@ -31,7 +31,7 @@ class AuthService
 
     public function authenticate(array $credentials, bool $remember = false): bool
     {
-        if (!Auth::attempt($credentials, $remember)) {
+        if (! Auth::attempt($credentials, $remember)) {
             Log::warning('Failed login attempt', [
                 'email' => $credentials['email'],
                 'ip' => request()->ip(),
@@ -68,7 +68,7 @@ class AuthService
     {
         $user = $user ?? Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -77,7 +77,7 @@ class AuthService
 
     public function sendVerificationEmail(User $user): void
     {
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->sendEmailVerificationNotification();
 
             Log::info('Verification email sent', ['user_id' => $user->id]);
@@ -101,7 +101,7 @@ class AuthService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 

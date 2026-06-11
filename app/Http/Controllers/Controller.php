@@ -15,9 +15,9 @@ abstract class Controller extends BaseController
     protected function normalizeInsertData(array $data): array
     {
         $preserveCase = ['email', 'password', 'password_confirmation'];
-        
+
         foreach ($data as $key => $value) {
-            if (is_string($value) && !in_array($key, $preserveCase, true)) {
+            if (is_string($value) && ! in_array($key, $preserveCase, true)) {
                 $data[$key] = mb_strtolower(trim($value), 'UTF-8');
             }
         }
@@ -58,4 +58,3 @@ abstract class Controller extends BaseController
         ], 422);
     }
 }
-

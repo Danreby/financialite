@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 
 class Budget extends Model
 {
@@ -52,13 +52,14 @@ class Budget extends Model
     public function scopeCurrent(Builder $query): Builder
     {
         $currentMonth = now()->format('Y-m');
+
         return $query->where('month_year', $currentMonth);
     }
 
     public static function getOrCreateForCurrentMonth(int $userId, float $defaultLimit = 5000): self
     {
         $currentMonth = now()->format('Y-m');
-        
+
         return static::firstOrCreate(
             [
                 'user_id' => $userId,
@@ -73,7 +74,7 @@ class Budget extends Model
 
     public function getCurrentSpending(): float
     {
-        $startDate = \Carbon\Carbon::parse($this->month_year . '-01')->startOfMonth();
+        $startDate = \Carbon\Carbon::parse($this->month_year.'-01')->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
         return Transacao::forUser($this->user_id)
@@ -84,7 +85,7 @@ class Budget extends Model
 
     public function getCategorySpending(): array
     {
-        $startDate = \Carbon\Carbon::parse($this->month_year . '-01')->startOfMonth();
+        $startDate = \Carbon\Carbon::parse($this->month_year.'-01')->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
         $spending = Transacao::forUser($this->user_id)

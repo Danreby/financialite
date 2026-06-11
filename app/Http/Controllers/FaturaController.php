@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transacao;
-use App\Models\CardUser;
-use App\Models\BankUser;
-use App\Services\FaturaService;
-use App\Services\FaturaExportService;
-use App\Services\FaturaImportService;
-use App\Services\FaturaDashboardService;
-use App\Services\FaturaPaymentService;
-use App\Services\NotificationService;
+use App\Http\Requests\Fatura\FaturaImportRequest;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
 use App\Http\Requests\Fatura\FaturaUpdateRequest;
 use App\Http\Requests\Fatura\PayMonthRequest;
-use App\Http\Requests\Fatura\FaturaImportRequest;
-use Illuminate\Http\Request;
+use App\Models\BankUser;
+use App\Models\CardUser;
+use App\Models\Transacao;
+use App\Services\FaturaDashboardService;
+use App\Services\FaturaExportService;
+use App\Services\FaturaImportService;
+use App\Services\FaturaPaymentService;
+use App\Services\FaturaService;
+use App\Services\NotificationService;
+use DomainException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use DomainException;
 
 class FaturaController extends Controller
 {
@@ -30,8 +30,7 @@ class FaturaController extends Controller
         private FaturaDashboardService $dashboardService,
         private FaturaPaymentService $paymentService,
         private NotificationService $notifications
-    )
-    {
+    ) {
         $this->middleware('auth');
     }
 
@@ -100,6 +99,7 @@ class FaturaController extends Controller
 
         if ($request->wantsJson()) {
             $paginated = $dashboard['base_query']->paginate(15);
+
             return $this->success($paginated);
         }
 
@@ -108,7 +108,7 @@ class FaturaController extends Controller
             ->get()
             ->map(fn (BankUser $bu) => [
                 'id' => $bu->id,
-                'name' => $bu->bank?->name ?? ('Conta #' . $bu->id),
+                'name' => $bu->bank?->name ?? ('Conta #'.$bu->id),
                 'balance' => (float) $bu->balance,
             ]);
 
@@ -141,17 +141,18 @@ class FaturaController extends Controller
         $user = $request->user();
         $data = $this->normalizeInsertData($request->validated());
 
-        if (!empty($data['bank_user_id'])) {
+        if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')
                 ->forUser($user->id)
                 ->findOrFail($data['bank_user_id']);
-            
+
             $this->authorize('view', $cardUser);
         }
 
         try {
             $fatura = $this->faturaService->createForUser($user, $data);
             $fatura->load(['bankUser.card', 'user', 'parcelas']);
+
             return $this->success($fatura, 201);
         } catch (\Throwable $e) {
             report($e);
@@ -170,7 +171,7 @@ class FaturaController extends Controller
 
         $data = $this->normalizeInsertData($request->validated());
 
-        if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
+        if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             $this->authorize('view', $bankUser);
         }
@@ -178,6 +179,7 @@ class FaturaController extends Controller
         try {
             $fatura = $this->faturaService->updateForUser($fatura, $data);
             $fatura->load(['bankUser.card', 'user', 'parcelas']);
+
             return $this->success($fatura);
         } catch (\Throwable $e) {
             report($e);
@@ -194,6 +196,7 @@ class FaturaController extends Controller
         $this->authorize('delete', $fatura);
 
         $fatura->delete();
+
         return $this->success(['message' => 'Fatura removida.']);
     }
 
@@ -205,6 +208,7 @@ class FaturaController extends Controller
 
         if ($fatura->trashed()) {
             $fatura->restore();
+
             return $this->success(['message' => 'Fatura restaurada.', 'fatura' => $fatura]);
         }
 
@@ -226,7 +230,7 @@ class FaturaController extends Controller
         }
 
         $bankAccount = null;
-        if (!empty($data['bank_account_id'])) {
+        if (! empty($data['bank_account_id'])) {
             $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
         }
 
@@ -257,7 +261,7 @@ class FaturaController extends Controller
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
-        
+
         if ($request->filled('bank_user_id')) {
             $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
             $this->authorize('view', $selectedBankUser);
@@ -273,4 +277,3 @@ class FaturaController extends Controller
         return $this->success($stats);
     }
 }
-

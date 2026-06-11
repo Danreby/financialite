@@ -18,7 +18,7 @@ class AuthController extends Controller
 {
     public function register(Request $request): JsonResponse
     {
-        $key = 'register:' . $request->ip();
+        $key = 'register:'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($key, 10)) {
             return $this->error('Muitas tentativas. Tente novamente mais tarde.', 429);
@@ -28,7 +28,7 @@ class AuthController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'phone' => 'nullable|string|max:20|regex:/^[\d\s\(\)\-\+]+$/',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -59,10 +59,11 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $key = 'login:' . $request->ip();
+        $key = 'login:'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
+
             return $this->error("Muitas tentativas. Tente novamente em {$seconds} segundos.", 429);
         }
 
@@ -71,7 +72,7 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             RateLimiter::hit($key, 60);
             throw ValidationException::withMessages([
                 'email' => ['Credenciais inválidas.'],
@@ -134,7 +135,7 @@ class AuthController extends Controller
             'id_token' => ['required', 'string', 'max:4096'],
         ]);
 
-        $key = 'google-login:' . $request->ip();
+        $key = 'google-login:'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($key, 10)) {
             return $this->error('Muitas tentativas. Tente novamente mais tarde.', 429);
@@ -144,7 +145,7 @@ class AuthController extends Controller
 
         $payload = $this->verifyGoogleIdToken($request->id_token);
 
-        if (!$payload) {
+        if (! $payload) {
             return $this->error('Token do Google inválido ou expirado.', 422);
         }
 
@@ -159,7 +160,7 @@ class AuthController extends Controller
 
         $user = User::where('google_id', $googleId)->first();
 
-        if (!$user) {
+        if (! $user) {
             $user = User::where('email', $email)->first();
 
             if ($user) {
@@ -185,7 +186,7 @@ class AuthController extends Controller
             }
         }
 
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
@@ -218,7 +219,7 @@ class AuthController extends Controller
 
             $payload = $client->verifyIdToken($idToken);
 
-            if (!$payload) {
+            if (! $payload) {
                 return null;
             }
 
@@ -229,6 +230,7 @@ class AuthController extends Controller
             return $payload;
         } catch (\Exception $e) {
             report($e);
+
             return null;
         }
     }

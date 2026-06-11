@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Category;
-use App\Models\Transacao;
-use App\Services\FaturaDashboardService;
 use App\Services\DashboardInsightsService;
+use App\Services\FaturaDashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -36,9 +35,9 @@ class DashboardApiController extends Controller
         $stats = $this->dashboardService->buildStats($user, $bankUserId, $categoryId, $request->has('bank_user_id'));
         $insights = $this->insightsService->getInsights($user, $bankUserId);
 
-        $bankAccounts = CardUser::with('card')->forUser($user->id)->get()->map(fn($cu) => [
+        $bankAccounts = CardUser::with('card')->forUser($user->id)->get()->map(fn ($cu) => [
             'id' => $cu->id,
-            'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
+            'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
             'due_day' => $cu->due_day,
             'closing_day' => $cu->closing_day,
             'credit_limit' => $cu->credit_limit,
@@ -47,9 +46,9 @@ class DashboardApiController extends Controller
 
         $categories = Category::forUser($user->id)->orderBy('name')->get(['id', 'name', 'icon', 'color', 'type']);
 
-        $bankAccountsList = BankUser::with('bank')->forUser($user->id)->orderBy('created_at')->get()->map(fn($bu) => [
+        $bankAccountsList = BankUser::with('bank')->forUser($user->id)->orderBy('created_at')->get()->map(fn ($bu) => [
             'id' => $bu->id,
-            'name' => $bu->bank?->name ?? ('Banco #' . $bu->id),
+            'name' => $bu->bank?->name ?? ('Banco #'.$bu->id),
             'balance' => (float) $bu->balance,
         ]);
 

@@ -29,9 +29,11 @@ class CategoryApiController extends Controller
 
         try {
             $category = Category::create($data);
+
             return $this->success($category, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar categoria.');
         }
     }
@@ -43,9 +45,11 @@ class CategoryApiController extends Controller
 
         try {
             $category->update($data);
+
             return $this->success($category);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar categoria.');
         }
     }

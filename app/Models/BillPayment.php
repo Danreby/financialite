@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 
 class BillPayment extends Model
 {
@@ -48,7 +48,7 @@ class BillPayment extends Model
         return $query->where('status', 'overdue')
             ->orWhere(function ($q) {
                 $q->where('status', 'pending')
-                  ->whereDate('due_date', '<', now());
+                    ->whereDate('due_date', '<', now());
             });
     }
 

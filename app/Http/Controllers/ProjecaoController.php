@@ -23,18 +23,18 @@ class ProjecaoController extends Controller
             ->forUser($user->id)
             ->get()
             ->map(fn ($cu) => [
-                'id'   => $cu->id,
-                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
+                'id' => $cu->id,
+                'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
             ]);
 
         $categories = Category::forUser($user->id)
             ->orderBy('name')
             ->get(['id', 'name', 'icon', 'color']);
 
-        $now        = Carbon::now();
+        $now = Carbon::now();
         $monthStart = $now->copy()->startOfMonth();
-        $monthEnd   = $now->copy()->endOfMonth();
-        $today      = $now->copy()->startOfMonth();
+        $monthEnd = $now->copy()->endOfMonth();
+        $today = $now->copy()->startOfMonth();
 
         $currentMonthDebit = Transacao::where('user_id', $user->id)
             ->where('type', 'debit')
@@ -49,16 +49,16 @@ class ProjecaoController extends Controller
 
         $creditTransactions = $allCreditTxs->map(function ($tx) use ($today) {
             $totalInstallments = max((int) ($tx->total_installments ?? 1), 1);
-            $isRecurring       = (bool) $tx->is_recurring;
-            $amountPerMonth    = (float) $tx->getInstallmentAmount();
+            $isRecurring = (bool) $tx->is_recurring;
+            $amountPerMonth = (float) $tx->getInstallmentAmount();
 
             $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($tx);
-            $firstBillingMonth    = Carbon::parse($firstBillingMonthKey . '-01');
+            $firstBillingMonth = Carbon::parse($firstBillingMonthKey.'-01');
 
             $completionMonth = null;
-            if (!$isRecurring) {
+            if (! $isRecurring) {
                 $completionCarbon = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
-                $completionMonth  = $completionCarbon->format('Y-m');
+                $completionMonth = $completionCarbon->format('Y-m');
 
                 if ($completionCarbon->lt($today)) {
                     return null;
@@ -66,32 +66,31 @@ class ProjecaoController extends Controller
             }
 
             return [
-                'id'                  => $tx->id,
-                'title'               => $tx->title,
-                'amount'              => (float) $tx->amount,
-                'amount_per_month'    => $amountPerMonth,
-                'is_recurring'        => $isRecurring,
-                'total_installments'  => $totalInstallments,
+                'id' => $tx->id,
+                'title' => $tx->title,
+                'amount' => (float) $tx->amount,
+                'amount_per_month' => $amountPerMonth,
+                'is_recurring' => $isRecurring,
+                'total_installments' => $totalInstallments,
                 'first_billing_month' => $firstBillingMonthKey,
-                'completion_month'    => $completionMonth,
-                'bank_user_id'        => $tx->bankUser?->id,
-                'bank_name'           => $tx->bankUser?->card?->name,
-                'category_id'         => $tx->category?->id,
-                'category_name'       => $tx->category?->name,
-                'category_icon'       => $tx->category?->icon,
-                'category_color'      => $tx->category?->color,
+                'completion_month' => $completionMonth,
+                'bank_user_id' => $tx->bankUser?->id,
+                'bank_name' => $tx->bankUser?->card?->name,
+                'category_id' => $tx->category?->id,
+                'category_name' => $tx->category?->name,
+                'category_icon' => $tx->category?->icon,
+                'category_color' => $tx->category?->color,
             ];
         })->filter()->values();
 
         return Inertia::render('Projecao', [
             'creditTransactions' => $creditTransactions,
-            'bankAccounts'       => $bankAccounts,
-            'categories'         => $categories,
-            'currentMonthStats'  => [
+            'bankAccounts' => $bankAccounts,
+            'categories' => $categories,
+            'currentMonthStats' => [
                 'debit' => (float) $currentMonthDebit,
                 'month' => $now->format('Y-m'),
             ],
         ]);
     }
 }
-

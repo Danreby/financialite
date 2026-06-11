@@ -35,6 +35,7 @@ class NotificationApiController extends Controller
         }
 
         $notification->update(['is_read' => true, 'read_at' => now()]);
+
         return $this->success($notification);
     }
 

@@ -9,7 +9,6 @@ use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Income;
 use App\Models\Transacao;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,7 +32,7 @@ class ResumoMensalController extends Controller
             ->get()
             ->map(fn ($cu) => [
                 'id' => $cu->id,
-                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
+                'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
             ]);
 
         $bankAccountsList = BankUser::with('bank')
@@ -42,7 +41,7 @@ class ResumoMensalController extends Controller
             ->get()
             ->map(fn ($bu) => [
                 'id' => $bu->id,
-                'name' => $bu->bank?->name ?? ('Banco #' . $bu->id),
+                'name' => $bu->bank?->name ?? ('Banco #'.$bu->id),
                 'balance' => (float) $bu->balance,
             ]);
 

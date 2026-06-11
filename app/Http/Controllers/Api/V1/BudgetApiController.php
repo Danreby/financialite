@@ -36,7 +36,7 @@ class BudgetApiController extends Controller
             ->with('budgetCategories.category')
             ->first();
 
-        if (!$budget) {
+        if (! $budget) {
             return $this->success(null);
         }
 
@@ -92,7 +92,7 @@ class BudgetApiController extends Controller
                     'user_id' => $user->id,
                 ]);
 
-                if (!empty($data['category_limits'])) {
+                if (! empty($data['category_limits'])) {
                     foreach ($data['category_limits'] as $cl) {
                         BudgetCategory::create([
                             'budget_id' => $budget->id,
@@ -108,6 +108,7 @@ class BudgetApiController extends Controller
             return $this->success($budget, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar orçamento.');
         }
     }
@@ -137,9 +138,11 @@ class BudgetApiController extends Controller
             });
 
             $budget->load('budgetCategories.category');
+
             return $this->success($budget);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar orçamento.');
         }
     }
@@ -164,6 +167,7 @@ class BudgetApiController extends Controller
         );
 
         $budget->load('budgetCategories.category');
+
         return $this->success($budget);
     }
 }

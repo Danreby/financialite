@@ -20,7 +20,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'    => ['required', 'string', 'email', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
         ];
     }
@@ -28,11 +28,11 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required'    => 'O e-mail é obrigatório.',
-            'email.email'       => 'Informe um e-mail válido.',
-            'email.max'         => 'O e-mail não pode ter mais de :max caracteres.',
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.email' => 'Informe um e-mail válido.',
+            'email.max' => 'O e-mail não pode ter mais de :max caracteres.',
             'password.required' => 'A senha é obrigatória.',
-            'password.max'      => 'A senha não pode ter mais de :max caracteres.',
+            'password.max' => 'A senha não pode ter mais de :max caracteres.',
         ];
     }
 
@@ -79,6 +79,6 @@ class LoginRequest extends FormRequest
 
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }

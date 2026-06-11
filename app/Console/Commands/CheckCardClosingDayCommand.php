@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 class CheckCardClosingDayCommand extends Command
 {
     protected $signature = 'cards:check-closing-day';
+
     protected $description = 'Verifica cartões próximos do fechamento e envia notificações';
 
     public function __construct(private NotificationService $notifications)
@@ -22,11 +23,11 @@ class CheckCardClosingDayCommand extends Command
         $this->info('Verificando cartões próximos do fechamento...');
 
         $today = Carbon::today();
-        $todayDay    = (int) $today->format('d');
+        $todayDay = (int) $today->format('d');
         $oneDayAhead = (int) $today->copy()->addDay()->format('d');
         $twoDaysAhead = (int) $today->copy()->addDays(2)->format('d');
 
-        $notified1Day  = 0;
+        $notified1Day = 0;
         $notified2Days = 0;
         $notifiedToday = 0;
 
@@ -35,18 +36,18 @@ class CheckCardClosingDayCommand extends Command
             ->get();
 
         foreach ($cardUsers as $cardUser) {
-            if (!$cardUser->user || !$cardUser->card) {
+            if (! $cardUser->user || ! $cardUser->card) {
                 continue;
             }
 
             $closingDay = (int) $cardUser->closing_day;
-            $cardName   = $cardUser->card->name ?? ('Cartão #' . $cardUser->id);
+            $cardName = $cardUser->card->name ?? ('Cartão #'.$cardUser->id);
 
             if ($closingDay === $twoDaysAhead) {
                 $this->notifications->warning(
                     $cardUser->user,
                     'Fechamento em 2 dias',
-                    "O cartão {$cardName} fecha em 2 dias (dia {$closingDay}). " .
+                    "O cartão {$cardName} fecha em 2 dias (dia {$closingDay}). ".
                     'Compras feitas após o fechamento entrarão na próxima fatura.',
                     sendEmail: true
                 );
@@ -58,7 +59,7 @@ class CheckCardClosingDayCommand extends Command
                 $this->notifications->warning(
                     $cardUser->user,
                     'Fechamento amanhã',
-                    "O cartão {$cardName} fecha amanhã (dia {$closingDay}). " .
+                    "O cartão {$cardName} fecha amanhã (dia {$closingDay}). ".
                     'Compras feitas após o fechamento entrarão na próxima fatura.',
                     sendEmail: true
                 );
@@ -70,7 +71,7 @@ class CheckCardClosingDayCommand extends Command
                 $this->notifications->info(
                     $cardUser->user,
                     'Cartão fecha hoje',
-                    "O cartão {$cardName} fecha HOJE (dia {$closingDay}). " .
+                    "O cartão {$cardName} fecha HOJE (dia {$closingDay}). ".
                     'Compras feitas a partir de agora entrarão na próxima fatura.',
                     sendEmail: true
                 );

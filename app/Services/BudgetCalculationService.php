@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Transacao;
-use App\Models\Fatura;
 use App\Models\CardUser;
-use App\Models\Category;
+use App\Models\Fatura;
+use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -13,6 +12,7 @@ use Illuminate\Support\Collection;
 class BudgetCalculationService
 {
     private ?array $cachedEffectiveGroup = null;
+
     private ?string $cachedGroupKey = null;
 
     public function __construct(
@@ -23,7 +23,7 @@ class BudgetCalculationService
         Authenticatable $user,
         ?int $bankUserId
     ): ?array {
-        $cacheKey = $user->id . '-' . ($bankUserId ?? 'null');
+        $cacheKey = $user->id.'-'.($bankUserId ?? 'null');
 
         if ($this->cachedGroupKey === $cacheKey) {
             return $this->cachedEffectiveGroup;
@@ -43,11 +43,12 @@ class BudgetCalculationService
         if ($allCreditTransactions->isEmpty()) {
             $this->cachedGroupKey = $cacheKey;
             $this->cachedEffectiveGroup = null;
+
             return null;
         }
 
         $paidByMonth = Fatura::where('user_id', $user->id)
-            ->when($bankUserId, fn($q) => $q->where('bank_user_id', $bankUserId))
+            ->when($bankUserId, fn ($q) => $q->where('bank_user_id', $bankUserId))
             ->get()->keyBy('month_key');
 
         $monthlyGroups = $this->billing->groupFaturasByMonth($allCreditTransactions, $paidByMonth);
@@ -59,6 +60,7 @@ class BudgetCalculationService
 
         return $this->cachedEffectiveGroup;
     }
+
     public function calculateCategorySpendingWithInvoice(
         Authenticatable $user,
         ?int $bankUserId,
@@ -134,7 +136,7 @@ class BudgetCalculationService
     ): Collection {
         $effectiveGroup = $this->getEffectiveCreditGroup($user, $bankUserId);
 
-        if (!$effectiveGroup || ($effectiveGroup['is_paid'] ?? false)) {
+        if (! $effectiveGroup || ($effectiveGroup['is_paid'] ?? false)) {
             return collect();
         }
 
@@ -142,7 +144,7 @@ class BudgetCalculationService
 
         foreach ($effectiveGroup['items'] ?? [] as $item) {
             $categoryId = $item['category_id'] ?? null;
-            if (!$categoryId) {
+            if (! $categoryId) {
                 continue;
             }
 
@@ -160,7 +162,7 @@ class BudgetCalculationService
                 $installmentAmount = (float) ($item['amount'] ?? 0) / $totalInstallments;
             }
 
-            if (!isset($categorySpending[$categoryId])) {
+            if (! isset($categorySpending[$categoryId])) {
                 $categorySpending[$categoryId] = 0;
             }
 
@@ -184,7 +186,7 @@ class BudgetCalculationService
         Collection $debitSpending,
         Collection $creditSpending
     ): Collection {
-        $merged = $debitSpending->map(fn($item) => [
+        $merged = $debitSpending->map(fn ($item) => [
             'category_id' => $item->category_id,
             'spent' => (float) $item->spent,
         ])->keyBy('category_id');
@@ -273,16 +275,18 @@ class BudgetCalculationService
 
         foreach ($allCreditTransactions as $transaction) {
             $categoryId = $transaction->category_id;
-            if (!$categoryId) continue;
+            if (! $categoryId) {
+                continue;
+            }
 
             foreach ($monthKeys as $monthKey) {
-                $targetMonth = Carbon::parse($monthKey . '-01');
-                
+                $targetMonth = Carbon::parse($monthKey.'-01');
+
                 if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
                     $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transaction, $monthKey);
                     $installmentAmount = (float) $transaction->getInstallmentAmount($installmentNumber);
 
-                    if (!isset($creditByCategory[$categoryId])) {
+                    if (! isset($creditByCategory[$categoryId])) {
                         $creditByCategory[$categoryId] = 0;
                     }
 
@@ -320,8 +324,8 @@ class BudgetCalculationService
 
         foreach ($allCreditTransactions as $transaction) {
             foreach ($monthKeys as $monthKey) {
-                $targetMonth = Carbon::parse($monthKey . '-01');
-                
+                $targetMonth = Carbon::parse($monthKey.'-01');
+
                 if ($this->billing->faturaAppliesToMonth($transaction, $targetMonth)) {
                     $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transaction, $monthKey);
                     $installmentAmount = (float) $transaction->getInstallmentAmount($installmentNumber);

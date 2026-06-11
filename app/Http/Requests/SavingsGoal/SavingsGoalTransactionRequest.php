@@ -22,7 +22,7 @@ class SavingsGoalTransactionRequest extends FormRequest
     {
         return [
             'amount.required' => 'O valor é obrigatório.',
-            'amount.min'      => 'O valor deve ser maior que zero.',
+            'amount.min' => 'O valor deve ser maior que zero.',
         ];
     }
 }

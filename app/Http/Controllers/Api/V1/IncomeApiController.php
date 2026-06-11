@@ -31,9 +31,11 @@ class IncomeApiController extends Controller
 
         try {
             $income = $this->incomeService->createForUser($user, $data);
+
             return $this->success($income, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar receita.');
         }
     }
@@ -45,9 +47,11 @@ class IncomeApiController extends Controller
 
         try {
             $income = $this->incomeService->updateForUser($income, $data);
+
             return $this->success($income);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar receita.');
         }
     }
@@ -58,9 +62,11 @@ class IncomeApiController extends Controller
 
         try {
             $this->incomeService->deleteForUser($income);
+
             return $this->success(['message' => 'Receita removida.']);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao remover receita.');
         }
     }
@@ -71,9 +77,11 @@ class IncomeApiController extends Controller
 
         try {
             $income = $this->incomeService->toggleActive($income);
+
             return $this->success($income);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao alternar status da receita.');
         }
     }

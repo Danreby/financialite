@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BankUser\BankUserStoreRequest;
-use App\Models\Bank;
-use App\Models\BankUser;
 use App\Models\CardUser;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BankUserController extends Controller

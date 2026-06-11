@@ -6,12 +6,10 @@ use Mailtrap\MailtrapClient;
 use Mailtrap\Mime\MailtrapEmail;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\MessageConverter;
-use Symfony\Component\Mime\RawMessage;
 
 class MailtrapTransport extends AbstractTransport
 {
@@ -30,7 +28,7 @@ class MailtrapTransport extends AbstractTransport
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
 
-        $mailtrapEmail = new MailtrapEmail();
+        $mailtrapEmail = new MailtrapEmail;
 
         $from = $email->getFrom()[0] ?? null;
         if ($from) {

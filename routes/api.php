@@ -1,20 +1,20 @@
 <?php
 
-use App\Http\Controllers\CardController;
-use App\Http\Controllers\CardUserController;
 use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\DashboardApiController;
-use App\Http\Controllers\Api\V1\TransacaoApiController;
-use App\Http\Controllers\Api\V1\IncomeApiController;
+use App\Http\Controllers\Api\V1\BankApiController;
 use App\Http\Controllers\Api\V1\BillApiController;
 use App\Http\Controllers\Api\V1\BudgetApiController;
-use App\Http\Controllers\Api\V1\SavingsGoalApiController;
-use App\Http\Controllers\Api\V1\BankApiController;
+use App\Http\Controllers\Api\V1\CardApiController;
 use App\Http\Controllers\Api\V1\CategoryApiController;
+use App\Http\Controllers\Api\V1\DashboardApiController;
+use App\Http\Controllers\Api\V1\IncomeApiController;
 use App\Http\Controllers\Api\V1\NotificationApiController;
 use App\Http\Controllers\Api\V1\ProfileApiController;
-use App\Http\Controllers\Api\V1\CardApiController;
 use App\Http\Controllers\Api\V1\ProjectionsApiController;
+use App\Http\Controllers\Api\V1\SavingsGoalApiController;
+use App\Http\Controllers\Api\V1\TransacaoApiController;
+use App\Http\Controllers\CardController;
+use App\Http\Controllers\CardUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/auth')->group(function () {

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Services\SavingsGoalServiceInterface;
 use App\Http\Requests\SavingsGoal\SavingsGoalStoreRequest;
-use App\Http\Requests\SavingsGoal\SavingsGoalUpdateRequest;
 use App\Http\Requests\SavingsGoal\SavingsGoalTransactionRequest;
+use App\Http\Requests\SavingsGoal\SavingsGoalUpdateRequest;
 use App\Models\SavingsGoal;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -44,6 +44,7 @@ class SavingsGoalController extends Controller
             return $this->success($goal, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar meta de economia.');
         }
     }
@@ -58,6 +59,7 @@ class SavingsGoalController extends Controller
             return $this->success($goal);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar meta de economia.');
         }
     }
@@ -79,6 +81,7 @@ class SavingsGoalController extends Controller
             return $this->success($goal);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao depositar.');
         }
     }
@@ -99,6 +102,7 @@ class SavingsGoalController extends Controller
             return $this->success($goal);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao retirar.');
         }
     }
@@ -113,6 +117,7 @@ class SavingsGoalController extends Controller
             return $this->success(['message' => 'Meta removida.']);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao remover meta.');
         }
     }

@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
@@ -17,7 +17,7 @@ class Category extends Model
     public const VALID_TYPES = ['income', 'expense'];
 
     public const TYPE_LABELS = [
-        'income'  => 'Receita',
+        'income' => 'Receita',
         'expense' => 'Despesa',
     ];
 
@@ -34,7 +34,7 @@ class Category extends Model
     ];
 
     protected $casts = [
-        'user_id'    => 'integer',
+        'user_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

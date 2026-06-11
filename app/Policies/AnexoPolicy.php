@@ -30,6 +30,7 @@ class AnexoPolicy
         if ($anexo === null) {
             return true;
         }
+
         return $this->isOwner($user, $anexo);
     }
 

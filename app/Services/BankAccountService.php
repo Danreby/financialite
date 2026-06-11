@@ -6,7 +6,6 @@ use App\Contracts\Services\BankAccountServiceInterface;
 use App\Models\Bank;
 use App\Models\BankUser;
 use App\Models\Income;
-use App\Models\Transacao;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,10 +34,10 @@ class BankAccountService implements BankAccountServiceInterface
             ->sum('amount');
 
         return [
-            'total_balance'  => round((float) $totalBalance, 2),
+            'total_balance' => round((float) $totalBalance, 2),
             'total_accounts' => $bankUsers->count(),
-            'total_incomes'  => round((float) $totalIncomes, 2),
-            'accounts'       => $bankUsers->map(fn (BankUser $bu) => $this->mapBankUserStats($bu, $userId)),
+            'total_incomes' => round((float) $totalIncomes, 2),
+            'accounts' => $bankUsers->map(fn (BankUser $bu) => $this->mapBankUserStats($bu, $userId)),
         ];
     }
 
@@ -77,6 +76,7 @@ class BankAccountService implements BankAccountServiceInterface
         return DB::transaction(function () use ($bankUser, $newBalance) {
             $bankUser->balance = $newBalance;
             $bankUser->save();
+
             return $bankUser->refresh();
         });
     }
@@ -106,13 +106,13 @@ class BankAccountService implements BankAccountServiceInterface
             ->sum('amount');
 
         return [
-            'id'            => $bankUser->id,
-            'bank_id'       => $bankUser->bank_id,
-            'bank_name'     => $bankUser->bank->name ?? 'Banco',
-            'balance'       => round((float) $bankUser->balance, 2),
-            'income_count'  => $incomeCount,
-            'income_total'  => round((float) $incomeTotal, 2),
-            'created_at'    => $bankUser->created_at?->toIso8601String(),
+            'id' => $bankUser->id,
+            'bank_id' => $bankUser->bank_id,
+            'bank_name' => $bankUser->bank->name ?? 'Banco',
+            'balance' => round((float) $bankUser->balance, 2),
+            'income_count' => $incomeCount,
+            'income_total' => round((float) $incomeTotal, 2),
+            'created_at' => $bankUser->created_at?->toIso8601String(),
         ];
     }
 }

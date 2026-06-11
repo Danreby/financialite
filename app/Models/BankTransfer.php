@@ -19,12 +19,12 @@ class BankTransfer extends Model
     ];
 
     protected $casts = [
-        'amount'             => 'decimal:2',
-        'user_id'            => 'integer',
-        'from_bank_user_id'  => 'integer',
-        'to_bank_user_id'    => 'integer',
-        'created_at'         => 'datetime',
-        'updated_at'         => 'datetime',
+        'amount' => 'decimal:2',
+        'user_id' => 'integer',
+        'from_bank_user_id' => 'integer',
+        'to_bank_user_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

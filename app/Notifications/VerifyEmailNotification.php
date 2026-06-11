@@ -15,14 +15,14 @@ class VerifyEmailNotification extends BaseVerifyEmail
         $verificationUrl = $this->verificationUrl($notifiable);
 
         return (new MailMessage)
-            ->subject('Verifique seu endereço de email - ' . config('app.name'))
-            ->greeting('Olá, ' . $notifiable->name . '!')
-            ->line('Obrigado por se cadastrar no ' . config('app.name') . '.')
+            ->subject('Verifique seu endereço de email - '.config('app.name'))
+            ->greeting('Olá, '.$notifiable->name.'!')
+            ->line('Obrigado por se cadastrar no '.config('app.name').'.')
             ->line('Por favor, clique no botão abaixo para verificar seu endereço de email.')
             ->action('Verificar Email', $verificationUrl)
-            ->line('Este link de verificação expira em ' . Config::get('auth.verification.expire', 60) . ' minutos.')
+            ->line('Este link de verificação expira em '.Config::get('auth.verification.expire', 60).' minutos.')
             ->line('Se você não criou uma conta, nenhuma ação é necessária.')
-            ->salutation('Atenciosamente, Equipe ' . config('app.name'));
+            ->salutation('Atenciosamente, Equipe '.config('app.name'));
     }
 
     protected function verificationUrl($notifiable): string

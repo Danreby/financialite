@@ -6,8 +6,8 @@ use App\Http\Requests\Category\CategoryStoreRequest;
 use App\Http\Requests\Category\CategoryUpdateRequest;
 use App\Models\Category;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -41,10 +41,10 @@ class CategoryController extends Controller
 
         $category = DB::transaction(function () use ($data, $user) {
             $category = Category::create([
-                'name'    => $data['name'],
-                'color'   => $data['color'] ?? null,
-                'icon'    => $data['icon'] ?? null,
-                'type'    => $data['type'] ?? 'expense',
+                'name' => $data['name'],
+                'color' => $data['color'] ?? null,
+                'icon' => $data['icon'] ?? null,
+                'type' => $data['type'] ?? 'expense',
                 'user_id' => $user->id,
             ]);
 
@@ -65,10 +65,10 @@ class CategoryController extends Controller
 
         DB::transaction(function () use ($category, $data, $user) {
             $category->update([
-                'name'  => $data['name'],
+                'name' => $data['name'],
                 'color' => $data['color'] ?? null,
-                'icon'  => $data['icon'] ?? null,
-                'type'  => $data['type'] ?? $category->type,
+                'icon' => $data['icon'] ?? null,
+                'type' => $data['type'] ?? $category->type,
             ]);
 
             $this->notifications->info($user, 'Categoria atualizada', 'Uma categoria foi atualizada.');

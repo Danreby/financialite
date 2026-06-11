@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use App\Models\SavingsGoal;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -112,7 +111,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function owns($resource): bool
     {
-        if (!property_exists($resource, 'user_id') && !isset($resource->user_id)) {
+        if (! property_exists($resource, 'user_id') && ! isset($resource->user_id)) {
             return false;
         }
 
@@ -121,11 +120,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasGoogleLinked(): bool
     {
-        return !empty($this->google_id);
+        return ! empty($this->google_id);
     }
 
     public function hasPasswordSet(): bool
     {
-        return !empty($this->password);
+        return ! empty($this->password);
     }
 }

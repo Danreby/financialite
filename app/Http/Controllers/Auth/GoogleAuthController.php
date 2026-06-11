@@ -4,14 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Google\Client as GoogleClient;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
-use Google\Client as GoogleClient;
 
 class GoogleAuthController extends Controller
 {
@@ -21,7 +19,7 @@ class GoogleAuthController extends Controller
             'credential' => ['required', 'string', 'max:4096'],
         ]);
 
-        $throttleKey = 'google-auth:' . $request->ip();
+        $throttleKey = 'google-auth:'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
             return response()->json([
@@ -33,7 +31,7 @@ class GoogleAuthController extends Controller
 
         $googleUser = $this->verifyGoogleToken($request->credential);
 
-        if (!$googleUser) {
+        if (! $googleUser) {
             return response()->json([
                 'message' => 'Token do Google inválido ou expirado. Tente novamente.',
             ], 422);
@@ -52,7 +50,7 @@ class GoogleAuthController extends Controller
 
         $user = User::where('google_id', $googleId)->first();
 
-        if (!$user) {
+        if (! $user) {
             $user = User::where('email', $email)->first();
 
             if ($user) {
@@ -78,7 +76,7 @@ class GoogleAuthController extends Controller
             }
         }
 
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
@@ -100,7 +98,7 @@ class GoogleAuthController extends Controller
 
         $googleUser = $this->verifyGoogleToken($request->credential);
 
-        if (!$googleUser) {
+        if (! $googleUser) {
             return response()->json([
                 'message' => 'Token do Google inválido ou expirado.',
             ], 422);
@@ -131,7 +129,7 @@ class GoogleAuthController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->hasPasswordSet()) {
+        if (! $user->hasPasswordSet()) {
             return response()->json([
                 'message' => 'Defina uma senha antes de desvincular o Google, para não perder acesso à sua conta.',
             ], 422);
@@ -156,7 +154,7 @@ class GoogleAuthController extends Controller
 
             $payload = $client->verifyIdToken($credential);
 
-            if (!$payload) {
+            if (! $payload) {
                 return null;
             }
 
@@ -168,6 +166,7 @@ class GoogleAuthController extends Controller
             return $payload;
         } catch (\Exception $e) {
             report($e);
+
             return null;
         }
     }

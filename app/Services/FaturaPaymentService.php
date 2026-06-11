@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class FaturaPaymentService
 {
-    public function __construct(private FaturaBillingService $billing)
-    {
-    }
+    public function __construct(private FaturaBillingService $billing) {}
 
     public function payMonthForUser(Authenticatable $user, string $monthKey, ?CardUser $cardUser, ?BankUser $bankAccount = null): float
     {
@@ -27,7 +25,7 @@ class FaturaPaymentService
 
         $allFaturas = $query->get();
 
-        $targetMonth = Carbon::parse($monthKey . '-01');
+        $targetMonth = Carbon::parse($monthKey.'-01');
 
         $faturas = $allFaturas->filter(function (Transacao $transacao) use ($targetMonth) {
             return $this->billing->faturaAppliesToMonth($transacao, $targetMonth);
@@ -76,6 +74,7 @@ class FaturaPaymentService
             return (float) $totalPaidThisRun;
         });
     }
+
     public function payPartialForUser(
         Authenticatable $user,
         string $monthKey,
@@ -85,7 +84,7 @@ class FaturaPaymentService
     ): array {
         $bankUserId = $cardUser?->id;
 
-        $targetMonth = Carbon::parse($monthKey . '-01');
+        $targetMonth = Carbon::parse($monthKey.'-01');
 
         $allTransacoes = Transacao::with(['bankUser', 'parcelas'])
             ->forUser($user->id)
@@ -106,13 +105,13 @@ class FaturaPaymentService
 
         return DB::transaction(function () use ($user, $bankUserId, $monthKey, $amount, $bankAccount, $totalDue) {
             $faturaRecord = Fatura::firstOrNew([
-                'user_id'      => $user->id,
-                'month_key'    => $monthKey,
+                'user_id' => $user->id,
+                'month_key' => $monthKey,
                 'bank_user_id' => $bankUserId,
             ]);
 
             $alreadyPaid = (float) ($faturaRecord->total_paid ?? 0);
-            $remaining   = max(0.0, $totalDue - $alreadyPaid);
+            $remaining = max(0.0, $totalDue - $alreadyPaid);
 
             if ($remaining <= 0) {
                 throw new \DomainException('Esta fatura já foi totalmente paga.');
@@ -134,10 +133,10 @@ class FaturaPaymentService
             }
 
             return [
-                'total_paid'      => (float) $faturaRecord->total_paid,
-                'total_due'       => $totalDue,
+                'total_paid' => (float) $faturaRecord->total_paid,
+                'total_due' => $totalDue,
                 'amount_paid_now' => $payAmount,
-                'is_fully_paid'   => $faturaRecord->paid_at !== null,
+                'is_fully_paid' => $faturaRecord->paid_at !== null,
             ];
         });
     }

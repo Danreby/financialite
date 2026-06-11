@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecurityHeaders
@@ -14,19 +13,19 @@ class SecurityHeaders
     public function handle(Request $request, Closure $next): Response
     {
         $this->nonce = $this->generateNonce();
-        
+
         view()->share('cspNonce', $this->nonce);
 
         $response = $next($request);
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        
-        if (!$request->is('anexos/*/preview')) {
+
+        if (! $request->is('anexos/*/preview')) {
             $response->headers->set('X-Frame-Options', 'DENY');
         } else {
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         }
-        
+
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
         $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
@@ -49,7 +48,7 @@ class SecurityHeaders
     protected function applyContentSecurityPolicy(Response $response): void
     {
         $cspHeader = $this->buildCspHeader();
-        
+
         if (empty($cspHeader)) {
             return;
         }
@@ -64,7 +63,7 @@ class SecurityHeaders
     protected function buildCspHeader(): string
     {
         $directives = config('security.csp.directives', []);
-        
+
         if (empty($directives)) {
             return $this->getDefaultCspHeader();
         }
@@ -80,10 +79,11 @@ class SecurityHeaders
                 if ($value === "'nonce'") {
                     return "'nonce-{$this->nonce}'";
                 }
+
                 return $value;
             }, $values);
 
-            $parts[] = $directive . ' ' . implode(' ', $values);
+            $parts[] = $directive.' '.implode(' ', $values);
         }
 
         $reportUri = config('security.csp.report_uri');

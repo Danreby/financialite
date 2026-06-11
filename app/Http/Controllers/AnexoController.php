@@ -8,10 +8,10 @@ use App\Http\Requests\Anexo\AnexoUpdateRequest;
 use App\Models\Anexo;
 use App\Services\AnexoService;
 use App\Services\NotificationService;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use DomainException;
 
 class AnexoController extends Controller
 {
@@ -89,8 +89,8 @@ class AnexoController extends Controller
                 );
 
                 return $this->success([
-                    'message' => count($anexos) . ' arquivo(s) enviado(s) com sucesso.',
-                    'data' => array_map(fn($anexo) => $this->formatAnexoResponse($anexo), $anexos),
+                    'message' => count($anexos).' arquivo(s) enviado(s) com sucesso.',
+                    'data' => array_map(fn ($anexo) => $this->formatAnexoResponse($anexo), $anexos),
                 ], 201);
             }
 
@@ -154,7 +154,7 @@ class AnexoController extends Controller
             $anexo = $this->anexoService->getForUser($id, $user->id);
             $this->authorize('view', $anexo);
 
-            if (!$anexo->is_image && !$anexo->is_pdf) {
+            if (! $anexo->is_image && ! $anexo->is_pdf) {
                 return $this->error('Preview disponível apenas para imagens e PDFs.', 400);
             }
 
@@ -268,7 +268,7 @@ class AnexoController extends Controller
         return $this->success([
             'total_files' => $totalCount,
             'total_space_bytes' => $totalSpace,
-            'total_space_formatted' => round($bytes, 2) . ' ' . $units[$index],
+            'total_space_formatted' => round($bytes, 2).' '.$units[$index],
         ]);
     }
 

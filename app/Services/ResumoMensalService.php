@@ -3,10 +3,6 @@
 namespace App\Services;
 
 use App\Contracts\Services\ResumoMensalServiceInterface;
-use App\Models\BankUser;
-use App\Models\CardUser;
-use App\Models\Category;
-use App\Models\Fatura;
 use App\Models\Income;
 use App\Models\Transacao;
 use Carbon\Carbon;
@@ -14,16 +10,14 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class ResumoMensalService implements ResumoMensalServiceInterface
 {
-    public function __construct(private FaturaBillingService $billing)
-    {
-    }
+    public function __construct(private FaturaBillingService $billing) {}
 
     public function buildResumoMensal(Authenticatable $user, array $filters = []): array
     {
         $userId = $user->id;
         $monthKey = $filters['month_key'] ?? Carbon::today()->format('Y-m');
 
-        $targetMonth = Carbon::parse($monthKey . '-01');
+        $targetMonth = Carbon::parse($monthKey.'-01');
         $targetMonthEnd = $targetMonth->copy()->endOfMonth();
 
         $incomes = $this->buildIncomes($userId, $targetMonth);
@@ -130,7 +124,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         }
 
         foreach ($creditTransactions as $t) {
-            if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+            if (! $t->is_recurring && $t->parcelas->isNotEmpty()) {
                 $parcela = $t->parcelas->firstWhere('month_key', $monthKey);
                 $amount = $parcela
                     ? (float) $t->getInstallmentAmount($parcela->installment_number)
@@ -152,6 +146,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         return $allRows->groupBy('category_id')
             ->map(function ($items) {
                 $first = $items->first();
+
                 return [
                     'category_id' => $first['category_id'],
                     'category_name' => $first['category_name'],
@@ -209,7 +204,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
             $items = $dayTransactions->map(function (Transacao $t) use ($monthKey) {
                 if ($t->type === 'credit') {
-                    if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                    if (! $t->is_recurring && $t->parcelas->isNotEmpty()) {
                         $parcela = $t->parcelas->firstWhere('month_key', $monthKey);
                         $displayAmount = $parcela
                             ? (float) $t->getInstallmentAmount($parcela->installment_number)
@@ -271,7 +266,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
                 $transactions = $items->map(function (Transacao $t) use ($monthKey) {
                     $totalInstallments = max((int) ($t->total_installments ?? 1), 1);
 
-                    if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+                    if (! $t->is_recurring && $t->parcelas->isNotEmpty()) {
                         $parcela = $t->parcelas->firstWhere('month_key', $monthKey);
                         $installmentNumber = $parcela ? $parcela->installment_number : 1;
                         $amount = $parcela
@@ -422,7 +417,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         }
 
         foreach ($creditTransactions as $t) {
-            if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+            if (! $t->is_recurring && $t->parcelas->isNotEmpty()) {
                 foreach ($t->parcelas->whereIn('month_key', $monthKeys) as $parcela) {
                     $allRows->push([
                         'category_id' => $t->category_id,
@@ -435,7 +430,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
                 }
             } else {
                 foreach ($monthKeys as $mk) {
-                    $mkCarbon = Carbon::parse($mk . '-01');
+                    $mkCarbon = Carbon::parse($mk.'-01');
                     if ($this->billing->faturaAppliesToMonth($t, $mkCarbon)) {
                         $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($t, $mk);
                         $allRows->push([

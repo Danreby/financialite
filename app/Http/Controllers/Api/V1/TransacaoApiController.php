@@ -3,21 +3,20 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
 use App\Http\Requests\Fatura\FaturaUpdateRequest;
 use App\Http\Requests\Fatura\PayMonthRequest;
-use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Transacao;
-use App\Services\FaturaService;
-use App\Services\FaturaDashboardService;
-use App\Services\FaturaPaymentService;
-use App\Services\FaturaBillingService;
-use App\Services\FaturaExportService;
 use App\Services\DashboardInsightsService;
+use App\Services\FaturaBillingService;
+use App\Services\FaturaDashboardService;
+use App\Services\FaturaExportService;
+use App\Services\FaturaPaymentService;
+use App\Services\FaturaService;
 use App\Services\NotificationService;
-use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -79,6 +78,7 @@ class TransacaoApiController extends Controller
         // If a month is specified, return only that month's data
         if ($month) {
             $monthData = collect($monthlyGroups)->firstWhere('month_key', $month);
+
             return $this->success($monthData ?? [
                 'month_key' => $month,
                 'month_label' => $month,
@@ -107,16 +107,18 @@ class TransacaoApiController extends Controller
         $user = $request->user();
         $data = $this->normalizeInsertData($request->validated());
 
-        if (!empty($data['bank_user_id'])) {
+        if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')->forUser($user->id)->findOrFail($data['bank_user_id']);
         }
 
         try {
             $transacao = $this->faturaService->createForUser($user, $data);
             $transacao->load(['bankUser.card', 'category']);
+
             return $this->success($transacao, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar transação.');
         }
     }
@@ -128,16 +130,18 @@ class TransacaoApiController extends Controller
         $this->authorize('update', $transacao);
         $data = $this->normalizeInsertData($request->validated());
 
-        if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
+        if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
         }
 
         try {
             $transacao = $this->faturaService->updateForUser($transacao, $data);
             $transacao->load(['bankUser.card', 'category']);
+
             return $this->success($transacao);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar transação.');
         }
     }
@@ -158,6 +162,7 @@ class TransacaoApiController extends Controller
 
         if ($transacao->trashed()) {
             $transacao->restore();
+
             return $this->success(['message' => 'Transação restaurada.', 'transacao' => $transacao]);
         }
 
@@ -175,6 +180,7 @@ class TransacaoApiController extends Controller
         }
 
         $stats = $this->dashboardService->buildStats($user, $bankUserId, $categoryId, $request->has('bank_user_id'));
+
         return $this->success($stats);
     }
 
@@ -188,6 +194,7 @@ class TransacaoApiController extends Controller
         }
 
         $insights = $this->insights->getInsights($user, $bankUserId);
+
         return $this->success($insights);
     }
 
@@ -225,7 +232,7 @@ class TransacaoApiController extends Controller
         }
 
         $bankAccount = null;
-        if (!empty($data['bank_account_id'])) {
+        if (! empty($data['bank_account_id'])) {
             $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
         }
 
@@ -239,6 +246,7 @@ class TransacaoApiController extends Controller
             return $this->success(['message' => 'Pagamentos registrados com sucesso.', 'total_paid' => $totalPaidThisRun]);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao registrar pagamentos do mês.');
         }
     }
@@ -254,6 +262,7 @@ class TransacaoApiController extends Controller
         }
 
         $data = $this->exportService->exportForUser($user->id, $bankUserId, $categoryId);
+
         return $this->success($data);
     }
 }

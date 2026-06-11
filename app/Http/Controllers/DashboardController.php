@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\BankUser;
-use App\Models\Transacao;
 use App\Models\CardUser;
 use App\Models\Category;
-use App\Services\FaturaDashboardService;
+use App\Models\Transacao;
 use App\Services\DashboardInsightsService;
+use App\Services\FaturaDashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,7 +43,7 @@ class DashboardController extends Controller
             ->map(function ($cardUser) {
                 return [
                     'id' => $cardUser->id,
-                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                    'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
                     'due_day' => $cardUser->due_day,
                     'closing_day' => $cardUser->closing_day,
                     'credit_limit' => $cardUser->credit_limit,
@@ -60,14 +60,14 @@ class DashboardController extends Controller
             ->orderBy('created_at')
             ->get()
             ->map(fn ($bu) => [
-                'id'      => $bu->id,
-                'name'    => $bu->bank?->name ?? ('Banco #' . $bu->id),
+                'id' => $bu->id,
+                'name' => $bu->bank?->name ?? ('Banco #'.$bu->id),
                 'balance' => (float) $bu->balance,
             ]);
 
         return Inertia::render('Dashboard', [
-            'bankAccounts'    => $bankAccounts,
-            'categories'      => $categories,
+            'bankAccounts' => $bankAccounts,
+            'categories' => $categories,
             'bankAccountsList' => $bankAccountsList,
         ]);
     }

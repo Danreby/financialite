@@ -17,7 +17,7 @@ class FaturaBillingService
 
         $closingDay = $transacao->bankUser->closing_day ?? $transacao->bankUser->due_day ?? null;
 
-        if (!$closingDay) {
+        if (! $closingDay) {
             return $createdAt->format('Y-m');
         }
 
@@ -35,13 +35,13 @@ class FaturaBillingService
     {
         $today = Carbon::today();
 
-        if (!$cardUser) {
+        if (! $cardUser) {
             return $today->format('Y-m');
         }
 
         $closingDay = $cardUser->closing_day ?? $cardUser->due_day ?? null;
 
-        if (!$closingDay) {
+        if (! $closingDay) {
             return $today->format('Y-m');
         }
 
@@ -59,22 +59,22 @@ class FaturaBillingService
     {
         $monthKey = $targetMonth->format('Y-m');
 
-        if (!$transacao->is_recurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+        if (! $transacao->is_recurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
             return $transacao->parcelas->contains('month_key', $monthKey);
         }
 
         $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
 
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-        $first = Carbon::parse($firstBillingMonthKey . '-01');
+        $first = Carbon::parse($firstBillingMonthKey.'-01');
 
         if ($transacao->is_recurring) {
-            return !$targetMonth->lt($first);
+            return ! $targetMonth->lt($first);
         }
 
         $last = (clone $first)->addMonths($totalInstallments - 1);
 
-        return !$targetMonth->lt($first) && !$targetMonth->gt($last);
+        return ! $targetMonth->lt($first) && ! $targetMonth->gt($last);
     }
 
     public function applyPaymentForMonth(Transacao $transacao, ?string $monthKey = null): float
@@ -108,7 +108,7 @@ class FaturaBillingService
                 }
             }
 
-            if (!$targetInstallment) {
+            if (! $targetInstallment) {
                 $targetInstallment = $this->resolveInstallmentNumberForMonth($transacao, $monthKey);
             }
         }
@@ -177,8 +177,8 @@ class FaturaBillingService
         }
 
         $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-        $first = Carbon::parse($firstBillingMonthKey . '-01');
-        $current = Carbon::parse($yearMonth . '-01');
+        $first = Carbon::parse($firstBillingMonthKey.'-01');
+        $current = Carbon::parse($yearMonth.'-01');
 
         if ($current->lt($first)) {
             return null;
@@ -204,13 +204,13 @@ class FaturaBillingService
             $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
             $isRecurring = (bool) $transacao->is_recurring;
 
-            if (!$isRecurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+            if (! $isRecurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
                 foreach ($transacao->parcelas as $parcela) {
-                    if (!$parcela->month_key) {
+                    if (! $parcela->month_key) {
                         continue;
                     }
 
-                    $parcelaMonth = Carbon::parse($parcela->month_key . '-01');
+                    $parcelaMonth = Carbon::parse($parcela->month_key.'-01');
                     if ($parcelaMonth->gt($projectionEnd)) {
                         continue;
                     }
@@ -221,11 +221,12 @@ class FaturaBillingService
                         'installment_index' => $parcela->installment_number,
                     ]);
                 }
+
                 continue;
             }
 
             $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-            $month = Carbon::parse($firstBillingMonthKey . '-01');
+            $month = Carbon::parse($firstBillingMonthKey.'-01');
 
             $installmentIndex = 1;
 
@@ -234,7 +235,7 @@ class FaturaBillingService
                     break;
                 }
 
-                if (!$isRecurring && $installmentIndex > $totalInstallments) {
+                if (! $isRecurring && $installmentIndex > $totalInstallments) {
                     break;
                 }
 
@@ -254,7 +255,7 @@ class FaturaBillingService
         $grouped = $entries->groupBy('month_key');
 
         $result = $grouped->map(function ($items, $yearMonth) use ($paidByMonth) {
-            $carbon = Carbon::parse($yearMonth . '-01');
+            $carbon = Carbon::parse($yearMonth.'-01');
             $label = ucfirst($carbon->translatedFormat('F Y'));
 
             $totalSpent = $items->sum(function ($entry) {
@@ -288,13 +289,13 @@ class FaturaBillingService
             }
 
             return [
-                'month_key'                   => $yearMonth,
-                'month_label'                 => $label,
-                'total_spent'                 => (float) $totalSpent,
-                'total_paid'                  => $totalPaid,
-                'is_paid'                     => $isPaid,
-                'is_partially_paid'           => !$isPaid && $totalPaid > 0,
-                'has_remaining_post_payment'  => $hasRemainingPostPayment,
+                'month_key' => $yearMonth,
+                'month_label' => $label,
+                'total_spent' => (float) $totalSpent,
+                'total_paid' => $totalPaid,
+                'is_paid' => $isPaid,
+                'is_partially_paid' => ! $isPaid && $totalPaid > 0,
+                'has_remaining_post_payment' => $hasRemainingPostPayment,
                 'items' => $items->map(function ($entry) use ($faturaPayment) {
                     $fatura = $entry['transacao'];
                     $installmentIndex = $entry['installment_index'];
@@ -323,7 +324,7 @@ class FaturaBillingService
                     }
 
                     return [
-                        'id' => $fatura->id . '-' . $installmentIndex,
+                        'id' => $fatura->id.'-'.$installmentIndex,
                         'transacao_id' => $fatura->id,
                         'title' => $fatura->title,
                         'description' => $fatura->description,
@@ -359,7 +360,7 @@ class FaturaBillingService
 
         $effectiveGroup = $groupsCollection->firstWhere('month_key', $currentMonthKey);
 
-        if ($effectiveGroup && !($effectiveGroup['is_paid'] ?? false)) {
+        if ($effectiveGroup && ! ($effectiveGroup['is_paid'] ?? false)) {
             return [
                 'group' => $effectiveGroup,
                 'month_key' => $currentMonthKey,
@@ -367,7 +368,7 @@ class FaturaBillingService
         }
 
         $unpaidGroups = $groupsCollection->filter(function ($group) use ($currentMonthKey) {
-            return !($group['is_paid'] ?? false) && $group['month_key'] >= $currentMonthKey;
+            return ! ($group['is_paid'] ?? false) && $group['month_key'] >= $currentMonthKey;
         });
 
         if ($unpaidGroups->isNotEmpty()) {
@@ -387,12 +388,12 @@ class FaturaBillingService
 
     public function calculatePendingBillFromGroup(?array $group): float
     {
-        if (!$group || ($group['is_paid'] ?? false)) {
+        if (! $group || ($group['is_paid'] ?? false)) {
             return 0.0;
         }
 
         $totalSpent = (float) ($group['total_spent'] ?? 0.0);
-        $totalPaid  = (float) ($group['total_paid']  ?? 0.0);
+        $totalPaid = (float) ($group['total_paid'] ?? 0.0);
 
         return max(0.0, $totalSpent - $totalPaid);
     }

@@ -17,7 +17,7 @@ class BankTransferService implements BankTransferServiceInterface
     {
         return DB::transaction(function () use ($user, $data) {
             $fromId = (int) $data['from_bank_user_id'];
-            $toId   = (int) $data['to_bank_user_id'];
+            $toId = (int) $data['to_bank_user_id'];
             $amount = (float) $data['amount'];
 
             if ($fromId === $toId) {
@@ -43,7 +43,7 @@ class BankTransferService implements BankTransferServiceInterface
             }
 
             $fromAccount = $accounts->get($fromId);
-            $toAccount   = $accounts->get($toId);
+            $toAccount = $accounts->get($toId);
 
             if ((float) $fromAccount->balance < $amount) {
                 throw new \DomainException('Saldo insuficiente para realizar a transferência.');
@@ -53,11 +53,11 @@ class BankTransferService implements BankTransferServiceInterface
             $toAccount->increment('balance', $amount);
 
             return BankTransfer::create([
-                'user_id'            => $user->id,
-                'from_bank_user_id'  => $fromAccount->id,
-                'to_bank_user_id'    => $toAccount->id,
-                'amount'             => $amount,
-                'description'        => isset($data['description']) ? trim($data['description']) : null,
+                'user_id' => $user->id,
+                'from_bank_user_id' => $fromAccount->id,
+                'to_bank_user_id' => $toAccount->id,
+                'amount' => $amount,
+                'description' => isset($data['description']) ? trim($data['description']) : null,
             ]);
         });
     }
@@ -68,10 +68,10 @@ class BankTransferService implements BankTransferServiceInterface
             ->where('user_id', $userId)
             ->orderBy('created_at', 'desc');
 
-        if (!is_null($bankUserId)) {
+        if (! is_null($bankUserId)) {
             $query->where(function ($q) use ($bankUserId) {
                 $q->where('from_bank_user_id', $bankUserId)
-                  ->orWhere('to_bank_user_id', $bankUserId);
+                    ->orWhere('to_bank_user_id', $bankUserId);
             });
         }
 

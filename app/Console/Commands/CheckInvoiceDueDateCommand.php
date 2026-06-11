@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Fatura;
-use App\Models\User;
 use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -11,6 +10,7 @@ use Illuminate\Console\Command;
 class CheckInvoiceDueDateCommand extends Command
 {
     protected $signature = 'invoices:check-due-date';
+
     protected $description = 'Verifica faturas próximas do vencimento e envia notificações';
 
     public function __construct(private NotificationService $notifications)
@@ -28,7 +28,7 @@ class CheckInvoiceDueDateCommand extends Command
 
         $invoices = Fatura::with('user', 'bankUser.card')
             ->whereNull('paid_at')
-            ->whereHas('bankUser', function($q) {
+            ->whereHas('bankUser', function ($q) {
                 $q->whereNotNull('due_day');
             })
             ->get();
@@ -38,22 +38,22 @@ class CheckInvoiceDueDateCommand extends Command
         $notifiedToday = 0;
 
         foreach ($invoices as $invoice) {
-            if (!$invoice->bankUser || !$invoice->bankUser->due_day) {
+            if (! $invoice->bankUser || ! $invoice->bankUser->due_day) {
                 continue;
             }
 
-            $invoiceDate = Carbon::parse($invoice->month_key . '-01');
+            $invoiceDate = Carbon::parse($invoice->month_key.'-01');
             $dueDate = $invoiceDate->copy()->addMonth()->day(min($invoice->bankUser->due_day, $invoiceDate->copy()->addMonth()->daysInMonth));
-            
+
             if ($dueDate->isSameDay($twoDaysFromNow)) {
                 $bankName = $invoice->bankUser?->card?->name ?? 'Cartão';
                 $monthLabel = $invoiceDate->translatedFormat('F/Y');
-                
+
                 $this->notifications->warning(
                     $invoice->user,
                     'Fatura vence em 2 dias',
-                    "A fatura do {$bankName} ({$monthLabel}) vence em " . $dueDate->format('d/m/Y') . 
-                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.',
+                    "A fatura do {$bankName} ({$monthLabel}) vence em ".$dueDate->format('d/m/Y').
+                    ' no valor de R$ '.number_format($invoice->total_paid, 2, ',', '.').'.',
                     sendEmail: true
                 );
                 $notified2Days++;
@@ -63,12 +63,12 @@ class CheckInvoiceDueDateCommand extends Command
             if ($dueDate->isSameDay($oneDayFromNow)) {
                 $bankName = $invoice->bankUser?->card?->name ?? 'Cartão';
                 $monthLabel = $invoiceDate->translatedFormat('F/Y');
-                
+
                 $this->notifications->warning(
                     $invoice->user,
                     'Fatura vence amanhã',
-                    "A fatura do {$bankName} ({$monthLabel}) vence amanhã (" . $dueDate->format('d/m/Y') . ')' .
-                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '.',
+                    "A fatura do {$bankName} ({$monthLabel}) vence amanhã (".$dueDate->format('d/m/Y').')'.
+                    ' no valor de R$ '.number_format($invoice->total_paid, 2, ',', '.').'.',
                     sendEmail: true
                 );
                 $notified1Day++;
@@ -78,12 +78,12 @@ class CheckInvoiceDueDateCommand extends Command
             if ($dueDate->isSameDay($today)) {
                 $bankName = $invoice->bankUser?->card?->name ?? 'Cartão';
                 $monthLabel = $invoiceDate->translatedFormat('F/Y');
-                
+
                 $this->notifications->error(
                     $invoice->user,
                     'Fatura vence hoje',
-                    "A fatura do {$bankName} ({$monthLabel}) vence HOJE (" . $dueDate->format('d/m/Y') . ')' .
-                    " no valor de R$ " . number_format($invoice->total_paid, 2, ',', '.') . '. Não se esqueça de pagar!',
+                    "A fatura do {$bankName} ({$monthLabel}) vence HOJE (".$dueDate->format('d/m/Y').')'.
+                    ' no valor de R$ '.number_format($invoice->total_paid, 2, ',', '.').'. Não se esqueça de pagar!',
                     sendEmail: true
                 );
                 $notifiedToday++;
@@ -91,7 +91,7 @@ class CheckInvoiceDueDateCommand extends Command
             }
         }
 
-        $this->info("Processo concluído:");
+        $this->info('Processo concluído:');
         $this->info("  • {$notified2Days} notificações enviadas (2 dias antes)");
         $this->info("  • {$notified1Day} notificações enviadas (1 dia antes)");
         $this->info("  • {$notifiedToday} notificações enviadas (vence hoje)");

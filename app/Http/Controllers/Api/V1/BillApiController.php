@@ -7,12 +7,10 @@ use App\Http\Requests\Bill\BillStoreRequest;
 use App\Http\Requests\Bill\BillUpdateRequest;
 use App\Models\Bill;
 use App\Models\BillPayment;
-use App\Models\Category;
 use App\Services\BillPaymentService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class BillApiController extends Controller
 {
@@ -51,9 +49,11 @@ class BillApiController extends Controller
         try {
             $bill = Bill::create($data);
             $bill->load('category');
+
             return $this->success($bill, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar conta.');
         }
     }
@@ -66,9 +66,11 @@ class BillApiController extends Controller
         try {
             $bill->update($data);
             $bill->load('category');
+
             return $this->success($bill);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar conta.');
         }
     }
@@ -90,7 +92,7 @@ class BillApiController extends Controller
         $bills = Bill::where('user_id', $user->id)
             ->where('status', 'active')
             ->get()
-            ->map(function (Bill $bill) use ($today, $endOfMonth) {
+            ->map(function (Bill $bill) use ($today) {
                 $dueDate = $today->copy()->day($bill->due_day);
                 if ($dueDate->lt($today)) {
                     $dueDate->addMonth();
@@ -101,7 +103,7 @@ class BillApiController extends Controller
                     ->whereYear('due_date', $dueDate->year)
                     ->first();
 
-                $isOverdue = $dueDate->lt($today) && !$lastPayment;
+                $isOverdue = $dueDate->lt($today) && ! $lastPayment;
                 $isPaid = (bool) $lastPayment?->paid_date;
 
                 return [
@@ -138,6 +140,7 @@ class BillApiController extends Controller
             return $this->success($result);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao marcar conta como paga.');
         }
     }

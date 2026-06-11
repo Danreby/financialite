@@ -7,12 +7,12 @@ use App\Http\Requests\Bill\BillUpdateRequest;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Category;
-use App\Services\NotificationService;
 use App\Services\BillPaymentService;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use App\Services\NotificationService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -116,7 +116,7 @@ class BillController extends Controller
 
         foreach ($activeBills as $bill) {
             $nextDueDate = $bill->getNextDueDate();
-            
+
             if ($nextDueDate && $nextDueDate->lte($endDate)) {
                 // Check if there's already a payment for this due date
                 $payment = BillPayment::where('bill_id', $bill->id)
@@ -127,7 +127,7 @@ class BillController extends Controller
                 $daysUntil = $today->diffInDays($nextDueDate, false);
 
                 // Update status to overdue if it's past due
-                if (!$payment && $nextDueDate->lt($today)) {
+                if (! $payment && $nextDueDate->lt($today)) {
                     $status = 'overdue';
                 }
 
@@ -149,7 +149,7 @@ class BillController extends Controller
         }
 
         // Sort by due date
-        usort($upcomingBills, fn($a, $b) => strcmp($a['due_date'], $b['due_date']));
+        usort($upcomingBills, fn ($a, $b) => strcmp($a['due_date'], $b['due_date']));
 
         return $this->success($upcomingBills);
     }
@@ -186,14 +186,14 @@ class BillController extends Controller
 
         $validated = $request->validate([
             'amount_paid' => ['required', 'numeric', 'min:0'],
-            'paid_date'   => ['nullable', 'date'],
-            'notes'       => ['nullable', 'string', 'max:500'],
+            'paid_date' => ['nullable', 'date'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $payment->update([
             'amount_paid' => $validated['amount_paid'],
-            'paid_date'   => $validated['paid_date'] ?? $payment->paid_date,
-            'notes'       => $validated['notes'] ?? null,
+            'paid_date' => $validated['paid_date'] ?? $payment->paid_date,
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         return $this->success($payment->fresh());
@@ -274,35 +274,37 @@ class BillController extends Controller
         $lastPayment = $paidPayments->first();
 
         $data['payment_stats'] = [
-            'payments_count'      => $paidPayments->count(),
+            'payments_count' => $paidPayments->count(),
             'total_paid_this_year' => round($totalPaidThisYear, 2),
-            'avg_paid'            => $avgPaid,
-            'last_payment_date'   => $lastPayment?->due_date?->format('Y-m-d'),
+            'avg_paid' => $avgPaid,
+            'last_payment_date' => $lastPayment?->due_date?->format('Y-m-d'),
             'last_payment_amount' => $lastPayment ? (float) $lastPayment->amount_paid : null,
         ];
 
         $data['payment_history'] = $paidPayments->take(24)->values()->map(fn ($p) => [
-            'id'          => $p->id,
-            'due_date'    => $p->due_date->format('Y-m-d'),
-            'paid_date'   => $p->paid_date?->format('Y-m-d'),
-            'amount_due'  => (float) $p->amount_due,
+            'id' => $p->id,
+            'due_date' => $p->due_date->format('Y-m-d'),
+            'paid_date' => $p->paid_date?->format('Y-m-d'),
+            'amount_due' => (float) $p->amount_due,
             'amount_paid' => (float) $p->amount_paid,
-            'status'      => $p->status,
-            'notes'       => $p->notes,
+            'status' => $p->status,
+            'notes' => $p->notes,
         ])->all();
 
-        if ($bill->status !== 'active' || !$bill->due_day) {
+        if ($bill->status !== 'active' || ! $bill->due_day) {
             $data['is_paid_this_period'] = false;
-            $data['next_due_date']       = null;
+            $data['next_due_date'] = null;
+
             return $data;
         }
 
-        $today             = Carbon::today();
-        $currentPeriodDue  = $this->getCurrentPeriodDueDate($bill, $today);
+        $today = Carbon::today();
+        $currentPeriodDue = $this->getCurrentPeriodDueDate($bill, $today);
 
-        if (!$currentPeriodDue) {
+        if (! $currentPeriodDue) {
             $data['is_paid_this_period'] = false;
-            $data['next_due_date']       = null;
+            $data['next_due_date'] = null;
+
             return $data;
         }
 
@@ -313,10 +315,10 @@ class BillController extends Controller
         if ($isPaid) {
             $nextDue = $this->getNextPeriodDueDate($bill, $currentPeriodDue);
             $data['is_paid_this_period'] = true;
-            $data['next_due_date']       = $nextDue?->format('Y-m-d');
+            $data['next_due_date'] = $nextDue?->format('Y-m-d');
         } else {
             $data['is_paid_this_period'] = false;
-            $data['next_due_date']       = $currentPeriodDue->format('Y-m-d');
+            $data['next_due_date'] = $currentPeriodDue->format('Y-m-d');
         }
 
         return $data;
@@ -330,7 +332,7 @@ class BillController extends Controller
 
             case 'yearly':
                 $startDate = $bill->start_date;
-                if (!$startDate) {
+                if (! $startDate) {
                     return null;
                 }
                 $monthDays = $today->copy()->month($startDate->month)->daysInMonth;
@@ -338,6 +340,7 @@ class BillController extends Controller
                 if ($candidate->gt($today->copy()->addMonths(6))) {
                     $candidate->subYear();
                 }
+
                 return $candidate;
 
             case 'none':
@@ -353,10 +356,12 @@ class BillController extends Controller
         switch ($bill->recurrence_type) {
             case 'monthly':
                 $next = $currentDue->copy()->addMonth();
+
                 return $next->day(min($bill->due_day, $next->daysInMonth));
 
             case 'yearly':
                 $next = $currentDue->copy()->addYear();
+
                 return $next->day(min($bill->due_day, $next->daysInMonth));
 
             default:

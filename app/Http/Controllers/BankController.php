@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Contracts\Services\BankAccountServiceInterface;
 use App\Contracts\Services\BankTransferServiceInterface;
 use App\Http\Requests\Bank\BankStoreRequest;
-use App\Http\Requests\Bank\BankUpdateRequest;
 use App\Http\Requests\Bank\BankTransferRequest;
+use App\Http\Requests\Bank\BankUpdateRequest;
 use App\Models\Bank;
 use App\Models\BankUser;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,25 +27,25 @@ class BankController extends Controller
 
     public function page(Request $request): Response
     {
-        $user         = $request->user();
+        $user = $request->user();
         $bankAccounts = $this->bankAccountService->listForUser($user->id);
-        $stats        = $this->bankAccountService->getStats($user->id);
-        $transfers    = $this->bankTransferService->listForUser($user->id, 15);
+        $stats = $this->bankAccountService->getStats($user->id);
+        $transfers = $this->bankTransferService->listForUser($user->id, 15);
 
         return Inertia::render('Bancos', [
             'bankAccounts' => $bankAccounts->map(fn ($bu) => [
-                'id'      => $bu->id,
+                'id' => $bu->id,
                 'balance' => (float) $bu->balance,
-                'bank'    => $bu->bank ? ['id' => $bu->bank->id, 'name' => $bu->bank->name] : null,
+                'bank' => $bu->bank ? ['id' => $bu->bank->id, 'name' => $bu->bank->name] : null,
             ]),
-            'stats'     => $stats,
+            'stats' => $stats,
             'transfers' => $transfers->map(fn ($t) => [
-                'id'          => $t->id,
-                'from_bank'   => $t->fromBankUser?->bank?->name ?? '—',
-                'to_bank'     => $t->toBankUser?->bank?->name ?? '—',
-                'amount'      => (float) $t->amount,
+                'id' => $t->id,
+                'from_bank' => $t->fromBankUser?->bank?->name ?? '—',
+                'to_bank' => $t->toBankUser?->bank?->name ?? '—',
+                'amount' => (float) $t->amount,
                 'description' => $t->description,
-                'created_at'  => $t->created_at?->toIso8601String(),
+                'created_at' => $t->created_at?->toIso8601String(),
             ]),
         ]);
     }
@@ -105,6 +105,7 @@ class BankController extends Controller
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao adicionar banco.');
         }
     }
@@ -127,6 +128,7 @@ class BankController extends Controller
             return $this->success($bankUser);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar saldo.');
         }
     }
@@ -146,6 +148,7 @@ class BankController extends Controller
             return $this->success(['message' => 'Conta bancária removida.']);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao remover conta bancária.');
         }
     }
@@ -162,12 +165,13 @@ class BankController extends Controller
             $this->notifications->info(
                 $user,
                 'Transferência realizada',
-                "Transferência de R$ " . number_format($transfer->amount, 2, ',', '.') . " realizada com sucesso."
+                'Transferência de R$ '.number_format($transfer->amount, 2, ',', '.').' realizada com sucesso.'
             );
 
             return $this->success($transfer, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao realizar transferência.');
         }
     }
@@ -179,12 +183,12 @@ class BankController extends Controller
         $transfers = $this->bankTransferService->listForUser($request->user()->id);
 
         return $this->success($transfers->map(fn ($t) => [
-            'id'          => $t->id,
-            'from_bank'   => $t->fromBankUser?->bank?->name ?? '—',
-            'to_bank'     => $t->toBankUser?->bank?->name ?? '—',
-            'amount'      => (float) $t->amount,
+            'id' => $t->id,
+            'from_bank' => $t->fromBankUser?->bank?->name ?? '—',
+            'to_bank' => $t->toBankUser?->bank?->name ?? '—',
+            'amount' => (float) $t->amount,
             'description' => $t->description,
-            'created_at'  => $t->created_at?->toIso8601String(),
+            'created_at' => $t->created_at?->toIso8601String(),
         ]));
     }
 }

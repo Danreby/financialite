@@ -7,7 +7,8 @@ use Illuminate\Console\Command;
 
 class CheckBudgetThresholdCommand extends Command
 {
-    protected $signature   = 'budget:check-threshold {--threshold=90 : Percentage threshold to trigger the alert}';
+    protected $signature = 'budget:check-threshold {--threshold=90 : Percentage threshold to trigger the alert}';
+
     protected $description = 'Varredura diária: verifica orçamentos que atingiram o limite configurado (padrão: 90%) e envia notificações';
 
     public function __construct(private BudgetAlertService $budgetAlert)
@@ -21,6 +22,7 @@ class CheckBudgetThresholdCommand extends Command
 
         if ($threshold <= 0 || $threshold > 100) {
             $this->error("Threshold inválido: {$threshold}. Use um valor entre 1 e 100.");
+
             return self::FAILURE;
         }
 

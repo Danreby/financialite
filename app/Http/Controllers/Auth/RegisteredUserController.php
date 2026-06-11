@@ -23,8 +23,8 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name'     => ['required', 'string', 'min:2', 'max:100'],
-            'email'    => [
+            'name' => ['required', 'string', 'min:2', 'max:100'],
+            'email' => [
                 'required',
                 'string',
                 'lowercase',
@@ -44,24 +44,24 @@ class RegisteredUserController extends Controller
                     }
                 },
             ],
-            'phone'    => ['nullable', 'string', 'max:20', 'regex:/^[\d\s\(\)\-\+]+$/'],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[\d\s\(\)\-\+]+$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
-            'name.min'             => 'O nome deve ter pelo menos 2 caracteres.',
-            'name.max'             => 'O nome não pode ter mais de 100 caracteres.',
-            'name.required'        => 'O nome é obrigatório.',
-            'email.required'       => 'O e-mail é obrigatório.',
-            'email.email'          => 'Digite um endereço de e-mail válido.',
-            'email.max'            => 'O e-mail não pode ter mais de 255 caracteres.',
-            'password.required'    => 'A senha é obrigatória.',
-            'password.confirmed'   => 'As senhas não conferem.',
-            'phone.regex'          => 'O telefone contém caracteres inválidos.',
+            'name.min' => 'O nome deve ter pelo menos 2 caracteres.',
+            'name.max' => 'O nome não pode ter mais de 100 caracteres.',
+            'name.required' => 'O nome é obrigatório.',
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.email' => 'Digite um endereço de e-mail válido.',
+            'email.max' => 'O e-mail não pode ter mais de 255 caracteres.',
+            'password.required' => 'A senha é obrigatória.',
+            'password.confirmed' => 'As senhas não conferem.',
+            'phone.regex' => 'O telefone contém caracteres inválidos.',
         ]);
 
         $user = User::create([
-            'name'     => trim($request->name),
-            'email'    => strtolower(trim($request->email)),
-            'phone'    => $request->phone ? trim($request->phone) : null,
+            'name' => trim($request->name),
+            'email' => strtolower(trim($request->email)),
+            'phone' => $request->phone ? trim($request->phone) : null,
             'password' => Hash::make($request->password),
         ]);
 

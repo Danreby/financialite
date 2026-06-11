@@ -36,6 +36,7 @@ class SavingsGoalService implements SavingsGoalServiceInterface
     {
         return DB::transaction(function () use ($goal, $data) {
             $goal->update($data);
+
             return $goal->refresh();
         });
     }
@@ -72,12 +73,12 @@ class SavingsGoalService implements SavingsGoalServiceInterface
         $overallProgress = $totalTarget > 0 ? round(($totalSaved / $totalTarget) * 100, 1) : 0;
 
         return [
-            'total_saved'      => $totalSaved,
-            'total_target'     => $totalTarget,
+            'total_saved' => $totalSaved,
+            'total_target' => $totalTarget,
             'overall_progress' => min($overallProgress, 100),
-            'completed_count'  => $completedCount,
-            'active_count'     => $activeCount,
-            'goals_count'      => $goals->count(),
+            'completed_count' => $completedCount,
+            'active_count' => $activeCount,
+            'goals_count' => $goals->count(),
         ];
     }
 }

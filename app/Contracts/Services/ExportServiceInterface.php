@@ -8,11 +8,6 @@ interface ExportServiceInterface
 {
     /**
      * Export data for a user.
-     *
-     * @param int $userId
-     * @param int|null $bankUserId
-     * @param int|null $categoryId
-     * @return Collection
      */
     public function exportForUser(
         int $userId,
@@ -23,9 +18,6 @@ interface ExportServiceInterface
     /**
      * Export data to CSV format.
      *
-     * @param int $userId
-     * @param int|null $bankUserId
-     * @param int|null $categoryId
      * @return string CSV content
      */
     public function exportToCsv(

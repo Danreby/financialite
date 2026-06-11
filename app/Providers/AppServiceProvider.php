@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
         app()->setLocale($locale);
         Carbon::setLocale($locale);
 
-        setlocale(LC_TIME, $locale . '.utf8', $locale . '.UTF-8', $locale);
+        setlocale(LC_TIME, $locale.'.utf8', $locale.'.UTF-8', $locale);
 
         Mail::extend('mailtrap', function (array $config = []) {
             return new MailtrapTransport(

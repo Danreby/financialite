@@ -19,7 +19,7 @@ class TransactionIndexRequest extends FormRequest
         $userId = $this->user()?->id;
 
         return [
-            'search' => ['nullable', 'string', 'max:255', new SafeString()],
+            'search' => ['nullable', 'string', 'max:255', new SafeString],
             'type' => ['nullable', 'string', Rule::in(Transacao::VALID_TYPES)],
             'status' => ['nullable', 'string', Rule::in(Transacao::VALID_STATUSES)],
             'bank_user_id' => [

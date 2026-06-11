@@ -50,13 +50,13 @@ class BankTransferRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'from_bank_user_id.required'   => 'Selecione a conta de origem.',
-            'from_bank_user_id.exists'     => 'A conta de origem não existe ou não pertence a você.',
-            'from_bank_user_id.different'  => 'As contas de origem e destino devem ser diferentes.',
-            'to_bank_user_id.required'     => 'Selecione a conta de destino.',
-            'to_bank_user_id.exists'       => 'A conta de destino não existe ou não pertence a você.',
-            'amount.required'              => 'O valor da transferência é obrigatório.',
-            'description.max'              => 'A descrição não pode ter mais de :max caracteres.',
+            'from_bank_user_id.required' => 'Selecione a conta de origem.',
+            'from_bank_user_id.exists' => 'A conta de origem não existe ou não pertence a você.',
+            'from_bank_user_id.different' => 'As contas de origem e destino devem ser diferentes.',
+            'to_bank_user_id.required' => 'Selecione a conta de destino.',
+            'to_bank_user_id.exists' => 'A conta de destino não existe ou não pertence a você.',
+            'amount.required' => 'O valor da transferência é obrigatório.',
+            'description.max' => 'A descrição não pode ter mais de :max caracteres.',
         ];
     }
 

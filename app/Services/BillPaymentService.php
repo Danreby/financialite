@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Transacao;
-use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 
@@ -81,8 +80,8 @@ class BillPaymentService
     ): Transacao {
         return Transacao::create([
             'title' => $bill->title,
-            'description' => $bill->description 
-                ? "Pagamento de conta: {$bill->description}" 
+            'description' => $bill->description
+                ? "Pagamento de conta: {$bill->description}"
                 : "Pagamento de conta: {$bill->title}",
             'amount' => $amount,
             'type' => 'debit',
@@ -106,8 +105,8 @@ class BillPaymentService
             $label = $newStatus === 'active' ? 'ativada' : 'desativada';
             $this->notificationService->info(
                 $user,
-                'Conta ' . $label,
-                'A conta foi ' . $label . ' com sucesso.'
+                'Conta '.$label,
+                'A conta foi '.$label.' com sucesso.'
             );
 
             return $bill->fresh();

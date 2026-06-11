@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Card extends Model
 {
@@ -18,12 +18,12 @@ class Card extends Model
     public const VALID_BRANDS = ['visa', 'mastercard', 'elo', 'hipercard', 'american_express', 'diners_club'];
 
     public const BRAND_LABELS = [
-        'visa'             => 'Visa',
-        'mastercard'       => 'Mastercard',
-        'elo'              => 'Elo',
-        'hipercard'        => 'Hipercard',
+        'visa' => 'Visa',
+        'mastercard' => 'Mastercard',
+        'elo' => 'Elo',
+        'hipercard' => 'Hipercard',
         'american_express' => 'American Express',
-        'diners_club'      => 'Diners Club',
+        'diners_club' => 'Diners Club',
     ];
 
     protected $fillable = [
@@ -74,4 +74,3 @@ class Card extends Model
         return $this->users()->where('users.id', $userId)->exists();
     }
 }
-

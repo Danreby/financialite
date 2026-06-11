@@ -2,17 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Transacao;
-use App\Models\Fatura;
-use App\Models\Income;
-use App\Models\Category;
+use App\Models\BankUser;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Budget;
-use App\Models\BankUser;
+use App\Models\Category;
+use App\Models\Income;
+use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Collection;
 
 class DashboardInsightsService
 {
@@ -58,15 +56,15 @@ class DashboardInsightsService
 
         $hasAnyFinancialData = $hasIncomes || $totalTransactionsAllTime > 0 || $hasBills;
 
-        if (!$hasAnyFinancialData) {
+        if (! $hasAnyFinancialData) {
             return [
                 'score' => 0,
                 'has_data' => false,
                 'missing_data' => [
-                    'incomes' => !$hasIncomes,
+                    'incomes' => ! $hasIncomes,
                     'transactions' => $totalTransactionsAllTime === 0,
-                    'bills' => !$hasBills,
-                    'budget' => !$hasBudget,
+                    'bills' => ! $hasBills,
+                    'budget' => ! $hasBudget,
                 ],
                 'factors' => [
                     'savingsRate' => 0,
@@ -177,10 +175,10 @@ class DashboardInsightsService
             'score' => round(min(100, max(0, $score)), 1),
             'has_data' => true,
             'missing_data' => [
-                'incomes' => !$hasIncomes,
+                'incomes' => ! $hasIncomes,
                 'transactions' => $totalTransactionsAllTime === 0,
-                'bills' => !$hasBills,
-                'budget' => !$hasBudget,
+                'bills' => ! $hasBills,
+                'budget' => ! $hasBudget,
             ],
             'factors' => [
                 'savingsRate' => round($savingsRate, 1),
@@ -200,13 +198,13 @@ class DashboardInsightsService
         $monthStart = $today->copy()->startOfMonth();
         $monthEnd = $today->copy()->endOfMonth();
         $currentMonth = Carbon::now()->format('Y-m');
-        
+
         $budget = Budget::forUser($user->id)
             ->forMonth($currentMonth)
             ->with('categoryLimits')
             ->first();
 
-        if (!$budget || $budget->categoryLimits->isEmpty()) {
+        if (! $budget || $budget->categoryLimits->isEmpty()) {
             return 50.0;
         }
 
@@ -228,8 +226,8 @@ class DashboardInsightsService
             }
         }
 
-        return $totalCategories > 0 
-            ? ($withinBudgetCount / $totalCategories) * 100 
+        return $totalCategories > 0
+            ? ($withinBudgetCount / $totalCategories) * 100
             : 50.0;
     }
 
@@ -242,11 +240,13 @@ class DashboardInsightsService
     ): float {
         $budget = Budget::forUser($user->id)->forMonth($currentMonthKey)->first();
 
-        if (!$budget || $budget->monthly_limit <= 0) {
+        if (! $budget || $budget->monthly_limit <= 0) {
             if ($hasIncomes && $monthlyIncome > 0) {
                 $usageRatio = $currentMonthSpending / $monthlyIncome;
+
                 return max(0.0, min(100.0, (1.0 - $usageRatio) * 100.0));
             }
+
             return 50.0;
         }
 
@@ -257,6 +257,7 @@ class DashboardInsightsService
         }
 
         $usageRatio = $currentMonthSpending / $limit;
+
         return max(0.0, min(100.0, (1.0 - $usageRatio) * 100.0));
     }
 
@@ -272,7 +273,7 @@ class DashboardInsightsService
             ->with('categoryLimits.category')
             ->first();
 
-        if (!$budget) {
+        if (! $budget) {
             $monthlyIncome = Income::forUser($user->id)
                 ->where('is_active', true)
                 ->sum('amount');
@@ -299,10 +300,10 @@ class DashboardInsightsService
         );
 
         $budgets = [];
-        
+
         if ($budget && $budget->categoryLimits->isNotEmpty()) {
             $categories = Category::forUser($user->id)->get()->keyBy('id');
-            
+
             $budgets = $this->budgetCalculationService->formatCategoryBudgets(
                 $categorySpending,
                 $budget->categoryLimits,
@@ -310,7 +311,7 @@ class DashboardInsightsService
             );
         } else {
             $categories = Category::forUser($user->id)->get()->keyBy('id');
-            
+
             $budgets = $categorySpending->map(function ($item) use ($categories, $totalBudget) {
                 $category = $categories->get($item['category_id']);
                 $categoryBudget = $totalBudget * 0.15;
@@ -357,9 +358,9 @@ class DashboardInsightsService
                     ->first();
 
                 $isPaid = $payment && $payment->status === 'paid';
-                $isOverdue = !$isPaid && $currentMonthDue->lt($today);
+                $isOverdue = ! $isPaid && $currentMonthDue->lt($today);
 
-                if (!$isPaid) {
+                if (! $isPaid) {
                     $upcomingBills[] = $this->formatBillEntry(
                         $bill,
                         $currentMonthDue,
@@ -369,6 +370,7 @@ class DashboardInsightsService
                         null
                     );
                     $processedBillIds[$bill->id] = true;
+
                     continue;
                 }
             }
@@ -381,7 +383,7 @@ class DashboardInsightsService
                         ->first();
                     $nextIsPaid = $nextPayment && $nextPayment->status === 'paid';
 
-                    if (!$nextIsPaid) {
+                    if (! $nextIsPaid) {
                         $upcomingBills[] = $this->formatBillEntry(
                             $bill,
                             $nextMonthDue,
@@ -390,6 +392,7 @@ class DashboardInsightsService
                             true
                         );
                         $processedBillIds[$bill->id] = true;
+
                         continue;
                     }
                 }
@@ -401,7 +404,7 @@ class DashboardInsightsService
                         ->first();
                     $monthAfterNextIsPaid = $monthAfterNextPayment && $monthAfterNextPayment->status === 'paid';
 
-                    if (!$monthAfterNextIsPaid) {
+                    if (! $monthAfterNextIsPaid) {
                         $upcomingBills[] = $this->formatBillEntry(
                             $bill,
                             $monthAfterNextDue,
@@ -416,8 +419,13 @@ class DashboardInsightsService
         }
 
         usort($upcomingBills, function ($a, $b) {
-            if ($a['is_overdue'] && !$b['is_overdue']) return -1;
-            if (!$a['is_overdue'] && $b['is_overdue']) return 1;
+            if ($a['is_overdue'] && ! $b['is_overdue']) {
+                return -1;
+            }
+            if (! $a['is_overdue'] && $b['is_overdue']) {
+                return 1;
+            }
+
             return strcmp($a['date'], $b['date']);
         });
 
@@ -466,7 +474,7 @@ class DashboardInsightsService
             ->when($bankUserId, fn ($q) => $q->where('bank_user_id', $bankUserId))
             ->exists();
 
-        if (!$hasTransactions) {
+        if (! $hasTransactions) {
             return [
                 'has_data' => false,
                 'current_month' => 0,

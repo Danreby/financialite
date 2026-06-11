@@ -9,8 +9,8 @@ use App\Http\Requests\Card\UpdateCardDueDayRequest;
 use App\Models\Card;
 use App\Models\CardUser;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -27,22 +27,22 @@ class CardController extends Controller
         $this->authorize('viewAny', Card::class);
 
         $user = $request->user();
-        
+
         $cards = Card::forUser($user->id)
             ->ordered()
             ->paginate(20);
-            
+
         return $this->success($cards);
     }
 
     public function show(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        
+
         $card = Card::forUser($user->id)->findOrFail($id);
-        
+
         $this->authorize('view', $card);
-        
+
         return $this->success($card);
     }
 
@@ -51,19 +51,19 @@ class CardController extends Controller
         $this->authorize('create', Card::class);
 
         $user = $request->user();
-        
+
         $data = $this->normalizeInsertData($request->validated());
         $card = DB::transaction(function () use ($data, $user) {
             $card = Card::create([
-                'name'        => $data['name'],
-                'brand'       => $data['brand'] ?? null,
+                'name' => $data['name'],
+                'brand' => $data['brand'] ?? null,
                 'description' => $data['description'] ?? null,
             ]);
 
             CardUser::create([
-                'card_id'      => $card->id,
-                'user_id'      => $user->id,
-                'closing_day'  => $data['closing_day'] ?? null,
+                'card_id' => $card->id,
+                'user_id' => $user->id,
+                'closing_day' => $data['closing_day'] ?? null,
                 'credit_limit' => $data['credit_limit'] ?? null,
             ]);
 
@@ -78,7 +78,7 @@ class CardController extends Controller
     public function update(CardUpdateRequest $request, int $id): JsonResponse
     {
         $user = $request->user();
-        
+
         $card = Card::forUser($user->id)->findOrFail($id);
 
         $this->authorize('update', $card);
@@ -86,8 +86,8 @@ class CardController extends Controller
         $data = $request->validated();
         DB::transaction(function () use ($card, $data, $user) {
             $card->update([
-                'name'        => $data['name'],
-                'brand'       => $data['brand'] ?? $card->brand,
+                'name' => $data['name'],
+                'brand' => $data['brand'] ?? $card->brand,
                 'description' => $data['description'] ?? $card->description,
             ]);
 
@@ -113,11 +113,11 @@ class CardController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        
+
         $card = $user->cards()->findOrFail($id);
-        
+
         $this->authorize('delete', $card);
-        
+
         DB::transaction(function () use ($user, $card) {
             CardUser::forUser($user->id)
                 ->forCard($card->id)
@@ -134,6 +134,7 @@ class CardController extends Controller
     public function list(Request $request): JsonResponse
     {
         $cards = Card::ordered()->get(['id', 'name']);
+
         return $this->success($cards);
     }
 
@@ -178,14 +179,14 @@ class CardController extends Controller
         $cardUser->load('card');
 
         return $this->success([
-            'id'           => $cardUser->id,
-            'card_id'      => $cardUser->card_id,
-            'name'         => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
-            'due_day'      => $cardUser->due_day,
-            'closing_day'  => $cardUser->closing_day,
+            'id' => $cardUser->id,
+            'card_id' => $cardUser->card_id,
+            'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
+            'due_day' => $cardUser->due_day,
+            'closing_day' => $cardUser->closing_day,
             'credit_limit' => $cardUser->credit_limit,
-            'brand'        => $cardUser->card?->brand,
-            'description'  => $cardUser->card?->description,
+            'brand' => $cardUser->card?->brand,
+            'description' => $cardUser->card?->description,
         ]);
     }
 
@@ -213,10 +214,10 @@ class CardController extends Controller
 
         $cardUser = DB::transaction(function () use ($data, $user) {
             $cardUser = CardUser::create([
-                'user_id'      => $user->id,
-                'card_id'      => $data['card_id'],
-                'due_day'      => $data['due_day'] ?? null,
-                'closing_day'  => $data['closing_day'] ?? null,
+                'user_id' => $user->id,
+                'card_id' => $data['card_id'],
+                'due_day' => $data['due_day'] ?? null,
+                'closing_day' => $data['closing_day'] ?? null,
                 'credit_limit' => $data['credit_limit'] ?? null,
             ]);
 
@@ -240,7 +241,7 @@ class CardController extends Controller
                 return [
                     'id' => $cardUser->id,
                     'card_id' => $cardUser->card_id,
-                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                    'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
                     'due_day' => $cardUser->due_day,
                     'closing_day' => $cardUser->closing_day,
                     'credit_limit' => $cardUser->credit_limit,

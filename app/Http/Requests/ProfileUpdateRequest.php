@@ -64,7 +64,7 @@ class ProfileUpdateRequest extends FormRequest
         if ($this->has('name') && is_string($this->name)) {
             $this->merge(['name' => trim($this->name)]);
         }
-        
+
         if ($this->has('email') && is_string($this->email)) {
             $this->merge(['email' => strtolower(trim($this->email))]);
         }

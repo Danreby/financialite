@@ -30,6 +30,7 @@ class TransacaoPolicy
         if ($transacao === null) {
             return true;
         }
+
         return $this->isOwner($user, $transacao);
     }
 

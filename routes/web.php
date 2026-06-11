@@ -1,16 +1,16 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CardController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\BillController;
+use App\Http\Controllers\CardController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\TransacaoController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjecaoController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\ProjecaoController;
+use App\Http\Controllers\TransacaoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'home']);

@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Bank;
 
 use App\Security\Rules\SafeNumeric;
-use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BankUpdateRequest extends FormRequest

@@ -115,7 +115,7 @@ class FaturaUpdateRequest extends FormRequest
         if ($this->has('title') && is_string($this->title)) {
             $this->merge(['title' => trim($this->title)]);
         }
-        
+
         if ($this->has('description') && is_string($this->description)) {
             $this->merge(['description' => trim($this->description)]);
         }

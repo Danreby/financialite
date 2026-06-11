@@ -18,7 +18,7 @@ class BudgetAlertService
     {
         $currentMonth = Carbon::now()->format('Y-m');
         $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth   = Carbon::now()->endOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
 
         $budget = Budget::where('user_id', $user->getAuthIdentifier())
             ->where('month_year', $currentMonth)
@@ -37,7 +37,7 @@ class BudgetAlertService
     {
         $currentMonth = Carbon::now()->format('Y-m');
         $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth   = Carbon::now()->endOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
 
         $budgets = Budget::with('user')
             ->where('month_year', $currentMonth)
@@ -50,6 +50,7 @@ class BudgetAlertService
         foreach ($budgets as $budget) {
             if (! $budget->user) {
                 $stats['skipped']++;
+
                 continue;
             }
 
@@ -63,8 +64,8 @@ class BudgetAlertService
             );
 
             $stats['threshold'] += $result['threshold'];
-            $stats['exceeded']  += $result['exceeded'];
-            $stats['skipped']   += $result['skipped'];
+            $stats['exceeded'] += $result['exceeded'];
+            $stats['skipped'] += $result['skipped'];
         }
 
         return $stats;
@@ -78,12 +79,13 @@ class BudgetAlertService
         Carbon $startOfMonth,
         Carbon $endOfMonth
     ): array {
-        $stats  = ['threshold' => 0, 'exceeded' => 0, 'skipped' => 0];
+        $stats = ['threshold' => 0, 'exceeded' => 0, 'skipped' => 0];
         $userId = $user->getAuthIdentifier();
-        $limit  = (float) $budget->monthly_limit;
+        $limit = (float) $budget->monthly_limit;
 
         if ($limit <= 0) {
             $stats['skipped']++;
+
             return $stats;
         }
 
@@ -92,34 +94,37 @@ class BudgetAlertService
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('amount');
 
-        $percentage         = ($totalSpent / $limit) * 100;
-        $formattedSpent     = number_format($totalSpent, 2, ',', '.');
-        $formattedLimit     = number_format($limit, 2, ',', '.');
-        $formattedPct       = number_format($percentage, 1, ',', '.');
+        $percentage = ($totalSpent / $limit) * 100;
+        $formattedSpent = number_format($totalSpent, 2, ',', '.');
+        $formattedLimit = number_format($limit, 2, ',', '.');
+        $formattedPct = number_format($percentage, 1, ',', '.');
         $formattedRemaining = number_format(max(0.0, $limit - $totalSpent), 2, ',', '.');
 
         if ($percentage >= 100.0) {
             if ($this->alreadyNotified($userId, 'budget_exceeded', $currentMonth)) {
                 $stats['skipped']++;
+
                 return $stats;
             }
 
             $this->notifications->error(
                 $user,
                 'Orçamento estourado!',
-                "Você gastou R$ {$formattedSpent} de um limite de R$ {$formattedLimit} ({$formattedPct}%). " .
+                "Você gastou R$ {$formattedSpent} de um limite de R$ {$formattedLimit} ({$formattedPct}%). ".
                 'Seu orçamento do mês foi ultrapassado.',
                 sendEmail: true
             );
 
             $this->storeMeta($userId, 'budget_exceeded', $currentMonth);
             $stats['exceeded']++;
+
             return $stats;
         }
 
         if ($percentage >= $threshold) {
             if ($this->alreadyNotified($userId, 'budget_threshold', $currentMonth)) {
                 $stats['skipped']++;
+
                 return $stats;
             }
 
@@ -128,8 +133,8 @@ class BudgetAlertService
             $this->notifications->warning(
                 $user,
                 "Orçamento a {$intThreshold}%",
-                "Você já utilizou {$formattedPct}% do seu orçamento mensal " .
-                "(R$ {$formattedSpent} de R$ {$formattedLimit}). " .
+                "Você já utilizou {$formattedPct}% do seu orçamento mensal ".
+                "(R$ {$formattedSpent} de R$ {$formattedLimit}). ".
                 "Restam apenas R$ {$formattedRemaining} disponíveis.",
                 sendEmail: true
             );
@@ -152,9 +157,9 @@ class BudgetAlertService
     {
         Notification::create([
             'user_id' => $userId,
-            'title'   => $this->metaTitle($alertKey, $month),
+            'title' => $this->metaTitle($alertKey, $month),
             'message' => '',
-            'type'    => 'info',
+            'type' => 'info',
             'is_read' => true,
             'read_at' => now(),
         ]);

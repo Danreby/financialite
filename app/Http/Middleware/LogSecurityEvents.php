@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class LogSecurityEvents
 {
-
     protected array $sensitiveActions = [
         'store',
         'update',
@@ -21,15 +20,13 @@ class LogSecurityEvents
         'restore',
     ];
 
-    public function __construct(protected SecurityLoggerInterface $logger)
-    {
-    }
+    public function __construct(protected SecurityLoggerInterface $logger) {}
 
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
 
-        if (!$request->user()) {
+        if (! $request->user()) {
             return $response;
         }
 

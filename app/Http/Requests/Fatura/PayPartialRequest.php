@@ -21,11 +21,11 @@ class PayPartialRequest extends FormRequest
             'amount' => 'required|numeric|min:0.01|max:999999999.99',
             'bank_user_id' => [
                 'nullable',
-                Rule::exists('card_user', 'id')->where(fn($q) => $q->where('user_id', $userId)),
+                Rule::exists('card_user', 'id')->where(fn ($q) => $q->where('user_id', $userId)),
             ],
             'bank_account_id' => [
                 'nullable',
-                Rule::exists('bank_user', 'id')->where(fn($q) => $q->where('user_id', $userId)),
+                Rule::exists('bank_user', 'id')->where(fn ($q) => $q->where('user_id', $userId)),
             ],
         ];
     }
@@ -34,9 +34,9 @@ class PayPartialRequest extends FormRequest
     {
         return [
             'amount.required' => 'O valor do pagamento é obrigatório.',
-            'amount.numeric'  => 'O valor do pagamento deve ser numérico.',
-            'amount.min'      => 'O valor mínimo de pagamento é R$ 0,01.',
-            'month.required'  => 'O mês de pagamento é obrigatório.',
+            'amount.numeric' => 'O valor do pagamento deve ser numérico.',
+            'amount.min' => 'O valor mínimo de pagamento é R$ 0,01.',
+            'month.required' => 'O mês de pagamento é obrigatório.',
             'month.date_format' => 'O formato do mês é inválido (esperado: AAAA-MM).',
         ];
     }

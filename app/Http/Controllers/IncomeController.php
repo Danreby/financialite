@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Contracts\Services\IncomeServiceInterface;
 use App\Http\Requests\Income\IncomeStoreRequest;
 use App\Http\Requests\Income\IncomeUpdateRequest;
-use App\Models\Income;
 use App\Models\CardUser;
+use App\Models\Income;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class IncomeController extends Controller
         $preserveCase = ['email', 'password', 'password_confirmation', 'title', 'description'];
 
         foreach ($data as $key => $value) {
-            if (is_string($value) && !in_array($key, $preserveCase, true)) {
+            if (is_string($value) && ! in_array($key, $preserveCase, true)) {
                 $data[$key] = mb_strtolower(trim($value), 'UTF-8');
             }
         }
@@ -50,7 +50,7 @@ class IncomeController extends Controller
         $user = $request->user();
         $data = $this->normalizeInsertData($request->validated());
 
-        if (!empty($data['bank_user_id'])) {
+        if (! empty($data['bank_user_id'])) {
             $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             $this->authorize('view', $bankUser);
         }
@@ -72,6 +72,7 @@ class IncomeController extends Controller
             return $this->success($income, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao cadastrar renda.');
         }
     }
@@ -83,7 +84,7 @@ class IncomeController extends Controller
         $user = $request->user();
         $data = $this->normalizeInsertData($request->validated());
 
-        if (!empty($data['bank_user_id'])) {
+        if (! empty($data['bank_user_id'])) {
             $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             $this->authorize('view', $bankUser);
         }
@@ -95,6 +96,7 @@ class IncomeController extends Controller
             return $this->success($income);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar renda.');
         }
     }
@@ -105,9 +107,11 @@ class IncomeController extends Controller
 
         try {
             $income = $this->incomeService->toggleActive($income);
+
             return $this->success($income);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao alterar status da renda.');
         }
     }
@@ -125,6 +129,7 @@ class IncomeController extends Controller
             return $this->success(['message' => 'Renda removida.']);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao remover renda.');
         }
     }

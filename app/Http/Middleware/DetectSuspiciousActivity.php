@@ -27,7 +27,7 @@ class DetectSuspiciousActivity
         '/\bSLEEP\s*\(/i',
         '/;\s*SHUTDOWN/i',
         '/LOAD_FILE\s*\(/i',
-        '/INTO\s+(OUT|DUMP)FILE/i'
+        '/INTO\s+(OUT|DUMP)FILE/i',
     ];
 
     protected array $xssPatterns = [
@@ -42,7 +42,7 @@ class DetectSuspiciousActivity
         '/expression\s*\(/i',
         '/<svg[^>]*onload/i',
         '/<img[^>]*onerror/i',
-        '/<body[^>]*onload/i'
+        '/<body[^>]*onload/i',
     ];
 
     protected array $pathTraversalPatterns = [
@@ -55,7 +55,7 @@ class DetectSuspiciousActivity
         '/\.\.\%00/i',
         '/etc\/passwd/i',
         '/boot\.ini/i',
-        '/win\.ini/i'
+        '/win\.ini/i',
     ];
 
     public function __construct(protected SecurityLoggerInterface $logger)
@@ -70,7 +70,7 @@ class DetectSuspiciousActivity
         $threats = [];
 
         foreach ($input as $key => $value) {
-            if (!is_string($value)) {
+            if (! is_string($value)) {
                 continue;
             }
 
@@ -105,7 +105,7 @@ class DetectSuspiciousActivity
             }
         }
 
-        if (!empty($threats) && $this->shouldBlock($threats)) {
+        if (! empty($threats) && $this->shouldBlock($threats)) {
             return $this->blockRequest($request, $threats);
         }
 
@@ -114,7 +114,7 @@ class DetectSuspiciousActivity
 
     protected function shouldBlock(array $threats): bool
     {
-        if (!$this->blockSuspiciousRequests) {
+        if (! $this->blockSuspiciousRequests) {
             return false;
         }
 
@@ -128,7 +128,7 @@ class DetectSuspiciousActivity
     protected function blockRequest(Request $request, array $threats): Response
     {
         $threatTypes = collect($threats)->pluck('type')->unique()->implode(', ');
-        
+
         $this->logger->logSuspicious('Request blocked due to detected threats', [
             'threats' => $threatTypes,
             'route' => $request->route()?->getName(),

@@ -9,20 +9,21 @@ use Throwable;
 class NotifyUsers extends Command
 {
     protected $signature = 'notify:users';
+
     protected $description = 'Executa todas as verificações de notificação para os usuários (contas, faturas, cartões, orçamentos)';
 
     private array $pipeline = [
-        'bills:check-upcoming'     => 'Contas a vencer',
-        'invoices:check-due-date'  => 'Faturas a vencer',
-        'cards:check-closing-day'  => 'Fechamento de cartões',
-        'budget:check-threshold'   => 'Limite de orçamento',
+        'bills:check-upcoming' => 'Contas a vencer',
+        'invoices:check-due-date' => 'Faturas a vencer',
+        'cards:check-closing-day' => 'Fechamento de cartões',
+        'budget:check-threshold' => 'Limite de orçamento',
     ];
 
     public function handle(): int
     {
         $this->info('========================================');
         $this->info('  Iniciando envio de notificações diárias');
-        $this->info('  ' . now()->format('d/m/Y H:i:s'));
+        $this->info('  '.now()->format('d/m/Y H:i:s'));
         $this->info('========================================');
 
         $errors = 0;
@@ -49,10 +50,12 @@ class NotifyUsers extends Command
 
         if ($errors > 0) {
             $this->warn("Concluído com {$errors} erro(s). Verifique os logs.");
+
             return self::FAILURE;
         }
 
         $this->info('Todas as notificações foram processadas com sucesso.');
+
         return self::SUCCESS;
     }
 }

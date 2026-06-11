@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Transacao;
 
 class CardUser extends Model
 {
@@ -21,13 +20,13 @@ class CardUser extends Model
     ];
 
     protected $casts = [
-        'due_day'      => 'integer',
-        'closing_day'  => 'integer',
+        'due_day' => 'integer',
+        'closing_day' => 'integer',
         'credit_limit' => 'decimal:2',
-        'card_id'      => 'integer',
-        'user_id'      => 'integer',
-        'created_at'   => 'datetime',
-        'updated_at'   => 'datetime',
+        'card_id' => 'integer',
+        'user_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function card(): BelongsTo

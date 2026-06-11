@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class SyncTransacaoParcelasCommand extends Command
 {
     protected $signature = 'parcelas:sync';
+
     protected $description = 'Verifica e sincroniza parcelas de todas as transações, criando registros faltantes e corrigindo inconsistências';
 
     public function handle(FaturaService $faturaService): int
@@ -48,11 +49,11 @@ class SyncTransacaoParcelasCommand extends Command
                 $needsRecreation = true;
             }
 
-            if (!$needsRecreation && $parcelas->contains(fn ($p) => empty($p->month_key))) {
+            if (! $needsRecreation && $parcelas->contains(fn ($p) => empty($p->month_key))) {
                 $needsRecreation = true;
             }
 
-            if (!$needsRecreation) {
+            if (! $needsRecreation) {
                 $parcelasSum = (float) $parcelas->sum('amount');
                 $transacaoAmount = (float) $transacao->amount;
                 if (abs($parcelasSum - $transacaoAmount) > 0.02) {
@@ -60,7 +61,7 @@ class SyncTransacaoParcelasCommand extends Command
                 }
             }
 
-            if (!$needsRecreation) {
+            if (! $needsRecreation) {
                 $numbers = $parcelas->pluck('installment_number')->sort()->values()->all();
                 $expected = range(1, $totalInstallments);
                 if ($numbers !== $expected) {
@@ -77,7 +78,7 @@ class SyncTransacaoParcelasCommand extends Command
                 $transacao->parcelas()->delete();
                 $faturaService->createParcelas($transacao);
 
-                if (!empty($paidStatuses)) {
+                if (! empty($paidStatuses)) {
                     foreach ($paidStatuses as $installmentNumber => $paidDate) {
                         TransacaoParcela::where('transacao_id', $transacao->id)
                             ->where('installment_number', $installmentNumber)

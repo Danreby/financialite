@@ -23,16 +23,16 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user ? [
-                    'id'                => $user->id,
-                    'name'              => $user->name,
-                    'email'             => $user->email,
-                    'phone'             => $user->phone,
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
                     'email_verified_at' => $user->email_verified_at,
-                    'is_verified'       => $user->hasVerifiedEmail(),
-                    'theme'             => $user->theme ?? 'rose',
-                    'avatar'            => $user->avatar,
-                    'google_linked'     => $user->hasGoogleLinked(),
-                    'has_password'      => $user->hasPasswordSet(),
+                    'is_verified' => $user->hasVerifiedEmail(),
+                    'theme' => $user->theme ?? 'rose',
+                    'avatar' => $user->avatar,
+                    'google_linked' => $user->hasGoogleLinked(),
+                    'has_password' => $user->hasPasswordSet(),
                 ] : null,
             ],
             'flash' => [
@@ -48,4 +48,3 @@ class HandleInertiaRequests extends Middleware
         ];
     }
 }
-

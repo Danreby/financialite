@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transacao;
-use App\Models\CardUser;
-use App\Models\BankUser;
-use App\Models\Category;
-use App\Services\FaturaService;
-use App\Services\FaturaExportService;
-use App\Services\FaturaImportService;
-use App\Services\FaturaDashboardService;
-use App\Services\FaturaPaymentService;
-use App\Services\NotificationService;
-use App\Services\DashboardInsightsService;
+use App\Http\Requests\Dashboard\PeriodSpendingRequest;
+use App\Http\Requests\Fatura\FaturaImportRequest;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
 use App\Http\Requests\Fatura\FaturaUpdateRequest;
 use App\Http\Requests\Fatura\PayMonthRequest;
 use App\Http\Requests\Fatura\PayPartialRequest;
-use App\Http\Requests\Fatura\FaturaImportRequest;
-use App\Http\Requests\Dashboard\PeriodSpendingRequest;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Inertia\Inertia;
-use Inertia\Response;
+use App\Models\BankUser;
+use App\Models\CardUser;
+use App\Models\Category;
+use App\Models\Transacao;
+use App\Services\DashboardInsightsService;
+use App\Services\FaturaDashboardService;
+use App\Services\FaturaExportService;
+use App\Services\FaturaImportService;
+use App\Services\FaturaPaymentService;
+use App\Services\FaturaService;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use DomainException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TransacaoController extends Controller
 {
@@ -36,8 +36,7 @@ class TransacaoController extends Controller
         private FaturaPaymentService $paymentService,
         private NotificationService $notifications,
         private DashboardInsightsService $insights
-    )
-    {
+    ) {
         $this->middleware('auth');
     }
 
@@ -106,6 +105,7 @@ class TransacaoController extends Controller
 
         if ($request->wantsJson()) {
             $paginated = $dashboard['base_query']->paginate(15);
+
             return $this->success($paginated);
         }
 
@@ -114,7 +114,7 @@ class TransacaoController extends Controller
             ->get()
             ->map(fn (BankUser $bu) => [
                 'id' => $bu->id,
-                'name' => $bu->bank?->name ?? ('Conta #' . $bu->id),
+                'name' => $bu->bank?->name ?? ('Conta #'.$bu->id),
                 'balance' => (float) $bu->balance,
             ]);
 
@@ -147,17 +147,18 @@ class TransacaoController extends Controller
         $user = $request->user();
         $data = $this->normalizeInsertData($request->validated());
 
-        if (!empty($data['bank_user_id'])) {
+        if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')
                 ->forUser($user->id)
                 ->findOrFail($data['bank_user_id']);
-            
+
             $this->authorize('view', $cardUser);
         }
 
         try {
             $fatura = $this->faturaService->createForUser($user, $data);
             $fatura->load(['bankUser.card', 'user', 'parcelas']);
+
             return $this->success($fatura, 201);
         } catch (\Throwable $e) {
             report($e);
@@ -176,7 +177,7 @@ class TransacaoController extends Controller
 
         $data = $this->normalizeInsertData($request->validated());
 
-        if (array_key_exists('bank_user_id', $data) && !empty($data['bank_user_id'])) {
+        if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             $cardUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
             $this->authorize('view', $cardUser);
         }
@@ -184,6 +185,7 @@ class TransacaoController extends Controller
         try {
             $fatura = $this->faturaService->updateForUser($fatura, $data);
             $fatura->load(['bankUser.card', 'user', 'parcelas']);
+
             return $this->success($fatura);
         } catch (\Throwable $e) {
             report($e);
@@ -200,6 +202,7 @@ class TransacaoController extends Controller
         $this->authorize('delete', $fatura);
 
         $fatura->delete();
+
         return $this->success(['message' => 'Fatura removida.']);
     }
 
@@ -211,6 +214,7 @@ class TransacaoController extends Controller
 
         if ($fatura->trashed()) {
             $fatura->restore();
+
             return $this->success(['message' => 'Fatura restaurada.', 'fatura' => $fatura]);
         }
 
@@ -232,7 +236,7 @@ class TransacaoController extends Controller
         }
 
         $bankAccount = null;
-        if (!empty($data['bank_account_id'])) {
+        if (! empty($data['bank_account_id'])) {
             $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
         }
 
@@ -271,7 +275,7 @@ class TransacaoController extends Controller
         }
 
         $bankAccount = null;
-        if (!empty($data['bank_account_id'])) {
+        if (! empty($data['bank_account_id'])) {
             $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
         }
 
@@ -292,11 +296,11 @@ class TransacaoController extends Controller
             );
 
             return $this->success([
-                'message'         => 'Pagamento parcial registrado com sucesso.',
-                'total_paid'      => $result['total_paid'],
-                'total_due'       => $result['total_due'],
+                'message' => 'Pagamento parcial registrado com sucesso.',
+                'total_paid' => $result['total_paid'],
+                'total_due' => $result['total_due'],
                 'amount_paid_now' => $result['amount_paid_now'],
-                'is_fully_paid'   => $result['is_fully_paid'],
+                'is_fully_paid' => $result['is_fully_paid'],
             ]);
         } catch (\DomainException $e) {
             return $this->error($e->getMessage(), 422);
@@ -315,7 +319,7 @@ class TransacaoController extends Controller
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
-        
+
         if ($request->filled('bank_user_id')) {
             $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
             $this->authorize('view', $selectedBankUser);
@@ -337,7 +341,7 @@ class TransacaoController extends Controller
 
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
-        
+
         if ($request->filled('bank_user_id')) {
             $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
             $this->authorize('view', $selectedBankUser);
@@ -383,19 +387,19 @@ class TransacaoController extends Controller
         $perPage = 15;
 
         $filters = [
-            'type'         => $request->get('type'),
+            'type' => $request->get('type'),
             'bank_user_id' => $request->get('bank_user_id'),
-            'category_id'  => $request->get('category_id'),
-            'status'       => $request->get('status'),
+            'category_id' => $request->get('category_id'),
+            'status' => $request->get('status'),
         ];
 
         $order = $request->get('order', 'created_desc');
 
-        $monthKey   = $request->get('month_key');
+        $monthKey = $request->get('month_key');
         $monthRange = null;
         if ($monthKey) {
             try {
-                $monthDate  = Carbon::parse($monthKey . '-01');
+                $monthDate = Carbon::parse($monthKey.'-01');
                 $monthRange = [
                     $monthDate->copy()->startOfMonth(),
                     $monthDate->copy()->endOfMonth(),
@@ -435,11 +439,11 @@ class TransacaoController extends Controller
             ->first();
 
         $filterTotals = [
-            'total_count'  => (int)   ($filterTotalsRow->total_count  ?? 0),
-            'debit_total'  => (float) ($filterTotalsRow->debit_total  ?? 0),
+            'total_count' => (int) ($filterTotalsRow->total_count ?? 0),
+            'debit_total' => (float) ($filterTotalsRow->debit_total ?? 0),
             'credit_total' => (float) ($filterTotalsRow->credit_total ?? 0),
-            'debit_count'  => (int)   ($filterTotalsRow->debit_count  ?? 0),
-            'credit_count' => (int)   ($filterTotalsRow->credit_count ?? 0),
+            'debit_count' => (int) ($filterTotalsRow->debit_count ?? 0),
+            'credit_count' => (int) ($filterTotalsRow->credit_count ?? 0),
         ];
 
         $transactions = Transacao::with(['bankUser.card', 'category'])
@@ -455,12 +459,12 @@ class TransacaoController extends Controller
             })
             ->when(true, function ($q) use ($order) {
                 $validOrders = [
-                    'created_asc'  => ['created_at', 'asc'],
+                    'created_asc' => ['created_at', 'asc'],
                     'created_desc' => ['created_at', 'desc'],
-                    'title_asc'    => ['title', 'asc'],
-                    'title_desc'   => ['title', 'desc'],
-                    'amount_asc'   => ['amount', 'asc'],
-                    'amount_desc'  => ['amount', 'desc'],
+                    'title_asc' => ['title', 'asc'],
+                    'title_desc' => ['title', 'desc'],
+                    'amount_asc' => ['amount', 'asc'],
+                    'amount_desc' => ['amount', 'desc'],
                 ];
                 $orderConfig = $validOrders[$order] ?? $validOrders['created_desc'];
                 $q->orderBy($orderConfig[0], $orderConfig[1]);
@@ -469,24 +473,24 @@ class TransacaoController extends Controller
             ->withQueryString()
             ->through(function (Transacao $transacao) {
                 return [
-                    'id'                  => $transacao->id,
-                    'title'               => $transacao->title,
-                    'description'         => $transacao->description,
-                    'amount'              => (float) $transacao->amount,
-                    'type'                => $transacao->type,
-                    'status'              => $transacao->status,
-                    'paid_date'           => $transacao->paid_date,
-                    'created_at'          => $transacao->created_at,
-                    'total_installments'  => $transacao->total_installments,
+                    'id' => $transacao->id,
+                    'title' => $transacao->title,
+                    'description' => $transacao->description,
+                    'amount' => (float) $transacao->amount,
+                    'type' => $transacao->type,
+                    'status' => $transacao->status,
+                    'paid_date' => $transacao->paid_date,
+                    'created_at' => $transacao->created_at,
+                    'total_installments' => $transacao->total_installments,
                     'current_installment' => $transacao->current_installment,
-                    'is_recurring'        => (bool) $transacao->is_recurring,
-                    'bank_user_id'        => $transacao->bank_user_id,
-                    'bank_name'           => optional($transacao->bankUser->card ?? null)->name ?? null,
-                    'category_id'         => $transacao->category_id,
-                    'category_name'       => $transacao->category->name ?? null,
-                    'category_icon'       => $transacao->category->icon ?? null,
-                    'category_color'      => $transacao->category->color ?? null,
-                    'anexos_count'        => $transacao->anexos_count ?? 0,
+                    'is_recurring' => (bool) $transacao->is_recurring,
+                    'bank_user_id' => $transacao->bank_user_id,
+                    'bank_name' => optional($transacao->bankUser->card ?? null)->name ?? null,
+                    'category_id' => $transacao->category_id,
+                    'category_name' => $transacao->category->name ?? null,
+                    'category_icon' => $transacao->category->icon ?? null,
+                    'category_color' => $transacao->category->color ?? null,
+                    'anexos_count' => $transacao->anexos_count ?? 0,
                 ];
             });
 
@@ -494,8 +498,8 @@ class TransacaoController extends Controller
             ->forUser($user->id)
             ->get()
             ->map(fn ($cardUser) => [
-                'id'   => $cardUser->id,
-                'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                'id' => $cardUser->id,
+                'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
             ])
             ->sortBy('name')
             ->values()
@@ -515,32 +519,33 @@ class TransacaoController extends Controller
             ->values()
             ->map(function (string $key) {
                 try {
-                    $label = Carbon::parse($key . '-01')->translatedFormat('F Y');
+                    $label = Carbon::parse($key.'-01')->translatedFormat('F Y');
                 } catch (\Throwable $e) {
                     $label = $key;
                 }
+
                 return [
-                    'month_key'   => $key,
+                    'month_key' => $key,
                     'month_label' => ucfirst($label),
-                    'is_paid'     => false,
+                    'is_paid' => false,
                 ];
             });
 
         return Inertia::render('Transacao', [
-            'transactions'  => $transactions,
-            'bankAccounts'  => $bankAccounts,
-            'categories'    => $categories,
-            'months'        => $months,
-            'filterTotals'  => $filterTotals,
-            'filters'       => [
-                'type'         => $filters['type'] ?? null,
+            'transactions' => $transactions,
+            'bankAccounts' => $bankAccounts,
+            'categories' => $categories,
+            'months' => $months,
+            'filterTotals' => $filterTotals,
+            'filters' => [
+                'type' => $filters['type'] ?? null,
                 'bank_user_id' => $filters['bank_user_id'] ?? null,
-                'category_id'  => $filters['category_id'] ?? null,
-                'status'       => $filters['status'] ?? null,
-                'recurring'    => $recurringParam,
-                'search'       => $search,
-                'month_key'    => $monthKey,
-                'order'        => $order,
+                'category_id' => $filters['category_id'] ?? null,
+                'status' => $filters['status'] ?? null,
+                'recurring' => $recurringParam,
+                'search' => $search,
+                'month_key' => $monthKey,
+                'order' => $order,
             ],
         ]);
     }
@@ -553,8 +558,8 @@ class TransacaoController extends Controller
             ->forUser($user->id)
             ->get()
             ->map(fn ($cu) => [
-                'id'   => $cu->id,
-                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
+                'id' => $cu->id,
+                'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
             ]);
 
         $categories = Category::forUser($user->id)
@@ -568,14 +573,14 @@ class TransacaoController extends Controller
             ->get();
 
         $installments = $txs->map(function ($tx) {
-            $totalInstallments  = (int) ($tx->total_installments ?? 1);
+            $totalInstallments = (int) ($tx->total_installments ?? 1);
             $currentInstallment = (int) ($tx->current_installment ?? 0);
-            $remaining          = max($totalInstallments - $currentInstallment, 0);
-            $amount             = (float) $tx->amount;
-            $installmentAmount  = (float) $tx->getInstallmentAmount();
+            $remaining = max($totalInstallments - $currentInstallment, 0);
+            $amount = (float) $tx->amount;
+            $installmentAmount = (float) $tx->getInstallmentAmount();
 
             $createdAt = \Carbon\Carbon::parse($tx->created_at);
-            $dueDay    = $tx->bankUser?->due_day ?? 1;
+            $dueDay = $tx->bankUser?->due_day ?? 1;
 
             $firstBillingMonth = $createdAt->day <= $dueDay
                 ? $createdAt->copy()->startOfMonth()
@@ -584,31 +589,31 @@ class TransacaoController extends Controller
             $completionDate = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
 
             return [
-                'id'                     => $tx->id,
-                'title'                  => $tx->title,
-                'description'            => $tx->description,
-                'amount'                 => $amount,
-                'installment_amount'     => $installmentAmount,
-                'total_installments'     => $totalInstallments,
-                'current_installment'    => $currentInstallment,
+                'id' => $tx->id,
+                'title' => $tx->title,
+                'description' => $tx->description,
+                'amount' => $amount,
+                'installment_amount' => $installmentAmount,
+                'total_installments' => $totalInstallments,
+                'current_installment' => $currentInstallment,
                 'remaining_installments' => $remaining,
-                'status'                 => $tx->status ?? 'unpaid',
-                'created_at'             => $tx->created_at,
-                'first_billing_month'    => $firstBillingMonth->format('Y-m'),
-                'completion_month'       => $completionDate->format('Y-m'),
-                'bank_user_id'           => $tx->bankUser?->id,
-                'bank_name'              => $tx->bankUser?->card?->name,
-                'category_id'            => $tx->category?->id,
-                'category_name'          => $tx->category?->name,
-                'category_icon'          => $tx->category?->icon,
-                'category_color'         => $tx->category?->color,
-                'type'                   => $tx->type ?? 'credit',
-                'parcelas'               => $tx->parcelas->map(fn ($p) => [
+                'status' => $tx->status ?? 'unpaid',
+                'created_at' => $tx->created_at,
+                'first_billing_month' => $firstBillingMonth->format('Y-m'),
+                'completion_month' => $completionDate->format('Y-m'),
+                'bank_user_id' => $tx->bankUser?->id,
+                'bank_name' => $tx->bankUser?->card?->name,
+                'category_id' => $tx->category?->id,
+                'category_name' => $tx->category?->name,
+                'category_icon' => $tx->category?->icon,
+                'category_color' => $tx->category?->color,
+                'type' => $tx->type ?? 'credit',
+                'parcelas' => $tx->parcelas->map(fn ($p) => [
                     'installment_number' => $p->installment_number,
-                    'amount'             => (float) $p->amount,
-                    'due_date'           => $p->due_date?->format('Y-m-d'),
-                    'status'             => $p->status,
-                    'paid_date'          => $p->paid_date?->format('Y-m-d'),
+                    'amount' => (float) $p->amount,
+                    'due_date' => $p->due_date?->format('Y-m-d'),
+                    'status' => $p->status,
+                    'paid_date' => $p->paid_date?->format('Y-m-d'),
                 ])->values()->toArray(),
             ];
         });
@@ -616,7 +621,7 @@ class TransacaoController extends Controller
         return Inertia::render('Parcelamentos', [
             'installments' => $installments,
             'bankAccounts' => $bankAccounts,
-            'categories'   => $categories,
+            'categories' => $categories,
         ]);
     }
 }

@@ -10,12 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ActionRateLimiter
 {
-
     public function __construct(
         protected RateLimiter $limiter,
         protected SecurityLoggerInterface $logger
-    ) {
-    }
+    ) {}
 
     public function handle(
         Request $request,

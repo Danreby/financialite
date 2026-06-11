@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Contracts\Services\SavingsGoalServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SavingsGoal\SavingsGoalStoreRequest;
-use App\Http\Requests\SavingsGoal\SavingsGoalUpdateRequest;
 use App\Http\Requests\SavingsGoal\SavingsGoalTransactionRequest;
+use App\Http\Requests\SavingsGoal\SavingsGoalUpdateRequest;
 use App\Models\SavingsGoal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,9 +32,11 @@ class SavingsGoalApiController extends Controller
 
         try {
             $goal = $this->savingsService->createForUser($user, $data);
+
             return $this->success($goal, 201);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao criar meta de economia.');
         }
     }
@@ -46,9 +48,11 @@ class SavingsGoalApiController extends Controller
 
         try {
             $goal = $this->savingsService->updateForUser($savingsGoal, $data);
+
             return $this->success($goal);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao atualizar meta.');
         }
     }
@@ -59,9 +63,11 @@ class SavingsGoalApiController extends Controller
 
         try {
             $this->savingsService->deleteForUser($savingsGoal);
+
             return $this->success(['message' => 'Meta removida.']);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao remover meta.');
         }
     }
@@ -72,9 +78,11 @@ class SavingsGoalApiController extends Controller
 
         try {
             $goal = $this->savingsService->deposit($savingsGoal, $request->validated('amount'));
+
             return $this->success($goal);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao depositar na meta.');
         }
     }
@@ -85,9 +93,11 @@ class SavingsGoalApiController extends Controller
 
         try {
             $goal = $this->savingsService->withdraw($savingsGoal, $request->validated('amount'));
+
             return $this->success($goal);
         } catch (\Throwable $e) {
             report($e);
+
             return $this->serverError('Erro ao retirar da meta.');
         }
     }

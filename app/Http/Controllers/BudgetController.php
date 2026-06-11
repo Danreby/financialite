@@ -7,8 +7,8 @@ use App\Http\Requests\Budget\BudgetUpdateRequest;
 use App\Models\Budget;
 use App\Models\BudgetCategory;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BudgetController extends Controller
@@ -50,7 +50,7 @@ class BudgetController extends Controller
             ->with(['categoryLimits.category:id,name,color,icon'])
             ->first();
 
-        if (!$budget) {
+        if (! $budget) {
             return $this->success([
                 'monthly_income' => $monthlyIncome,
                 'recommended_limit' => $recommendedLimit,
@@ -63,8 +63,8 @@ class BudgetController extends Controller
         $budgetData = $budget->toArray();
         $budgetData['total_spent'] = $totalSpent;
         $budgetData['remaining'] = max(0, $budget->monthly_limit - $totalSpent);
-        $budgetData['percentage'] = $budget->monthly_limit > 0 
-            ? min(100, ($totalSpent / $budget->monthly_limit) * 100) 
+        $budgetData['percentage'] = $budget->monthly_limit > 0
+            ? min(100, ($totalSpent / $budget->monthly_limit) * 100)
             : 0;
         $budgetData['monthly_income'] = $monthlyIncome;
         $budgetData['recommended_limit'] = $recommendedLimit;
@@ -73,11 +73,11 @@ class BudgetController extends Controller
             foreach ($budgetData['category_limits'] as &$categoryLimit) {
                 $categoryId = $categoryLimit['category_id'];
                 $spent = $categorySpending[$categoryId]['total'] ?? 0;
-                
+
                 $categoryLimit['spent'] = $spent;
                 $categoryLimit['remaining'] = max(0, $categoryLimit['limit'] - $spent);
-                $categoryLimit['percentage'] = $categoryLimit['limit'] > 0 
-                    ? min(100, ($spent / $categoryLimit['limit']) * 100) 
+                $categoryLimit['percentage'] = $categoryLimit['limit'] > 0
+                    ? min(100, ($spent / $categoryLimit['limit']) * 100)
                     : 0;
             }
         }
@@ -110,7 +110,7 @@ class BudgetController extends Controller
             ]);
 
             // Create category limits if provided
-            if (!empty($data['category_limits'])) {
+            if (! empty($data['category_limits'])) {
                 foreach ($data['category_limits'] as $categoryLimit) {
                     BudgetCategory::create([
                         'budget_id' => $budget->id,
@@ -186,7 +186,7 @@ class BudgetController extends Controller
             ->with(['categoryLimits.category:id,name,color,icon'])
             ->first();
 
-        if (!$budget) {
+        if (! $budget) {
             $monthlyIncome = \App\Models\Income::forUser($user->id)
                 ->where('is_active', true)
                 ->sum('amount');
@@ -207,19 +207,19 @@ class BudgetController extends Controller
         $budgetData = $budget->toArray();
         $budgetData['total_spent'] = $totalSpent;
         $budgetData['remaining'] = max(0, $budget->monthly_limit - $totalSpent);
-        $budgetData['percentage'] = $budget->monthly_limit > 0 
-            ? min(100, ($totalSpent / $budget->monthly_limit) * 100) 
+        $budgetData['percentage'] = $budget->monthly_limit > 0
+            ? min(100, ($totalSpent / $budget->monthly_limit) * 100)
             : 0;
 
         if (isset($budgetData['category_limits'])) {
             foreach ($budgetData['category_limits'] as &$categoryLimit) {
                 $categoryId = $categoryLimit['category_id'];
                 $spent = $categorySpending[$categoryId]['total'] ?? 0;
-                
+
                 $categoryLimit['spent'] = $spent;
                 $categoryLimit['remaining'] = max(0, $categoryLimit['limit'] - $spent);
-                $categoryLimit['percentage'] = $categoryLimit['limit'] > 0 
-                    ? min(100, ($spent / $categoryLimit['limit']) * 100) 
+                $categoryLimit['percentage'] = $categoryLimit['limit'] > 0
+                    ? min(100, ($spent / $categoryLimit['limit']) * 100)
                     : 0;
             }
         }

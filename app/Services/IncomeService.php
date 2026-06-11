@@ -43,7 +43,7 @@ class IncomeService implements IncomeServiceInterface
             $income->user_id = $user->id;
             $income->save();
 
-            if (empty($data['is_recurring']) && !empty($data['bank_account_id'])) {
+            if (empty($data['is_recurring']) && ! empty($data['bank_account_id'])) {
                 $bankUser = BankUser::forUser($user->id)->find((int) $data['bank_account_id']);
                 if ($bankUser) {
                     $bankUser->increment('balance', (float) $data['amount']);
@@ -58,6 +58,7 @@ class IncomeService implements IncomeServiceInterface
     {
         return DB::transaction(function () use ($income, $data) {
             $income->update($data);
+
             return $income->refresh();
         });
     }
@@ -72,8 +73,9 @@ class IncomeService implements IncomeServiceInterface
     public function toggleActive(Income $income): Income
     {
         return DB::transaction(function () use ($income) {
-            $income->is_active = !$income->is_active;
+            $income->is_active = ! $income->is_active;
             $income->save();
+
             return $income->refresh();
         });
     }

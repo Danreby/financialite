@@ -12,17 +12,17 @@ use Illuminate\Support\Facades\Mail;
 class NotificationService
 {
     private const TYPE_LABELS = [
-        'info'    => 'Informação',
+        'info' => 'Informação',
         'success' => 'Sucesso',
         'warning' => 'Atenção',
-        'error'   => 'Urgente',
+        'error' => 'Urgente',
     ];
 
     private const TYPE_COLORS = [
-        'info'    => ['accent' => '#3B82F6', 'bg' => '#EFF6FF'],
+        'info' => ['accent' => '#3B82F6', 'bg' => '#EFF6FF'],
         'success' => ['accent' => '#10B981', 'bg' => '#ECFDF5'],
         'warning' => ['accent' => '#F59E0B', 'bg' => '#FFFBEB'],
-        'error'   => ['accent' => '#EF4444', 'bg' => '#FEF2F2'],
+        'error' => ['accent' => '#EF4444', 'bg' => '#FEF2F2'],
     ];
 
     public function send(Authenticatable|int $user, string $title, string $message, string $type = 'info', bool $sendEmail = false): Notification
@@ -57,16 +57,16 @@ class NotificationService
             $mailable = (new NotificationMail($title, $message, $type))
                 ->with([
                     'accentColor' => $colors['accent'],
-                    'accentBg'    => $colors['bg'],
-                    'typeLabel'   => self::TYPE_LABELS[$type] ?? 'Notificação',
+                    'accentBg' => $colors['bg'],
+                    'typeLabel' => self::TYPE_LABELS[$type] ?? 'Notificação',
                 ]);
 
             Mail::to($userModel->email, $userModel->name)->send($mailable);
         } catch (\Throwable $e) {
             Log::error('NotificationService: falha ao enviar email', [
                 'user_id' => $userId,
-                'title'   => $title,
-                'error'   => $e->getMessage(),
+                'title' => $title,
+                'error' => $e->getMessage(),
             ]);
         }
     }

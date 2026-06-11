@@ -8,8 +8,11 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class SafeNumeric implements ValidationRule
 {
     protected ?float $min;
+
     protected ?float $max;
+
     protected int $decimals;
+
     protected bool $allowNegative;
 
     public function __construct(
@@ -30,8 +33,9 @@ class SafeNumeric implements ValidationRule
             return;
         }
 
-        if (!is_numeric($value)) {
+        if (! is_numeric($value)) {
             $fail('O campo :attribute deve ser um número válido.');
+
             return;
         }
 
@@ -39,21 +43,25 @@ class SafeNumeric implements ValidationRule
 
         if (is_nan($numericValue) || is_infinite($numericValue)) {
             $fail('O campo :attribute contém um valor numérico inválido.');
+
             return;
         }
 
-        if (!$this->allowNegative && $numericValue < 0) {
+        if (! $this->allowNegative && $numericValue < 0) {
             $fail('O campo :attribute não pode ser negativo.');
+
             return;
         }
 
         if ($this->min !== null && $numericValue < $this->min) {
             $fail("O campo :attribute deve ser no mínimo {$this->min}.");
+
             return;
         }
 
         if ($this->max !== null && $numericValue > $this->max) {
             $fail("O campo :attribute deve ser no máximo {$this->max}.");
+
             return;
         }
 
@@ -63,6 +71,7 @@ class SafeNumeric implements ValidationRule
                 $decimalPart = explode('.', $stringValue)[1];
                 if (strlen($decimalPart) > $this->decimals) {
                     $fail("O campo :attribute não pode ter mais de {$this->decimals} casas decimais.");
+
                     return;
                 }
             }

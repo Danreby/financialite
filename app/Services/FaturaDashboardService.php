@@ -12,9 +12,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class FaturaDashboardService
 {
-    public function __construct(private FaturaBillingService $billing)
-    {
-    }
+    public function __construct(private FaturaBillingService $billing) {}
 
     public function buildDashboardData(Authenticatable $user, array $filters): array
     {
@@ -55,9 +53,9 @@ class FaturaDashboardService
             ->get()
             ->map(function ($cardUser) {
                 return [
-                    'id'          => $cardUser->id,
-                    'name'        => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
-                    'due_day'     => $cardUser->due_day,
+                    'id' => $cardUser->id,
+                    'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
+                    'due_day' => $cardUser->due_day,
                     'closing_day' => $cardUser->closing_day,
                 ];
             });
@@ -141,7 +139,7 @@ class FaturaDashboardService
         $targetMonth = null;
 
         try {
-            $targetMonth = Carbon::parse($effectiveMonthKey . '-01');
+            $targetMonth = Carbon::parse($effectiveMonthKey.'-01');
         } catch (\Throwable $e) {
             $targetMonth = Carbon::today()->startOfMonth();
         }
@@ -175,7 +173,7 @@ class FaturaDashboardService
         })->values()->all();
 
         $creditRows = $creditEntriesForMonth->map(function (Transacao $transacao) use ($effectiveMonthKey) {
-            if (!$transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
+            if (! $transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
                 $parcela = $transacao->parcelas->firstWhere('month_key', $effectiveMonthKey);
                 $installmentAmount = $parcela
                     ? (float) $transacao->getInstallmentAmount($parcela->installment_number)
@@ -212,7 +210,7 @@ class FaturaDashboardService
 
         $topSpendingLabel = $effectiveGroup['month_label'] ?? null;
 
-        if (!$topSpendingLabel) {
+        if (! $topSpendingLabel) {
             $topSpendingLabel = ucfirst(
                 $targetMonth
                     ->locale(config('app.locale', 'pt_BR'))
@@ -287,16 +285,16 @@ class FaturaDashboardService
             $daysUntilClose = (int) $today->diffInDays($nextClose);
 
             return [
-                'card_id'        => $cardUser->id,
-                'card_name'      => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
-                'closing_day'    => $closingDay,
+                'card_id' => $cardUser->id,
+                'card_name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
+                'closing_day' => $closingDay,
                 'days_until_due' => $daysUntilClose,
-                'next_due_date'  => $nextClose->toDateString(),
+                'next_due_date' => $nextClose->toDateString(),
             ];
         })->sortBy('days_until_due')->values()->all();
 
         return [
-            'cards'   => $results,
+            'cards' => $results,
             'nearest' => $results[0] ?? null,
         ];
     }
@@ -350,14 +348,14 @@ class FaturaDashboardService
             ->get();
 
         foreach ($creditTransactions as $t) {
-            if (!$t->is_recurring && $t->parcelas->isNotEmpty()) {
+            if (! $t->is_recurring && $t->parcelas->isNotEmpty()) {
                 foreach ($t->parcelas->whereIn('month_key', $monthKeys) as $parcela) {
                     $creditByMonth[$parcela->month_key] = ($creditByMonth[$parcela->month_key] ?? 0) + (float) $parcela->amount;
                 }
             } else {
                 $amount = (float) $t->getInstallmentAmount();
                 foreach ($monthKeys as $mk) {
-                    $mkCarbon = Carbon::parse($mk . '-01');
+                    $mkCarbon = Carbon::parse($mk.'-01');
                     if ($this->billing->faturaAppliesToMonth($t, $mkCarbon)) {
                         $creditByMonth[$mk] = ($creditByMonth[$mk] ?? 0) + $amount;
                     }
@@ -419,8 +417,8 @@ class FaturaDashboardService
         ?int $bankUserId = null,
         ?int $categoryId = null
     ): array {
-        $startMonth = Carbon::parse($monthFrom . '-01');
-        $endMonth = Carbon::parse($monthTo . '-01')->endOfMonth();
+        $startMonth = Carbon::parse($monthFrom.'-01');
+        $endMonth = Carbon::parse($monthTo.'-01')->endOfMonth();
 
         $base = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
@@ -463,48 +461,48 @@ class FaturaDashboardService
 
         $debitRows = $debitEntries->map(function (Transacao $transacao) {
             return [
-                'category_id'    => $transacao->category_id,
-                'category_name'  => optional($transacao->category)->name,
-                'category_icon'  => optional($transacao->category)->icon,
+                'category_id' => $transacao->category_id,
+                'category_name' => optional($transacao->category)->name,
+                'category_icon' => optional($transacao->category)->icon,
                 'category_color' => optional($transacao->category)->color,
-                'amount'         => (float) $transacao->amount,
-                'is_recurring'   => $transacao->is_recurring,
+                'amount' => (float) $transacao->amount,
+                'is_recurring' => $transacao->is_recurring,
             ];
         })->values()->all();
 
         $creditRows = $creditEntries->flatMap(function (Transacao $transacao) use ($monthKeys) {
             $rows = [];
 
-            if (!$transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
+            if (! $transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
                 $matchingParcelas = $transacao->parcelas->whereIn('month_key', $monthKeys);
                 $totalAmount = $matchingParcelas->sum('amount');
 
                 if ($totalAmount > 0) {
                     $rows[] = [
-                        'category_id'    => $transacao->category_id,
-                        'category_name'  => optional($transacao->category)->name,
-                        'category_icon'  => optional($transacao->category)->icon,
+                        'category_id' => $transacao->category_id,
+                        'category_name' => optional($transacao->category)->name,
+                        'category_icon' => optional($transacao->category)->icon,
                         'category_color' => optional($transacao->category)->color,
-                        'amount'         => (float) $totalAmount,
-                        'is_recurring'   => $transacao->is_recurring,
+                        'amount' => (float) $totalAmount,
+                        'is_recurring' => $transacao->is_recurring,
                     ];
                 }
             } else {
                 $count = 0;
                 foreach ($monthKeys as $mk) {
-                    $mkCarbon = Carbon::parse($mk . '-01');
+                    $mkCarbon = Carbon::parse($mk.'-01');
                     if ($this->billing->faturaAppliesToMonth($transacao, $mkCarbon)) {
                         $count++;
                     }
                 }
                 if ($count > 0) {
                     $rows[] = [
-                        'category_id'    => $transacao->category_id,
-                        'category_name'  => optional($transacao->category)->name,
-                        'category_icon'  => optional($transacao->category)->icon,
+                        'category_id' => $transacao->category_id,
+                        'category_name' => optional($transacao->category)->name,
+                        'category_icon' => optional($transacao->category)->icon,
                         'category_color' => optional($transacao->category)->color,
-                        'amount'         => (float) $transacao->getInstallmentAmount() * $count,
-                        'is_recurring'   => $transacao->is_recurring,
+                        'amount' => (float) $transacao->getInstallmentAmount() * $count,
+                        'is_recurring' => $transacao->is_recurring,
                     ];
                 }
             }
@@ -526,8 +524,8 @@ class FaturaDashboardService
         $nonRecurringPercentage = $totalAmount > 0 ? round(($totalNonRecurring / $totalAmount) * 100, 1) : 0;
 
         $locale = config('app.locale', 'pt_BR');
-        $fromLabel = ucfirst(Carbon::parse($monthFrom . '-01')->locale($locale)->translatedFormat('M Y'));
-        $toLabel = ucfirst(Carbon::parse($monthTo . '-01')->locale($locale)->translatedFormat('M Y'));
+        $fromLabel = ucfirst(Carbon::parse($monthFrom.'-01')->locale($locale)->translatedFormat('M Y'));
+        $toLabel = ucfirst(Carbon::parse($monthTo.'-01')->locale($locale)->translatedFormat('M Y'));
         $periodLabel = $monthFrom === $monthTo ? $fromLabel : "{$fromLabel} — {$toLabel}";
 
         return [
@@ -550,7 +548,7 @@ class FaturaDashboardService
     {
         $query = Fatura::where('user_id', $userId);
 
-        if ($shouldFilterByBankUser && !is_null($bankUserId)) {
+        if ($shouldFilterByBankUser && ! is_null($bankUserId)) {
             $query->where('bank_user_id', $bankUserId);
         } elseif ($shouldFilterByBankUser && is_null($bankUserId)) {
             $query->whereNull('bank_user_id');
@@ -558,7 +556,7 @@ class FaturaDashboardService
 
         $results = $query->get();
 
-        if (!$shouldFilterByBankUser) {
+        if (! $shouldFilterByBankUser) {
             return $results->groupBy('month_key')->map(function ($faturas) {
                 return (object) [
                     'total_paid' => (float) $faturas->sum('total_paid'),

@@ -10,22 +10,22 @@ return new class extends Migration
     {
         Schema::create('budgets', function (Blueprint $table) {
             $table->id();
-            
+
             $table->decimal('monthly_limit', 12, 2);
-            
+
             $table->string('month_year', 7);
-            
+
             $table->boolean('is_active')->default(true);
-            
+
             $table->foreignId('user_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
-            
+
             $table->timestamps();
-            
+
             $table->index(['user_id', 'month_year']);
             $table->index(['user_id', 'is_active']);
-            
+
             $table->unique(['user_id', 'month_year']);
         });
     }

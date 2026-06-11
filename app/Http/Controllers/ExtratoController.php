@@ -26,8 +26,8 @@ class ExtratoController extends Controller
             ->forUser($user->id)
             ->get()
             ->map(fn ($cu) => [
-                'id'   => $cu->id,
-                'name' => $cu->card?->name ?? ('Cartão #' . $cu->id),
+                'id' => $cu->id,
+                'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
             ]);
 
         $categories = Category::forUser($user->id)
@@ -36,18 +36,18 @@ class ExtratoController extends Controller
 
         return Inertia::render('Extrato', [
             'bankAccounts' => $bankAccounts,
-            'categories'   => $categories,
+            'categories' => $categories,
         ]);
     }
 
     public function data(Request $request): JsonResponse
     {
         $request->validate([
-            'start_date'   => ['nullable', 'date', 'after_or_equal:' . now()->subYears(2)->toDateString()],
-            'end_date'     => ['nullable', 'date', 'after_or_equal:start_date', 'before_or_equal:' . now()->addYear()->toDateString()],
+            'start_date' => ['nullable', 'date', 'after_or_equal:'.now()->subYears(2)->toDateString()],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date', 'before_or_equal:'.now()->addYear()->toDateString()],
             'bank_user_id' => ['nullable', 'integer'],
-            'category_id'  => ['nullable', 'integer'],
-            'type'         => ['nullable', 'string', 'in:credit,debit'],
+            'category_id' => ['nullable', 'integer'],
+            'type' => ['nullable', 'string', 'in:credit,debit'],
         ]);
 
         $user = $request->user();

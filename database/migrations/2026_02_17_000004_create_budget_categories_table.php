@@ -10,21 +10,21 @@ return new class extends Migration
     {
         Schema::create('budget_categories', function (Blueprint $table) {
             $table->id();
-            
+
             $table->foreignId('budget_id')
                 ->constrained('budgets')
                 ->cascadeOnDelete();
-            
+
             $table->foreignId('category_id')
                 ->constrained('categories')
                 ->cascadeOnDelete();
-            
+
             $table->decimal('limit', 12, 2);
-            
+
             $table->timestamps();
-            
+
             $table->index(['budget_id', 'category_id']);
-            
+
             $table->unique(['budget_id', 'category_id']);
         });
     }

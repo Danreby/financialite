@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // Return JSON errors for all API requests so the mobile app can display them
         $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
-            if (!$request->expectsJson() && !$request->is('api/*')) {
+            if (! $request->expectsJson() && ! $request->is('api/*')) {
                 return null;
             }
 
@@ -65,7 +65,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => $status >= 500
                     ? 'Erro interno do servidor. Contate o suporte.'
                     : $e->getMessage(),
-                'error' => class_basename($e) . ': ' . $e->getMessage(),
+                'error' => class_basename($e).': '.$e->getMessage(),
             ];
 
             if ($isDebug) {

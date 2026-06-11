@@ -47,6 +47,7 @@ class InputSanitizer implements SanitizerInterface
         foreach ($data as $key => $value) {
             if (in_array($key, $except, true)) {
                 $sanitized[$key] = $value;
+
                 continue;
             }
 
@@ -89,15 +90,15 @@ class InputSanitizer implements SanitizerInterface
     {
         $url = filter_var(trim($url), FILTER_SANITIZE_URL);
 
-        if (!$url) {
+        if (! $url) {
             return null;
         }
 
-        if (!preg_match('/^https?:\/\//i', $url)) {
+        if (! preg_match('/^https?:\/\//i', $url)) {
             return null;
         }
 
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
             return null;
         }
 
@@ -112,6 +113,7 @@ class InputSanitizer implements SanitizerInterface
     public function decodeAndSanitize(string $value): string
     {
         $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return $this->sanitizeString($decoded);
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transacao;
 use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Income;
+use App\Models\Transacao;
 use App\Services\FaturaDashboardService;
 use App\Services\FaturaExportService;
 use App\Services\IncomeService;
@@ -33,7 +33,7 @@ class ReportController extends Controller
             ->map(function ($cardUser) {
                 return [
                     'id' => $cardUser->id,
-                    'name' => $cardUser->card?->name ?? ('Cartão #' . $cardUser->id),
+                    'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
                 ];
             });
 
@@ -45,19 +45,19 @@ class ReportController extends Controller
         $totalMonthlyIncome = $incomeService->totalMonthlyIncome($user->id);
         $incomes = $incomeService->listRecurringForUser($user->id)
             ->map(fn ($income) => [
-                'id'         => $income->id,
-                'title'      => $income->title,
-                'amount'     => (float) $income->amount,
-                'type'       => $income->type,
+                'id' => $income->id,
+                'title' => $income->title,
+                'amount' => (float) $income->amount,
+                'type' => $income->type,
                 'type_label' => $income->type_label,
-                'is_active'  => $income->is_active,
-                'bank_name'  => optional($income->bankUser?->card)->name,
+                'is_active' => $income->is_active,
+                'bank_name' => optional($income->bankUser?->card)->name,
             ]);
 
         return Inertia::render('Relatorio', [
-            'bankAccounts'       => $bankAccounts,
-            'categories'         => $categories,
-            'incomes'            => $incomes,
+            'bankAccounts' => $bankAccounts,
+            'categories' => $categories,
+            'incomes' => $incomes,
             'totalMonthlyIncome' => $totalMonthlyIncome,
         ]);
     }
@@ -92,19 +92,19 @@ class ReportController extends Controller
             ->orderByDesc('received_at')
             ->get()
             ->map(fn (Income $income) => [
-                'id'          => $income->id,
-                'title'       => $income->title,
+                'id' => $income->id,
+                'title' => $income->title,
                 'description' => $income->description,
-                'amount'      => (float) $income->amount,
-                'type'        => $income->type,
-                'type_label'  => Income::TYPE_LABELS[$income->type] ?? $income->type,
+                'amount' => (float) $income->amount,
+                'type' => $income->type,
+                'type_label' => Income::TYPE_LABELS[$income->type] ?? $income->type,
                 'received_at' => $income->received_at?->toDateString(),
-                'month_key'   => $income->received_at?->format('Y-m'),
+                'month_key' => $income->received_at?->format('Y-m'),
             ]);
 
         return $this->success([
-            'stats'            => $stats,
-            'export_data'      => $exportData,
+            'stats' => $stats,
+            'export_data' => $exportData,
             'one_time_incomes' => $oneTimeIncomes->values(),
         ]);
     }
