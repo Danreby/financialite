@@ -48,13 +48,27 @@ jobs:
     name: PHPUnit Tests
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
-          extensions: mbstring, pdo, pdo_sqlite, sqlite3, dom, curl, zip, gd
+          extensions: mbstring, pdo, pdo_mysql, dom, curl, zip, gd
           coverage: none
           tools: composer:v2
 
@@ -68,9 +82,6 @@ jobs:
       - name: Copy environment file
         run: cp .env.example .env
 
-      - name: Create SQLite database file
-        run: touch database/database.sqlite
-
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
@@ -79,6 +90,13 @@ jobs:
 
       - name: Run tests
         run: php artisan test
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: testing
+          DB_USERNAME: root
+          DB_PASSWORD: password
 
   build:
     name: Frontend Build
