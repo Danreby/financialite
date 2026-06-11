@@ -72,7 +72,7 @@ class AnexoTest extends TestCase
         $files = [
             UploadedFile::fake()->image('comprovante1.jpg'),
             UploadedFile::fake()->image('comprovante2.png'),
-            UploadedFile::fake()->create('planilha.xlsx', 100),
+            UploadedFile::fake()->create('documento.pdf', 100, 'application/pdf'),
         ];
 
         $response = $this->actingAs($this->user)
