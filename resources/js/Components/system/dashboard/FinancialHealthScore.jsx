@@ -93,7 +93,7 @@ export default function FinancialHealthScore({
 
   const hexBg = (hex) =>
     hex === "var(--theme-accent)"
-      ? "var(--theme-bgCardLight, rgba(99,102,241,0.12))"
+      ? "color-mix(in srgb, var(--theme-accent, #f43f5e) 12%, transparent)"
       : hex + "1e"
 
   return (
