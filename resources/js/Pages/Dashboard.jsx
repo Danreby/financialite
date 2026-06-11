@@ -345,7 +345,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
       <FadeInContainer className="w-full max-w-[1920px] mx-auto pb-6">
         <FadeInItem className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
           <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            Visão geralia
+            Visão geral
           </h1>
 
           <div className="flex items-center gap-2 text-sm lg:text-base">
