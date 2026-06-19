@@ -60,10 +60,10 @@ class FaturaService implements FaturaServiceInterface
     public function updateForUser(Transacao $fatura, array $data): Transacao
     {
         return DB::transaction(function () use ($fatura, $data) {
-            $oldAmount       = (float) $fatura->amount;
+            $oldAmount = (float) $fatura->amount;
             $oldInstallments = (int) $fatura->total_installments;
-            $wasPaid         = $fatura->paid_date !== null;
-            $wasRecurring    = (bool) $fatura->is_recurring;
+            $wasPaid = $fatura->paid_date !== null;
+            $wasRecurring = (bool) $fatura->is_recurring;
 
             $fatura->update($data);
 
@@ -74,7 +74,7 @@ class FaturaService implements FaturaServiceInterface
                 $fatura->save();
             }
 
-            $newAmount       = (float) $fatura->amount;
+            $newAmount = (float) $fatura->amount;
             $newInstallments = (int) $fatura->total_installments;
 
             if ($oldAmount !== $newAmount || $oldInstallments !== $newInstallments) {
@@ -118,8 +118,8 @@ class FaturaService implements FaturaServiceInterface
 
         foreach ($entries as $entry) {
             $faturaRecord = Fatura::where([
-                'user_id'      => $transacao->user_id,
-                'month_key'    => $entry['month_key'],
+                'user_id' => $transacao->user_id,
+                'month_key' => $entry['month_key'],
                 'bank_user_id' => $transacao->bank_user_id,
             ])->first();
 
@@ -131,7 +131,7 @@ class FaturaService implements FaturaServiceInterface
             $faturaRecord->total_paid = $newTotal;
 
             if ($newTotal < 0.01) {
-                $faturaRecord->paid_at    = null;
+                $faturaRecord->paid_at = null;
                 $faturaRecord->total_paid = 0;
             }
 
