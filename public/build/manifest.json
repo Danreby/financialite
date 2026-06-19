@@ -413,7 +413,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-A9BVK0uk.js",
+    "file": "assets/Bancos-C9nL9JKW.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -571,7 +571,7 @@
     ]
   },
   "resources/js/Pages/Fatura.jsx": {
-    "file": "assets/Fatura-C2joMpOk.js",
+    "file": "assets/Fatura-Xa2uEUzG.js",
     "name": "Fatura",
     "src": "resources/js/Pages/Fatura.jsx",
     "isDynamicEntry": true,
@@ -764,7 +764,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-C31wRIVx.js",
+    "file": "assets/app-ByC3C7Yo.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
