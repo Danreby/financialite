@@ -258,6 +258,10 @@ class FaturaBillingService
             $carbon = Carbon::parse($yearMonth.'-01');
             $label = ucfirst($carbon->translatedFormat('F Y'));
 
+            // Resolve payment record first — needed for recurring status check in totalPending
+            $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
+            $totalPaid = $faturaPayment ? (float) ($faturaPayment->total_paid ?? 0.0) : 0.0;
+
             $totalSpent = $items->sum(function ($entry) {
                 $transacao = $entry['transacao'];
                 $installmentNumber = $entry['installment_index'];
@@ -272,12 +276,38 @@ class FaturaBillingService
                 return (float) $transacao->getInstallmentAmount($installmentNumber);
             });
 
-            $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
-            $totalPaid = $faturaPayment ? (float) ($faturaPayment->total_paid ?? 0.0) : 0.0;
+            // Sum only items that are not yet paid — used as the "A pagar" amount
+            $totalPending = $items->sum(function ($entry) use ($faturaPayment) {
+                $transacao = $entry['transacao'];
+                $installmentNumber = $entry['installment_index'];
 
-            $isPaid = $faturaPayment
-                && $faturaPayment->paid_at !== null
-                && $totalPaid > 0;
+                $parcela = null;
+                $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
+
+                if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+                    $parcela = $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
+                }
+
+                $effectiveStatus = $transacao->status;
+                if ($transacao->is_recurring) {
+                    $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at) ? 'paid' : 'pending';
+                } elseif ($parcela) {
+                    $effectiveStatus = $parcela->status;
+                } elseif ($totalInstallments > 1 && (int) ($transacao->current_installment ?? 0) >= $installmentNumber) {
+                    $effectiveStatus = 'paid';
+                }
+
+                if ($effectiveStatus === 'paid') {
+                    return 0.0;
+                }
+
+                return $parcela
+                    ? (float) $parcela->amount
+                    : (float) $transacao->getInstallmentAmount($installmentNumber);
+            });
+
+            $isPaid = ($totalSpent > 0 && $totalPending < 0.01)
+                || ($faturaPayment && $faturaPayment->paid_at !== null && $totalPaid > 0);
 
             $hasRemainingPostPayment = $faturaPayment
                 && $faturaPayment->paid_at !== null
@@ -292,6 +322,7 @@ class FaturaBillingService
                 'month_key' => $yearMonth,
                 'month_label' => $label,
                 'total_spent' => (float) $totalSpent,
+                'total_pending' => (float) $totalPending,
                 'total_paid' => $totalPaid,
                 'is_paid' => $isPaid,
                 'is_partially_paid' => ! $isPaid && $totalPaid > 0,

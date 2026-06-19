@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Services\FaturaServiceInterface;
 use App\Models\BankUser;
 use App\Models\CardUser;
+use App\Models\Fatura;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
 use Carbon\Carbon;
@@ -59,8 +60,10 @@ class FaturaService implements FaturaServiceInterface
     public function updateForUser(Transacao $fatura, array $data): Transacao
     {
         return DB::transaction(function () use ($fatura, $data) {
-            $oldAmount = (float) $fatura->amount;
+            $oldAmount       = (float) $fatura->amount;
             $oldInstallments = (int) $fatura->total_installments;
+            $wasPaid         = $fatura->paid_date !== null;
+            $wasRecurring    = (bool) $fatura->is_recurring;
 
             $fatura->update($data);
 
@@ -71,7 +74,7 @@ class FaturaService implements FaturaServiceInterface
                 $fatura->save();
             }
 
-            $newAmount = (float) $fatura->amount;
+            $newAmount       = (float) $fatura->amount;
             $newInstallments = (int) $fatura->total_installments;
 
             if ($oldAmount !== $newAmount || $oldInstallments !== $newInstallments) {
@@ -79,8 +82,61 @@ class FaturaService implements FaturaServiceInterface
                 $this->createParcelas($fatura);
             }
 
+            if ($wasPaid && $fatura->paid_date === null && ! $wasRecurring) {
+                $this->resetFaturaPaymentOnUnpaid($fatura);
+            }
+
             return $fatura->refresh();
         });
+    }
+
+    private function resetFaturaPaymentOnUnpaid(Transacao $transacao): void
+    {
+        $transacao->loadMissing(['bankUser', 'parcelas']);
+        $parcelas = $transacao->parcelas;
+
+        $transacao->parcelas()
+            ->where('status', 'paid')
+            ->update(['status' => 'pending', 'paid_date' => null]);
+
+        $transacao->current_installment = 0;
+        $transacao->save();
+
+        if ($parcelas->isNotEmpty()) {
+            $entries = $parcelas
+                ->filter(fn ($p) => $p->month_key !== null)
+                ->map(fn ($p) => ['month_key' => $p->month_key, 'amount' => (float) $p->amount])
+                ->values();
+        } else {
+            try {
+                $monthKey = $this->billing->resolveBillingMonthKey($transacao);
+            } catch (\Throwable) {
+                $monthKey = $transacao->created_at->format('Y-m');
+            }
+            $entries = collect([['month_key' => $monthKey, 'amount' => (float) $transacao->amount]]);
+        }
+
+        foreach ($entries as $entry) {
+            $faturaRecord = Fatura::where([
+                'user_id'      => $transacao->user_id,
+                'month_key'    => $entry['month_key'],
+                'bank_user_id' => $transacao->bank_user_id,
+            ])->first();
+
+            if (! $faturaRecord) {
+                continue;
+            }
+
+            $newTotal = max(0.0, (float) ($faturaRecord->total_paid ?? 0) - $entry['amount']);
+            $faturaRecord->total_paid = $newTotal;
+
+            if ($newTotal < 0.01) {
+                $faturaRecord->paid_at    = null;
+                $faturaRecord->total_paid = 0;
+            }
+
+            $faturaRecord->save();
+        }
     }
 
     public function createParcelas(Transacao $transacao): void

@@ -175,22 +175,14 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
             ->where('type', 'credit')
+            ->whereBetween('created_at', [$targetMonth, $targetMonthEnd])
             ->orderByDesc('created_at')
-            ->get()
-            ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
+            ->get();
 
         $allTransactions = $debitTransactions->merge($creditTransactions);
 
-        // Credit transactions that "apply" to the target month via installments may have been
-        // created in a previous month. To ensure they appear on the calendar, we pin their
-        // display date to the 1st of the target month when their actual created_at falls
-        // outside the displayed month range.
-        $grouped = $allTransactions->groupBy(function ($t) use ($targetMonth, $targetMonthEnd) {
+        $grouped = $allTransactions->groupBy(function ($t) {
             $date = $t->created_at instanceof Carbon ? $t->created_at : Carbon::parse($t->created_at);
-
-            if ($t->type === 'credit' && ($date->lt($targetMonth) || $date->gt($targetMonthEnd))) {
-                return $targetMonth->format('Y-m-d');
-            }
 
             return $date->format('Y-m-d');
         });
