@@ -11,6 +11,7 @@ import { formatCurrency } from "@/Lib/formatters";
 export default function FaturaMonthSection({
   month_label,
   total_spent,
+  total_pending,
   total_paid = 0,
   items = [],
   month_key,
@@ -83,6 +84,7 @@ export default function FaturaMonthSection({
       <FaturaPaymentSummaryCard
         monthLabel={month_label}
         totalSpent={total_spent}
+        totalPending={total_pending ?? total_spent}
         totalPaid={total_paid}
         isPaid={is_paid}
         isPartiallyPaid={is_partially_paid}

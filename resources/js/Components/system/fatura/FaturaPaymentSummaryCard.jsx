@@ -28,6 +28,7 @@ function StatBox({ label, value, variant = 'default' }) {
 export default function FaturaPaymentSummaryCard({
 	monthLabel,
 	totalSpent = 0,
+	totalPending,
 	totalPaid = 0,
 	isPaid = false,
 	isPartiallyPaid = false,
@@ -36,7 +37,8 @@ export default function FaturaPaymentSummaryCard({
 	onPayFull,
 	onPayPartial,
 }) {
-	const remaining = Math.max(0, totalSpent - totalPaid);
+	const pendingBase = totalPending ?? totalSpent;
+	const remaining = Math.max(0, pendingBase - totalPaid);
 	const progressPercent = totalSpent > 0 ? Math.round(Math.min(totalPaid / totalSpent, 1) * 100) : 0;
 	const hasPayments = totalPaid > 0;
 
