@@ -53,7 +53,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
     const dark = isDark();
 
     const [editingPaymentId, setEditingPaymentId] = useState(null);
-    const [editForm, setEditForm] = useState({ amount_paid: '', paid_date: '', notes: '' });
+    const [editForm, setEditForm] = useState({ amount_due: '', amount_paid: '', paid_date: '', notes: '' });
     const [saving, setSaving] = useState(false);
     const [deletingPaymentId, setDeletingPaymentId] = useState(null);
 
@@ -138,6 +138,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
     const openEdit = (p) => {
         setEditingPaymentId(p.id);
         setEditForm({
+            amount_due: String(p.amount_due ?? bill?.amount ?? '').replace('.', ','),
             amount_paid: String(p.amount_paid).replace('.', ','),
             paid_date: p.paid_date || p.due_date,
             notes: p.notes || '',
@@ -172,9 +173,16 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
             toast.error('Informe um valor válido.');
             return;
         }
+        const normalizedDue = editForm.amount_due.replace(/\./g, '').replace(',', '.');
+        const parsedDue = parseFloat(normalizedDue);
+        if (isNaN(parsedDue) || parsedDue < 0) {
+            toast.error('Informe um valor previsto válido.');
+            return;
+        }
         setSaving(true);
         try {
             await axios.patch(route('bills.payment.update', [bill.id, paymentId]), {
+                amount_due: parsedDue,
                 amount_paid: parsed,
                 paid_date: editForm.paid_date,
                 notes: editForm.notes || null,
@@ -294,7 +302,18 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
                                                             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-theme-accent"
                                                         />
                                                     </td>
-                                                    <td className="px-3 py-2 text-right text-gray-500 dark:text-gray-400">{formatCurrency(p.amount_due || bill?.amount)}</td>
+                                                    <td className="px-3 py-2 text-right">
+                                                        <input
+                                                            type="text"
+                                                            inputMode="decimal"
+                                                            value={editForm.amount_due}
+                                                            onChange={(e) => {
+                                                                let v = e.target.value.replace(/[^0-9.,]/g, '');
+                                                                setEditForm((f) => ({ ...f, amount_due: v }));
+                                                            }}
+                                                            className="w-24 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-right text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-theme-accent"
+                                                        />
+                                                    </td>
                                                     <td className="px-3 py-2 text-right">
                                                         <input
                                                             type="text"

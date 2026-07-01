@@ -15,6 +15,7 @@ use App\Contracts\Services\ImportServiceInterface;
 use App\Contracts\Services\IncomeServiceInterface;
 use App\Contracts\Services\NotificationServiceInterface;
 use App\Contracts\Services\PaymentServiceInterface;
+use App\Contracts\Services\PrevisaoMensalServiceInterface;
 use App\Contracts\Services\ResumoMensalServiceInterface;
 use App\Contracts\Services\SavingsGoalServiceInterface;
 use App\Services\AnexoService;
@@ -30,6 +31,7 @@ use App\Services\FaturaPaymentService;
 use App\Services\FaturaService;
 use App\Services\IncomeService;
 use App\Services\NotificationService;
+use App\Services\PrevisaoMensalService;
 use App\Services\ResumoMensalService;
 use App\Services\SavingsGoalService;
 use Illuminate\Support\ServiceProvider;
@@ -52,6 +54,7 @@ class ServiceBindingProvider extends ServiceProvider
         BankAccountServiceInterface::class => BankAccountService::class,
         BankTransferServiceInterface::class => BankTransferService::class,
         ResumoMensalServiceInterface::class => ResumoMensalService::class,
+        PrevisaoMensalServiceInterface::class => PrevisaoMensalService::class,
     ];
 
     public function register(): void {}

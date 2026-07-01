@@ -186,12 +186,14 @@ class BillController extends Controller
 
         $validated = $request->validate([
             'amount_paid' => ['required', 'numeric', 'min:0'],
+            'amount_due' => ['nullable', 'numeric', 'min:0'],
             'paid_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $payment->update([
             'amount_paid' => $validated['amount_paid'],
+            'amount_due' => $validated['amount_due'] ?? $payment->amount_due,
             'paid_date' => $validated['paid_date'] ?? $payment->paid_date,
             'notes' => $validated['notes'] ?? null,
         ]);

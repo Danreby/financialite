@@ -10,6 +10,7 @@ import {
   Wallet,
   CreditCard,
   CalendarDays,
+  Calculator,
   Loader2,
 } from 'lucide-react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
@@ -25,6 +26,7 @@ import ResumoCategoryAverages from '@/Components/system/resumo/ResumoCategoryAve
 import CalendarSummaryPanel from '@/Components/system/resumo/CalendarSummaryPanel'
 
 import ResumoReceitasTab from '@/Components/system/resumo/ResumoReceitasTab'
+import ResumoPrevisaoTab from '@/Components/system/resumo/ResumoPrevisaoTab'
 
 function getMonthKey(offset = 0) {
   const d = new Date()
@@ -46,6 +48,7 @@ const TABS = [
   { id: 'overview',  label: 'Visão Geral', icon: LayoutDashboard },
   { id: 'receitas',  label: 'Receitas',    icon: Wallet },
   { id: 'despesas',  label: 'Despesas',    icon: CreditCard },
+  { id: 'previsao',  label: 'Previsão Mensal', icon: Calculator },
   { id: 'calendario', label: 'Calendário', icon: CalendarDays },
 ]
 
@@ -69,6 +72,9 @@ export default function ResumoMensal({
   const [activeTab, setActiveTab] = useState('overview')
   const [tabDirection, setTabDirection] = useState(0)
 
+  const [previsaoData, setPrevisaoData] = useState(null)
+  const [previsaoLoading, setPrevisaoLoading] = useState(false)
+
   const monthLabel = useMemo(() => formatMonthLabel(monthKey), [monthKey])
 
   const fetchData = useCallback(async (key) => {
@@ -89,6 +95,27 @@ export default function ResumoMensal({
   useEffect(() => {
     fetchData(monthKey)
   }, [monthKey, fetchData])
+
+  useEffect(() => {
+    if (activeTab !== 'previsao') return
+
+    let cancelled = false
+
+    setPrevisaoLoading(true)
+    axios.get(route('resumo-mensal.previsao'), { params: { month_key: monthKey } })
+      .then((response) => {
+        if (!cancelled) setPrevisaoData(response.data)
+      })
+      .catch((err) => {
+        console.error(err)
+        if (!cancelled) toast.error('Erro ao carregar previsão mensal.')
+      })
+      .finally(() => {
+        if (!cancelled) setPrevisaoLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [monthKey, activeTab])
 
   const handlePrevMonth = useCallback(() => {
     setMonthKey(prev => {
@@ -259,6 +286,20 @@ export default function ResumoMensal({
                 </motion.div>
               )}
 
+              {activeTab === 'previsao' && (
+                <motion.div
+                  key="previsao"
+                  custom={tabDirection}
+                  variants={tabVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                >
+                  <PrevisaoTab data={previsaoData} isLoading={previsaoLoading} />
+                </motion.div>
+              )}
+
               {activeTab === 'calendario' && (
                 <motion.div
                   key="calendario"
@@ -325,6 +366,16 @@ function DespesasTab({ data, isLoading }) {
 
       <FadeInItem>
         <ResumoCategoryAverages averages={data.category_averages} />
+      </FadeInItem>
+    </FadeInContainer>
+  )
+}
+
+function PrevisaoTab({ data, isLoading }) {
+  return (
+    <FadeInContainer stagger className="flex flex-col gap-4 lg:gap-5">
+      <FadeInItem>
+        <ResumoPrevisaoTab data={data} isLoading={isLoading} />
       </FadeInItem>
     </FadeInContainer>
   )

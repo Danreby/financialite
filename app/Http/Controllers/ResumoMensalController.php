@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Services\IncomeServiceInterface;
+use App\Contracts\Services\PrevisaoMensalServiceInterface;
 use App\Contracts\Services\ResumoMensalServiceInterface;
 use App\Models\BankUser;
 use App\Models\CardUser;
@@ -19,6 +20,7 @@ class ResumoMensalController extends Controller
     public function __construct(
         private ResumoMensalServiceInterface $resumoService,
         private IncomeServiceInterface $incomeService,
+        private PrevisaoMensalServiceInterface $previsaoService,
     ) {
         $this->middleware('auth');
     }
@@ -105,6 +107,22 @@ class ResumoMensalController extends Controller
         $filters = $request->only(['month_key']);
 
         $result = $this->resumoService->buildResumoMensal($user, $filters);
+
+        return $this->success($result);
+    }
+
+    public function previsao(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Transacao::class);
+
+        $request->validate([
+            'month_key' => ['nullable', 'string', 'regex:/^\d{4}-(0[1-9]|1[0-2])$/'],
+        ]);
+
+        $user = $request->user();
+        $filters = $request->only(['month_key']);
+
+        $result = $this->previsaoService->buildPrevisaoMensal($user, $filters);
 
         return $this->success($result);
     }

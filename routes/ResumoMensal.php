@@ -9,4 +9,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/resumo-mensal/data', [ResumoMensalController::class, 'data'])
         ->middleware('cache.api:15')
         ->name('resumo-mensal.data');
+    Route::get('/resumo-mensal/previsao', [ResumoMensalController::class, 'previsao'])
+        ->middleware('cache.api:15')
+        ->name('resumo-mensal.previsao');
 });
