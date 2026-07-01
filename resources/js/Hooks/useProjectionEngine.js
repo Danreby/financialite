@@ -25,9 +25,32 @@ function simulatedAmountInMonth(simulation, targetYM) {
     return simulation.installmentAmount;
 }
 
+function billAppliesToMonth(bill, targetYM) {
+    if (bill.start_date) {
+        const startYM = bill.start_date.slice(0, 7);
+        if (targetYM < startYM) return false;
+    }
+    if (bill.end_date) {
+        const endYM = bill.end_date.slice(0, 7);
+        if (targetYM > endYM) return false;
+    }
+    const tm = parseInt(targetYM.slice(5, 7), 10);
+    switch (bill.recurrence_type) {
+        case 'monthly': return true;
+        case 'yearly':
+            if (!bill.start_date) return false;
+            return parseInt(bill.start_date.slice(5, 7), 10) === tm;
+        case 'none':
+            if (!bill.start_date) return false;
+            return bill.start_date.slice(0, 7) === targetYM;
+        default: return false;
+    }
+}
+
 export function useProjectionEngine({
     creditTransactions = [],
     simulations        = [],
+    bills              = [],
     currentMonthStats  = {},
     monthsAhead        = 24,
 }) {
@@ -59,9 +82,23 @@ export function useProjectionEngine({
                 .filter((s) => s.type === 'debit')
                 .reduce((sum, s) => sum + simulatedAmountInMonth(s, ym), 0);
 
+            const billsForMonth = bills.filter((b) => billAppliesToMonth(b, ym));
+            const billKnownTotal = billsForMonth
+                .filter((b) => b.amount !== null)
+                .reduce((sum, b) => sum + b.amount, 0);
+            const billVariableCount = billsForMonth.filter((b) => b.amount === null).length;
+            const billBreakdown = billsForMonth.map((b) => ({
+                id:              b.id,
+                title:           b.title,
+                amount:          b.amount,
+                recurrence_type: b.recurrence_type,
+                color:           b.color,
+                icon:            b.icon,
+            }));
+
             const realTotal      = realCreditTotal + realDebitTotal;
             const simulatedTotal = simulatedCreditTotal + simulatedDebitTotal;
-            const combinedTotal  = realTotal + simulatedTotal;
+            const combinedTotal  = realTotal + billKnownTotal + simulatedTotal;
 
             const installmentBreakdown = creditTransactions
                 .filter((t) => !t.is_recurring && realCreditAmountInMonth(t, ym) > 0)
@@ -102,6 +139,9 @@ export function useProjectionEngine({
                 simulatedCreditTotal,
                 simulatedDebitTotal,
                 simulatedTotal,
+                billKnownTotal,
+                billVariableCount,
+                billBreakdown,
                 combinedTotal,
                 installmentBreakdown,
                 recurringBreakdown,
@@ -111,6 +151,7 @@ export function useProjectionEngine({
 
         const totalRealAllMonths      = monthData.reduce((s, m) => s + m.realTotal, 0);
         const totalSimulatedAllMonths = monthData.reduce((s, m) => s + m.simulatedTotal, 0);
+        const totalBillsAllMonths     = monthData.reduce((s, m) => s + m.billKnownTotal, 0);
         const highestCombinedMonth    = monthData.reduce(
             (max, m) => (m.combinedTotal > max.combinedTotal ? m : max),
             monthData[0] ?? { combinedTotal: 0 },
@@ -121,9 +162,10 @@ export function useProjectionEngine({
             totals: {
                 realAll:      totalRealAllMonths,
                 simulatedAll: totalSimulatedAllMonths,
-                combinedAll:  totalRealAllMonths + totalSimulatedAllMonths,
+                billsAll:     totalBillsAllMonths,
+                combinedAll:  totalRealAllMonths + totalBillsAllMonths + totalSimulatedAllMonths,
             },
             highestCombinedMonth,
         };
-    }, [creditTransactions, simulations, currentMonthStats, monthsAhead]);
+    }, [creditTransactions, simulations, bills, currentMonthStats, monthsAhead]);
 }

@@ -19,7 +19,7 @@ function loadStoredSimulations() {
     } catch { return []; }
 }
 
-function saveSimulations(items) {
+function saveSimulations(_items) {
 }
 
 
@@ -63,6 +63,7 @@ export default function Projecao({
     creditTransactions    = [],
     bankAccounts          = [],
     categories            = [],
+    bills                 = [],
     currentMonthStats     = { debit: 0, month: '' },
 }) {
     const [simulations, setSimulations] = useState(() => loadStoredSimulations());
@@ -72,6 +73,7 @@ export default function Projecao({
     const projectionData = useProjectionEngine({
         creditTransactions,
         simulations,
+        bills,
         currentMonthStats,
         monthsAhead,
     });
@@ -107,6 +109,12 @@ export default function Projecao({
     const simulatedImpactNow   = projectionData.months[0]?.simulatedTotal ?? 0;
     const totalSimulatedBurden = projectionData.totals.simulatedAll;
     const hasSimulations       = simulations.length > 0;
+
+    const activeBillsCount    = bills.length;
+    const monthlyBillsKnown   = bills
+        .filter((b) => b.recurrence_type === 'monthly' && b.amount !== null)
+        .reduce((s, b) => s + Number(b.amount), 0);
+    const variableBillsCount  = bills.filter((b) => b.amount === null).length;
 
     return (
         <AuthenticatedLayout>
@@ -161,7 +169,7 @@ export default function Projecao({
                 </FadeInItem>
 
                 <FadeInItem>
-                    <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
                         <StatCard
                             label="Parcelamentos ativos"
                             value={activeInstallments.length}
@@ -175,8 +183,22 @@ export default function Projecao({
                             icon="🔁"
                         />
                         <StatCard
+                            label="Contas a pagar"
+                            value={activeBillsCount}
+                            sub={
+                                activeBillsCount === 0
+                                    ? 'Nenhuma conta ativa'
+                                    : monthlyBillsKnown > 0 && variableBillsCount > 0
+                                    ? `${formatCurrencyBRL(monthlyBillsKnown)}/mês · ${variableBillsCount} variável${variableBillsCount > 1 ? 'is' : ''}`
+                                    : monthlyBillsKnown > 0
+                                    ? `${formatCurrencyBRL(monthlyBillsKnown)}/mês`
+                                    : `${variableBillsCount} com valor variável`
+                            }
+                            icon="📋"
+                        />
+                        <StatCard
                             label="Total projetado (real)"
-                            value={formatCurrencyBRL(projectionData.totals.realAll)}
+                            value={formatCurrencyBRL(projectionData.totals.realAll + projectionData.totals.billsAll)}
                             sub={`próximos ${monthsAhead} meses`}
                             icon="📊"
                         />

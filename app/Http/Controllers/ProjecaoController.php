@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bill;
 use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Transacao;
@@ -83,10 +84,32 @@ class ProjecaoController extends Controller
             ];
         })->filter()->values();
 
+        $activeBills = Bill::forUser($user->id)
+            ->active()
+            ->with('category:id,name,color,icon')
+            ->orderBy('due_day')
+            ->get()
+            ->map(fn ($bill) => [
+                'id' => $bill->id,
+                'title' => $bill->title,
+                'amount' => $bill->amount !== null ? (float) $bill->amount : null,
+                'recurrence_type' => $bill->recurrence_type,
+                'due_day' => $bill->due_day,
+                'start_date' => $bill->start_date?->format('Y-m-d'),
+                'end_date' => $bill->end_date?->format('Y-m-d'),
+                'color' => $bill->color,
+                'icon' => $bill->icon,
+                'category_id' => $bill->category?->id,
+                'category_name' => $bill->category?->name,
+                'category_icon' => $bill->category?->icon,
+                'category_color' => $bill->category?->color,
+            ]);
+
         return Inertia::render('Projecao', [
             'creditTransactions' => $creditTransactions,
             'bankAccounts' => $bankAccounts,
             'categories' => $categories,
+            'bills' => $activeBills,
             'currentMonthStats' => [
                 'debit' => (float) $currentMonthDebit,
                 'month' => $now->format('Y-m'),

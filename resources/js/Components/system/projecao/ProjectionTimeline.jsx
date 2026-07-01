@@ -20,6 +20,7 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
     const hasAny = visibleMonths.length > 0;
     const hasSimulated = (totals.simulatedAll ?? 0) > 0;
     const hasRecurring = months.some((m) => (m.realRecurringTotal ?? 0) > 0);
+    const hasBills = months.some((m) => (m.billBreakdown?.length ?? 0) > 0);
 
     return (
         <div className="flex flex-col gap-0">
@@ -38,6 +39,12 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
                                 <span className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
                                     <span className="h-2 w-2 rounded-full bg-blue-300 dark:bg-blue-400 shrink-0" />
                                     Recorrente
+                                </span>
+                            )}
+                            {hasBills && (
+                                <span className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
+                                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: 'rgba(251,146,60,0.85)' }} />
+                                    Contas
                                 </span>
                             )}
                             {hasSimulated && (

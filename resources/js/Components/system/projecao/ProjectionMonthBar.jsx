@@ -18,12 +18,13 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
         isCurrentMonth,
         realInstallmentTotal,
         realRecurringTotal,
-        realCreditTotal,
-        realDebitTotal,
         simulatedCreditTotal,
         simulatedDebitTotal,
         realTotal,
         simulatedTotal,
+        billKnownTotal    = 0,
+        billVariableCount = 0,
+        billBreakdown     = [],
         combinedTotal,
         installmentBreakdown  = [],
         recurringBreakdown = [],
@@ -32,16 +33,20 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
 
     const safeMax = maxValue > 0 ? maxValue : 1;
     const combinedPct = Math.min((combinedTotal / safeMax) * 100, 100);
-    const realRatio = combinedTotal > 0 ? (realTotal / combinedTotal) * 100 : 0;
+    const realRatio  = combinedTotal > 0 ? (realTotal / combinedTotal) * 100 : 0;
+    const billRatio  = combinedTotal > 0 ? (billKnownTotal / combinedTotal) * 100 : 0;
     const simulRatio = combinedTotal > 0 ? (simulatedTotal / combinedTotal) * 100 : 0;
     const hasSimulated = simulatedTotal > 0;
 
     const hasBreakdown = installmentBreakdown.length > 0
         || recurringBreakdown.length > 0
+        || billBreakdown.length > 0
         || simulationBreakdown.length > 0;
 
     const hasSubInfo = realInstallmentTotal > 0
         || realRecurringTotal > 0
+        || billKnownTotal > 0
+        || billVariableCount > 0
         || simulatedCreditTotal > 0
         || simulatedDebitTotal > 0;
 
@@ -94,6 +99,15 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                                     }}
                                 />
                             )}
+                            {billRatio > 0 && (
+                                <div
+                                    className="h-full shrink-0"
+                                    style={{
+                                        width: `${billRatio}%`,
+                                        backgroundColor: 'rgba(251,146,60,0.85)',
+                                    }}
+                                />
+                            )}
                             {simulRatio > 0 && (
                                 <div
                                     className="h-full shrink-0"
@@ -117,7 +131,7 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                         </span>
                         {hasSimulated && realTotal > 0 && (
                             <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">
-                                {formatCurrencyBRL(realTotal)}
+                                {formatCurrencyBRL(realTotal + billKnownTotal)}
                             </span>
                         )}
                     </div>
@@ -146,6 +160,13 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                         )}
                         {realRecurringTotal > 0 && (
                             <span>🔁 {formatCurrencyBRL(realRecurringTotal)}</span>
+                        )}
+                        {(billKnownTotal > 0 || billVariableCount > 0) && (
+                            <span style={{ color: 'rgba(251,146,60,0.9)' }}>
+                                📋 {billKnownTotal > 0 ? formatCurrencyBRL(billKnownTotal) : ''}
+                                {billVariableCount > 0 && billKnownTotal > 0 ? ' · ' : ''}
+                                {billVariableCount > 0 ? `${billVariableCount} variável${billVariableCount > 1 ? 'is' : ''}` : ''}
+                            </span>
                         )}
                         {simulatedCreditTotal > 0 && (
                             <span style={{ color: 'var(--theme-accent)' }}>
@@ -211,9 +232,37 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                                 </>
                             )}
 
-                            {simulationBreakdown.length > 0 && (
+                            {billBreakdown.length > 0 && (
                                 <>
                                     <span className={`text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold ${(installmentBreakdown.length > 0 || recurringBreakdown.length > 0) ? 'mt-1' : ''}`}>
+                                        Contas a pagar
+                                    </span>
+                                    {billBreakdown.map((item) => (
+                                        <div key={item.id} className="flex items-center justify-between">
+                                            <span className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 truncate">
+                                                <span>📋</span>
+                                                {item.title}
+                                                {item.recurrence_type === 'yearly' && (
+                                                    <span className="text-[9px] text-gray-400 dark:text-gray-600 font-medium ml-0.5">(anual)</span>
+                                                )}
+                                            </span>
+                                            {item.amount !== null ? (
+                                                <span className="shrink-0 text-xs font-semibold ml-3" style={{ color: 'rgba(251,146,60,0.9)' }}>
+                                                    {formatCurrencyBRL(item.amount)}
+                                                </span>
+                                            ) : (
+                                                <span className="shrink-0 text-[10px] font-medium ml-3 text-gray-400 dark:text-gray-600 italic">
+                                                    variável
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </>
+                            )}
+
+                            {simulationBreakdown.length > 0 && (
+                                <>
+                                    <span className={`text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold ${(installmentBreakdown.length > 0 || recurringBreakdown.length > 0 || billBreakdown.length > 0) ? 'mt-1' : ''}`}>
                                         Simulações
                                     </span>
                                     {simulationBreakdown.map((item) => (
@@ -239,5 +288,3 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
         </div>
     );
 }
-
-
