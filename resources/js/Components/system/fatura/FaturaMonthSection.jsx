@@ -8,6 +8,82 @@ import BareButton from "@/Components/common/buttons/BareButton";
 import Tooltip from "@/Components/common/Tooltip";
 import { formatCurrency } from "@/Lib/formatters";
 
+function BillsReportCard({ billsData, totalSpent }) {
+  const { total = 0, items = [] } = billsData || {};
+  if (!items.length) return null;
+
+  const combinedTotal = totalSpent + total;
+
+  return (
+    <div className="rounded-2xl themed-card bg-white dark:bg-[#080808] overflow-hidden">
+      <div className="flex items-center gap-2 px-4 sm:px-5 pt-4 pb-3 border-b border-gray-100 dark:border-white/[0.05]">
+        <div
+          className="h-5 w-5 rounded-md flex items-center justify-center text-sm shrink-0"
+          style={{ backgroundColor: 'rgba(251,146,60,0.15)' }}
+        >
+          📋
+        </div>
+        <h3 className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-300">
+          Contas a pagar
+        </h3>
+        <span
+          className="ml-auto text-[11px] font-semibold rounded-full px-2 py-0.5"
+          style={{ backgroundColor: 'rgba(251,146,60,0.12)', color: 'rgba(251,146,60,0.9)' }}
+        >
+          {items.length} {items.length === 1 ? 'conta' : 'contas'}
+        </span>
+      </div>
+
+      <div className="divide-y divide-gray-50 dark:divide-white/[0.04] px-4 sm:px-5">
+        {items.map((bill) => (
+          <div key={bill.id} className="flex items-center justify-between py-2.5">
+            <span className="text-xs text-gray-700 dark:text-gray-300 truncate mr-3">
+              {bill.title}
+              {bill.recurrence_type === 'yearly' && (
+                <span className="ml-1.5 text-[10px] text-gray-400 dark:text-gray-600">(anual)</span>
+              )}
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              {bill.is_variable && (
+                <span className="text-[10px] text-gray-400 dark:text-gray-600 italic">
+                  {bill.avg_count > 0 ? `média ${bill.avg_count}m` : 'sem histórico'}
+                </span>
+              )}
+              {bill.amount > 0 ? (
+                <span
+                  className="text-xs font-semibold"
+                  style={bill.is_variable ? { color: 'rgba(251,146,60,0.85)' } : {}}
+                >
+                  {formatCurrency(bill.amount)}
+                </span>
+              ) : (
+                <span className="text-xs text-gray-400 dark:text-gray-600 italic">—</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-4 sm:px-5 pt-3 pb-4 space-y-1.5 bg-gray-50/60 dark:bg-white/[0.02] border-t border-gray-100 dark:border-white/[0.05]">
+        <div className="flex justify-between text-[11px] text-gray-500 dark:text-gray-400">
+          <span>Total de contas</span>
+          <span className="font-semibold" style={{ color: 'rgba(251,146,60,0.9)' }}>
+            {formatCurrency(total)}
+          </span>
+        </div>
+        <div className="flex justify-between text-[11px] text-gray-500 dark:text-gray-400">
+          <span>Fatura do cartão</span>
+          <span className="font-semibold">{formatCurrency(totalSpent)}</span>
+        </div>
+        <div className="flex justify-between text-xs font-bold text-gray-800 dark:text-gray-100 pt-1.5 border-t border-gray-200 dark:border-white/[0.08]">
+          <span>Total combinado</span>
+          <span>{formatCurrency(combinedTotal)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FaturaMonthSection({
   month_label,
   total_spent,
@@ -27,6 +103,7 @@ export default function FaturaMonthSection({
   due_day = null,
   closing_day = null,
   isCurrentPending = false,
+  bills_data = null,
 }) {
   const [showPayModal, setShowPayModal] = useState(false);
   const [payModalInitialMode, setPayModalInitialMode] = useState("full");
@@ -99,6 +176,8 @@ export default function FaturaMonthSection({
           setShowPayModal(true);
         }}
       />
+
+      <BillsReportCard billsData={bills_data} totalSpent={total_spent} />
 
       <div className="rounded-2xl bg-white themed-card px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-3 2xl:px-4 2xl:py-3 shadow-gray-500 dark:shadow-gray-900 dark:bg-[#080808]">
         {items.length === 0 ? (
