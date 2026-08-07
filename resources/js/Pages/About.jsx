@@ -45,7 +45,7 @@ export default function About() {
   const socialLinks = [
     {
       label: 'Portfólio',
-      url: 'https://danreby.github.io/danreby-portifolio/',
+      url: 'https://rolims.com/',
       icon: '🌐',
     },
     {
