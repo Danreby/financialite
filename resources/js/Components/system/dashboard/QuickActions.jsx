@@ -23,16 +23,16 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    
+
     const observer = new MutationObserver(() => {
       setIsDark(document.documentElement.classList.contains('dark'));
     });
-    
+
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
     });
-    
+
     return () => observer.disconnect();
   }, []);
 
@@ -48,42 +48,42 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
     {
       icon: '💸',
       title: 'Nova Despesa',
-      description: 'Registrar despesa',
+    //   description: 'Registrar despesa',
       useThemeColors: true,
       onClick: () => setShowExpenseForm(true),
     },
         {
       icon: '💰',
       title: 'Nova Entrada',
-      description: 'Registrar entrada',
+    //   description: 'Registrar entrada',
       useThemeColors: true,
       onClick: () => setShowIncomeForm(true),
     },
     {
       icon: '🏦',
       title: 'Adicionar Cartão',
-      description: 'Cadastrar novo cartão',
+    //   description: 'Cadastrar novo cartão',
       useThemeColors: true,
       onClick: () => setShowCardForm(true),
     },
     {
       icon: '🏷️',
       title: 'Adicionar Categoria',
-      description: 'Criar nova categoria',
+    //   description: 'Criar nova categoria',
       useThemeColors: true,
       onClick: () => setShowCategoryForm(true),
     },
     {
-      icon: '�',
+      icon: '📅',
       title: 'Resumo Mensal',
-      description: 'Visão geral do mês',
+    //   description: 'Visão geral do mês',
       useThemeColors: true,
       onClick: () => router.visit(route('resumo-mensal.index')),
     },
     {
       icon: '📊',
       title: 'Importar Excel',
-      description: 'Upload de faturas',
+    //   description: 'Upload de faturas',
       useThemeColors: true,
       onClick: () => setShowImportModal(true),
     },
@@ -107,7 +107,7 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
               }}
             >
               <div className="relative z-10 flex items-start gap-3">
-                <div 
+                <div
                   className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-2xl backdrop-blur-sm"
                   style={{
                     backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
@@ -116,13 +116,13 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
                   {action.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 
+                  <h4
                     className="text-sm font-bold mb-0.5 truncate"
                     style={{ color: isDark ? '#ffffff' : '#000000' }}
                   >
                     {action.title}
                   </h4>
-                  <p 
+                  <p
                     className="text-[11px] truncate"
                     style={{ color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)' }}
                   >

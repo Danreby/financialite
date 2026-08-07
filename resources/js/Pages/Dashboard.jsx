@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { CreditCard, ArrowDownLeft, Wallet, Banknote, CalendarClock } from 'lucide-react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import StatCard from '@/Components/system/dashboard/StatCard'
+import MonthlyForecastCard from '@/Components/system/dashboard/MonthlyForecastCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
 import MonthlySummaryChart from '@/Components/system/dashboard/MonthlySummaryChart'
 import TopSpendingCategories from '@/Components/system/dashboard/TopSpendingCategories'
@@ -47,6 +48,12 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
   const [selectedFaturaItem, setSelectedFaturaItem] = useState(null)
   const [recurringSpending, setRecurringSpending] = useState({ total: 0, percentage: 0 })
   const [nonRecurringSpending, setNonRecurringSpending] = useState({ total: 0, percentage: 0 })
+  const [monthlyForecast, setMonthlyForecast] = useState({
+    monthLabel: 'Mês atual',
+    invoiceTotal: 0,
+    billsTotal: 0,
+    debitTotal: 0,
+  })
 
   const [selectedMonthKey, setSelectedMonthKey] = useState(null)
   const [monthData, setMonthData] = useState(null)
@@ -215,7 +222,14 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
         const currentMonthBillsTotal = Number(statsPayload.current_month_bills_total || 0)
         const currentMonthLabel = statsPayload.current_month_label || 'Mês atual'
 
-        const totalMonthlySpent = currentMonthPendingBill + currentMonthBillsTotal + currentMonthDebitTotal
+        const totalMonthlySpent = currentMonthPendingBill + currentMonthDebitTotal
+
+        setMonthlyForecast({
+          monthLabel: currentMonthLabel,
+          invoiceTotal: currentMonthPendingBill,
+          billsTotal: currentMonthBillsTotal,
+          debitTotal: currentMonthDebitTotal,
+        })
 
         const nextDueInfo = statsPayload.next_card_due_date ?? null
         const nearestDue = nextDueInfo?.nearest ?? null
@@ -275,9 +289,9 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           },
           {
             id: 3,
-            title: 'Previsão do Mês',
+            title: 'Total Mensal',
             value: formatCurrencyBRL(totalMonthlySpent),
-            delta: 'Fatura + Contas + Débito',
+            delta: '',
             icon: 2,
           },
           {
@@ -381,6 +395,17 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
               />
             </FadeInItem>
           ))}
+        </FadeInContainer>
+
+        <FadeInContainer stagger className="mt-3">
+          <FadeInItem>
+            <MonthlyForecastCard
+              monthLabel={monthlyForecast.monthLabel}
+              invoiceTotal={monthlyForecast.invoiceTotal}
+              billsTotal={monthlyForecast.billsTotal}
+              debitTotal={monthlyForecast.debitTotal}
+            />
+          </FadeInItem>
         </FadeInContainer>
 
         <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
