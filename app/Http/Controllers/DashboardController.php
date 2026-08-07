@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\Services\PrevisaoMensalServiceInterface;
 use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Category;
@@ -20,6 +21,7 @@ class DashboardController extends Controller
     public function __construct(
         private FaturaDashboardService $dashboardService,
         private DashboardInsightsService $insightsService,
+        private PrevisaoMensalServiceInterface $previsaoService,
     ) {
         $this->middleware('auth');
     }
@@ -101,6 +103,9 @@ class DashboardController extends Controller
             $categoryId,
             $request->has('bank_user_id')
         );
+
+        $stats['current_month_bills_total'] = $this->previsaoService
+            ->getBillsTotalForMonth($user->id, $stats['current_month_key'] ?? null)['total'];
 
         $insights = $this->insightsService->getInsights($user, $bankUserId);
 

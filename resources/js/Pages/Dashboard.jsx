@@ -212,9 +212,10 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
         const topSpendingLabelPayload = statsPayload.top_spending_label || 'Mês vigente'
 
         const currentMonthPendingBill = Number(statsPayload.current_month_pending_bill || 0)
+        const currentMonthBillsTotal = Number(statsPayload.current_month_bills_total || 0)
         const currentMonthLabel = statsPayload.current_month_label || 'Mês atual'
 
-        const totalMonthlySpent = currentMonthPendingBill + currentMonthDebitTotal
+        const totalMonthlySpent = currentMonthPendingBill + currentMonthBillsTotal + currentMonthDebitTotal
 
         const nextDueInfo = statsPayload.next_card_due_date ?? null
         const nearestDue = nextDueInfo?.nearest ?? null
@@ -274,9 +275,9 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           },
           {
             id: 3,
-            title: 'Total Mensal',
+            title: 'Previsão do Mês',
             value: formatCurrencyBRL(totalMonthlySpent),
-            delta: '',
+            delta: 'Fatura + Contas + Débito',
             icon: 2,
           },
           {

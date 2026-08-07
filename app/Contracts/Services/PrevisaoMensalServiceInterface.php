@@ -7,4 +7,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 interface PrevisaoMensalServiceInterface
 {
     public function buildPrevisaoMensal(Authenticatable $user, array $filters = []): array;
+
+    public function getBillsTotalForMonth(int $userId, ?string $monthKey = null): array;
 }

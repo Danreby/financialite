@@ -117,6 +117,13 @@ class PrevisaoMensalService implements PrevisaoMensalServiceInterface
         ];
     }
 
+    public function getBillsTotalForMonth(int $userId, ?string $monthKey = null): array
+    {
+        $targetMonth = Carbon::parse(($monthKey ?? Carbon::today()->format('Y-m')).'-01');
+
+        return $this->buildBillsForecast($userId, $targetMonth);
+    }
+
     private function buildBillsForecast(int $userId, Carbon $targetMonth): array
     {
         $bills = Bill::forUser($userId)
