@@ -97,23 +97,25 @@ export default function FinancialHealthScore({
       : hex + "1e"
 
   return (
-    <div className="themed-card rounded-2xl p-4 flex-1 min-h-0 flex flex-col">
+    <div
+      className="relative overflow-hidden rounded-2xl border flex-1 min-h-0 flex flex-col p-4"
+      style={{
+        borderColor: hasData ? `color-mix(in srgb, ${sd.hex} 30%, transparent)` : undefined,
+        background: hasData
+          ? `linear-gradient(160deg, ${hexBg(sd.hex)}, transparent 65%)`
+          : undefined,
+      }}
+    >
+      {!hasData && <div className="absolute inset-0 -z-10 themed-card rounded-2xl" />}
 
       {/* ── Header ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-4 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-lg"
-            style={{ backgroundColor: hexBg(sd.hex) }}
-          >
-            <Heart className="w-3.5 h-3.5" style={{ color: sd.hex }} />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">
-              Saúde Financeira
-            </h3>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">pontuação geral</p>
-          </div>
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        <div>
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+            <Heart className="w-3.5 h-3.5" style={{ color: sd.hex }} aria-hidden="true" />
+            Saúde Financeira
+          </h3>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-tight mt-0.5">pontuação geral</p>
         </div>
         {hasData && (
           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${sd.bgCls} ${sd.txtCls}`}>
@@ -155,7 +157,7 @@ export default function FinancialHealthScore({
           <div className="flex items-center gap-3 mb-3 flex-shrink-0">
 
             {/* Mini gauge */}
-            <div className="relative flex-shrink-0" style={{ width: 72, height: 72 }}>
+            <div className="relative flex-shrink-0" style={{ width: 88, height: 88 }}>
               <svg viewBox="0 0 72 72" className="w-full h-full" aria-hidden="true">
                 {/* Track */}
                 <circle
@@ -180,7 +182,7 @@ export default function FinancialHealthScore({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span
-                  className="text-[22px] font-black tabular-nums leading-none"
+                  className="text-[26px] font-black tabular-nums leading-none"
                   style={{ color: sd.hex }}
                 >
                   {Math.round(clampedScore)}

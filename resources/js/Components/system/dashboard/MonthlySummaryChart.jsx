@@ -59,7 +59,7 @@ const MODES = [
   { value: 'debit', label: 'Débito' },
 ]
 
-export default function MonthlySummaryChart({ data = [], onMonthClick, selectedMonthKey }) {
+export default function MonthlySummaryChart({ data = [], onMonthClick, selectedMonthKey, trend = null }) {
   const [mode, setMode] = useState('both')
   const { chartColors } = useThemeColors()
 
@@ -213,9 +213,22 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
     <div className="p-4 lg:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
         <div>
-          <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 leading-tight">
-            Gastos mensais
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+              Gastos mensais
+            </h2>
+            {trend && trend.direction !== 'neutral' && (
+              <span
+                className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                  trend.direction === 'up'
+                    ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                    : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                }`}
+              >
+                {trend.direction === 'up' ? '↑' : '↓'} {trend.pct.toFixed(0)}% vs mês anterior
+              </span>
+            )}
+          </div>
           <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
             Últimos {data.length} meses
           </p>

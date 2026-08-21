@@ -117,6 +117,15 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
   const activeRecurring = monthData?.recurring_spending ?? recurringSpending
   const activeNonRecurring = monthData?.non_recurring_spending ?? nonRecurringSpending
 
+  const monthlyChartTrend = (() => {
+    const current = Number(dashboardInsights?.spending_trends?.current_month ?? 0)
+    const previous = Number(dashboardInsights?.spending_trends?.previous_month ?? 0)
+    if (!dashboardInsights?.spending_trends?.has_data || previous === 0) return null
+    const pct = ((current - previous) / previous) * 100
+    const direction = pct > 5 ? 'up' : pct < -5 ? 'down' : 'neutral'
+    return { pct: Math.abs(pct), direction }
+  })()
+
   const [stats, setStats] = useState([])
 
   const handleBankFilterChange = (event) => {
@@ -358,34 +367,41 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
       <Head title="Dashboard" />
 
       <FadeInContainer className="w-full max-w-[1920px] mx-auto pb-6">
-        <FadeInItem className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
-          <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            Visão geral
-          </h1>
+        <div
+          className="rounded-2xl p-4 mb-3"
+          style={{
+            background: 'linear-gradient(160deg, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 75%)',
+          }}
+        >
+          <FadeInItem className="flex flex-col gap-3 mb-4 md:flex-row md:items-center md:justify-between">
+            <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              Visão geral
+            </h1>
 
-          <div className="flex items-center gap-2 text-sm lg:text-base">
-            <label className="text-xs lg:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Banco do dashboard
-            </label>
-            <select
-              value={currentFilters.bank_user_id || ''}
-              onChange={handleBankFilterChange}
-              className="min-w-[260px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-            >
-              <option value="">Todos os bancos</option>
-              {bankAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                  {account.due_day ? ` - vence dia ${account.due_day}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-        </FadeInItem>
+            <div className="flex items-center gap-2 text-sm lg:text-base">
+              <label className="text-xs lg:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Banco do dashboard
+              </label>
+              <select
+                value={currentFilters.bank_user_id || ''}
+                onChange={handleBankFilterChange}
+                className="min-w-[260px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              >
+                <option value="">Todos os bancos</option>
+                {bankAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                    {account.due_day ? ` - vence dia ${account.due_day}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </FadeInItem>
 
-        <FadeInItem type="feature">
-          <StatsOverview stats={stats} />
-        </FadeInItem>
+          <FadeInItem type="feature">
+            <StatsOverview stats={stats} />
+          </FadeInItem>
+        </div>
 
         <FadeInContainer stagger className="mt-3">
           <FadeInItem>
@@ -483,6 +499,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
               data={monthlySummary}
               onMonthClick={handleMonthClick}
               selectedMonthKey={selectedMonthKey}
+              trend={monthlyChartTrend}
             />
           </FadeInItem>
 

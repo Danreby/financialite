@@ -92,39 +92,39 @@ export default function UpcomingBills({
   ).length
 
   return (
-    <div className="themed-card rounded-xl p-6 flex-1 min-h-0 flex flex-col">
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[var(--theme-accent)]" />
-            Próximas Contas
-          </h3>
-          <div className="flex items-center gap-2">
+    <div className="themed-card rounded-2xl p-4 flex-1 min-h-0 flex flex-col">
+      <div className="mb-3 flex-shrink-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Calendar className="w-3.5 h-3.5 text-theme-accent flex-shrink-0" aria-hidden="true" />
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+              Próximas Contas
+            </h3>
             {overdueCount > 0 && (
-              <div className="flex items-center gap-1 text-red-500 text-xs font-medium bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full">
-                <AlertTriangle className="w-3 h-3" />
-                {overdueCount} atrasada{overdueCount > 1 ? 's' : ''}
-              </div>
-            )}
-            {typeof onAddClick === 'function' && (
-              <button
-                onClick={onAddClick}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
-                title="Adicionar conta"
-                aria-label="Adicionar conta"
-              >
-                <Plus className="w-4 h-4" aria-hidden="true" />
-              </button>
+              <span className="flex-shrink-0 inline-flex items-center gap-1 text-red-500 dark:text-red-400 text-[10px] font-semibold bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded-full">
+                <AlertTriangle className="w-2.5 h-2.5" aria-hidden="true" />
+                {overdueCount}
+              </span>
             )}
           </div>
+          {typeof onAddClick === 'function' && (
+            <button
+              onClick={onAddClick}
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent flex-shrink-0"
+              title="Adicionar conta"
+              aria-label="Adicionar conta"
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+            </button>
+          )}
         </div>
 
         {totalUpcoming > 0 && (
-          <div className="themed-highlight-box rounded-lg p-3">
-            <div className="text-xs text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)] mb-1 font-medium">
+          <div className="themed-highlight-box rounded-lg p-3 mt-3">
+            <div className="text-[11px] text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)] mb-1 font-medium">
               A pagar nos próximos dias
             </div>
-            <div className="text-2xl font-bold text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)]">
+            <div className="text-xl font-bold tabular-nums text-[var(--theme-accent)] dark:text-[var(--theme-accentLight)]">
               {formatCurrency(totalUpcoming)}
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function UpcomingBills({
       </div>
 
       {unpaidBills.length > 0 ? (
-        <ScrollArea maxHeightClassName="max-h-[490px]" className="flex-1 min-h-0 -mx-6 px-6">
+        <ScrollArea maxHeightClassName="max-h-[490px]" className="flex-1 min-h-0 -mx-4 px-4">
           <div className="space-y-3">
             {unpaidBills.map((bill) => {
               const statusInfo = getStatusInfo(bill)
