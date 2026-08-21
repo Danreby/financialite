@@ -80,8 +80,8 @@ export default function SpendingTrends({
               <span className="text-[10px] text-gray-400 dark:text-gray-500 w-14 flex-shrink-0 text-right">Atual</span>
               <div className="flex-1 h-2 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{ width: `${currentPct}%`, backgroundColor: 'var(--theme-accent)' }}
+                  className="h-full origin-left rounded-full transition-transform duration-500"
+                  style={{ transform: `scaleX(${currentPct / 100})`, backgroundColor: 'var(--theme-accent)' }}
                 />
               </div>
               <span className="text-[9px] text-gray-400 w-7 text-right flex-shrink-0 tabular-nums">{currentPct}%</span>
@@ -90,8 +90,8 @@ export default function SpendingTrends({
               <span className="text-[10px] text-gray-400 dark:text-gray-500 w-14 flex-shrink-0 text-right">Anterior</span>
               <div className="flex-1 h-2 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gray-400 dark:bg-gray-500 transition-all duration-500"
-                  style={{ width: `${prevPct}%` }}
+                  className="h-full origin-left rounded-full bg-gray-400 dark:bg-gray-500 transition-transform duration-500"
+                  style={{ transform: `scaleX(${prevPct / 100})` }}
                 />
               </div>
               <span className="text-[9px] text-gray-400 w-7 text-right flex-shrink-0 tabular-nums">{prevPct}%</span>

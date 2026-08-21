@@ -62,10 +62,11 @@ export default function BudgetProgress({
           {typeof onConfigureClick === 'function' && (
             <button
               onClick={onConfigureClick}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
               title="Configurar orçamento"
+              aria-label="Configurar orçamento"
             >
-              <Settings className="w-3.5 h-3.5" />
+              <Settings className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -154,8 +155,8 @@ export default function BudgetProgress({
                       title={`${b.categoryName}: ${fillPct.toFixed(0)}%`}
                     >
                       <div
-                        className="absolute inset-y-0 left-0 transition-all duration-700"
-                        style={{ width: `${fillPct}%`, backgroundColor: color }}
+                        className="absolute inset-0 origin-left transition-transform duration-700"
+                        style={{ transform: `scaleX(${fillPct / 100})`, backgroundColor: color }}
                       />
                     </div>
                   )
@@ -169,8 +170,8 @@ export default function BudgetProgress({
             <div className="mb-3">
               <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${pct}%`, backgroundColor: barColor }}
+                  className="h-full origin-left rounded-full transition-transform duration-700"
+                  style={{ transform: `scaleX(${pct / 100})`, backgroundColor: barColor }}
                 />
               </div>
               <div className="flex items-center justify-between mt-1">
@@ -241,8 +242,8 @@ export default function BudgetProgress({
                       <div className="flex items-center gap-2 pl-[26px]">
                         <div className="relative h-1.5 flex-1 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
                           <div
-                            className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-                            style={{ width: `${catPct}%`, backgroundColor: accent }}
+                            className="absolute inset-0 origin-left rounded-full transition-transform duration-500"
+                            style={{ transform: `scaleX(${catPct / 100})`, backgroundColor: accent }}
                           />
                         </div>
                         {isOver ? (

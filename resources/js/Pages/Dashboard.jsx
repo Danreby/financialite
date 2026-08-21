@@ -4,7 +4,7 @@ import { Head } from '@inertiajs/react'
 import { toast } from 'react-toastify'
 import { CreditCard, ArrowDownLeft, Wallet, Banknote, CalendarClock } from 'lucide-react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
-import StatCard from '@/Components/system/dashboard/StatCard'
+import StatsOverview from '@/Components/system/dashboard/StatsOverview'
 import MonthlyForecastCard from '@/Components/system/dashboard/MonthlyForecastCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
 import MonthlySummaryChart from '@/Components/system/dashboard/MonthlySummaryChart'
@@ -268,7 +268,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             value,
             delta,
             deltaVariant,
-            icon: 5,
+            icon: CalendarClock,
           }
         }
 
@@ -278,21 +278,21 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             title: 'Fatura Atual',
             value: formatCurrencyBRL(currentMonthPendingBill),
             delta: currentMonthLabel,
-            icon: 1,
+            icon: CreditCard,
           },
           {
             id: 2,
             title: 'Transações no débito',
             value: formatCurrencyBRL(currentMonthDebitTotal),
             delta: '',
-            icon: 4,
+            icon: Banknote,
           },
           {
             id: 3,
             title: 'Total Mensal',
             value: formatCurrencyBRL(totalMonthlySpent),
             delta: '',
-            icon: 2,
+            icon: Wallet,
           },
           {
             id: 4,
@@ -301,7 +301,7 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
             delta: totalMonthlyIncome > 0
               ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
               : 'Sem renda cadastrada',
-            icon: 3,
+            icon: ArrowDownLeft,
           },
           buildDueDateCard(),
         ])
@@ -383,19 +383,9 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
           </div>
         </FadeInItem>
 
-        <FadeInContainer stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
-          {stats.map((stat) => (
-            <FadeInItem key={stat.id} type="feature">
-              <StatCard
-                title={stat.title}
-                value={stat.value}
-                delta={stat.delta}
-                icon={stat.icon}
-                deltaVariant={stat.deltaVariant}
-              />
-            </FadeInItem>
-          ))}
-        </FadeInContainer>
+        <FadeInItem type="feature">
+          <StatsOverview stats={stats} />
+        </FadeInItem>
 
         <FadeInContainer stagger className="mt-3">
           <FadeInItem>
@@ -607,15 +597,14 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
   )
 }
 
-function Transaction({ title, subtitle, value, negative, onClick, categoryName, categoryIcon, categoryColor }) {
+function Transaction({ title, subtitle, value, onClick, categoryName, categoryIcon, categoryColor }) {
   return (
-    <div
-      className="flex items-center justify-between rounded-xl px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-900/30 cursor-pointer"
+    <button
+      type="button"
       onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
+      className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent dark:hover:bg-gray-900/30"
     >
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="text-sm lg:text-base font-medium text-gray-900 dark:text-gray-200">{title}</div>
         <div className="flex items-center gap-2 mt-1">
           <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">{subtitle}</div>
@@ -632,6 +621,6 @@ function Transaction({ title, subtitle, value, negative, onClick, categoryName, 
       <div className="text-sm lg:text-base font-semibold text-theme-accent">
         {value}
       </div>
-    </div>
+    </button>
   )
 }

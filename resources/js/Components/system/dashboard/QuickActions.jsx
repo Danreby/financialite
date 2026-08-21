@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { toast } from 'react-toastify';
-import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
+import { Wallet, TrendingUp, CreditCard, Tag, CalendarRange, FileSpreadsheet } from 'lucide-react';
 import ExpenseForm from '@/Components/system/ExpenseForm';
 import CardForm from '@/Components/system/CardForm';
 import CategoryForm from '@/Components/system/CategoryForm';
@@ -16,25 +16,6 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [localBankAccounts, setLocalBankAccounts] = useState(bankAccounts);
   const [localCategories, setLocalCategories] = useState(categories);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof document === 'undefined') return false;
-    return document.documentElement.classList.contains('dark');
-  });
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     setLocalBankAccounts(bankAccounts);
@@ -46,45 +27,39 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
 
   const actions = [
     {
-      icon: '💸',
+      icon: Wallet,
       title: 'Nova Despesa',
-    //   description: 'Registrar despesa',
-      useThemeColors: true,
+      description: 'Registrar despesa',
       onClick: () => setShowExpenseForm(true),
     },
-        {
-      icon: '💰',
+    {
+      icon: TrendingUp,
       title: 'Nova Entrada',
-    //   description: 'Registrar entrada',
-      useThemeColors: true,
+      description: 'Registrar entrada',
       onClick: () => setShowIncomeForm(true),
     },
     {
-      icon: '🏦',
+      icon: CreditCard,
       title: 'Adicionar Cartão',
-    //   description: 'Cadastrar novo cartão',
-      useThemeColors: true,
+      description: 'Cadastrar novo cartão',
       onClick: () => setShowCardForm(true),
     },
     {
-      icon: '🏷️',
+      icon: Tag,
       title: 'Adicionar Categoria',
-    //   description: 'Criar nova categoria',
-      useThemeColors: true,
+      description: 'Criar nova categoria',
       onClick: () => setShowCategoryForm(true),
     },
     {
-      icon: '📅',
+      icon: CalendarRange,
       title: 'Resumo Mensal',
-    //   description: 'Visão geral do mês',
-      useThemeColors: true,
+      description: 'Visão geral do mês',
       onClick: () => router.visit(route('resumo-mensal.index')),
     },
     {
-      icon: '📊',
+      icon: FileSpreadsheet,
       title: 'Importar Excel',
-    //   description: 'Upload de faturas',
-      useThemeColors: true,
+      description: 'Upload de faturas',
       onClick: () => setShowImportModal(true),
     },
   ];
@@ -95,44 +70,29 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
         <h3 className="text-sm lg:text-base font-semibold text-gray-900 mb-4 dark:text-gray-100">Ações rápidas</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto scrollbar-custom pr-1">
-          {actions.map((action, index) => (
-            <button
-              key={index}
-              onClick={action.onClick}
-              className={`group relative overflow-hidden rounded-xl p-4 text-left shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-xl active:scale-[0.98] ${
-                action.useThemeColors ? 'themed-button-primary' : ''
-              }`}
-              style={action.useThemeColors ? {} : {
-                backgroundColor: isDark ? action.bgColorDark : action.bgColorLight,
-              }}
-            >
-              <div className="relative z-10 flex items-start gap-3">
-                <div
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-2xl backdrop-blur-sm"
-                  style={{
-                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
-                  }}
-                >
-                  {action.icon}
+          {actions.map((action) => {
+            const Icon = action.icon
+            return (
+              <button
+                key={action.title}
+                type="button"
+                onClick={action.onClick}
+                className="themed-button-primary flex items-start gap-3 rounded-xl p-4 text-left transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--theme-accent)] dark:focus-visible:ring-offset-[#0b0b0b]"
+              >
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
+                  <Icon className="h-5 w-5 text-white" aria-hidden="true" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h4
-                    className="text-sm font-bold mb-0.5 truncate"
-                    style={{ color: isDark ? '#ffffff' : '#000000' }}
-                  >
+                <div className="min-w-0 flex-1">
+                  <h4 className="mb-0.5 truncate text-sm font-bold text-white">
                     {action.title}
                   </h4>
-                  <p
-                    className="text-[11px] truncate"
-                    style={{ color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)' }}
-                  >
+                  <p className="truncate text-[11px] text-white/80">
                     {action.description}
                   </p>
                 </div>
-              </div>
-              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
-            </button>
-          ))}
+              </button>
+            )
+          })}
         </div>
       </div>
 

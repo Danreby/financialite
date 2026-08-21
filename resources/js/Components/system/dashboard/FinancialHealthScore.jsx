@@ -206,8 +206,8 @@ export default function FinancialHealthScore({
                     </div>
                     <div className="flex-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${norm}%`, backgroundColor: color }}
+                        className="h-full origin-left rounded-full transition-transform duration-700"
+                        style={{ transform: `scaleX(${norm / 100})`, backgroundColor: color }}
                       />
                     </div>
                     <span
@@ -262,8 +262,8 @@ export default function FinancialHealthScore({
                     </div>
                     <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${norm}%`, backgroundColor: color }}
+                        className="h-full origin-left rounded-full transition-transform duration-700"
+                        style={{ transform: `scaleX(${norm / 100})`, backgroundColor: color }}
                       />
                     </div>
                   </div>

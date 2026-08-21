@@ -287,10 +287,23 @@ export function ThemeProvider({ children, initialTheme = 'rose' }) {
     Object.entries(config.colors).forEach(([key, value]) => {
       root.style.setProperty(`--theme-${key}`, value)
     })
+
+    const syncThemeColorMeta = () => {
+      const meta = document.querySelector('meta[name="theme-color"]')
+      if (!meta) return
+      const isDark = root.classList.contains('dark')
+      meta.setAttribute('content', isDark ? config.colors.bgPageDark : config.colors.bgPageLight)
+    }
+
+    syncThemeColorMeta()
+
+    const observer = new MutationObserver(syncThemeColorMeta)
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
-    applyTheme(theme)
+    return applyTheme(theme)
   }, [theme, applyTheme])
 
   const setTheme = useCallback((themeKey) => {

@@ -4,6 +4,14 @@
 
 @layer base {
 	:root {
+		color-scheme: light;
+	}
+
+	.dark {
+		color-scheme: dark;
+	}
+
+	:root {
 		--theme-primary: #be123c;
 		--theme-primaryHover: #9f1239;
 		--theme-primaryLight: #fda4af;
@@ -467,6 +475,36 @@
 		}
 	}
 
+	.themed-strip {
+		@apply border ring-1;
+		background-color: var(--theme-bgCardLight);
+		border-color: #e5e5e5;
+		ring-color: rgba(0, 0, 0, 0.05);
+
+		&:is(.dark *) {
+			background-color: transparent;
+			border-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
+			ring-color: rgba(0, 0, 0, 0.3);
+		}
+	}
+
+	.themed-progress-track {
+		@apply relative h-full w-full overflow-hidden rounded-full;
+		background-color: #f3f4f6;
+
+		&:is(.dark *) {
+			background-color: rgba(255, 255, 255, 0.07);
+		}
+	}
+
+	.themed-progress-fill {
+		@apply absolute inset-y-0 left-0 h-full w-full rounded-full;
+		transform-origin: left;
+		transform: scaleX(var(--fill, 0));
+		background-color: var(--fill-color, var(--theme-accent));
+		transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
 	.themed-section-highlight {
 		background: linear-gradient(
 			135deg,
@@ -513,5 +551,23 @@
 
 	.dark .scrollbar-custom::-webkit-scrollbar-thumb {
 		background-color: var(--theme-scrollbarDark, #fb7185);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	.themed-card-hover:hover,
+	.themed-stat-card:hover,
+	.themed-button-primary:hover,
+	.themed-button-secondary:hover {
+		transform: none !important;
 	}
 }

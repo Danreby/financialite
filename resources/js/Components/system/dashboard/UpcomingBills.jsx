@@ -109,10 +109,11 @@ export default function UpcomingBills({
             {typeof onAddClick === 'function' && (
               <button
                 onClick={onAddClick}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
                 title="Adicionar conta"
+                aria-label="Adicionar conta"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>
