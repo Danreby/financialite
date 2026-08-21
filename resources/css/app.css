@@ -529,6 +529,23 @@
 		}
 	}
 
+	/* Neumorphic surface used only by the Login/Register auth screens */
+	.neu-surface {
+		background-color: #1e1b1e;
+	}
+
+	.neu-outset {
+		box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.55), -6px -6px 14px rgba(255, 255, 255, 0.04);
+	}
+
+	.neu-outset:active {
+		box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.6), inset -3px -3px 7px rgba(255, 255, 255, 0.03);
+	}
+
+	.neu-inset {
+		box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.5), inset -4px -4px 8px rgba(255, 255, 255, 0.03);
+	}
+
 	.themed-strip {
 		@apply border ring-1;
 		background-color: var(--theme-bgCardLight);

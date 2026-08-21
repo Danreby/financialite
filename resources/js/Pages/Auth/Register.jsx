@@ -3,12 +3,10 @@ import { Head, Link, useForm } from '@inertiajs/react'
 import { motion } from 'framer-motion'
 import { toast } from 'react-toastify'
 import GuestLayout from '@/Layouts/GuestLayout'
-import AuthCard from '@/Components/auth/AuthCard'
-import AuthHeader from '@/Components/auth/AuthHeader'
+import NeumorphicCard from '@/Components/auth/NeumorphicCard'
+import NeumorphicField from '@/Components/auth/NeumorphicField'
 import AuthAlert from '@/Components/auth/AuthAlert'
-import FormField from '@/Components/auth/FormField'
 import GoogleButton from '@/Components/auth/GoogleButton'
-import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import EyeIcon from '@/Components/common/icons/EyeIcon'
 import useGoogleAuth from '@/Hooks/useGoogleAuth'
 import useAuthErrors from '@/Hooks/useAuthErrors'
@@ -71,29 +69,41 @@ export default function Register() {
   }
 
   return (
-    <GuestLayout>
+    <GuestLayout bgClassName="bg-[#1e1b1e] text-gray-100">
       <Head title="Criar conta" />
 
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="w-full max-w-md mx-auto px-4"
+        className="w-full max-w-sm mx-auto px-4"
       >
-        <AuthCard>
-          <div className="mb-2 pt-2 px-2">
-            <AuthHeader title="Criar conta" subtitle="Cadastre-se para começar" />
-          </div>
+        <NeumorphicCard className="flex flex-col items-center">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1 tracking-tight">
+            Criar conta
+          </h1>
+          <p className="text-gray-400 text-sm mb-8">Cadastre-se para começar</p>
+
+          <GoogleButton
+            onClick={triggerGoogleLogin}
+            isLoading={googleLoading}
+            label="Cadastrar com Google"
+            disabled={processing}
+          />
+
+          <p className="text-gray-400 text-sm mt-6 mb-7 font-medium opacity-80">
+            ou use seus dados
+          </p>
 
           <motion.form
             onSubmit={submit}
-            className="space-y-5 px-4"
+            className="w-full space-y-5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             noValidate
           >
-            <FormField
+            <NeumorphicField
               id="name"
               label="Nome"
               value={data.name}
@@ -117,7 +127,7 @@ export default function Register() {
               action={{ label: 'Fazer login →', href: route('login') }}
             />
 
-            <FormField
+            <NeumorphicField
               id="email"
               label="E-mail"
               value={data.email}
@@ -127,7 +137,7 @@ export default function Register() {
               type="email"
             />
 
-            <FormField
+            <NeumorphicField
               id="phone"
               label="Telefone (opcional)"
               value={data.phone}
@@ -146,9 +156,10 @@ export default function Register() {
               error={errors.phone}
               autoComplete="tel"
               type="tel"
+              inputMode="tel"
             />
 
-            <FormField
+            <NeumorphicField
               id="password"
               label="Senha"
               value={data.password}
@@ -160,7 +171,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="text-gray-400 hover:text-gray-200 focus:outline-none mt-3"
+                  className="text-gray-500 hover:text-gray-300 focus:outline-none"
                   aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 >
@@ -169,7 +180,7 @@ export default function Register() {
               }
             />
 
-            <FormField
+            <NeumorphicField
               id="password_confirmation"
               label="Confirmar senha"
               value={data.password_confirmation}
@@ -183,7 +194,7 @@ export default function Register() {
                   onClick={() =>
                     setShowPasswordConfirmation((prev) => !prev)
                   }
-                  className="text-gray-400 hover:text-gray-200 focus:outline-none mt-3"
+                  className="text-gray-500 hover:text-gray-300 focus:outline-none"
                   aria-label={
                     showPasswordConfirmation
                       ? 'Ocultar confirmação de senha'
@@ -200,35 +211,28 @@ export default function Register() {
               }
             />
 
-            <div>
-              <PrimaryButton type="submit" disabled={processing} className="w-full">
-                Cadastrar
-              </PrimaryButton>
+            <div className="flex justify-center pt-2">
+              <button
+                type="submit"
+                disabled={processing}
+                className="w-full max-w-[220px] py-3.5 rounded-full text-white font-bold text-sm tracking-widest uppercase transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1e1b1e]"
+                style={{
+                  background: 'linear-gradient(135deg, var(--theme-accent, #f43f5e), var(--theme-primary, #be123c))',
+                  boxShadow: '0 4px 15px color-mix(in srgb, var(--theme-accent, #f43f5e) 40%, transparent)',
+                }}
+              >
+                {processing ? 'Cadastrando...' : 'Cadastrar'}
+              </button>
             </div>
           </motion.form>
 
-          <div className="flex items-center gap-3 my-5 px-4">
-            <div className="flex-1 h-px bg-gray-700" />
-            <span className="text-xs text-gray-500 uppercase tracking-wider">ou</span>
-            <div className="flex-1 h-px bg-gray-700" />
-          </div>
-
-          <div className="px-4">
-            <GoogleButton
-              onClick={triggerGoogleLogin}
-              isLoading={googleLoading}
-              label="Cadastrar com Google"
-              disabled={processing}
-            />
-          </div>
-
-          <div className="mt-6 border-t border-gray-800 pt-4 text-center text-sm text-gray-400 pb-4">
+          <div className="mt-7 pt-4 border-t border-white/5 text-center text-sm text-gray-400 w-full">
             <span>Já tem conta? </span>
-            <Link href={route('login')} className="underline text-gray-200 ml-1">
+            <Link href={route('login')} className="underline text-gray-200 hover:text-white ml-1">
               Entrar
             </Link>
           </div>
-        </AuthCard>
+        </NeumorphicCard>
       </motion.div>
     </GuestLayout>
   )
