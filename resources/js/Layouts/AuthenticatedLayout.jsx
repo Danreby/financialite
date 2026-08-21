@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePage } from '@inertiajs/react'
 import Sidebar from '@/Components/system/navigation/Sidebar'
 import Topbar from '@/Components/system/navigation/Topbar'
@@ -6,18 +6,25 @@ import NotificationSidebar from '@/Components/system/notification/NotificationSi
 import MobileNavOverlay from '@/Components/system/navigation/MobileNavOverlay'
 import { ThemeProvider } from '@/Contexts/ThemeContext'
 
+const SIDEBAR_STORAGE_KEY = 'sidebar-open'
+
+function getStoredSidebarOpen() {
+  if (typeof window === 'undefined') return true
+  const stored = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+  return stored === null ? true : stored === 'true'
+}
+
 export default function AuthenticatedLayout({ children }) {
   const user = usePage().props.auth.user
   const initialTheme = user?.theme || 'rose'
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(getStoredSidebarOpen)
 
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const { url } = usePage()
 
   useEffect(() => {
-    setSidebarOpen(false)
-  }, [url])
+    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarOpen))
+  }, [sidebarOpen])
 
   return (
   <ThemeProvider initialTheme={initialTheme}>
@@ -33,7 +40,11 @@ export default function AuthenticatedLayout({ children }) {
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
     </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden w-full">
+      <div
+        className={`flex-1 flex flex-col overflow-hidden w-full transition-[margin-left] duration-300 ease-in-out ${
+          sidebarOpen ? 'lg:ml-[220px]' : 'lg:ml-[72px]'
+        }`}
+      >
         <Topbar
           user={user}
           sidebarOpen={sidebarOpen}

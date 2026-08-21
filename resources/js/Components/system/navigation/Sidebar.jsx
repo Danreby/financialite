@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 import ThemedNavIcon from '@/Components/common/ThemedNavIcon'
+
+function toPathname(href) {
+  try {
+    return new URL(href, window.location.origin).pathname.replace(/\/+$/, '') || '/'
+  } catch {
+    return href
+  }
+}
 
 export default function Sidebar({ open: openProp = true, setOpen: setOpenProp }) {
   const [isOpen, setIsOpen] = useState(Boolean(openProp))
+  const { url } = usePage()
+  const currentPath = toPathname(url)
 
   useEffect(() => {
     setIsOpen(Boolean(openProp))
@@ -35,45 +45,13 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
   }
 
   return (
-    <>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
-            onClick={toggle}
-            aria-hidden="true"
-          />
-        )}
-      </AnimatePresence>
-
-      <motion.aside
-        initial={false}
-        animate={{ 
-          x: isOpen ? 0 : -220,
-          opacity: isOpen ? 1 : 0
-        }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="fixed left-0 top-0 h-screen border-r shadow-2xl z-40"
-        style={{ 
-          width: 220,
-          backgroundColor: 'var(--theme-bgSidebarLight)',
-          borderColor: '#e5e5e5',
-          boxShadow: '2px 0 10px 0 rgba(0, 0, 0, 0.15)',
-          pointerEvents: isOpen ? 'auto' : 'none',
-        }}
-        aria-expanded={isOpen}
-      >
-        <style>{`
-          .dark aside {
-            background-color: var(--theme-bgSidebarDark) !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 2px 0 10px 0 rgba(0, 0, 0, 0.4) !important;
-          }
-        `}</style>
+    <motion.aside
+      initial={false}
+      animate={{ width: isOpen ? 220 : 72 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="fixed left-0 top-0 h-screen border-r z-40 overflow-hidden bg-[var(--theme-bgSidebarLight)] border-[#e5e5e5] shadow-[2px_0_10px_0_rgba(0,0,0,0.15)] dark:bg-[var(--theme-bgSidebarDark)] dark:border-white/10 dark:shadow-[2px_0_10px_0_rgba(0,0,0,0.4)]"
+      aria-expanded={isOpen}
+    >
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between px-4 py-4">
           <div
@@ -106,23 +84,23 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
         </div>
 
         <nav className="mt-3 flex-1 px-2 space-y-1">
-          <NavItem type={8} open={isOpen} href={route('dashboard')} label="Dashboard" />
-          <NavItem type={4} open={isOpen} href={route('transacoes.index')} label="Fatura" />
-          <NavItem type={12} open={isOpen} href={route('accounts.index')} label="Cartões" />
-          <NavItem type={13} open={isOpen} href={route('categorias.index')} label="Categorias" />
-          <NavItem type={5} open={isOpen} href={route('bancos.index')} label="Bancos" />
-          <NavItem type={14} open={isOpen} href={route('parcelamentos.index')} label="Parcelamentos" />
-          <NavItem type={9} open={isOpen} href={route('transactions.index')} label="Transações" />
-          <NavItem type={6} open={isOpen} href={route('contas.index')} label="Contas" />
-          <NavItem type={11} open={isOpen} href={route('extrato.index')} label="Extrato" />
-          <NavItem type={16} open={isOpen} href={route('resumo-mensal.index')} label="Resumo Mensal" />
-          <NavItem type={10} open={isOpen} href={route('reports.index')} label="Relatórios" />
-          <NavItem type={15} open={isOpen} href={route('projecao.index')} label="Projeção" />
-          <NavItem type={7} open={isOpen} href={route('about')} label="Sobre" />
+          <NavItem type={8} open={isOpen} href={route('dashboard')} label="Dashboard" currentPath={currentPath} />
+          <NavItem type={4} open={isOpen} href={route('transacoes.index')} label="Fatura" currentPath={currentPath} />
+          <NavItem type={12} open={isOpen} href={route('accounts.index')} label="Cartões" currentPath={currentPath} />
+          <NavItem type={13} open={isOpen} href={route('categorias.index')} label="Categorias" currentPath={currentPath} />
+          <NavItem type={5} open={isOpen} href={route('bancos.index')} label="Bancos" currentPath={currentPath} />
+          <NavItem type={14} open={isOpen} href={route('parcelamentos.index')} label="Parcelamentos" currentPath={currentPath} />
+          <NavItem type={9} open={isOpen} href={route('transactions.index')} label="Transações" currentPath={currentPath} />
+          <NavItem type={6} open={isOpen} href={route('contas.index')} label="Contas" currentPath={currentPath} />
+          <NavItem type={11} open={isOpen} href={route('extrato.index')} label="Extrato" currentPath={currentPath} />
+          <NavItem type={16} open={isOpen} href={route('resumo-mensal.index')} label="Resumo Mensal" currentPath={currentPath} />
+          <NavItem type={10} open={isOpen} href={route('reports.index')} label="Relatórios" currentPath={currentPath} />
+          <NavItem type={15} open={isOpen} href={route('projecao.index')} label="Projeção" currentPath={currentPath} />
+          <NavItem type={7} open={isOpen} href={route('about')} label="Sobre" currentPath={currentPath} />
         </nav>
 
         <nav className="px-2">
-          <NavItem type={1} open={isOpen} href={route('settings')} label="Configurações" />
+          <NavItem type={1} open={isOpen} href={route('settings')} label="Configurações" currentPath={currentPath} />
         </nav>
 
         <AnimatePresence initial={false}>
@@ -142,16 +120,18 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
         </AnimatePresence>
       </div>
     </motion.aside>
-    </>
   )
 }
 
-function NavItem({ type = 3, size = 16, color, open, href, label }) {
+function NavItem({ type = 3, size = 16, open, href, label, currentPath }) {
+  const isActive = currentPath === toPathname(href)
+
   return (
     <Link
       href={href}
-      className="themed-nav-item whitespace-nowrap"
+      className={`themed-nav-item whitespace-nowrap ${isActive ? 'themed-nav-item-active' : ''}`}
       title={!open ? label : undefined}
+      aria-current={isActive ? 'page' : undefined}
     >
       <ThemedNavIcon type={type} size={size} />
 

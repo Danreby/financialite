@@ -50,10 +50,16 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
       }
     }
 
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setUserMenuOpen(false)
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
     }
   }, [userMenuOpen])
 
@@ -107,28 +113,16 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
   })()
 
   return (
-    <div 
-      className="topbar-container flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 text-gray-900 shadow-md border-b"
-      style={{
-        backgroundColor: 'var(--theme-bgTopbarLight)',
-        borderColor: '#e5e5e5',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-      }}
+    <div
+      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 border-b bg-[var(--theme-bgTopbarLight)] border-[#e5e5e5] shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] text-gray-900 dark:bg-[var(--theme-bgTopbarDark)] dark:text-gray-100 dark:border-white/10 dark:shadow-[0_1px_3px_0_rgba(0,0,0,0.3)]"
     >
-      <style>{`
-        .dark .topbar-container {
-          background-color: var(--theme-bgTopbarDark) !important;
-          color: #f3f4f6 !important;
-          border-color: rgba(255, 255, 255, 0.1) !important;
-          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
-        }
-      `}</style>
       <div className="flex items-center gap-3">
         <BareButton
           type="button"
           onClick={() => setSidebarOpen((prev) => !prev)}
-          className="hidden lg:inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus:ring-offset-[#0b0b0b]"
+          className="hidden lg:inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus-visible:ring-offset-[#0b0b0b]"
           aria-label="Abrir/Fechar menu de navegação"
+          aria-expanded={sidebarOpen}
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -139,7 +133,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
           <BareButton
             type="button"
             onClick={onOpenMobileNav}
-            className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus:ring-offset-[#0b0b0b] md:hidden"
+            className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus-visible:ring-offset-[#0b0b0b] md:hidden"
             aria-label="Abrir menu de navegação"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -194,7 +188,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
           <BareButton
             type="button"
             onClick={toggleUserMenu}
-            className="h-8 w-8 rounded-full themed-avatar flex items-center justify-center text-sm font-semibold text-white ring-1 ring-black/10 hover:ring-black/20 focus:outline-none focus:ring-2 focus:ring-theme-accent"
+            className="h-8 w-8 rounded-full themed-avatar flex items-center justify-center text-sm font-semibold text-white ring-1 ring-black/10 hover:ring-black/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
             aria-haspopup="true"
             aria-expanded={userMenuOpen}
           >
@@ -202,10 +196,15 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
           </BareButton>
 
           {userMenuOpen && (
-            <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-[#111] dark:text-gray-100 dark:ring-black/40">
+            <div
+              role="menu"
+              aria-label="Menu do usuário"
+              className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-[#111] dark:text-gray-100 dark:ring-black/40"
+            >
               <Link
                 href={route('profile.edit')}
-                className="block px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-800"
+                role="menuitem"
+                className="block px-3 py-2 text-left hover:bg-gray-100 focus-visible:outline-none focus-visible:bg-gray-100 dark:hover:bg-gray-800 dark:focus-visible:bg-gray-800"
                 onClick={() => setUserMenuOpen(false)}
               >
                 Perfil
@@ -215,7 +214,8 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
                 href={route('logout')}
                 method="post"
                 as="button"
-                className="block w-full px-3 py-2 text-left text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-800"
+                role="menuitem"
+                className="block w-full px-3 py-2 text-left text-red-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-800 dark:focus-visible:bg-gray-800"
                 onClick={() => setUserMenuOpen(false)}
               >
                 Sair

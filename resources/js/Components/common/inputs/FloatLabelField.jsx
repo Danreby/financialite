@@ -47,9 +47,10 @@ const FloatLabelField = forwardRef(
         const isFloating = isFocused || hasValue;
 
         const baseInputClasses =
-            'block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm outline-none transition ' +
+            'block w-full rounded-md border border-gray-300 bg-white px-3 ' +
+            'py-1.5 text-sm shadow-sm outline-none transition ' +
             'placeholder-transparent text-gray-900 themed-focus ' +
-            'dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 p-2';
+            'dark:border-gray-900 dark:bg-transparent dark:text-gray-100 p-2';
 
         const errorInputClasses = error
             ? 'border-red-500 dark:border-red-500 '

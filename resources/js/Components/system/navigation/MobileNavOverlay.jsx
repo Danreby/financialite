@@ -1,8 +1,16 @@
 import React from 'react'
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import BareButton from '@/Components/common/buttons/BareButton'
 import ThemedNavIcon from '@/Components/common/ThemedNavIcon'
+
+function toPathname(href) {
+  try {
+    return new URL(href, window.location.origin).pathname.replace(/\/+$/, '') || '/'
+  } catch {
+    return href
+  }
+}
 
 const links = [
   { href: () => route('dashboard'), label: 'Dashboard', icon: 8 },
@@ -21,7 +29,11 @@ const links = [
   { href: () => route('settings'), label: 'Configurações', icon: 1 },
 ]
 
+const MotionLink = motion.create(Link)
+
 export default function MobileNavOverlay({ isOpen, onClose, user }) {
+  const { url } = usePage()
+  const currentPath = toPathname(url)
   const initials = (() => {
     if (!user?.name) return 'U'
     const parts = user.name
@@ -36,11 +48,6 @@ export default function MobileNavOverlay({ isOpen, onClose, user }) {
       .join('')
   })()
 
-  const handleNavigate = (hrefFactory) => {
-    const url = hrefFactory()
-    onClose?.()
-    window.location.href = url
-  }
 
   return (
     <AnimatePresence>
@@ -92,20 +99,28 @@ export default function MobileNavOverlay({ isOpen, onClose, user }) {
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             <div className="grid grid-cols-2 gap-2">
-              {links.map((item, index) => (
-                <motion.button
+              {links.map((item, index) => {
+                const isActive = currentPath === toPathname(item.href())
+                return (
+                <MotionLink
                   key={item.label}
-                  type="button"
-                  onClick={() => handleNavigate(item.href)}
+                  href={item.href()}
+                  onClick={() => onClose?.()}
+                  aria-current={isActive ? 'page' : undefined}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.15, delay: index * 0.02 }}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-gray-900/5 text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/15 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10 dark:active:bg-white/15 text-sm font-medium transition-colors"
+                  className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-theme-accent-light text-theme-primary font-semibold dark:bg-theme-accent/20'
+                      : 'bg-gray-900/5 text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/15 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10 dark:active:bg-white/15'
+                  }`}
                 >
                   <ThemedNavIcon type={item.icon} size={15} />
                   <span className="truncate">{item.label}</span>
-                </motion.button>
-              ))}
+                </MotionLink>
+                )
+              })}
             </div>
           </motion.nav>
 
