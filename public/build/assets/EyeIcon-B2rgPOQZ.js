@@ -1,0 +1,1 @@
+import{j as r,aq as a,ar as n}from"./vendor-BqugldRi.js";const c=({type:t=1,size:s=18,color:e="text-white"})=>{const o=t===1?a:n;return r.jsx(o,{size:s,strokeWidth:2,className:`${e} transition-colors`,"aria-hidden":"true"})};export{c as E};
