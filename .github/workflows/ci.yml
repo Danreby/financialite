@@ -113,8 +113,29 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      # Vite resolves VITE_* keys (and the ${VAR} nesting used by
+      # VITE_GOOGLE_CLIENT_ID) from a real .env file at build time, the same
+      # way `php artisan` does. Without one, import.meta.env.VITE_GOOGLE_CLIENT_ID
+      # is silently undefined and Google Sign-In breaks in the built bundle.
+      - name: Prepare production env for build
+        run: |
+          cp .env.example .env
+          sed -i "s|^APP_NAME=.*|APP_NAME=\"${APP_NAME}\"|" .env
+          sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}|" .env
+        env:
+          APP_NAME: ${{ vars.APP_NAME || 'Financialite' }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+
       - name: Build frontend assets
         run: npm run build
         env:
           NODE_ENV: production
-          VITE_APP_NAME: Financialite
+
+      - name: Upload build artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: public/build
+          if-no-files-found: error
+          retention-days: 1
