@@ -88,6 +88,24 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
+      # Feature tests that render an Inertia page (login, register, profile, ...)
+      # go through resources/views/app.blade.php, which calls @vite(...). That
+      # throws a ViteManifestNotFoundException (500) unless public/build/manifest.json
+      # exists. public/build is gitignored now (built once in the `build` job,
+      # shipped straight to the server, never committed), so this job needs its
+      # own throwaway build. Content doesn't matter here: PHPUnit only inspects
+      # the Inertia page/props payload, it never executes the JS.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets (for Vite manifest only)
+        run: npm run build
+
       - name: Run tests
         run: php artisan test
         env:
