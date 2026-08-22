@@ -40,7 +40,7 @@ export default function GoogleButton({
       aria-label={isLoading ? 'Conectando...' : label}
       title={label}
       className={`
-        neu-surface neu-outset h-14 w-14 inline-flex items-center justify-center rounded-full
+        neu-surface neu-outset neu-pressable h-14 w-14 inline-flex items-center justify-center rounded-full
         focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1e1b1e]
         disabled:opacity-60 disabled:cursor-not-allowed
         transition-transform duration-150

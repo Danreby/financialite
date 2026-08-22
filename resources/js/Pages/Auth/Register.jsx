@@ -7,7 +7,7 @@ import NeumorphicCard from '@/Components/auth/NeumorphicCard'
 import NeumorphicField from '@/Components/auth/NeumorphicField'
 import AuthAlert from '@/Components/auth/AuthAlert'
 import GoogleButton from '@/Components/auth/GoogleButton'
-import EyeIcon from '@/Components/common/icons/EyeIcon'
+import PasswordToggleButton from '@/Components/auth/PasswordToggleButton'
 import useGoogleAuth from '@/Hooks/useGoogleAuth'
 import useAuthErrors from '@/Hooks/useAuthErrors'
 
@@ -69,7 +69,7 @@ export default function Register() {
   }
 
   return (
-    <GuestLayout bgClassName="bg-[#1e1b1e] text-gray-100">
+    <>
       <Head title="Criar conta" />
 
       <motion.div
@@ -168,15 +168,10 @@ export default function Register() {
               autoComplete="new-password"
               type={showPassword ? 'text' : 'password'}
               rightElement={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="text-gray-500 hover:text-gray-300 focus:outline-none"
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                  title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                >
-                  <EyeIcon type={showPassword ? 1 : 2} />
-                </button>
+                <PasswordToggleButton
+                  visible={showPassword}
+                  onToggle={() => setShowPassword((prev) => !prev)}
+                />
               }
             />
 
@@ -189,25 +184,12 @@ export default function Register() {
               autoComplete="new-password"
               type={showPasswordConfirmation ? 'text' : 'password'}
               rightElement={
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPasswordConfirmation((prev) => !prev)
-                  }
-                  className="text-gray-500 hover:text-gray-300 focus:outline-none"
-                  aria-label={
-                    showPasswordConfirmation
-                      ? 'Ocultar confirmação de senha'
-                      : 'Mostrar confirmação de senha'
-                  }
-                  title={
-                    showPasswordConfirmation
-                      ? 'Ocultar confirmação de senha'
-                      : 'Mostrar confirmação de senha'
-                  }
-                >
-                  <EyeIcon type={showPasswordConfirmation ? 1 : 2} />
-                </button>
+                <PasswordToggleButton
+                  visible={showPasswordConfirmation}
+                  onToggle={() => setShowPasswordConfirmation((prev) => !prev)}
+                  labelShow="Mostrar confirmação de senha"
+                  labelHide="Ocultar confirmação de senha"
+                />
               }
             />
 
@@ -234,6 +216,8 @@ export default function Register() {
           </div>
         </NeumorphicCard>
       </motion.div>
-    </GuestLayout>
+    </>
   )
 }
+
+Register.layout = (page) => <GuestLayout bgClassName="bg-[#1e1b1e] text-gray-100">{page}</GuestLayout>

@@ -538,7 +538,11 @@
 		box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.55), -6px -6px 14px rgba(255, 255, 255, 0.04);
 	}
 
-	.neu-outset:active {
+	/* Pressed feedback is opt-in via .neu-pressable so it only applies to real
+	   buttons (e.g. GoogleButton) and not to the outer card surface, which is a
+	   plain div that browsers still flip into :active while any click inside it
+	   is held down. */
+	.neu-pressable:active {
 		box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.6), inset -3px -3px 7px rgba(255, 255, 255, 0.03);
 	}
 
