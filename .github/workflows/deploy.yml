@@ -49,10 +49,26 @@ jobs:
           envs: DEPLOY_PATH
           script_stop: true
           script: |
-            export PATH="/opt/cpanel/composer/bin:/usr/local/bin:/usr/bin:$PATH"
+            export PATH="/opt/cpanel/composer/bin:$HOME/bin:/usr/local/bin:/usr/bin:$PATH"
             cd "$DEPLOY_PATH"
             git pull origin main
-            composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+            # /opt/cpanel/composer/bin only exists on some cPanel accounts.
+            # When composer isn't on PATH at all, fetch a local composer.phar
+            # once (cached under $HOME) instead of hard-failing the deploy.
+            if command -v composer >/dev/null 2>&1; then
+              COMPOSER_BIN="composer"
+            else
+              if [ ! -f "$HOME/composer.phar" ]; then
+                echo "composer not found on PATH, installing composer.phar to $HOME"
+                php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                php composer-setup.php --install-dir="$HOME" --filename=composer.phar --quiet
+                rm -f composer-setup.php
+              fi
+              COMPOSER_BIN="php $HOME/composer.phar"
+            fi
+
+            $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction --prefer-dist
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
