@@ -24,19 +24,6 @@ jobs:
       url: https://financialite.rolims.com
 
     steps:
-      # public/build is no longer committed to git (see .gitignore); it is
-      # built once in CI, with the real production VITE_* values, and shipped
-      # here as an artifact. This guarantees the deployed assets always match
-      # the exact commit being deployed, instead of relying on someone having
-      # manually run `npm run build` and committed the result beforehand.
-      - name: Download frontend build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend-build
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
-
       - name: Deploy application via SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
@@ -75,20 +62,3 @@ jobs:
             php artisan view:cache
             php artisan event:cache
             php artisan queue:restart
-
-      - name: Upload frontend build assets
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          umask 077
-          mkdir -p ~/.ssh
-          echo "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -p $DEPLOY_PORT -o UserKnownHostsFile=~/.ssh/known_hosts" \
-            frontend-build/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/build/"

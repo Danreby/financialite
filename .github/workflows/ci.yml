@@ -88,24 +88,6 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
-      # Feature tests that render an Inertia page (login, register, profile, ...)
-      # go through resources/views/app.blade.php, which calls @vite(...). That
-      # throws a ViteManifestNotFoundException (500) unless public/build/manifest.json
-      # exists. public/build is gitignored now (built once in the `build` job,
-      # shipped straight to the server, never committed), so this job needs its
-      # own throwaway build. Content doesn't matter here: PHPUnit only inspects
-      # the Inertia page/props payload, it never executes the JS.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Build frontend assets (for Vite manifest only)
-        run: npm run build
-
       - name: Run tests
         run: php artisan test
         env:
@@ -131,29 +113,8 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      # Vite resolves VITE_* keys (and the ${VAR} nesting used by
-      # VITE_GOOGLE_CLIENT_ID) from a real .env file at build time, the same
-      # way `php artisan` does. Without one, import.meta.env.VITE_GOOGLE_CLIENT_ID
-      # is silently undefined and Google Sign-In breaks in the built bundle.
-      - name: Prepare production env for build
-        run: |
-          cp .env.example .env
-          sed -i "s|^APP_NAME=.*|APP_NAME=\"${APP_NAME}\"|" .env
-          sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}|" .env
-        env:
-          APP_NAME: ${{ vars.APP_NAME || 'Financialite' }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-
       - name: Build frontend assets
         run: npm run build
         env:
           NODE_ENV: production
-
-      - name: Upload build artifact
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: public/build
-          if-no-files-found: error
-          retention-days: 1
+          VITE_APP_NAME: Financialite
