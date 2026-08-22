@@ -55,13 +55,6 @@ return new class extends Migration
         }
 
         try {
-            Schema::table('anexos', function (Blueprint $table) {
-                $table->index('type', 'anexos_type_index');
-            });
-        } catch (\Exception $e) {
-        }
-
-        try {
             Schema::table('password_reset_tokens', function (Blueprint $table) {
                 $table->index('created_at', 'password_reset_tokens_created_at_index');
             });
@@ -113,13 +106,6 @@ return new class extends Migration
         try {
             Schema::table('bank_user', function (Blueprint $table) {
                 $table->dropIndex('bank_user_user_id_index');
-            });
-        } catch (\Exception $e) {
-        }
-
-        try {
-            Schema::table('anexos', function (Blueprint $table) {
-                $table->dropIndex('anexos_type_index');
             });
         } catch (\Exception $e) {
         }
