@@ -1,7 +1,6 @@
 import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
-import BareButton from '@/Components/common/buttons/BareButton';
-import Tooltip from '@/Components/common/Tooltip';
+import DownloadIconButton from '@/Components/common/buttons/DownloadIconButton';
 
 
 export default function DetailedExportExcel({ data, name = "relatorio_financeiro" }) {
@@ -1325,17 +1324,12 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
   };
 
   return (
-    <Tooltip label="Exportar relatório detalhado e completo com 7 abas de análises" position="right">
-      <BareButton
-        aria-label="Exportar relatório detalhado"
-        className="group relative flex h-[50px] w-[50px] flex-col items-center justify-center gap-[3px] rounded-full bg-neutral-900 shadow-[2px_2px_10px_rgba(0,0,0,0.11)] transition-colors duration-300 hover:bg-theme-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent focus-visible:ring-offset-2 dark:hover:bg-theme-accent"
-        onClick={exportDetailedReport}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" className="fill-theme-accent-light transition-colors duration-300 group-hover:fill-white group-hover:animate-slide-in-top">
-          <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5zM3 12v-2h2v2zm0 1h2v2H4a1 1 0 0 1-1-1zm3 2v-2h3v2zm4 0v-2h3v1a1 1 0 0 1-1 1zm3-3h-3v-2h3zm-7 0v-2h3v2z"/>
-        </svg>
-        <span className="h-[5px] w-[18px] border-b-2 border-l-2 border-r-2 border-theme-accent-light transition-colors duration-300 group-hover:border-white" aria-hidden="true" />
-      </BareButton>
-    </Tooltip>
+    <DownloadIconButton
+      label="Exportar relatório detalhado e completo com 7 abas de análises"
+      onClick={exportDetailedReport}
+      icon={
+        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5zM3 12v-2h2v2zm0 1h2v2H4a1 1 0 0 1-1-1zm3 2v-2h3v2zm4 0v-2h3v1a1 1 0 0 1-1 1zm3-3h-3v-2h3zm-7 0v-2h3v2z"/>
+      }
+    />
   );
 }
