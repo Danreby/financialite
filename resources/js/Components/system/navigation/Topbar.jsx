@@ -152,10 +152,10 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
             onToggleNotifications()
             setUnreadCount(0)
           }}
-          className="relative h-9 w-9 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all duration-150 themed-topbar-btn"
+          className="group relative h-9 w-9 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all duration-150 active:scale-90 themed-topbar-btn"
           aria-label="Abrir notificações"
         >
-          <BellIcon type={1} />
+          <BellIcon type={5} size={16} className="transition-transform group-hover:animate-bell-ring" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: 'var(--theme-accent, #f43f5e)' }} />
