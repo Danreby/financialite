@@ -147,7 +147,7 @@ export default function Modal({
 
                     <motion.div
                         ref={modalRef}
-                        className={`relative w-full transform overflow-hidden rounded-lg themed-modal-panel shadow-xl transition-all sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col ${widthClass}`}
+                        className={`relative w-full transform overflow-hidden themed-modal-panel border-l-4 border-theme-accent shadow-xl transition-all sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col [clip-path:polygon(0_0,100%_0,100%_calc(100%_-_20px),calc(100%_-_20px)_100%,0_100%)] ${widthClass}`}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby={title ? 'modal-title' : undefined}
