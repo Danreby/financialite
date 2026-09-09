@@ -378,14 +378,14 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
               Visão geral
             </h1>
 
-            <div className="flex items-center gap-2 text-sm lg:text-base">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm lg:text-base">
               <label className="text-xs lg:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
                 Banco do dashboard
               </label>
               <select
                 value={currentFilters.bank_user_id || ''}
                 onChange={handleBankFilterChange}
-                className="min-w-[260px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:w-auto sm:min-w-[260px]"
               >
                 <option value="">Todos os bancos</option>
                 {bankAccounts.map((account) => (
