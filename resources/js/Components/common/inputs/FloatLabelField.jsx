@@ -47,10 +47,11 @@ const FloatLabelField = forwardRef(
         const isFloating = isFocused || hasValue;
 
         const baseInputClasses =
-            'block w-full rounded-md border border-l-[3px] border-gray-300 border-l-transparent bg-white px-3 ' +
-            'py-1.5 text-sm shadow-sm outline-none transition ' +
-            'placeholder-transparent text-gray-900 themed-focus focus:border-l-theme-accent ' +
-            'dark:border-gray-900 dark:border-l-transparent dark:focus:border-l-theme-accent dark:bg-transparent dark:text-gray-100 p-2';
+            'block w-full peer border-2 border-t-0 border-theme-primary bg-white px-3 ' +
+            'py-1.5 text-sm outline-none transition-all duration-500 ' +
+            'shadow-[7px_7px_0_0_var(--theme-primary)] focus:shadow-none ' +
+            'placeholder-transparent text-gray-900 themed-focus ' +
+            'dark:border-theme-accent dark:shadow-[7px_7px_0_0_var(--theme-accent)] dark:bg-transparent dark:text-gray-100 p-2';
 
         const errorInputClasses = error
             ? 'border-red-500 dark:border-red-500 '
@@ -117,6 +118,15 @@ const FloatLabelField = forwardRef(
                             className
                         }
                         {...resolvedInputProps}
+                    />
+
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute right-0 top-0 h-0.5 w-full bg-theme-primary transition-all duration-500 peer-focus:w-[35%] dark:bg-theme-accent"
+                    />
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute bottom-0 right-0 h-0.5 w-0 bg-theme-primary transition-all duration-500 peer-focus:w-full dark:bg-theme-accent"
                     />
 
                     {rightElement && (
