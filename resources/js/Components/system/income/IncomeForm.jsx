@@ -321,7 +321,7 @@ export default function IncomeForm({
           <SecondaryButton type="button" onClick={handleClose}>
             Cancelar
           </SecondaryButton>
-          <PrimaryButton type="submit" disabled={saving} className="text-white">
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? 'Salvando...' : isEditing ? 'Atualizar' : 'Cadastrar'}
           </PrimaryButton>
         </div>

@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link, usePage } from '@inertiajs/react'
-import ThemedNavIcon from '@/Components/common/ThemedNavIcon'
-
-function toPathname(href) {
-  try {
-    return new URL(href, window.location.origin).pathname.replace(/\/+$/, '') || '/'
-  } catch {
-    return href
-  }
-}
+import { usePage } from '@inertiajs/react'
+import NavItem from '@/Components/system/navigation/NavItem'
+import { toPathname } from '@/Utils/url'
 
 export default function Sidebar({ open: openProp = true, setOpen: setOpenProp }) {
   const [isOpen, setIsOpen] = useState(Boolean(openProp))
@@ -49,7 +42,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
       initial={false}
       animate={{ width: isOpen ? 220 : 72 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed left-0 top-0 h-screen border-r z-40 overflow-hidden bg-[var(--theme-bgSidebarLight)] border-[#e5e5e5] shadow-[2px_0_10px_0_rgba(0,0,0,0.15)] dark:bg-[var(--theme-bgSidebarDark)] dark:border-white/10 dark:shadow-[2px_0_10px_0_rgba(0,0,0,0.4)]"
+      className={`fixed left-0 top-0 h-screen border-r z-40 ${isOpen ? 'overflow-hidden' : 'overflow-visible'} bg-[var(--theme-bgSidebarLight)] border-[#e5e5e5] shadow-[2px_0_10px_0_rgba(0,0,0,0.15)] dark:bg-[var(--theme-bgSidebarDark)] dark:border-white/10 dark:shadow-[2px_0_10px_0_rgba(0,0,0,0.4)]`}
       aria-expanded={isOpen}
     >
       <div className="h-full flex flex-col">
@@ -120,35 +113,5 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
         </AnimatePresence>
       </div>
     </motion.aside>
-  )
-}
-
-function NavItem({ type = 3, size = 16, open, href, label, currentPath }) {
-  const isActive = currentPath === toPathname(href)
-
-  return (
-    <Link
-      href={href}
-      className={`themed-nav-item whitespace-nowrap ${isActive ? 'themed-nav-item-active' : ''}`}
-      title={!open ? label : undefined}
-      aria-current={isActive ? 'page' : undefined}
-    >
-      <ThemedNavIcon type={type} size={size} />
-
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.span
-            key="label"
-            initial={{ opacity: 0, x: -6 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -6 }}
-            transition={{ duration: 0.14 }}
-            className="truncate"
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </Link>
   )
 }

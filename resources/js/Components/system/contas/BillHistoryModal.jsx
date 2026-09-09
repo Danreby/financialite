@@ -379,7 +379,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
                                                 </td>
                                                 <td className="px-2 py-2.5">
                                                     {p.status === 'paid' && (
-                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-all">
+                                                        <div className="flex items-center gap-0.5 opacity-100 transition-all sm:opacity-0 sm:group-hover/row:opacity-100">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => openEdit(p)}

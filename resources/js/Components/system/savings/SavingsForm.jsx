@@ -183,7 +183,7 @@ export default function SavingsForm({ isOpen, onClose, onSuccess, goal = null })
 
         <div className="flex justify-end gap-3 pt-2">
           <SecondaryButton type="button" onClick={handleClose}>Cancelar</SecondaryButton>
-          <PrimaryButton type="submit" disabled={saving} className="text-white">
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar Meta'}
           </PrimaryButton>
         </div>

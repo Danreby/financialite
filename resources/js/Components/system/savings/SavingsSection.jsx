@@ -116,7 +116,7 @@ export default function SavingsSection({
             {' · '}{summary.active_count || 0} meta(s) ativa(s)
           </p>
         </div>
-        <PrimaryButton onClick={() => setShowForm(true)} className="text-white !text-xs sm:!text-sm">
+        <PrimaryButton onClick={() => setShowForm(true)} className="!text-xs sm:!text-sm">
           + Nova Meta
         </PrimaryButton>
       </div>

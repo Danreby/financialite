@@ -215,7 +215,7 @@ export default function Categorias({ categories }) {
 				</FadeInItem>
 
 				<FadeInItem type="subtle">
-					<div className="flex gap-2">
+					<div className="flex flex-wrap gap-2">
 						{[
 							{ value: 'all', label: 'Todas' },
 							{ value: 'expense', label: 'Despesas' },

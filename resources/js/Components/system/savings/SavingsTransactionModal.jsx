@@ -143,7 +143,7 @@ export default function SavingsTransactionModal({ isOpen, onClose, onConfirm, go
 
           <div className="flex justify-end gap-3 pt-1">
             <SecondaryButton type="button" onClick={handleClose}>Cancelar</SecondaryButton>
-            <PrimaryButton type="submit" disabled={processing} className="text-white">
+            <PrimaryButton type="submit" disabled={processing}>
               {processing
                 ? 'Processando...'
                 : isDeposit
