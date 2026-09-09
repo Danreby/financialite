@@ -33,6 +33,7 @@ export default {
             animation: {
                 'bell-ring': 'bell-ring 0.9s ease-in-out both',
                 'slide-in-top': 'slide-in-top 0.6s cubic-bezier(0.25,0.46,0.45,0.94) both',
+                'spin-slow': 'spin 3s linear infinite',
             },
             colors: {
                 theme: {

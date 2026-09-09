@@ -49,7 +49,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
       initial={false}
       animate={{ width: isOpen ? 220 : 72 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed left-0 top-0 h-screen border-r z-40 overflow-hidden bg-[var(--theme-bgSidebarLight)] border-[#e5e5e5] shadow-[2px_0_10px_0_rgba(0,0,0,0.15)] dark:bg-[var(--theme-bgSidebarDark)] dark:border-white/10 dark:shadow-[2px_0_10px_0_rgba(0,0,0,0.4)]"
+      className={`fixed left-0 top-0 h-screen border-r z-40 ${isOpen ? 'overflow-hidden' : 'overflow-visible'} bg-[var(--theme-bgSidebarLight)] border-[#e5e5e5] shadow-[2px_0_10px_0_rgba(0,0,0,0.15)] dark:bg-[var(--theme-bgSidebarDark)] dark:border-white/10 dark:shadow-[2px_0_10px_0_rgba(0,0,0,0.4)]`}
       aria-expanded={isOpen}
     >
       <div className="h-full flex flex-col">
@@ -125,15 +125,29 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
 
 function NavItem({ type = 3, size = 16, open, href, label, currentPath }) {
   const isActive = currentPath === toPathname(href)
+  const collapsed = !open
 
   return (
     <Link
       href={href}
-      className={`themed-nav-item whitespace-nowrap ${isActive ? 'themed-nav-item-active' : ''}`}
-      title={!open ? label : undefined}
+      className={`group/navitem themed-nav-item whitespace-nowrap ${isActive ? 'themed-nav-item-active' : ''}`}
+      title={collapsed ? label : undefined}
       aria-current={isActive ? 'page' : undefined}
     >
-      <ThemedNavIcon type={type} size={size} />
+      <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover/navitem:scale-110">
+        <ThemedNavIcon
+          type={type}
+          size={size}
+          className={collapsed ? 'rounded-full transition-colors duration-300 group-hover/navitem:bg-white group-hover/navitem:shadow-md dark:group-hover/navitem:bg-[#1c1c1c]' : ''}
+        />
+
+        {collapsed && (
+          <span
+            aria-hidden="true"
+            className="absolute -inset-1 -z-10 rounded-full opacity-0 transition-opacity duration-300 [background:conic-gradient(from_45deg,var(--theme-accent),transparent_35%,transparent_65%,var(--theme-accent),transparent_100%)] group-hover/navitem:opacity-100 group-hover/navitem:animate-spin-slow"
+          />
+        )}
+      </span>
 
       <AnimatePresence initial={false}>
         {open && (
@@ -149,6 +163,15 @@ function NavItem({ type = 3, size = 16, open, href, label, currentPath }) {
           </motion.span>
         )}
       </AnimatePresence>
+
+      {collapsed && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-full top-1/2 z-20 ml-3 -translate-x-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-black/10 bg-white px-2.5 py-1 text-sm font-semibold capitalize text-gray-900 opacity-0 shadow-lg transition-all duration-300 group-hover/navitem:translate-x-0 group-hover/navitem:opacity-100 dark:border-white/10 dark:bg-[#111] dark:text-gray-100"
+        >
+          {label}
+        </span>
+      )}
     </Link>
   )
 }
