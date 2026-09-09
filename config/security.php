@@ -80,8 +80,14 @@ return [
         // Whether to strip HTML tags from all input
         'strip_tags' => false,
 
-        // Whether to convert special characters to HTML entities
-        'html_encode' => true,
+        // Whether to convert special characters to HTML entities on input.
+        // Kept off by default: escaping belongs at the output layer (Blade/
+        // React auto-escape, and Eloquent already parameterizes queries).
+        // Encoding here instead permanently corrupts stored data (e.g.
+        // "O'Brien" -> "O&#039;Brien") and defeats the XSS/SQLi pattern
+        // detection in DetectSuspiciousActivity, which needs to see the
+        // raw input.
+        'html_encode' => false,
     ],
 
     /*

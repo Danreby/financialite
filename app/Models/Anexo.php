@@ -34,17 +34,21 @@ class Anexo extends Model
         'size' => 'integer',
     ];
 
+    /**
+     * SVG is intentionally excluded: it is served inline (Content-Disposition:
+     * inline) on the app's own origin, and an SVG can embed <script>/event
+     * handlers that would execute as stored XSS in that origin's context.
+     */
     public const ALLOWED_MIME_TYPES = [
         'image/jpeg',
         'image/png',
         'image/gif',
         'image/webp',
-        'image/svg+xml',
         'application/pdf',
     ];
 
     public const ALLOWED_EXTENSIONS = [
-        'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
+        'jpg', 'jpeg', 'png', 'gif', 'webp',
         'pdf',
     ];
 

@@ -61,13 +61,33 @@ class InputSanitizer implements SanitizerInterface
         return $sanitized;
     }
 
+    /**
+     * Strips null bytes/control characters and trims. Does NOT HTML-encode
+     * by default: encoding on the way in silently corrupts stored data
+     * (e.g. "O'Brien" -> "O&#039;Brien" permanently) and is redundant with
+     * Eloquent's parameterized queries (SQLi) and the React/Blade layer's
+     * auto-escaping on output (XSS) — the correct place to encode for
+     * display. Set security.sanitization.html_encode to opt back in for a
+     * specific field/use case if you know you need it.
+     */
     public function sanitizeString(string $value): string
     {
-        $value = str_replace(chr(0), '', $value);
-        $value = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8', false);
-        $value = trim($value);
+        $value = $this->stripControlChars($value);
 
-        return $value;
+        if (config('security.sanitization.strip_tags', false)) {
+            $value = strip_tags($value);
+        }
+
+        if (config('security.sanitization.html_encode', false)) {
+            $value = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8', false);
+        }
+
+        return trim($value);
+    }
+
+    protected function stripControlChars(string $value): string
+    {
+        return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value) ?? $value;
     }
 
     public function sanitizeForDatabase(string $value): string

@@ -12,19 +12,22 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // DetectSuspiciousActivity must run before SanitizeInput: it inspects
+        // raw input for attack patterns, and sanitizing first would mutate
+        // the very payloads it's trying to detect.
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\SanitizeInput::class,
             \App\Http\Middleware\DetectSuspiciousActivity::class,
+            \App\Http\Middleware\SanitizeInput::class,
             \App\Http\Middleware\LogSecurityEvents::class,
         ]);
 
         $middleware->api(append: [
             \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\SanitizeInput::class,
             \App\Http\Middleware\DetectSuspiciousActivity::class,
+            \App\Http\Middleware\SanitizeInput::class,
             \App\Http\Middleware\LogSecurityEvents::class,
         ]);
 
@@ -61,12 +64,20 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $isDebug = config('app.debug', false);
 
+            // For 5xx, never leak the real exception message/class unless
+            // debug mode is on: it can expose internals (SQL, file paths,
+            // stack details) to API clients.
             $body = [
                 'message' => $status >= 500
                     ? 'Erro interno do servidor. Contate o suporte.'
                     : $e->getMessage(),
-                'error' => class_basename($e).': '.$e->getMessage(),
             ];
+
+            if ($status < 500 || $isDebug) {
+                $body['error'] = class_basename($e).': '.$e->getMessage();
+            } else {
+                $body['error'] = 'internal_server_error';
+            }
 
             if ($isDebug) {
                 $body['exception'] = get_class($e);
