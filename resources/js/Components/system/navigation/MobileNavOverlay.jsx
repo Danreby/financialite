@@ -3,14 +3,7 @@ import { Link, usePage } from '@inertiajs/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import BareButton from '@/Components/common/buttons/BareButton'
 import ThemedNavIcon from '@/Components/common/ThemedNavIcon'
-
-function toPathname(href) {
-  try {
-    return new URL(href, window.location.origin).pathname.replace(/\/+$/, '') || '/'
-  } catch {
-    return href
-  }
-}
+import { toPathname } from '@/Utils/url'
 
 const links = [
   { href: () => route('dashboard'), label: 'Dashboard', icon: 8 },
