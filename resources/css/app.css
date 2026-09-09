@@ -51,14 +51,14 @@
 	.themed-button-primary {
 		background-color: var(--theme-bgButtonPrimary);
 		transition: background-color 0.2s ease-in-out;
-		
+
 		&:hover {
 			background-color: var(--theme-bgButtonPrimaryHover);
 		}
-		
+
 		&:is(.dark *) {
 			background-color: var(--theme-bgButtonPrimaryDark);
-			
+
 			&:hover {
 				background-color: var(--theme-bgButtonPrimaryDarkHover);
 			}
@@ -73,7 +73,7 @@
 		border-style: solid;
 		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 		ring-color: rgba(0, 0, 0, 0.05);
-		
+
 		&:is(.dark *) {
 			background-color: transparent;
 			border-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
@@ -90,7 +90,7 @@
 		border-style: solid;
 		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 		ring-color: rgba(0, 0, 0, 0.05);
-		
+
 		&:hover {
 			background-color: var(--theme-bgCardLightHover);
 			border-color: var(--theme-accent);
@@ -98,14 +98,14 @@
 			transform: translateY(-2px);
 			ring-color: #fecdd3;
 		}
-		
+
 		&:is(.dark *) {
 			background-color: transparent;
 			border-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
 			box-shadow: none;
 			ring-color: rgba(0, 0, 0, 0.3);
 		}
-		
+
 		&:is(.dark *):hover {
 			border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 40%, transparent);
 			background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 5%, transparent);
@@ -126,27 +126,27 @@
 		background-color: var(--theme-bgCardLight);
 		border-color: #d4d4d4;
 		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-		
+
 		&:hover {
 			border-color: #a3a3a3;
 		}
-		
+
 		&:focus {
 			outline: none;
 			border-color: var(--theme-accent);
 			--tw-ring-color: var(--theme-accent);
 			box-shadow: 0 0 0 3px #fecdd3;
 		}
-		
+
 		&:is(.dark *) {
 			background-color: rgba(15, 15, 15, 0.5);
 			border-color: rgba(255, 255, 255, 0.1);
 		}
-		
+
 		&:is(.dark *):hover {
 			border-color: rgba(255, 255, 255, 0.2);
 		}
-		
+
 		&:is(.dark *):focus {
 			border-color: var(--theme-accent, #f43f5e);
 		}
@@ -259,7 +259,7 @@
 	.themed-card-title {
 		@apply inline-block px-3 py-1.5 rounded-lg font-semibold text-sm;
 		color: var(--theme-primary);
-		
+
 		&:is(.dark *) {
 			color: color-mix(in srgb, var(--theme-accent) 90%, #fff);
 		}
@@ -342,13 +342,13 @@
 		color: #ffffff;
 		border: 1px solid var(--theme-accent);
 		box-shadow: 0 2px 4px 0 rgba(244, 63, 94, 0.3), 0 1px 2px -1px rgba(244, 63, 94, 0.3);
-		
+
 		&:hover {
 			background-color: var(--theme-accentHover);
 			transform: translateY(-1px);
 			box-shadow: 0 4px 6px 0 rgba(244, 63, 94, 0.35), 0 2px 4px -1px rgba(244, 63, 94, 0.35);
 		}
-		
+
 		&:active {
 			transform: translateY(0);
 		}
@@ -360,24 +360,24 @@
 		color: var(--theme-primary);
 		border: 1px solid #fda4af;
 		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-		
+
 		&:hover {
 			background-color: #fecdd3;
 			border-color: var(--theme-accent);
 			transform: translateY(-1px);
 			box-shadow: 0 2px 4px 0 rgba(244, 63, 94, 0.2);
 		}
-		
+
 		&:active {
 			transform: translateY(0);
 		}
-		
+
 		&:is(.dark *) {
 			background-color: transparent;
 			color: color-mix(in srgb, var(--theme-accent) 85%, #fff);
 			border-color: color-mix(in srgb, var(--theme-accent) 40%, transparent);
 		}
-		
+
 		&:is(.dark *):hover {
 			background-color: color-mix(in srgb, var(--theme-accent) 10%, transparent);
 			border-color: var(--theme-accent);
@@ -389,19 +389,19 @@
 		background: linear-gradient(135deg, #ffffff, #fef2f2);
 		border: 1px solid #fda4af;
 		box-shadow: 0 2px 4px 0 rgba(190, 18, 60, 0.15), 0 1px 2px -1px rgba(190, 18, 60, 0.15);
-		
+
 		&:hover {
 			transform: translateY(-2px);
 			box-shadow: 0 4px 6px 0 rgba(190, 18, 60, 0.2), 0 2px 4px -1px rgba(190, 18, 60, 0.2);
 			border-color: var(--theme-accent);
 		}
-		
+
 		&:is(.dark *) {
 			background: transparent;
 			border-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
 			box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
 		}
-		
+
 		&:is(.dark *):hover {
 			border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 40%, transparent);
 			background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 5%, transparent);
@@ -412,7 +412,7 @@
 		@apply h-10 w-10 rounded-lg flex items-center justify-center transition-all duration-150;
 		background: linear-gradient(135deg, var(--theme-accent), var(--theme-accentHover));
 		box-shadow: 0 2px 4px 0 rgba(244, 63, 94, 0.3), 0 1px 2px -1px rgba(244, 63, 94, 0.3);
-		
+
 		&:is(.dark *) {
 			box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.4);
 		}
@@ -423,7 +423,7 @@
 		background-color: #fef2f2;
 		color: var(--theme-primary);
 		border: 1px solid #fecdd3;
-		
+
 		&:is(.dark *) {
 			background-color: color-mix(in srgb, var(--theme-accent) 15%, transparent);
 			color: color-mix(in srgb, var(--theme-accent) 90%, #fff);
@@ -433,7 +433,7 @@
 
 	.themed-text-primary {
 		color: var(--theme-primary);
-		
+
 		&:is(.dark *) {
 			color: color-mix(in srgb, var(--theme-accent) 90%, #fff);
 		}
@@ -441,7 +441,7 @@
 
 	.themed-text-accent {
 		color: var(--theme-accent);
-		
+
 		&:is(.dark *) {
 			color: color-mix(in srgb, var(--theme-accent) 85%, #fff);
 		}
@@ -449,7 +449,7 @@
 
 	.themed-divider {
 		border-color: #e5e5e5;
-		
+
 		&:is(.dark *) {
 			border-color: rgba(255, 255, 255, 0.1);
 		}
@@ -458,16 +458,16 @@
 	.themed-icon-wrapper {
 		background-color: #fef2f2;
 		ring-color: #fecdd3;
-		
+
 		& svg {
 			color: var(--theme-primary);
 		}
-		
+
 		&:is(.dark *) {
 			background-color: rgba(15, 15, 15, 0.5);
 			ring-color: rgba(0, 0, 0, 0.3);
 		}
-		
+
 		&:is(.dark *) svg {
 			color: var(--theme-accent);
 		}
@@ -481,11 +481,11 @@
 		&:hover {
 			background-color: color-mix(in srgb, var(--theme-accentLight, #ffe4e6) 75%, var(--theme-accent, #f43f5e) 25%);
 		}
-		
+
 		& svg {
 			color: var(--theme-primary);
 		}
-		
+
 		&:is(.dark *) {
 			background-color: rgba(17, 17, 17, 0.6);
 			border-color: color-mix(in srgb, var(--theme-accent) 50%, transparent);
@@ -495,7 +495,7 @@
 		&:is(.dark *):hover {
 			background-color: color-mix(in srgb, var(--theme-accent) 12%, rgba(17, 17, 17, 0.8));
 		}
-		
+
 		&:is(.dark *) svg {
 			color: var(--theme-accent);
 		}
@@ -529,6 +529,42 @@
 		}
 	}
 
+	.themed-btn-fill {
+		@apply relative overflow-hidden border-theme-primary text-theme-primary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-105 hover:text-white active:scale-100 dark:border-theme-accent dark:text-theme-accent;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			margin: auto;
+			width: 50px;
+			height: 50px;
+			border-radius: inherit;
+			transform: scale(0);
+			z-index: -1;
+			background-color: var(--theme-primary, #be123c);
+			transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+		}
+
+		&:hover {
+			box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary, #be123c) 40%, transparent);
+		}
+
+		&:hover::before {
+			transform: scale(3);
+		}
+
+		&:is(.dark *) {
+			&::before {
+				background-color: var(--theme-accent, #f43f5e);
+			}
+
+			&:hover {
+				box-shadow: 0 0 20px color-mix(in srgb, var(--theme-accent, #f43f5e) 40%, transparent);
+			}
+		}
+	}
+
 	/* Neumorphic surface used only by the Login/Register auth screens */
 	.neu-surface {
 		background-color: #1e1b1e;
@@ -538,10 +574,6 @@
 		box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.55), -6px -6px 14px rgba(255, 255, 255, 0.04);
 	}
 
-	/* Pressed feedback is opt-in via .neu-pressable so it only applies to real
-	   buttons (e.g. GoogleButton) and not to the outer card surface, which is a
-	   plain div that browsers still flip into :active while any click inside it
-	   is held down. */
 	.neu-pressable:active {
 		box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.6), inset -3px -3px 7px rgba(255, 255, 255, 0.03);
 	}

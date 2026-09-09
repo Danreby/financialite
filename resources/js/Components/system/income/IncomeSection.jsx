@@ -94,7 +94,7 @@ export default function IncomeSection({
             </span>
           </p>
         </div>
-        <PrimaryButton onClick={() => setShowForm(true)} className="text-white !text-xs sm:!text-sm">
+        <PrimaryButton onClick={() => setShowForm(true)} className="!text-xs sm:!text-sm">
           + Nova Renda
         </PrimaryButton>
       </div>

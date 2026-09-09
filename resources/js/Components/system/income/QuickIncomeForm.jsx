@@ -231,7 +231,7 @@ export default function QuickIncomeForm({
           <SecondaryButton type="button" onClick={handleClose}>
             Cancelar
           </SecondaryButton>
-          <PrimaryButton type="submit" disabled={saving} className="text-white">
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? 'Salvando…' : 'Registrar Entrada'}
           </PrimaryButton>
         </div>
