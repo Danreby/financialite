@@ -9,14 +9,16 @@ export default function SecondaryButton({
         <button
             {...props}
             type={type}
-            className={
-                `inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 disabled:opacity-25 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800 dark:focus:ring-offset-gray-900 ${
-                    disabled && 'opacity-25'
-                } ` + className
-            }
             disabled={disabled}
+            className={
+                `group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-transparent px-6 py-3 text-sm font-semibold text-gray-600 shadow-[0_0_0_2px_rgba(0,0,0,0.12)] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-white hover:shadow-[0_0_0_5px_rgba(0,0,0,0.2)] focus-visible:text-white focus-visible:shadow-[0_0_0_5px_rgba(0,0,0,0.2)] focus-visible:outline-none active:scale-95 disabled:opacity-60 disabled:pointer-events-none disabled:cursor-not-allowed dark:text-gray-300 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.15)] dark:hover:text-gray-900 dark:hover:shadow-[0_0_0_5px_rgba(255,255,255,0.25)] dark:focus-visible:text-gray-900 dark:focus-visible:shadow-[0_0_0_5px_rgba(255,255,255,0.25)] ` + className
+            }
         >
-            {children}
+            <span
+                aria-hidden="true"
+                className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-700 opacity-0 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:h-[150px] group-hover:w-[150px] group-hover:opacity-100 group-focus-visible:h-[150px] group-focus-visible:w-[150px] group-focus-visible:opacity-100 dark:bg-gray-200"
+            />
+            <span className="relative z-10">{children}</span>
         </button>
     );
 }

@@ -77,16 +77,25 @@ export default function QuickActions({ bankAccounts = [], bankAccountsList = [],
                 key={action.title}
                 type="button"
                 onClick={action.onClick}
-                className="themed-button-primary flex items-start gap-3 rounded-xl p-4 text-left transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--theme-accent)] dark:focus-visible:ring-offset-[#0b0b0b]"
+                className="group relative flex items-start gap-3 overflow-hidden rounded-xl border-2 border-theme-primary bg-transparent p-4 text-left transition-colors duration-300 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-theme-accent dark:border-theme-accent dark:focus-visible:ring-offset-[#0b0b0b] active:border-theme-accent-hover dark:active:border-theme-accent-hover"
               >
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
-                  <Icon className="h-5 w-5 text-white" aria-hidden="true" />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-0 top-1/2 h-40 w-40 -translate-x-[142px] -translate-y-1/2 rounded-full bg-[color-mix(in_srgb,var(--theme-primary)_45%,transparent)] transition-[transform,background-color] duration-500 group-hover:-translate-x-[18px] group-active:bg-[color-mix(in_srgb,var(--theme-accentHover)_75%,transparent)] dark:bg-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)] dark:group-active:bg-[color-mix(in_srgb,var(--theme-accentHover)_75%,transparent)]"
+                />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-0 top-1/2 h-40 w-40 translate-x-[142px] -translate-y-1/2 rounded-full bg-[color-mix(in_srgb,var(--theme-primary)_45%,transparent)] transition-[transform,background-color] duration-500 group-hover:translate-x-[18px] group-active:bg-[color-mix(in_srgb,var(--theme-accentHover)_75%,transparent)] dark:bg-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)] dark:group-active:bg-[color-mix(in_srgb,var(--theme-accentHover)_75%,transparent)]"
+                />
+
+                <div className="relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-theme-accent-light transition-colors duration-300 group-hover:bg-white/20 dark:bg-theme-accent/20 dark:group-hover:bg-white/20">
+                  <Icon className="h-5 w-5 text-theme-primary transition-colors duration-300 group-hover:text-white dark:text-theme-accent dark:group-hover:text-white" aria-hidden="true" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="mb-0.5 truncate text-sm font-bold text-white">
+                <div className="relative z-10 min-w-0 flex-1">
+                  <h4 className="mb-0.5 truncate text-sm font-bold text-gray-900 transition-colors duration-300 group-hover:text-white dark:text-gray-100 dark:group-hover:text-white">
                     {action.title}
                   </h4>
-                  <p className="truncate text-[11px] text-white/80">
+                  <p className="truncate text-[11px] text-gray-500 transition-colors duration-300 group-hover:text-white/80 dark:text-gray-400 dark:group-hover:text-white/80">
                     {action.description}
                   </p>
                 </div>

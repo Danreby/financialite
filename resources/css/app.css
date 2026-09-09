@@ -529,42 +529,6 @@
 		}
 	}
 
-	.themed-btn-fill {
-		@apply relative overflow-hidden border-theme-primary text-theme-primary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-105 hover:text-white active:scale-100 dark:border-theme-accent dark:text-theme-accent;
-
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			margin: auto;
-			width: 50px;
-			height: 50px;
-			border-radius: inherit;
-			transform: scale(0);
-			z-index: -1;
-			background-color: var(--theme-primary, #be123c);
-			transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-		}
-
-		&:hover {
-			box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary, #be123c) 40%, transparent);
-		}
-
-		&:hover::before {
-			transform: scale(3);
-		}
-
-		&:is(.dark *) {
-			&::before {
-				background-color: var(--theme-accent, #f43f5e);
-			}
-
-			&:hover {
-				box-shadow: 0 0 20px color-mix(in srgb, var(--theme-accent, #f43f5e) 40%, transparent);
-			}
-		}
-	}
-
 	/* Neumorphic surface used only by the Login/Register auth screens */
 	.neu-surface {
 		background-color: #1e1b1e;
