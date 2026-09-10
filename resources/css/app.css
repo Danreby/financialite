@@ -66,49 +66,39 @@
 	}
 
 	.themed-card {
-		@apply border ring-1 transition-shadow duration-200;
+		@apply border-[3px] transition-shadow duration-200;
 		background-color: var(--theme-bgCardLight);
-		border-color: #e5e5e5;
-		border-width: 1px;
-		border-style: solid;
-		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-		ring-color: rgba(0, 0, 0, 0.05);
+		border-color: var(--theme-primary);
+		box-shadow: 6px 6px 0 0 var(--theme-primary);
 
 		&:is(.dark *) {
 			background-color: transparent;
-			border-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
-			box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-			ring-color: rgba(0, 0, 0, 0.3);
+			border-color: var(--theme-accent);
+			box-shadow: 6px 6px 0 0 var(--theme-accent);
 		}
 	}
 
 	.themed-card-hover {
-		@apply border ring-1 transition-all duration-200;
+		@apply border-[3px] transition-all duration-200;
 		background-color: var(--theme-bgCardLight);
-		border-color: #e5e5e5;
-		border-width: 1px;
-		border-style: solid;
-		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-		ring-color: rgba(0, 0, 0, 0.05);
+		border-color: var(--theme-primary);
+		box-shadow: 6px 6px 0 0 var(--theme-primary);
 
 		&:hover {
 			background-color: var(--theme-bgCardLightHover);
-			border-color: var(--theme-accent);
-			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-			transform: translateY(-2px);
-			ring-color: #fecdd3;
+			box-shadow: 8px 8px 0 0 var(--theme-primary);
+			transform: translate(-2px, -2px);
 		}
 
 		&:is(.dark *) {
 			background-color: transparent;
-			border-color: var(--theme-borderDark, rgba(69, 10, 10, 0.5));
-			box-shadow: none;
-			ring-color: rgba(0, 0, 0, 0.3);
+			border-color: var(--theme-accent);
+			box-shadow: 6px 6px 0 0 var(--theme-accent);
 		}
 
 		&:is(.dark *):hover {
-			border-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 40%, transparent);
 			background-color: color-mix(in srgb, var(--theme-accent, #f43f5e) 5%, transparent);
+			box-shadow: 8px 8px 0 0 var(--theme-accent);
 		}
 	}
 
