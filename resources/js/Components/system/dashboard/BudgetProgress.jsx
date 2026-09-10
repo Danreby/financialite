@@ -40,15 +40,9 @@ export default function BudgetProgress({
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border flex-1 min-h-0 flex flex-col p-4"
-      style={{
-        borderColor: !noBudget ? `color-mix(in srgb, ${barColor} 30%, transparent)` : undefined,
-        background: !noBudget
-          ? `linear-gradient(160deg, color-mix(in srgb, ${barColor} 10%, transparent), transparent 65%)`
-          : undefined,
-      }}
+      className="themed-card relative overflow-hidden rounded-2xl flex-1 min-h-0 flex flex-col p-4"
+      style={{ '--card-glow-from': barColor, '--card-glow-to': overBudget ? '#7f1d1d' : '#171717' }}
     >
-      {noBudget && <div className="absolute inset-0 -z-10 themed-card rounded-2xl" />}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20">

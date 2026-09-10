@@ -98,15 +98,9 @@ export default function FinancialHealthScore({
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border flex-1 min-h-0 flex flex-col p-4"
-      style={{
-        borderColor: hasData ? `color-mix(in srgb, ${sd.hex} 30%, transparent)` : undefined,
-        background: hasData
-          ? `linear-gradient(160deg, ${hexBg(sd.hex)}, transparent 65%)`
-          : undefined,
-      }}
+      className="themed-card relative overflow-hidden rounded-2xl flex-1 min-h-0 flex flex-col p-4"
+      style={{ '--card-glow-from': sd.hex, '--card-glow-to': '#171717' }}
     >
-      {!hasData && <div className="absolute inset-0 -z-10 themed-card rounded-2xl" />}
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
