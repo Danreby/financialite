@@ -11,24 +11,21 @@ export default function NavItem({ type = 3, size = 16, open, href, label, curren
   return (
     <Link
       href={href}
-      className={`group/navitem themed-nav-item whitespace-nowrap ${isActive ? 'themed-nav-item-active' : ''}`}
+      className={`group/navitem themed-nav-item whitespace-nowrap ${isActive ? 'themed-nav-item-active' : ''} ${collapsed ? '!gap-0 !p-0 overflow-visible' : ''}`}
       title={collapsed ? label : undefined}
       aria-current={isActive ? 'page' : undefined}
     >
-      <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover/navitem:scale-110">
-        <ThemedNavIcon
-          type={type}
-          size={size}
-          className={collapsed ? 'rounded-full transition-colors duration-300 group-hover/navitem:bg-white group-hover/navitem:shadow-md dark:group-hover/navitem:bg-[#1c1c1c]' : ''}
-        />
-
-        {collapsed && (
-          <span
-            aria-hidden="true"
-            className="absolute -inset-1 -z-10 rounded-full opacity-0 transition-opacity duration-300 [background:conic-gradient(from_45deg,var(--theme-accent),transparent_35%,transparent_65%,var(--theme-accent),transparent_100%)] group-hover/navitem:opacity-100 group-hover/navitem:animate-spin-slow"
-          />
-        )}
-      </span>
+      {collapsed ? (
+        <span
+          className={`relative z-10 flex h-10 w-full items-center justify-center transition-all duration-200 ease-in-out hover:w-[130%] hover:rounded-r-lg ${
+            isActive ? 'bg-theme-accent' : 'bg-theme-primary'
+          }`}
+        >
+          <ThemedNavIcon type={type} size={size} color="#fff" />
+        </span>
+      ) : (
+        <ThemedNavIcon type={type} size={size} />
+      )}
 
       <AnimatePresence initial={false}>
         {open && (
