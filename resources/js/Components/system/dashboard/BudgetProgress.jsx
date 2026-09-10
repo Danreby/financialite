@@ -41,7 +41,7 @@ export default function BudgetProgress({
   return (
     <div
       className="themed-card relative overflow-hidden rounded-2xl flex-1 min-h-0 flex flex-col p-4"
-      style={{ '--card-glow-from': barColor, '--card-glow-to': overBudget ? '#7f1d1d' : '#171717' }}
+      style={{ '--card-corner': noBudget ? undefined : barColor }}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">

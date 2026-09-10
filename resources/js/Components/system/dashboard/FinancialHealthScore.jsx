@@ -99,7 +99,7 @@ export default function FinancialHealthScore({
   return (
     <div
       className="themed-card relative overflow-hidden rounded-2xl flex-1 min-h-0 flex flex-col p-4"
-      style={{ '--card-glow-from': sd.hex, '--card-glow-to': '#171717' }}
+      style={{ '--card-corner': hasData ? sd.hex : undefined }}
     >
 
       {/* ── Header ─────────────────────────────────────────── */}
