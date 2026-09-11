@@ -2,36 +2,26 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import { toast } from 'react-toastify';
 import { AnimatePresence } from 'framer-motion';
+import { Plus, Landmark, TrendingUp, Activity } from 'lucide-react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
-import ScrollArea from '@/Components/common/ScrollArea';
 import EmptyState from '@/Components/common/EmptyState';
 import ConfirmDeleteModal from '@/Components/common/ConfirmDeleteModal';
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer';
-import BankAccountItem from '@/Components/system/bancos/BankAccountItem';
+import AnimatedCurrency from '@/Components/common/AnimatedCurrency';
+import BankAccountCard from '@/Components/system/bancos/BankAccountCard';
 import BankAccountForm from '@/Components/system/bancos/BankAccountForm';
 import EditBankAccountModal from '@/Components/system/bancos/EditBankAccountModal';
 import BankTransferForm from '@/Components/system/bancos/BankTransferForm';
-import BankTransferHistory from '@/Components/system/bancos/BankTransferHistory';
 import BalanceAdjustModal from '@/Components/system/bancos/BalanceAdjustModal';
 import BankAccountStatementModal from '@/Components/system/bancos/BankAccountStatementModal';
+import BankActivityFeed from '@/Components/system/bancos/BankActivityFeed';
+import { formatCurrencyBRL } from '@/Lib/formatters';
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
-
-export default function Bancos({ bankAccounts, stats: initialStats, transfers: initialTransfers = [] }) {
-  const initial = useMemo(() => {
-    if (Array.isArray(bankAccounts?.data)) return bankAccounts.data;
-    if (Array.isArray(bankAccounts)) return bankAccounts;
-    return [];
-  }, [bankAccounts]);
-
-  const [accounts, setAccounts] = useState(initial);
-  const [transfers, setTransfers] = useState(
-    Array.isArray(initialTransfers) ? initialTransfers : (initialTransfers?.data || [])
-  );
-  const [stats, setStats] = useState(initialStats || null);
+export default function Bancos({ stats: initialStats, activity: initialActivity }) {
+  const [stats, setStats] = useState(initialStats || { total_balance: 0, total_accounts: 0, total_incomes: 0, accounts: [] });
   const [saving, setSaving] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -46,15 +36,17 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
   const [isStatementOpen, setIsStatementOpen] = useState(false);
   const [accountForStatement, setAccountForStatement] = useState(null);
 
-  const loadTransfers = async () => {
-    try {
-      const { bankTransferService } = await import('@/Services/bankService');
-      const data = await bankTransferService.list();
-      setTransfers(Array.isArray(data) ? data : (data?.data || []));
-    } catch {
-      // 
-    }
-  };
+  const accounts = useMemo(
+    () => (Array.isArray(stats?.accounts) ? stats.accounts : []),
+    [stats]
+  );
+
+  const incomeSourceCount = useMemo(
+    () => accounts.reduce((sum, acc) => sum + (acc.income_count || 0), 0),
+    [accounts]
+  );
+
+  const bumpRefresh = () => setRefreshTick((v) => v + 1);
 
   const loadStats = async () => {
     try {
@@ -66,21 +58,6 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
     }
   };
 
-  const refreshAccounts = async () => {
-    try {
-      const { bankAccountService } = await import('@/Services/bankService');
-      const data = await bankAccountService.list();
-      setAccounts(Array.isArray(data) ? data : (data?.data || []));
-    } catch {
-      // 
-    }
-  };
-
-  const totalBalance = useMemo(
-    () => accounts.reduce((sum, acc) => sum + parseFloat(acc.balance ?? 0), 0),
-    [accounts],
-  );
-
   const openEditModal = (account) => {
     setAccountBeingEdited(account);
     setIsEditModalOpen(true);
@@ -88,8 +65,8 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
 
   const handleEditSuccess = (updated) => {
     if (updated) {
-      refreshAccounts();
       loadStats();
+      bumpRefresh();
     }
     toast.success('Saldo atualizado com sucesso.');
     setIsEditModalOpen(false);
@@ -110,8 +87,8 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
     try {
       const { bankAccountService } = await import('@/Services/bankService');
       await bankAccountService.delete(confirmTarget.id);
-      setAccounts((prev) => prev.filter((a) => a.id !== confirmTarget.id));
       loadStats();
+      bumpRefresh();
       toast.success('Conta bancária removida.');
     } catch (error) {
       console.error(error);
@@ -131,8 +108,8 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
 
   const handleFormSuccess = (data) => {
     if (data) {
-      refreshAccounts();
       loadStats();
+      bumpRefresh();
     }
     toast.success('Conta bancária criada com sucesso.');
   };
@@ -144,8 +121,8 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
 
   const handleAdjustSuccess = (updated) => {
     if (updated) {
-      refreshAccounts();
       loadStats();
+      bumpRefresh();
     }
     toast.success('Saldo ajustado com sucesso.');
     setIsAdjustModalOpen(false);
@@ -157,6 +134,18 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
     setAccountBeingAdjusted(null);
   }, []);
 
+  const handleTransferSuccess = () => {
+    toast.success('Transferência realizada com sucesso.');
+    loadStats();
+    bumpRefresh();
+  };
+
+  const handleCloseEditModal = useCallback(() => {
+    if (saving) return;
+    setIsEditModalOpen(false);
+    setAccountBeingEdited(null);
+  }, [saving]);
+
   const openStatementModal = (account) => {
     setAccountForStatement(account);
     setIsStatementOpen(true);
@@ -166,19 +155,6 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
     setIsStatementOpen(false);
     setAccountForStatement(null);
   }, []);
-
-  const handleTransferSuccess = () => {
-    toast.success('Transferência realizada com sucesso.');
-    refreshAccounts();
-    loadTransfers();
-    loadStats();
-  };
-
-  const handleCloseEditModal = useCallback(() => {
-    if (saving) return;
-    setIsEditModalOpen(false);
-    setAccountBeingEdited(null);
-  }, [saving]);
 
   return (
     <AuthenticatedLayout>
@@ -195,84 +171,99 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
             <PrimaryButton
               type="button"
               onClick={() => setIsFormOpen(true)}
-              className="rounded-xl px-4 py-2 text-xs sm:text-sm font-medium self-start sm:self-auto flex items-center"
+              className="rounded-full px-4 py-2 text-xs sm:text-sm font-medium self-start sm:self-auto inline-flex items-center gap-1.5"
             >
-              <span className="mr-1.5">🏦</span> Nova Conta
+              <Plus className="h-4 w-4" strokeWidth={2} />
+              Nova Conta
             </PrimaryButton>
           </header>
         </FadeInItem>
 
         <FadeInItem type="subtle">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatMini
-              label="Saldo Total"
-              value={formatCurrency(stats?.total_balance ?? totalBalance)}
-              icon="💰"
-              highlight
-            />
-            <StatMini
-              label="Contas Ativas"
-              value={accounts.length}
-              icon="🏦"
-            />
-            <StatMini
-              label="Receitas Vinculadas"
-              value={stats?.total_incomes ?? 0}
-              icon="📈"
-            />
-            <StatMini
-              label="Transferências"
-              value={transfers.length}
-              icon="🔄"
-            />
-          </div>
+          <section className="rounded-2xl p-5 sm:p-6 shadow-md themed-card grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 lg:items-center">
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Saldo Total</p>
+              <AnimatedCurrency
+                value={stats?.total_balance ?? 0}
+                className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100"
+              />
+            </div>
+
+            <div className="themed-strip rounded-2xl overflow-hidden grid grid-cols-3 divide-x divide-gray-100 dark:divide-white/[0.06] lg:min-w-[380px]">
+              <div className="min-w-0 p-3.5">
+                <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                  <Landmark className="h-3.5 w-3.5 shrink-0 text-theme-accent" aria-hidden="true" />
+                  <span className="truncate text-[11px] font-medium">Contas</span>
+                </div>
+                <div className="mt-1.5 truncate text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                  {stats?.total_accounts ?? accounts.length}
+                </div>
+              </div>
+              <div className="min-w-0 p-3.5">
+                <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                  <TrendingUp className="h-3.5 w-3.5 shrink-0 text-theme-accent" aria-hidden="true" />
+                  <span className="truncate text-[11px] font-medium">Receitas</span>
+                </div>
+                <div className="mt-1.5 truncate text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                  {incomeSourceCount}
+                </div>
+                <div className="mt-0.5 truncate text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                  {formatCurrencyBRL(stats?.total_incomes ?? 0)}/mês
+                </div>
+              </div>
+              <div className="min-w-0 p-3.5">
+                <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                  <Activity className="h-3.5 w-3.5 shrink-0 text-theme-accent" aria-hidden="true" />
+                  <span className="truncate text-[11px] font-medium">Movimentações</span>
+                </div>
+                <div className="mt-1.5 truncate text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                  {initialActivity?.total ?? 0}
+                </div>
+              </div>
+            </div>
+          </section>
         </FadeInItem>
 
         <FadeInItem type="subtle">
-          <section className="rounded-2xl p-4 sm:p-5 shadow-md themed-card">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20 flex-shrink-0">
-                  <span className="text-base">🏦</span>
-                </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Suas Contas Bancárias
-                  </h2>
-                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-                    {accounts.length} {accounts.length === 1 ? 'conta' : 'contas'} cadastradas
-                  </p>
-                </div>
-              </div>
-              {saving && (
-                <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">Salvando...</span>
-              )}
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Suas Contas Bancárias
+              </h2>
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                {accounts.length} {accounts.length === 1 ? 'conta cadastrada' : 'contas cadastradas'}
+              </p>
             </div>
+            {saving && (
+              <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">Salvando...</span>
+            )}
+          </div>
 
-            {accounts.length > 0 ? (
-              <ScrollArea maxHeightClassName="max-h-[460px] sm:max-h-[520px]" className="pr-1 space-y-2">
-                <AnimatePresence mode="popLayout">
-                  {accounts.map((account) => (
-                    <BankAccountItem
-                      key={account.id}
-                      account={account}
-                      onEdit={openEditModal}
-                      onDelete={(payload) => openConfirmDelete(payload)}
-                      onAdjust={openAdjustModal}
-                      onStatement={openStatementModal}
-                      saving={saving}
-                    />
-                  ))}
-                </AnimatePresence>
-              </ScrollArea>
-            ) : (
+          {accounts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              <AnimatePresence mode="popLayout">
+                {accounts.map((account) => (
+                  <BankAccountCard
+                    key={account.id}
+                    account={account}
+                    onEdit={openEditModal}
+                    onDelete={(payload) => openConfirmDelete(payload)}
+                    onAdjust={openAdjustModal}
+                    onStatement={openStatementModal}
+                    saving={saving}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className="rounded-2xl shadow-md themed-card p-4">
               <EmptyState
                 icon="🏦"
                 title="Nenhuma conta bancária"
                 description="Adicione uma conta bancária para começar a gerenciar seus saldos e transferências."
               />
-            )}
-          </section>
+            </div>
+          )}
         </FadeInItem>
 
         {accounts.length >= 2 && (
@@ -281,11 +272,21 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
           </FadeInItem>
         )}
 
-        {transfers.length > 0 && (
-          <FadeInItem type="subtle">
-            <BankTransferHistory transfers={transfers} />
-          </FadeInItem>
-        )}
+        <FadeInItem type="subtle">
+          <BankActivityFeed
+            initialEntries={initialActivity?.data || []}
+            initialPagination={
+              initialActivity
+                ? {
+                    current_page: initialActivity.current_page,
+                    last_page: initialActivity.last_page,
+                    total: initialActivity.total,
+                  }
+                : null
+            }
+            refreshKey={refreshTick}
+          />
+        </FadeInItem>
       </FadeInContainer>
 
       <BankAccountForm
@@ -324,21 +325,5 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
         account={accountForStatement}
       />
     </AuthenticatedLayout>
-  );
-}
-
-function StatMini({ label, value, icon, highlight = false }) {
-  return (
-    <div className="rounded-2xl p-3 sm:p-4 shadow-md themed-card flex items-center gap-3">
-      <div className={`flex h-9 w-9 items-center justify-center rounded-xl flex-shrink-0 ${highlight ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-theme-accent/10 dark:bg-theme-accent/20'}`}>
-        <span className="text-lg">{icon}</span>
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{label}</p>
-        <p className={`text-lg sm:text-xl font-bold truncate ${highlight ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-gray-100'}`}>
-          {value}
-        </p>
-      </div>
-    </div>
   );
 }
