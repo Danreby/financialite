@@ -10,13 +10,9 @@ return new class extends Migration
     {
         Schema::create('fatura_payment_events', function (Blueprint $table) {
             $table->id();
-            // No DB-level foreign keys: some shared-hosting MySQL accounts don't
-            // grant the REFERENCES privilege needed for FK constraints. Referential
-            // integrity here is enforced by the application (FaturaLedgerService is
-            // the only writer), not by the database.
-            $table->foreignId('fatura_id');
-            $table->foreignId('transacao_id')->nullable();
-            $table->foreignId('bank_ledger_entry_id')->nullable();
+            $table->foreignId('fatura_id')->constrained('faturas')->cascadeOnDelete();
+            $table->foreignId('transacao_id')->nullable()->constrained('transacoes')->nullOnDelete();
+            $table->foreignId('bank_ledger_entry_id')->nullable()->constrained('bank_ledger_entries')->nullOnDelete();
             $table->string('type');
             $table->decimal('amount', 14, 2);
             $table->string('description')->nullable();
