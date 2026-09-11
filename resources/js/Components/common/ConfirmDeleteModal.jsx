@@ -8,7 +8,8 @@ export default function ConfirmDeleteModal({
 	onConfirm,
 	saving,
 }) {
-	const typeLabel = target.type === 'card' ? 'cartão' : 'categoria';
+	const TYPE_LABELS = { card: 'cartão', bank: 'conta bancária' };
+	const typeLabel = TYPE_LABELS[target.type] ?? 'categoria';
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} maxWidth="sm" title="Confirmar exclusão">
