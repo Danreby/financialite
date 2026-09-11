@@ -6,6 +6,7 @@ import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import BareButton from "@/Components/common/buttons/BareButton";
+import WaveInputField from "@/Components/common/inputs/WaveInputField";
 import { useNumericInput, useDecimalInput } from "@/Hooks/useNumericInput";
 
 export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts = [], debitAccounts = [], categories = [] }) {
@@ -37,6 +38,9 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
     if (type !== "debit") {
       setDeductFromBank(false);
       setSelectedDebitAccountId("");
+    }
+    if (type !== "credit") {
+      setSelectedBankId("");
     }
   }, [type]);
 
@@ -271,51 +275,46 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-              Título <span className="text-red-400">*</span>
-            </label>
-            <input
-              name="title"
-              type="text"
-              placeholder="Ex: Supermercado, Netflix…"
-              maxLength={120}
-              required
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-              Valor <span className="text-red-400">*</span>
-            </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400">
-                R$
-              </span>
-              <input
-                name="amount"
-                type="number"
-                placeholder="0,00"
-                inputMode="decimal"
-                min="0.01"
-                step="0.01"
-                maxLength={12}
-                required
-                onKeyDown={handleDecimalKeyDown}
-                onInput={handleAmountInput}
-                className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              />
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-2">
+          <WaveInputField
+            label="Título"
+            name="title"
+            required
+            maxLength={120}
+          />
+          <WaveInputField
+            label="Valor"
+            name="amount"
+            type="number"
+            prefix="R$"
+            inputMode="decimal"
+            min="0.01"
+            step="0.01"
+            maxLength={12}
+            required
+            onKeyDown={handleDecimalKeyDown}
+            onInput={handleAmountInput}
+          />
         </div>
 
         {type === "credit" && (
-          <div className="rounded-xl border border-[var(--theme-accent)]/25 bg-[var(--theme-accent)]/5 p-4 dark:bg-[var(--theme-accent)]/10">
-            {/* <div className="mb-3 flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-[var(--theme-accent)]" />
-              <span className="text-xs font-semibold text-[var(--theme-accent)]">Opções de crédito</span>
-            </div> */}
+          <div className="space-y-3 rounded-xl border border-[var(--theme-accent)]/25 bg-[var(--theme-accent)]/5 p-4 dark:bg-[var(--theme-accent)]/10">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">
+                Cartão
+              </label>
+              <select
+                value={selectedBankId}
+                onChange={(e) => setSelectedBankId(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              >
+                <option value="">Sem cartão</option>
+                {bankAccounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
 
               <div>
@@ -377,37 +376,20 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-              Categoria
-            </label>
-            <select
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-            >
-              <option value="">Sem categoria</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-              Cartão
-            </label>
-            <select
-              value={selectedBankId}
-              onChange={(e) => setSelectedBankId(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-            >
-              <option value="">Sem cartão</option>
-              {bankAccounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>{acc.name}</option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
+            Categoria
+          </label>
+          <select
+            value={selectedCategoryId}
+            onChange={(e) => setSelectedCategoryId(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+          >
+            <option value="">Sem categoria</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
         </div>
 
         {type === "debit" && debitAccounts.length > 0 && (
@@ -460,19 +442,13 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         )}
 
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-            Descrição{" "}
-            <span className="text-[11px] font-normal text-gray-400">(opcional)</span>
-          </label>
-          <textarea
-            name="description"
-            placeholder="Detalhes sobre esta despesa…"
-            rows={2}
-            maxLength={250}
-            className="w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-          />
-        </div>
+        <WaveInputField
+          as="textarea"
+          label="Descrição (opcional)"
+          name="description"
+          rows={2}
+          maxLength={250}
+        />
 
         <div className="flex items-center justify-end gap-3 pt-1">
           <SecondaryButton type="button" onClick={onClose}>

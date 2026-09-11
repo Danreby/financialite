@@ -181,6 +181,105 @@
 		}
 	}
 
+	/* Wave-label input: each label character floats up with a per-letter
+	   stagger (--index) when the field is focused or has a value. Relies on
+	   the input using placeholder=" " so :placeholder-shown correctly tracks
+	   "has content" even for optional fields (plain :valid stays true for an
+	   empty optional field, which the original snippet didn't account for). */
+	.wave-group {
+		position: relative;
+	}
+
+	.wave-group .wave-input {
+		@apply block w-full bg-transparent text-sm text-gray-900 transition-colors duration-150;
+		padding: 10px 4px 8px;
+		border: none;
+		border-bottom: 1px solid #a3a3a3;
+		outline: none;
+		box-shadow: none;
+
+		&::placeholder {
+			color: transparent;
+		}
+
+		&:focus {
+			outline: none;
+			box-shadow: none;
+		}
+
+		&:hover {
+			border-bottom-color: #737373;
+		}
+
+		&:is(.dark *) {
+			color: #f3f4f6;
+			border-bottom-color: rgba(255, 255, 255, 0.2);
+
+			&:hover {
+				border-bottom-color: rgba(255, 255, 255, 0.35);
+			}
+		}
+	}
+
+	.wave-group .wave-label {
+		color: #9ca3af;
+		font-size: 14px;
+		font-weight: 500;
+		position: absolute;
+		pointer-events: none;
+		left: 4px;
+		top: 10px;
+		display: flex;
+
+		&:is(.dark *) {
+			color: #71717a;
+		}
+	}
+
+	.wave-group .wave-char {
+		transition: 0.2s ease all;
+		transition-delay: calc(var(--index) * 0.05s);
+	}
+
+	.wave-group .wave-input:focus ~ .wave-label .wave-char,
+	.wave-group .wave-input:not(:placeholder-shown) ~ .wave-label .wave-char {
+		transform: translateY(-18px);
+		font-size: 11px;
+		color: var(--theme-accent);
+	}
+
+	.wave-group .wave-bar {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 2px;
+		pointer-events: none;
+	}
+
+	.wave-group .wave-bar::before,
+	.wave-group .wave-bar::after {
+		content: '';
+		height: 2px;
+		width: 0;
+		position: absolute;
+		background: var(--theme-accent);
+		transition: 0.2s ease all;
+	}
+
+	.wave-group .wave-bar::before {
+		left: 50%;
+	}
+
+	.wave-group .wave-bar::after {
+		right: 50%;
+	}
+
+	.wave-group .wave-input:focus ~ .wave-bar::before,
+	.wave-group .wave-input:focus ~ .wave-bar::after {
+		width: 50%;
+	}
+
 	.themed-toggle-on {
 		background-color: var(--theme-primary, #7b1818);
 		box-shadow: 0 10px 15px -3px var(--theme-primaryRing, rgba(244, 63, 94, 0.4));

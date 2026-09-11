@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react'
 import Modal from '@/Components/common/Modal'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
+import WaveInputField from '@/Components/common/inputs/WaveInputField'
 import { Wallet } from 'lucide-react'
 
 const AVULSA_TYPES = [
@@ -127,44 +128,27 @@ export default function QuickIncomeForm({
           {errors.type && <p className="mt-1 text-xs text-red-500">{errors.type[0]}</p>}
         </div>
 
-        {/* ── Amount ── */}
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-            Valor recebido <span className="text-red-400">*</span>
-          </label>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-gray-400">
-              R$
-            </span>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0,00"
-              step="0.01"
-              min="0.01"
-              required
-              className="w-full rounded-xl border-2 border-gray-200 bg-white py-3.5 pl-12 pr-4 text-xl font-semibold shadow-sm themed-focus placeholder:text-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 dark:placeholder:text-gray-600"
-            />
-          </div>
-          {errors.amount && <p className="mt-1 text-xs text-red-500">{errors.amount[0]}</p>}
-        </div>
-
-        {/* ── Title ── */}
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-            Título <span className="text-red-400">*</span>
-          </label>
-          <input
-            type="text"
+        {/* ── Amount + Title ── */}
+        <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
+          <WaveInputField
+            label="Valor recebido"
+            type="number"
+            prefix="R$"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            step="0.01"
+            min="0.01"
+            required
+            error={errors.amount?.[0]}
+          />
+          <WaveInputField
+            label="Título"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={`Ex: ${selectedType?.label ?? 'Descrição da entrada'}…`}
             maxLength={255}
             required
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+            error={errors.title?.[0]}
           />
-          {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title[0]}</p>}
         </div>
 
         {/* ── Date + Bank Account ── */}
@@ -211,20 +195,14 @@ export default function QuickIncomeForm({
         </div>
 
         {/* ── Description ── */}
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-            Descrição{' '}
-            <span className="text-[11px] font-normal text-gray-400">(opcional)</span>
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Detalhes sobre esta entrada…"
-            rows={2}
-            maxLength={1000}
-            className="w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-          />
-        </div>
+        <WaveInputField
+          as="textarea"
+          label="Descrição (opcional)"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          maxLength={1000}
+        />
 
         {/* ── Footer ── */}
         <div className="flex justify-end gap-3 pt-1">
