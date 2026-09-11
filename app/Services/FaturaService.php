@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Contracts\Services\FaturaServiceInterface;
+use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Fatura;
+use App\Models\FaturaPaymentEvent;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
 use Carbon\Carbon;
@@ -14,7 +16,11 @@ use Illuminate\Support\Facades\DB;
 
 class FaturaService implements FaturaServiceInterface
 {
-    public function __construct(private FaturaBillingService $billing) {}
+    public function __construct(
+        private FaturaBillingService $billing,
+        private BankLedgerService $ledger,
+        private FaturaLedgerService $faturaLedger,
+    ) {}
 
     public function createForUser(Authenticatable $user, array $data): Transacao
     {
@@ -49,8 +55,17 @@ class FaturaService implements FaturaServiceInterface
 
             if ($debitAccountId && $amount > 0) {
                 $bankAccount = BankUser::forUser($user->id)->findOrFail($debitAccountId);
-                $bankAccount->balance = max(0, (float) $bankAccount->balance - $amount);
-                $bankAccount->save();
+                $debit = min($amount, max(0.0, (float) $bankAccount->balance));
+
+                if ($debit > 0) {
+                    $this->ledger->record(
+                        $bankAccount,
+                        BankLedgerEntry::TYPE_DEBIT_PURCHASE,
+                        -$debit,
+                        $fatura,
+                        "Compra no débito: {$fatura->title}"
+                    );
+                }
             }
 
             return $fatura;
@@ -127,15 +142,20 @@ class FaturaService implements FaturaServiceInterface
                 continue;
             }
 
-            $newTotal = max(0.0, (float) ($faturaRecord->total_paid ?? 0) - $entry['amount']);
-            $faturaRecord->total_paid = $newTotal;
+            $this->faturaLedger->recordPaymentEvent(
+                $faturaRecord,
+                $entry['amount'],
+                FaturaPaymentEvent::TYPE_REVERSAL,
+                $transacao,
+                null,
+                'Fatura reaberta: pagamento revertido'
+            );
 
-            if ($newTotal < 0.01) {
+            if ((float) $faturaRecord->total_paid < 0.01) {
                 $faturaRecord->paid_at = null;
                 $faturaRecord->total_paid = 0;
+                $faturaRecord->save();
             }
-
-            $faturaRecord->save();
         }
     }
 

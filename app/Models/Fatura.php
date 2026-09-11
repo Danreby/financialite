@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fatura extends Model
 {
@@ -48,6 +49,11 @@ class Fatura extends Model
     public function transacoes(): BelongsToMany
     {
         return $this->belongsToMany(Transacao::class, 'fatura_transacao', 'fatura_id', 'transacao_id')->withTimestamps();
+    }
+
+    public function paymentEvents(): HasMany
+    {
+        return $this->hasMany(FaturaPaymentEvent::class)->orderByDesc('created_at')->orderByDesc('id');
     }
 
     public function scopeForUser(Builder $query, int $userId): Builder

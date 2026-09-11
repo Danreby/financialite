@@ -40,6 +40,11 @@ class BankUser extends Model
         return $this->hasMany(Income::class, 'bank_account_id');
     }
 
+    public function ledgerEntries(): HasMany
+    {
+        return $this->hasMany(BankLedgerEntry::class)->orderByDesc('created_at')->orderByDesc('id');
+    }
+
     public function scopeForUser(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);

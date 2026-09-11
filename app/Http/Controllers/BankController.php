@@ -8,7 +8,9 @@ use App\Http\Requests\Bank\BankStoreRequest;
 use App\Http\Requests\Bank\BankTransferRequest;
 use App\Http\Requests\Bank\BankUpdateRequest;
 use App\Models\Bank;
+use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
+use App\Services\BankLedgerService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +22,7 @@ class BankController extends Controller
     public function __construct(
         private BankAccountServiceInterface $bankAccountService,
         private BankTransferServiceInterface $bankTransferService,
+        private BankLedgerService $bankLedgerService,
         private NotificationService $notifications,
     ) {
         $this->middleware('auth');
@@ -85,6 +88,36 @@ class BankController extends Controller
         $detail = $this->bankAccountService->getBankDetail($user->id, $id);
 
         return $this->success($detail);
+    }
+
+    public function ledger(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
+        $this->authorize('view', $bankUser);
+
+        $entries = $this->bankLedgerService->statementForAccount($bankUser);
+
+        return $this->success([
+            'data' => collect($entries->items())->map(fn (BankLedgerEntry $entry) => $this->mapLedgerEntry($entry)),
+            'current_page' => $entries->currentPage(),
+            'last_page' => $entries->lastPage(),
+            'total' => $entries->total(),
+        ]);
+    }
+
+    private function mapLedgerEntry(BankLedgerEntry $entry): array
+    {
+        return [
+            'id' => $entry->id,
+            'type' => $entry->type,
+            'type_label' => BankLedgerEntry::TYPE_LABELS[$entry->type] ?? $entry->type,
+            'amount' => (float) $entry->amount,
+            'balance_after' => (float) $entry->balance_after,
+            'description' => $entry->description,
+            'created_at' => $entry->created_at?->toIso8601String(),
+        ];
     }
 
     public function store(BankStoreRequest $request): JsonResponse

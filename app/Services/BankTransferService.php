@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Services\BankTransferServiceInterface;
+use App\Models\BankLedgerEntry;
 use App\Models\BankTransfer;
 use App\Models\BankUser;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 class BankTransferService implements BankTransferServiceInterface
 {
     protected const DEFAULT_LIMIT = 20;
+
+    public function __construct(private BankLedgerService $ledger) {}
 
     public function transfer(Authenticatable $user, array $data): BankTransfer
     {
@@ -49,16 +52,33 @@ class BankTransferService implements BankTransferServiceInterface
                 throw new \DomainException('Saldo insuficiente para realizar a transferência.');
             }
 
-            $fromAccount->decrement('balance', $amount);
-            $toAccount->increment('balance', $amount);
+            $description = isset($data['description']) ? trim($data['description']) : null;
 
-            return BankTransfer::create([
+            $transfer = BankTransfer::create([
                 'user_id' => $user->id,
                 'from_bank_user_id' => $fromAccount->id,
                 'to_bank_user_id' => $toAccount->id,
                 'amount' => $amount,
-                'description' => isset($data['description']) ? trim($data['description']) : null,
+                'description' => $description,
             ]);
+
+            $this->ledger->record(
+                $fromAccount,
+                BankLedgerEntry::TYPE_TRANSFER_OUT,
+                -$amount,
+                $transfer,
+                $description ?: "Transferência para {$toAccount->bank?->name}"
+            );
+
+            $this->ledger->record(
+                $toAccount,
+                BankLedgerEntry::TYPE_TRANSFER_IN,
+                $amount,
+                $transfer,
+                $description ?: "Transferência de {$fromAccount->bank?->name}"
+            );
+
+            return $transfer;
         });
     }
 

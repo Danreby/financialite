@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Models\Income;
+use App\Services\BankLedgerService;
 use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -15,8 +17,10 @@ class CreditIncomesToBankCommand extends Command
 
     protected $description = 'Credita automaticamente os valores de receitas recorrentes no saldo da conta bancária vinculada no dia de pagamento configurado';
 
-    public function __construct(private NotificationService $notifications)
-    {
+    public function __construct(
+        private NotificationService $notifications,
+        private BankLedgerService $ledger,
+    ) {
         parent::__construct();
     }
 
@@ -73,7 +77,13 @@ class CreditIncomesToBankCommand extends Command
 
             if (! $dryRun) {
                 DB::transaction(function () use ($income, $bankUser, $amount, $today) {
-                    $bankUser->increment('balance', $amount);
+                    $this->ledger->record(
+                        $bankUser,
+                        BankLedgerEntry::TYPE_INCOME_CREDIT,
+                        $amount,
+                        $income,
+                        "Receita recorrente: {$income->title}"
+                    );
 
                     $income->received_at = $today;
                     $income->saveQuietly();

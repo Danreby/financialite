@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Services\IncomeServiceInterface;
+use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Models\Income;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class IncomeService implements IncomeServiceInterface
 {
+    public function __construct(private BankLedgerService $ledger) {}
+
     public function listForUser(int $userId): Collection
     {
         return Income::forUser($userId)
@@ -46,7 +49,13 @@ class IncomeService implements IncomeServiceInterface
             if (empty($data['is_recurring']) && ! empty($data['bank_account_id'])) {
                 $bankUser = BankUser::forUser($user->id)->find((int) $data['bank_account_id']);
                 if ($bankUser) {
-                    $bankUser->increment('balance', (float) $data['amount']);
+                    $this->ledger->record(
+                        $bankUser,
+                        BankLedgerEntry::TYPE_INCOME_CREDIT,
+                        (float) $data['amount'],
+                        $income,
+                        "Receita: {$income->title}"
+                    );
                 }
             }
 

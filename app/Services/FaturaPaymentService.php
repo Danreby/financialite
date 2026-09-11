@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Fatura;
+use App\Models\FaturaPaymentEvent;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -12,7 +14,11 @@ use Illuminate\Support\Facades\DB;
 
 class FaturaPaymentService
 {
-    public function __construct(private FaturaBillingService $billing) {}
+    public function __construct(
+        private FaturaBillingService $billing,
+        private BankLedgerService $ledger,
+        private FaturaLedgerService $faturaLedger,
+    ) {}
 
     public function payMonthForUser(Authenticatable $user, string $monthKey, ?CardUser $cardUser, ?BankUser $bankAccount = null): float
     {
@@ -61,14 +67,36 @@ class FaturaPaymentService
                     'bank_user_id' => $bankUserId,
                 ]);
 
-                $paid->total_paid = (float) ($paid->total_paid ?? 0.0) + $totalPaidThisRun;
+                if (! $paid->exists) {
+                    $paid->total_paid = 0;
+                    $paid->save();
+                }
+
+                $ledgerEntry = null;
+                if ($bankAccount) {
+                    $debit = min($totalPaidThisRun, max(0.0, (float) $bankAccount->balance));
+                    if ($debit > 0) {
+                        $ledgerEntry = $this->ledger->record(
+                            $bankAccount,
+                            BankLedgerEntry::TYPE_INVOICE_PAYMENT,
+                            -$debit,
+                            $paid,
+                            "Pagamento de fatura ({$monthKey})"
+                        );
+                    }
+                }
+
+                $this->faturaLedger->recordPaymentEvent(
+                    $paid,
+                    $totalPaidThisRun,
+                    FaturaPaymentEvent::TYPE_PAYMENT,
+                    null,
+                    $ledgerEntry,
+                    "Pagamento de fatura ({$monthKey})"
+                );
+
                 $paid->paid_at = now();
                 $paid->save();
-
-                if ($bankAccount) {
-                    $bankAccount->balance = max(0, (float) $bankAccount->balance - $totalPaidThisRun);
-                    $bankAccount->save();
-                }
             }
 
             return (float) $totalPaidThisRun;
@@ -117,19 +145,39 @@ class FaturaPaymentService
                 throw new \DomainException('Esta fatura já foi totalmente paga.');
             }
 
-            $payAmount = min($amount, $remaining);
-
-            $faturaRecord->total_paid = $alreadyPaid + $payAmount;
-
-            if ($faturaRecord->total_paid >= $totalDue) {
-                $faturaRecord->paid_at = now();
+            if (! $faturaRecord->exists) {
+                $faturaRecord->total_paid = 0;
+                $faturaRecord->save();
             }
 
-            $faturaRecord->save();
+            $payAmount = min($amount, $remaining);
 
+            $ledgerEntry = null;
             if ($bankAccount) {
-                $bankAccount->balance = max(0.0, (float) $bankAccount->balance - $payAmount);
-                $bankAccount->save();
+                $debit = min($payAmount, max(0.0, (float) $bankAccount->balance));
+                if ($debit > 0) {
+                    $ledgerEntry = $this->ledger->record(
+                        $bankAccount,
+                        BankLedgerEntry::TYPE_INVOICE_PAYMENT,
+                        -$debit,
+                        $faturaRecord,
+                        "Pagamento parcial de fatura ({$monthKey})"
+                    );
+                }
+            }
+
+            $this->faturaLedger->recordPaymentEvent(
+                $faturaRecord,
+                $payAmount,
+                FaturaPaymentEvent::TYPE_PAYMENT,
+                null,
+                $ledgerEntry,
+                "Pagamento parcial de fatura ({$monthKey})"
+            );
+
+            if ((float) $faturaRecord->total_paid >= $totalDue) {
+                $faturaRecord->paid_at = now();
+                $faturaRecord->save();
             }
 
             return [

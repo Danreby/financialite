@@ -21,6 +21,11 @@ export const bankAccountService = {
         return response.data;
     },
 
+    ledger: async (bankUserId) => {
+        const response = await apiService.get(route('bank-accounts.ledger', bankUserId));
+        return response.data;
+    },
+
     create: async (data) => {
         const response = await apiService.post(route('bank-accounts.store'), data);
         return response.data;

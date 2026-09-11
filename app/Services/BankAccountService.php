@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Services\BankAccountServiceInterface;
 use App\Models\Bank;
+use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Models\Income;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class BankAccountService implements BankAccountServiceInterface
 {
+    public function __construct(private BankLedgerService $ledger) {}
+
     public function listForUser(int $userId): Collection
     {
         return BankUser::with('bank')
@@ -63,19 +66,41 @@ class BankAccountService implements BankAccountServiceInterface
                 throw new \DomainException("Você já possui uma conta no banco \"{$bank->name}\".");
             }
 
-            return BankUser::create([
+            $bankUser = BankUser::create([
                 'bank_id' => $bank->id,
                 'user_id' => $user->id,
-                'balance' => $data['balance'] ?? 0,
+                'balance' => 0,
             ]);
+
+            $initialBalance = round((float) ($data['balance'] ?? 0), 2);
+            if ($initialBalance !== 0.0) {
+                $this->ledger->record(
+                    $bankUser,
+                    BankLedgerEntry::TYPE_ACCOUNT_OPENING,
+                    $initialBalance,
+                    null,
+                    'Saldo inicial da conta'
+                );
+            }
+
+            return $bankUser;
         });
     }
 
     public function updateBalance(BankUser $bankUser, float $newBalance): BankUser
     {
         return DB::transaction(function () use ($bankUser, $newBalance) {
-            $bankUser->balance = $newBalance;
-            $bankUser->save();
+            $delta = round($newBalance, 2) - round((float) $bankUser->balance, 2);
+
+            if ($delta !== 0.0) {
+                $this->ledger->record(
+                    $bankUser,
+                    BankLedgerEntry::TYPE_MANUAL_ADJUSTMENT,
+                    $delta,
+                    null,
+                    'Ajuste manual de saldo'
+                );
+            }
 
             return $bankUser->refresh();
         });

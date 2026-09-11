@@ -20,6 +20,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{bankUser}', [BankController::class, 'show'])
             ->middleware('cache.api:15')
             ->name('show');
+        Route::get('/{bankUser}/ledger', [BankController::class, 'ledger'])
+            ->middleware('cache.api:15')
+            ->name('ledger');
         Route::match(['put', 'patch'], '/{bankUser}', [BankController::class, 'update'])
             ->middleware('action.limit:update,60')
             ->name('update');

@@ -14,6 +14,7 @@ import EditBankAccountModal from '@/Components/system/bancos/EditBankAccountModa
 import BankTransferForm from '@/Components/system/bancos/BankTransferForm';
 import BankTransferHistory from '@/Components/system/bancos/BankTransferHistory';
 import BalanceAdjustModal from '@/Components/system/bancos/BalanceAdjustModal';
+import BankAccountStatementModal from '@/Components/system/bancos/BankAccountStatementModal';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
@@ -41,6 +42,9 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
 
   const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
   const [accountBeingAdjusted, setAccountBeingAdjusted] = useState(null);
+
+  const [isStatementOpen, setIsStatementOpen] = useState(false);
+  const [accountForStatement, setAccountForStatement] = useState(null);
 
   const loadTransfers = async () => {
     try {
@@ -153,6 +157,16 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
     setAccountBeingAdjusted(null);
   }, []);
 
+  const openStatementModal = (account) => {
+    setAccountForStatement(account);
+    setIsStatementOpen(true);
+  };
+
+  const handleCloseStatementModal = useCallback(() => {
+    setIsStatementOpen(false);
+    setAccountForStatement(null);
+  }, []);
+
   const handleTransferSuccess = () => {
     toast.success('Transferência realizada com sucesso.');
     refreshAccounts();
@@ -245,6 +259,7 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
                       onEdit={openEditModal}
                       onDelete={(payload) => openConfirmDelete(payload)}
                       onAdjust={openAdjustModal}
+                      onStatement={openStatementModal}
                       saving={saving}
                     />
                   ))}
@@ -301,6 +316,12 @@ export default function Bancos({ bankAccounts, stats: initialStats, transfers: i
         onClose={handleCloseAdjustModal}
         account={accountBeingAdjusted}
         onSuccess={handleAdjustSuccess}
+      />
+
+      <BankAccountStatementModal
+        isOpen={isStatementOpen}
+        onClose={handleCloseStatementModal}
+        account={accountForStatement}
       />
     </AuthenticatedLayout>
   );
