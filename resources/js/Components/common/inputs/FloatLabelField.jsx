@@ -1,5 +1,4 @@
 import React, { forwardRef, useEffect, useId, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 
 const FloatLabelField = forwardRef(
     (
@@ -16,6 +15,7 @@ const FloatLabelField = forwardRef(
             helperText,
             isRequired = false,
             isDisabled = false,
+            prefix,
             className = '',
             containerClassName = '',
             inputProps = {},
@@ -26,7 +26,6 @@ const FloatLabelField = forwardRef(
         const autoId = useId();
         const fieldId = id || autoId;
         const internalRef = useRef(null);
-        const [isFocused, setIsFocused] = useState(false);
         const [internalValue, setInternalValue] = useState(
             defaultValueProp ?? inputProps?.defaultValue ?? '',
         );
@@ -35,31 +34,6 @@ const FloatLabelField = forwardRef(
 
         const effectiveValue =
             value !== undefined && value !== null ? value : internalValue;
-
-        const inputPropsValue = inputProps?.value;
-        const hasValue =
-            (effectiveValue !== undefined &&
-                effectiveValue !== null &&
-                String(effectiveValue).length > 0) ||
-            (inputPropsValue !== undefined &&
-                inputPropsValue !== null &&
-                String(inputPropsValue).length > 0);
-        const isFloating = isFocused || hasValue;
-
-        const baseInputClasses =
-            'block w-full peer border-2 border-t-0 border-theme-primary bg-white px-3 ' +
-            'py-1.5 text-sm outline-none transition-all duration-500 ' +
-            'shadow-[7px_7px_0_0_var(--theme-primary)] focus:shadow-none ' +
-            'placeholder-transparent text-gray-900 themed-focus ' +
-            'dark:border-theme-accent dark:shadow-[7px_7px_0_0_var(--theme-accent)] dark:bg-transparent dark:text-gray-100 p-2';
-
-        const errorInputClasses = error
-            ? 'border-red-500 dark:border-red-500 '
-            : '';
-
-        const disabledClasses = isDisabled
-            ? 'cursor-not-allowed opacity-70 bg-gray-100 dark:bg-gray-800 '
-            : '';
 
         useEffect(() => {
             if (InputComponent !== 'textarea') return;
@@ -88,9 +62,17 @@ const FloatLabelField = forwardRef(
             }
         }
 
+        const chars = Array.from(label || '');
+
         return (
             <div className={`w-full ${containerClassName}`}>
-                <div className="relative">
+                <div className="wave-group">
+                    {prefix && (
+                        <span className="pointer-events-none absolute left-1 top-2.5 text-sm font-semibold text-gray-400 dark:text-gray-500">
+                            {prefix}
+                        </span>
+                    )}
+
                     <InputComponent
                         id={fieldId}
                         name={name || fieldId}
@@ -107,61 +89,40 @@ const FloatLabelField = forwardRef(
                         }}
                         disabled={isDisabled}
                         ref={assignRefs}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
+                        required={isRequired}
+                        placeholder=" "
                         className={
-                            baseInputClasses +
-                            (rightElement ? ' pr-10 ' : '') +
-                            errorInputClasses +
-                            disabledClasses +
-                            (InputComponent === 'textarea' ? ' resize-none py-1.5 overflow-hidden ' : '') +
+                            'wave-input ' +
+                            (prefix ? 'pl-8 ' : '') +
+                            (rightElement ? 'pr-9 ' : '') +
+                            (error ? 'wave-input--error ' : '') +
+                            (isDisabled ? 'cursor-not-allowed opacity-60 ' : '') +
+                            (InputComponent === 'textarea' ? 'resize-none overflow-hidden ' : '') +
                             className
                         }
                         {...resolvedInputProps}
                     />
 
-                    <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute right-0 top-0 h-0.5 w-full bg-theme-primary transition-all duration-500 peer-focus:w-[35%] dark:bg-theme-accent"
-                    />
-                    <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute bottom-0 right-0 h-0.5 w-0 bg-theme-primary transition-all duration-500 peer-focus:w-full dark:bg-theme-accent"
-                    />
+                    <span className="wave-bar" aria-hidden="true" />
 
                     {rightElement && (
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-1">
                             {rightElement}
                         </div>
                     )}
 
-                    <motion.label
-                        htmlFor={fieldId}
-                        initial={false}
-                        animate={
-                            isFloating
-                                ? {
-                                      y: -5,
-                                      x: 0,
-                                      scale: 0.85,
-                                      opacity: 0.95,
-                                  }
-                                : {
-                                      y: 12,
-                                      x: 0,
-                                      scale: 1,
-                                      opacity: 0.85,
-                                  }
-                        }
-                        transition={{ type: 'tween', duration: 0.16 }}
-                        className={
-                            'pointer-events-none absolute left-3 -top-1 origin-left select-none text-[0.78rem] font-medium tracking-wide ' +
-                            'text-gray-500 bg-white dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 px-1 rounded-md'
-                        }
-                    >
-                        {label}
-                        {isRequired && <span className="ml-0.5 text-red-500">*</span>}
-                    </motion.label>
+                    <label htmlFor={fieldId} className={`wave-label ${prefix ? '!left-8' : ''}`}>
+                        {chars.map((ch, i) => (
+                            <span key={i} style={{ '--index': i }} className="wave-char">
+                                {ch}
+                            </span>
+                        ))}
+                        {isRequired && (
+                            <span style={{ '--index': chars.length }} className="wave-char ml-0.5 text-red-400">
+                                *
+                            </span>
+                        )}
+                    </label>
                 </div>
 
                 {helperText && !error && (
@@ -171,13 +132,9 @@ const FloatLabelField = forwardRef(
                 )}
 
                 {error && (
-                    <motion.p
-                        initial={{ opacity: 0, y: -3 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-1 text-xs font-medium text-red-500"
-                    >
+                    <p className="mt-1 text-xs font-medium text-red-500">
                         {error}
-                    </motion.p>
+                    </p>
                 )}
             </div>
         );

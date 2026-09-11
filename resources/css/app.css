@@ -221,6 +221,10 @@
 		}
 	}
 
+	.wave-group .wave-input.wave-input--error {
+		border-bottom-color: #ef4444;
+	}
+
 	.wave-group .wave-label {
 		color: #9ca3af;
 		font-size: 14px;
@@ -278,6 +282,73 @@
 	.wave-group .wave-input:focus ~ .wave-bar::before,
 	.wave-group .wave-input:focus ~ .wave-bar::after {
 		width: 50%;
+	}
+
+	/* Select variant of the wave-group family: the label is always small
+	   (a select never shows "empty" the way a text input does), but it
+	   shares the same underline bar, bottom border and focus accent. */
+	.wave-select-label {
+		display: block;
+		pointer-events: none;
+		margin-bottom: 2px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: #9ca3af;
+
+		&:is(.dark *) {
+			color: #71717a;
+		}
+	}
+
+	.wave-select {
+		appearance: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		cursor: pointer;
+		padding-right: 20px !important;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239ca3af'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 2px center;
+		background-size: 12px;
+	}
+
+	.wave-select:disabled {
+		cursor: not-allowed;
+	}
+
+	/* Minimal underline toggle row, replacing the old bordered/rounded box
+	   for switches like "Subtrair de conta bancária" — same visual family
+	   as the wave inputs: a bottom hairline that fills in accent color
+	   while the toggle is active. */
+	.wave-toggle-row {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 10px 2px 12px;
+		border-bottom: 1px solid #a3a3a3;
+
+		&:is(.dark *) {
+			border-bottom-color: rgba(255, 255, 255, 0.2);
+		}
+	}
+
+	.wave-toggle-bar {
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		height: 2px;
+		width: 0;
+		background: var(--theme-accent);
+		transition: width 0.25s ease, left 0.25s ease;
+	}
+
+	.wave-toggle-bar[data-active='true'] {
+		left: 0;
+		width: 100%;
 	}
 
 	.themed-toggle-on {

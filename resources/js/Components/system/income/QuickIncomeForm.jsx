@@ -2,7 +2,8 @@ import React, { useState, useCallback } from 'react'
 import Modal from '@/Components/common/Modal'
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton'
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton'
-import WaveInputField from '@/Components/common/inputs/WaveInputField'
+import FloatLabelField from '@/Components/common/inputs/FloatLabelField'
+import WaveSelectField from '@/Components/common/inputs/WaveSelectField'
 import { Wallet } from 'lucide-react'
 
 const AVULSA_TYPES = [
@@ -130,24 +131,23 @@ export default function QuickIncomeForm({
 
         {/* ── Amount + Title ── */}
         <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
-          <WaveInputField
+          <FloatLabelField
             label="Valor recebido"
             type="number"
             prefix="R$"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            step="0.01"
-            min="0.01"
-            required
+            isRequired
             error={errors.amount?.[0]}
+            inputProps={{ step: '0.01', min: '0.01' }}
           />
-          <WaveInputField
+          <FloatLabelField
             label="Título"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            maxLength={255}
-            required
+            isRequired
             error={errors.title?.[0]}
+            inputProps={{ maxLength: 255 }}
           />
         </div>
 
@@ -168,13 +168,11 @@ export default function QuickIncomeForm({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-              Creditar em conta
-            </label>
-            <select
+            <WaveSelectField
+              label="Creditar em conta"
               value={bankAccountId}
               onChange={(e) => setBankAccountId(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
+              error={errors.bank_account_id?.[0]}
             >
               <option value="">Não creditar em conta</option>
               {bankAccountsList.map((ba) => (
@@ -183,25 +181,23 @@ export default function QuickIncomeForm({
                   {ba.balance !== undefined ? ` · R$ ${Number(ba.balance).toFixed(2).replace('.', ',')}` : ''}
                 </option>
               ))}
-            </select>
+            </WaveSelectField>
             {bankAccountId && (
               <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                 <Wallet className="h-3 w-3 flex-shrink-0" />
                 O valor será adicionado ao saldo desta conta
               </p>
             )}
-            {errors.bank_account_id && <p className="mt-1 text-xs text-red-500">{errors.bank_account_id[0]}</p>}
           </div>
         </div>
 
         {/* ── Description ── */}
-        <WaveInputField
+        <FloatLabelField
           as="textarea"
           label="Descrição (opcional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          maxLength={1000}
+          inputProps={{ rows: 2, maxLength: 1000 }}
         />
 
         {/* ── Footer ── */}

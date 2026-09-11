@@ -6,7 +6,8 @@ import Modal from "../common/Modal";
 import PrimaryButton from "@/Components/common/buttons/PrimaryButton";
 import SecondaryButton from "@/Components/common/buttons/SecondaryButton";
 import BareButton from "@/Components/common/buttons/BareButton";
-import WaveInputField from "@/Components/common/inputs/WaveInputField";
+import FloatLabelField from "@/Components/common/inputs/FloatLabelField";
+import WaveSelectField from "@/Components/common/inputs/WaveSelectField";
 import { useNumericInput, useDecimalInput } from "@/Hooks/useNumericInput";
 
 export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts = [], debitAccounts = [], categories = [] }) {
@@ -276,44 +277,41 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
         </div>
 
         <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-2">
-          <WaveInputField
+          <FloatLabelField
             label="Título"
             name="title"
-            required
-            maxLength={120}
+            isRequired
+            inputProps={{ maxLength: 120 }}
           />
-          <WaveInputField
+          <FloatLabelField
             label="Valor"
             name="amount"
             type="number"
             prefix="R$"
-            inputMode="decimal"
-            min="0.01"
-            step="0.01"
-            maxLength={12}
-            required
-            onKeyDown={handleDecimalKeyDown}
-            onInput={handleAmountInput}
+            isRequired
+            inputProps={{
+              inputMode: "decimal",
+              min: "0.01",
+              step: "0.01",
+              maxLength: 12,
+              onKeyDown: handleDecimalKeyDown,
+              onInput: handleAmountInput,
+            }}
           />
         </div>
 
         {type === "credit" && (
           <div className="space-y-3 rounded-xl border border-[var(--theme-accent)]/25 bg-[var(--theme-accent)]/5 p-4 dark:bg-[var(--theme-accent)]/10">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">
-                Cartão
-              </label>
-              <select
-                value={selectedBankId}
-                onChange={(e) => setSelectedBankId(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-              >
-                <option value="">Sem cartão</option>
-                {bankAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>{acc.name}</option>
-                ))}
-              </select>
-            </div>
+            <WaveSelectField
+              label="Cartão"
+              value={selectedBankId}
+              onChange={(e) => setSelectedBankId(e.target.value)}
+            >
+              <option value="">Sem cartão</option>
+              {bankAccounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>{acc.name}</option>
+              ))}
+            </WaveSelectField>
 
             <div className="grid grid-cols-2 gap-3">
 
@@ -376,25 +374,20 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         )}
 
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
-            Categoria
-          </label>
-          <select
-            value={selectedCategoryId}
-            onChange={(e) => setSelectedCategoryId(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100"
-          >
-            <option value="">Sem categoria</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
+        <WaveSelectField
+          label="Categoria"
+          value={selectedCategoryId}
+          onChange={(e) => setSelectedCategoryId(e.target.value)}
+        >
+          <option value="">Sem categoria</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </WaveSelectField>
 
         {type === "debit" && debitAccounts.length > 0 && (
-          <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-3.5 dark:border-gray-700 dark:bg-gray-900/30">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="wave-toggle-row">
               <div className="flex items-center gap-2">
                 <Landmark className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" />
                 <span className="text-xs font-medium text-gray-700 dark:text-gray-200 sm:text-sm">
@@ -410,19 +403,20 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
                     return next;
                   });
                 }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 themed-ring focus:ring-offset-2 ${
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition focus:outline-none focus:ring-2 themed-ring focus:ring-offset-2 ${
                   deductFromBank ? "themed-toggle-on" : "bg-gray-300 dark:bg-gray-700"
                 }`}
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${deductFromBank ? "translate-x-5" : "translate-x-1"}`} />
               </BareButton>
+              <span className="wave-toggle-bar" data-active={deductFromBank} />
             </div>
             {deductFromBank && (
               <div className="flex flex-col gap-1.5">
-                <select
+                <WaveSelectField
+                  label="Conta para débito"
                   value={selectedDebitAccountId}
                   onChange={(e) => setSelectedDebitAccountId(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:text-sm"
                 >
                   <option value="">Selecione uma conta</option>
                   {debitAccounts.map((account) => (
@@ -433,7 +427,7 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
                         : ""}
                     </option>
                   ))}
-                </select>
+                </WaveSelectField>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400">
                   O valor da despesa será debitado do saldo da conta selecionada.
                 </p>
@@ -442,12 +436,11 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
           </div>
         )}
 
-        <WaveInputField
+        <FloatLabelField
           as="textarea"
           label="Descrição (opcional)"
           name="description"
-          rows={2}
-          maxLength={250}
+          inputProps={{ rows: 2, maxLength: 250 }}
         />
 
         <div className="flex items-center justify-end gap-3 pt-1">
