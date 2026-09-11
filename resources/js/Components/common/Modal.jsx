@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import BareButton from '@/Components/common/buttons/BareButton';
 
 const maxWidthClassMap = {
@@ -126,7 +127,9 @@ export default function Modal({
 
     const widthClass = maxWidthClassMap[maxWidth] ?? maxWidthClassMap['2xl'];
 
-    return (
+    if (typeof document === 'undefined') return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <motion.div
@@ -211,6 +214,7 @@ export default function Modal({
                     </motion.div>
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

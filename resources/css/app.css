@@ -68,13 +68,12 @@
 	.themed-card,
 	.themed-card-hover {
 		@apply transition-all duration-300;
+		--card-corner-default: #a3a3a3;
 		position: relative;
 		overflow: hidden;
-		isolation: isolate;
-		background-color: #020203;
-		color: #f5f5f5;
-		border: 3px solid var(--card-corner, #4b4b47);
-		box-shadow: 0 0 0 1px #000, 0 1px 3px 1px rgba(0, 0, 0, 0.6);
+		background-color: var(--theme-bgCardLight, #ffffff);
+		border: 3px solid var(--card-corner, var(--card-corner-default));
+		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 
 		& > * {
 			position: relative;
@@ -92,14 +91,14 @@
 			transform: scale(0.85);
 			transition: opacity 250ms ease, transform 250ms ease;
 			background-image:
-				linear-gradient(to right, var(--card-corner, #fefeff) 2px, transparent 2px),
-				linear-gradient(to bottom, var(--card-corner, #fefeff) 2px, transparent 2px),
-				linear-gradient(to left, var(--card-corner, #fefeff) 2px, transparent 2px),
-				linear-gradient(to bottom, var(--card-corner, #fefeff) 2px, transparent 2px),
-				linear-gradient(to left, var(--card-corner, #fefeff) 2px, transparent 2px),
-				linear-gradient(to top, var(--card-corner, #fefeff) 2px, transparent 2px),
-				linear-gradient(to right, var(--card-corner, #fefeff) 2px, transparent 2px),
-				linear-gradient(to top, var(--card-corner, #fefeff) 2px, transparent 2px);
+				linear-gradient(to right, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px),
+				linear-gradient(to bottom, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px),
+				linear-gradient(to left, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px),
+				linear-gradient(to bottom, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px),
+				linear-gradient(to left, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px),
+				linear-gradient(to top, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px),
+				linear-gradient(to right, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px),
+				linear-gradient(to top, var(--card-corner, var(--card-corner-default)) 2px, transparent 2px);
 			background-size: 14px 14px;
 			background-repeat: no-repeat;
 			background-position: top left, top left, top right, top right, bottom right, bottom right, bottom left, bottom left;
@@ -120,45 +119,24 @@
 			height: 5px;
 			z-index: 1;
 			pointer-events: none;
-			background: repeating-linear-gradient(135deg, var(--card-corner, #4b4b47) 0 6px, transparent 6px 12px);
-			opacity: 0.6;
+			background: repeating-linear-gradient(135deg, var(--card-corner, var(--card-corner-default)) 0 6px, transparent 6px 12px);
+			opacity: 0.5;
 		}
 
-		/* Most card content was authored for a light surface (text-gray-900,
-		   border-gray-100, bg-white, ...). The card is now always dark, so
-		   remap the common neutral shades to stay legible without touching
-		   intentionally-colored text (amounts, status colors, etc). */
-		& .text-gray-900,
-		& .text-gray-800 {
-			color: #f3f4f6;
-		}
-
-		& .text-gray-700,
-		& .text-gray-600 {
-			color: #d1d5db;
-		}
-
-		& .text-gray-500,
-		& .text-gray-400 {
-			color: #9ca3af;
-		}
-
-		& .border-gray-100,
-		& .border-gray-200,
-		& .border-gray-300 {
-			border-color: rgba(255, 255, 255, 0.1);
-		}
-
-		& .bg-white,
-		& .bg-gray-50,
-		& .bg-gray-100 {
-			background-color: rgba(255, 255, 255, 0.06);
+		&:is(.dark *) {
+			--card-corner-default: #4b4b47;
+			background-color: #020203;
+			box-shadow: 0 0 0 1px #000, 0 1px 3px 1px rgba(0, 0, 0, 0.6);
 		}
 	}
 
 	.themed-card-hover {
 		&:hover {
 			transform: translateY(-3px);
+			box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.2);
+		}
+
+		&:is(.dark *):hover {
 			box-shadow: 0 0 0 1px #000, 0 10px 24px -6px rgba(0, 0, 0, 0.6);
 		}
 	}
