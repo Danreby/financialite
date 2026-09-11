@@ -55,6 +55,19 @@ class BankLedgerService
     }
 
     /**
+     * Unified activity feed across every bank account owned by the user,
+     * newest first, with the originating account eager-loaded for display.
+     */
+    public function statementForUser(int $userId, int $perPage = 20): LengthAwarePaginator
+    {
+        return BankLedgerEntry::query()
+            ->whereHas('bankUser', fn ($q) => $q->where('user_id', $userId))
+            ->with('bankUser.bank')
+            ->recent()
+            ->paginate($perPage);
+    }
+
+    /**
      * Recomputes a bank account's cached balance from its ledger entries.
      * Used for reconciliation (php artisan ledger:rebuild) and as a safety net.
      */

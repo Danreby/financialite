@@ -78,6 +78,30 @@ class BankApiController extends Controller
         ]);
     }
 
+    public function activity(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $entries = $this->bankLedgerService->statementForUser($user->id, (int) $request->input('per_page', 20));
+
+        return $this->success([
+            'data' => collect($entries->items())->map(fn (BankLedgerEntry $entry) => [
+                'id' => $entry->id,
+                'type' => $entry->type,
+                'type_label' => BankLedgerEntry::TYPE_LABELS[$entry->type] ?? $entry->type,
+                'amount' => (float) $entry->amount,
+                'balance_after' => (float) $entry->balance_after,
+                'description' => $entry->description,
+                'bank_user_id' => $entry->bank_user_id,
+                'bank_name' => $entry->bankUser?->bank?->name ?? 'Conta',
+                'created_at' => $entry->created_at?->toIso8601String(),
+            ]),
+            'current_page' => $entries->currentPage(),
+            'last_page' => $entries->lastPage(),
+            'total' => $entries->total(),
+        ]);
+    }
+
     public function store(BankStoreRequest $request): JsonResponse
     {
         $user = $request->user();

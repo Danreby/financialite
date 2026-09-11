@@ -80,6 +80,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::post('/bank-accounts', [BankApiController::class, 'store']);
     Route::get('/bank-accounts/banks', [BankApiController::class, 'availableBanks']);
     Route::get('/bank-accounts/stats', [BankApiController::class, 'stats']);
+    Route::get('/bank-accounts/activity', [BankApiController::class, 'activity']);
     Route::get('/bank-accounts/{id}', [BankApiController::class, 'show']);
     Route::get('/bank-accounts/{id}/ledger', [BankApiController::class, 'ledger']);
     Route::put('/bank-accounts/{id}', [BankApiController::class, 'update']);

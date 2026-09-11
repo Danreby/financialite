@@ -14,6 +14,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stats', [BankController::class, 'stats'])
             ->middleware('cache.api:15')
             ->name('stats');
+        Route::get('/activity', [BankController::class, 'activity'])
+            ->middleware('cache.api:15')
+            ->name('activity');
         Route::post('/', [BankController::class, 'store'])
             ->middleware('action.limit:create,30')
             ->name('store');

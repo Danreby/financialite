@@ -26,6 +26,11 @@ export const bankAccountService = {
         return response.data;
     },
 
+    activity: async (params = {}) => {
+        const response = await apiService.get(route('bank-accounts.activity'), params);
+        return response.data;
+    },
+
     create: async (data) => {
         const response = await apiService.post(route('bank-accounts.store'), data);
         return response.data;

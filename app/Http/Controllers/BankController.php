@@ -31,25 +31,31 @@ class BankController extends Controller
     public function page(Request $request): Response
     {
         $user = $request->user();
-        $bankAccounts = $this->bankAccountService->listForUser($user->id);
         $stats = $this->bankAccountService->getStats($user->id);
-        $transfers = $this->bankTransferService->listForUser($user->id, 15);
+        $activity = $this->bankLedgerService->statementForUser($user->id, 15);
 
         return Inertia::render('Bancos', [
-            'bankAccounts' => $bankAccounts->map(fn ($bu) => [
-                'id' => $bu->id,
-                'balance' => (float) $bu->balance,
-                'bank' => $bu->bank ? ['id' => $bu->bank->id, 'name' => $bu->bank->name] : null,
-            ]),
             'stats' => $stats,
-            'transfers' => $transfers->map(fn ($t) => [
-                'id' => $t->id,
-                'from_bank' => $t->fromBankUser?->bank?->name ?? '—',
-                'to_bank' => $t->toBankUser?->bank?->name ?? '—',
-                'amount' => (float) $t->amount,
-                'description' => $t->description,
-                'created_at' => $t->created_at?->toIso8601String(),
-            ]),
+            'activity' => [
+                'data' => collect($activity->items())->map(fn (BankLedgerEntry $entry) => $this->mapLedgerEntry($entry, true)),
+                'current_page' => $activity->currentPage(),
+                'last_page' => $activity->lastPage(),
+                'total' => $activity->total(),
+            ],
+        ]);
+    }
+
+    public function activity(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $entries = $this->bankLedgerService->statementForUser($user->id, (int) $request->input('per_page', 20));
+
+        return $this->success([
+            'data' => collect($entries->items())->map(fn (BankLedgerEntry $entry) => $this->mapLedgerEntry($entry, true)),
+            'current_page' => $entries->currentPage(),
+            'last_page' => $entries->lastPage(),
+            'total' => $entries->total(),
         ]);
     }
 
@@ -107,9 +113,9 @@ class BankController extends Controller
         ]);
     }
 
-    private function mapLedgerEntry(BankLedgerEntry $entry): array
+    private function mapLedgerEntry(BankLedgerEntry $entry, bool $withAccount = false): array
     {
-        return [
+        $data = [
             'id' => $entry->id,
             'type' => $entry->type,
             'type_label' => BankLedgerEntry::TYPE_LABELS[$entry->type] ?? $entry->type,
@@ -118,6 +124,13 @@ class BankController extends Controller
             'description' => $entry->description,
             'created_at' => $entry->created_at?->toIso8601String(),
         ];
+
+        if ($withAccount) {
+            $data['bank_user_id'] = $entry->bank_user_id;
+            $data['bank_name'] = $entry->bankUser?->bank?->name ?? 'Conta';
+        }
+
+        return $data;
     }
 
     public function store(BankStoreRequest $request): JsonResponse

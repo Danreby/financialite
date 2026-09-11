@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class BankAccountService implements BankAccountServiceInterface
 {
+    private const TREND_POINTS = 12;
+
     public function __construct(private BankLedgerService $ledger) {}
 
     public function listForUser(int $userId): Collection
@@ -134,10 +136,23 @@ class BankAccountService implements BankAccountServiceInterface
             'id' => $bankUser->id,
             'bank_id' => $bankUser->bank_id,
             'bank_name' => $bankUser->bank->name ?? 'Banco',
+            'bank' => $bankUser->bank ? ['id' => $bankUser->bank->id, 'name' => $bankUser->bank->name] : null,
             'balance' => round((float) $bankUser->balance, 2),
             'income_count' => $incomeCount,
             'income_total' => round((float) $incomeTotal, 2),
+            'trend' => $this->recentTrend($bankUser),
             'created_at' => $bankUser->created_at?->toIso8601String(),
         ];
+    }
+
+    private function recentTrend(BankUser $bankUser): array
+    {
+        return $bankUser->ledgerEntries()
+            ->limit(self::TREND_POINTS)
+            ->pluck('balance_after')
+            ->reverse()
+            ->values()
+            ->map(fn ($value) => (float) $value)
+            ->all();
     }
 }
