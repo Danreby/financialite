@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ArrowLeftRight } from 'lucide-react';
 import PrimaryButton from '@/Components/common/buttons/PrimaryButton';
 import { useCurrencyInput } from '@/Hooks/useCurrencyInput';
-
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
+import { formatCurrencyBRL as formatCurrency } from '@/Lib/formatters';
 
 export default function BankTransferForm({ accounts = [], onSuccess }) {
   const [fromId, setFromId] = useState('');
@@ -77,7 +76,7 @@ export default function BankTransferForm({ accounts = [], onSuccess }) {
     >
       <div className="flex items-center gap-2.5 mb-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20 flex-shrink-0">
-          <span className="text-base">🔄</span>
+          <ArrowLeftRight className="h-4 w-4 text-theme-accent" strokeWidth={1.75} aria-hidden="true" />
         </div>
         <div>
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -186,7 +185,7 @@ export default function BankTransferForm({ accounts = [], onSuccess }) {
 
         <div className="flex justify-end pt-1">
           <PrimaryButton type="submit" disabled={saving || accounts.length < 2} className="rounded-xl px-5 py-2 text-sm font-medium">
-            {saving ? 'Transferindo...' : '🔄 Transferir'}
+            {saving ? 'Transferindo...' : 'Transferir'}
           </PrimaryButton>
         </div>
       </form>
