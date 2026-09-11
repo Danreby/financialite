@@ -40,6 +40,7 @@ class IncomeService implements IncomeServiceInterface
     public function createForUser(Authenticatable $user, array $data): Income
     {
         $data['is_active'] = $data['is_active'] ?? true;
+        $data['auto_deposit'] = $data['auto_deposit'] ?? true;
 
         return DB::transaction(function () use ($user, $data) {
             $income = new Income($data);
@@ -83,6 +84,16 @@ class IncomeService implements IncomeServiceInterface
     {
         return DB::transaction(function () use ($income) {
             $income->is_active = ! $income->is_active;
+            $income->save();
+
+            return $income->refresh();
+        });
+    }
+
+    public function toggleAutoDeposit(Income $income): Income
+    {
+        return DB::transaction(function () use ($income) {
+            $income->auto_deposit = ! $income->auto_deposit;
             $income->save();
 
             return $income->refresh();

@@ -86,6 +86,21 @@ class IncomeApiController extends Controller
         }
     }
 
+    public function toggleAutoDeposit(Request $request, Income $income): JsonResponse
+    {
+        $this->authorize('update', $income);
+
+        try {
+            $income = $this->incomeService->toggleAutoDeposit($income);
+
+            return $this->success($income);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return $this->serverError('Erro ao alternar depósito automático da receita.');
+        }
+    }
+
     public function summary(Request $request): JsonResponse
     {
         $user = $request->user();

@@ -51,6 +51,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::put('/incomes/{income}', [IncomeApiController::class, 'update']);
     Route::delete('/incomes/{income}', [IncomeApiController::class, 'destroy']);
     Route::patch('/incomes/{income}/toggle', [IncomeApiController::class, 'toggleActive']);
+    Route::patch('/incomes/{income}/toggle-auto-deposit', [IncomeApiController::class, 'toggleAutoDeposit']);
 
     Route::get('/bills', [BillApiController::class, 'index']);
     Route::post('/bills', [BillApiController::class, 'store']);

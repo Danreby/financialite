@@ -20,5 +20,7 @@ interface IncomeServiceInterface
 
     public function toggleActive(Income $income): Income;
 
+    public function toggleAutoDeposit(Income $income): Income;
+
     public function totalMonthlyIncome(int $userId): float;
 }

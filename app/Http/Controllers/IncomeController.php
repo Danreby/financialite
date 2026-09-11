@@ -116,6 +116,21 @@ class IncomeController extends Controller
         }
     }
 
+    public function toggleAutoDeposit(Request $request, Income $income): JsonResponse
+    {
+        $this->authorize('update', $income);
+
+        try {
+            $income = $this->incomeService->toggleAutoDeposit($income);
+
+            return $this->success($income);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return $this->serverError('Erro ao alterar depósito automático da renda.');
+        }
+    }
+
     public function destroy(Request $request, Income $income): JsonResponse
     {
         $this->authorize('delete', $income);

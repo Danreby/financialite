@@ -11,8 +11,38 @@ const TYPE_CONFIG = {
   other:      { icon: '💰', gradient: 'from-gray-500 to-slate-600' },
 }
 
-export default function IncomeCard({ income, onEdit, onToggle, onDelete }) {
+function AutoDepositToggle({ checked, onChange }) {
+  return (
+    <label
+      className="flex items-center gap-1.5 cursor-pointer select-none"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <span className="text-[11px] text-gray-500 dark:text-gray-400">
+        Depositar automaticamente
+      </span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors ${
+          checked ? '' : 'bg-gray-300 dark:bg-gray-700'
+        }`}
+        style={checked ? { backgroundColor: 'var(--theme-accent)' } : undefined}
+      >
+        <span
+          className={`absolute inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+            checked ? 'translate-x-[18px]' : 'translate-x-[3px]'
+          }`}
+        />
+      </button>
+    </label>
+  )
+}
+
+export default function IncomeCard({ income, onEdit, onToggle, onToggleAutoDeposit, onDelete }) {
   const config = TYPE_CONFIG[income.type] || TYPE_CONFIG.other
+  const isRecurring = income.is_recurring !== false
 
   return (
     <div
@@ -79,6 +109,15 @@ export default function IncomeCard({ income, onEdit, onToggle, onDelete }) {
           </span>
         </div>
       </div>
+
+      {isRecurring && (
+        <div className="flex items-center justify-end border-t border-gray-100 px-3 py-1.5 dark:border-gray-800/60">
+          <AutoDepositToggle
+            checked={income.auto_deposit !== false}
+            onChange={() => onToggleAutoDeposit?.(income)}
+          />
+        </div>
+      )}
 
       {/* Ações */}
       <div className="flex items-center justify-end gap-1 border-t border-gray-100 px-3 py-1.5 dark:border-gray-800/60">

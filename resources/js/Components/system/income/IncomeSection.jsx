@@ -61,6 +61,21 @@ export default function IncomeSection({
     }
   }
 
+  const handleToggleAutoDeposit = async (income) => {
+    try {
+      const res = await axios.post(route('incomes.toggle-auto-deposit', income.id))
+      const updated = incomes.map((i) => (i.id === income.id ? { ...i, ...res.data } : i))
+      setIncomes(updated)
+      toast.success(
+        res.data.auto_deposit
+          ? 'Depósito automático ativado!'
+          : 'Depósito automático desativado!'
+      )
+    } catch {
+      toast.error('Erro ao alterar depósito automático.')
+    }
+  }
+
   const handleDelete = async () => {
     if (!deletingIncome || deleting) return
     setDeleting(true)
@@ -108,6 +123,7 @@ export default function IncomeSection({
                 income={income}
                 onEdit={(i) => setEditingIncome(i)}
                 onToggle={handleToggle}
+                onToggleAutoDeposit={handleToggleAutoDeposit}
                 onDelete={(i) => setDeletingIncome(i)}
               />
             ))}

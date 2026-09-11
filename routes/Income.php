@@ -17,6 +17,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{income}/toggle', [IncomeController::class, 'toggleActive'])
             ->middleware('action.limit:update,60')
             ->name('toggle');
+        Route::post('/{income}/toggle-auto-deposit', [IncomeController::class, 'toggleAutoDeposit'])
+            ->middleware('action.limit:update,60')
+            ->name('toggle-auto-deposit');
         Route::delete('/{income}', [IncomeController::class, 'destroy'])
             ->middleware('action.limit:delete,20')
             ->name('destroy');

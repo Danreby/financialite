@@ -50,6 +50,13 @@ class CreditIncomesToBankCommand extends Command
                 continue;
             }
 
+            if (! $income->auto_deposit) {
+                $this->line("  🚫  Depósito automático desativado: [{$income->id}] {$income->title}");
+                $skipped++;
+
+                continue;
+            }
+
             if ($income->received_at && $income->received_at->isSameDay($today)) {
                 $this->line("  ⏭  Já creditado hoje: [{$income->id}] {$income->title}");
                 $skipped++;
