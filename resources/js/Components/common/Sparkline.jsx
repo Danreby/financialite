@@ -33,12 +33,13 @@ export default function Sparkline({ data = [], color, className = '', strokeWidt
     };
   }, [data]);
 
+  const gradientId = useMemo(() => `spark-${Math.random().toString(36).slice(2, 9)}`, []);
+
   if (!path) {
     return <div className={`h-8 w-full ${className}`} aria-hidden="true" />;
   }
 
   const resolvedColor = color || (trendUp ? 'var(--theme-accent)' : '#ef4444');
-  const gradientId = useMemo(() => `spark-${Math.random().toString(36).slice(2, 9)}`, []);
 
   return (
     <svg
