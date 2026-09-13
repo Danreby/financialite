@@ -14,7 +14,7 @@ export default function GoogleSettingsCard({ itemVariants }) {
   const avatar = auth.user?.avatar
 
   const [unlinking, setUnlinking] = useState(false)
-  const { triggerGoogleLogin, isLoading: linking } = useGoogleAuth('link')
+  const { triggerGoogleLogin, isLoading: linking, containerRef: googleContainerRef } = useGoogleAuth('link')
 
   const handleUnlink = async () => {
     if (!hasPassword) {
@@ -170,6 +170,7 @@ export default function GoogleSettingsCard({ itemVariants }) {
               onClick={triggerGoogleLogin}
               isLoading={linking}
               label="Vincular conta Google"
+              containerRef={googleContainerRef}
             />
           </div>
         </motion.div>

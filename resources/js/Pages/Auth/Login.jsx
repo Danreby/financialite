@@ -38,7 +38,7 @@ export default function Login({ status, canResetPassword }) {
 
   const [showPassword, setShowPassword] = useState(false)
   const googleButtonRef = useRef(null)
-  const { triggerGoogleLogin, isLoading: googleLoading } = useGoogleAuth('login')
+  const { triggerGoogleLogin, isLoading: googleLoading, containerRef: googleContainerRef } = useGoogleAuth('login')
   const { isGoogleOnly, isThrottle, emailMessage, humanizeError } = useAuthErrors(errors)
 
   useEffect(() => {
@@ -93,6 +93,7 @@ export default function Login({ status, canResetPassword }) {
               isLoading={googleLoading}
               label="Entrar com Google"
               disabled={processing}
+              containerRef={googleContainerRef}
             />
           </div>
 
