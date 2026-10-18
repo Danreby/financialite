@@ -11,10 +11,11 @@ class BankUser extends Model
 {
     protected $table = 'bank_user';
 
+    // 'balance' is intentionally NOT fillable — BankLedgerService is the only
+    // writer, via direct property assignment, which bypasses mass assignment.
     protected $fillable = [
         'bank_id',
         'user_id',
-        'balance',
     ];
 
     protected $casts = [

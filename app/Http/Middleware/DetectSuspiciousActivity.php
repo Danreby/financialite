@@ -78,8 +78,6 @@ class DetectSuspiciousActivity
                 $this->logger->logSqlInjectionAttempt($value, [
                     'field' => $key,
                     'route' => $request->route()?->getName(),
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
                 ]);
                 $threats[] = ['type' => 'sql_injection', 'field' => $key, 'critical' => true];
             }
@@ -88,8 +86,6 @@ class DetectSuspiciousActivity
                 $this->logger->logXssAttempt($value, [
                     'field' => $key,
                     'route' => $request->route()?->getName(),
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
                 ]);
                 $threats[] = ['type' => 'xss', 'field' => $key, 'critical' => false];
             }
@@ -98,8 +94,6 @@ class DetectSuspiciousActivity
                 $this->logger->logSuspicious('Path traversal attempt detected', [
                     'field' => $key,
                     'route' => $request->route()?->getName(),
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
                 ]);
                 $threats[] = ['type' => 'path_traversal', 'field' => $key, 'critical' => true];
             }
@@ -132,8 +126,6 @@ class DetectSuspiciousActivity
         $this->logger->logSuspicious('Request blocked due to detected threats', [
             'threats' => $threatTypes,
             'route' => $request->route()?->getName(),
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
         ]);
 
         if ($request->expectsJson()) {

@@ -6,21 +6,27 @@ use App\Models\Anexo;
 use App\Models\Bank;
 use App\Models\BankTransfer;
 use App\Models\BankUser;
+use App\Models\Bill;
+use App\Models\Budget;
 use App\Models\Card;
 use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Income;
 use App\Models\Notification;
+use App\Models\SavingsGoal;
 use App\Models\Transacao;
 use App\Policies\AnexoPolicy;
 use App\Policies\BankPolicy;
 use App\Policies\BankTransferPolicy;
 use App\Policies\BankUserPolicy;
+use App\Policies\BillPolicy;
+use App\Policies\BudgetPolicy;
 use App\Policies\CardPolicy;
 use App\Policies\CardUserPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\IncomePolicy;
 use App\Policies\NotificationPolicy;
+use App\Policies\SavingsGoalPolicy;
 use App\Policies\TransacaoPolicy;
 use App\Security\Contracts\SanitizerInterface;
 use App\Security\Contracts\SecurityLoggerInterface;
@@ -42,6 +48,9 @@ class SecurityServiceProvider extends ServiceProvider
         Income::class => IncomePolicy::class,
         Notification::class => NotificationPolicy::class,
         Card::class => CardPolicy::class,
+        Bill::class => BillPolicy::class,
+        Budget::class => BudgetPolicy::class,
+        SavingsGoal::class => SavingsGoalPolicy::class,
     ];
 
     public function register(): void

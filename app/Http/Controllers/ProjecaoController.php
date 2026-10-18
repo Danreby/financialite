@@ -14,7 +14,10 @@ use Inertia\Response;
 
 class ProjecaoController extends Controller
 {
-    public function __construct(private FaturaBillingService $billing) {}
+    public function __construct(private FaturaBillingService $billing)
+    {
+        $this->middleware('auth');
+    }
 
     public function index(Request $request): Response
     {

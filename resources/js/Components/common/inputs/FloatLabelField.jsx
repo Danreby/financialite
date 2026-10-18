@@ -53,7 +53,7 @@ const FloatLabelField = forwardRef(
             }
         };
 
-        const { defaultValue: _stripDefaultValue, ...cleanInputProps } = inputProps;
+        const { defaultValue: _stripDefaultValue, style: inputStyle, ...cleanInputProps } = inputProps;
         const resolvedInputProps = { ...cleanInputProps };
 
         if (InputComponent === 'textarea' || type === 'text') {
@@ -62,7 +62,16 @@ const FloatLabelField = forwardRef(
             }
         }
 
-        const chars = Array.from(label || '');
+        // "(opcional)" is rendered as its own dim, non-staggered suffix instead
+        // of being exploded into wave-char spans with the rest of the label —
+        // otherwise it reads as glued to the word before it and, being extra
+        // characters, pushes out the per-character animation delay below.
+        const OPTIONAL_SUFFIX = ' (opcional)';
+        const hasOptionalSuffix = (label || '').endsWith(OPTIONAL_SUFFIX);
+        const mainLabel = hasOptionalSuffix
+            ? label.slice(0, -OPTIONAL_SUFFIX.length)
+            : label;
+        const chars = Array.from(mainLabel || '');
 
         return (
             <div className={`w-full ${containerClassName}`}>
@@ -101,6 +110,15 @@ const FloatLabelField = forwardRef(
                             className
                         }
                         {...resolvedInputProps}
+                        style={{
+                            ...inputStyle,
+                            // `.wave-group .wave-input` sets padding via a plain CSS
+                            // rule more specific than the pl-8/pr-9 utility classes
+                            // below, so those utilities never actually take effect —
+                            // an inline style is the only thing guaranteed to win.
+                            ...(prefix ? { paddingLeft: '2rem' } : {}),
+                            ...(rightElement ? { paddingRight: '2.25rem' } : {}),
+                        }}
                     />
 
                     <span className="wave-bar" aria-hidden="true" />
@@ -121,6 +139,9 @@ const FloatLabelField = forwardRef(
                             <span style={{ '--index': chars.length }} className="wave-char ml-0.5 text-red-400">
                                 *
                             </span>
+                        )}
+                        {hasOptionalSuffix && (
+                            <span className="wave-optional">(opcional)</span>
                         )}
                     </label>
                 </div>

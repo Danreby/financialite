@@ -68,7 +68,7 @@ class BankAccountService implements BankAccountServiceInterface
                 throw new \DomainException("Você já possui uma conta no banco \"{$bank->name}\".");
             }
 
-            $bankUser = BankUser::create([
+            $bankUser = BankUser::forceCreate([
                 'bank_id' => $bank->id,
                 'user_id' => $user->id,
                 'balance' => 0,

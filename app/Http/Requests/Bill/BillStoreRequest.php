@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Bill;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class BillStoreRequest extends FormRequest
 {
@@ -13,6 +14,8 @@ class BillStoreRequest extends FormRequest
 
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -24,7 +27,11 @@ class BillStoreRequest extends FormRequest
             'color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'icon' => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'in:active,inactive,completed'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where('user_id', $userId),
+            ],
         ];
     }
 
@@ -38,6 +45,7 @@ class BillStoreRequest extends FormRequest
             'due_day.max' => 'O dia deve ser entre 1 e 31.',
             'end_date.after_or_equal' => 'A data de fim deve ser igual ou posterior à data de início.',
             'color.regex' => 'A cor deve estar no formato hexadecimal (#RRGGBB).',
+            'category_id.exists' => 'A categoria selecionada não existe ou não pertence a você.',
         ];
     }
 }

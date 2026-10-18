@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Budget;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class BudgetStoreRequest extends FormRequest
 {
@@ -13,12 +14,18 @@ class BudgetStoreRequest extends FormRequest
 
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'monthly_limit' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
             'month_year' => ['required', 'string', 'date_format:Y-m'],
             'is_active' => ['nullable', 'boolean'],
             'category_limits' => ['nullable', 'array'],
-            'category_limits.*.category_id' => ['required', 'integer', 'exists:categories,id'],
+            'category_limits.*.category_id' => [
+                'required',
+                'integer',
+                Rule::exists('categories', 'id')->where('user_id', $userId),
+            ],
             'category_limits.*.limit' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
         ];
     }
