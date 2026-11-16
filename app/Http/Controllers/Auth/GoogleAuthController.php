@@ -4,15 +4,29 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Google\Client as GoogleClient;
-use Illuminate\Auth\Events\Registered;
+use App\Services\Auth\GoogleAccountLinker;
+use App\Services\Auth\GoogleTokenVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class GoogleAuthController extends Controller
 {
+    public function __construct(
+        private readonly GoogleTokenVerifier $verifier,
+        private readonly GoogleAccountLinker $linker,
+    ) {}
+
+    public function nonce(Request $request): JsonResponse
+    {
+        $nonce = Str::random(40);
+        $request->session()->put('google_nonce', $nonce);
+
+        return response()->json(['nonce' => $nonce]);
+    }
+
     public function handleToken(Request $request): JsonResponse
     {
         $request->validate([
@@ -29,7 +43,7 @@ class GoogleAuthController extends Controller
 
         RateLimiter::hit($throttleKey, 60);
 
-        $googleUser = $this->verifyGoogleToken($request->credential);
+        $googleUser = $this->verifier->verify($request->credential);
 
         if (! $googleUser) {
             return response()->json([
@@ -37,10 +51,11 @@ class GoogleAuthController extends Controller
             ], 422);
         }
 
-        $googleId = $googleUser['sub'];
-        $email = strtolower(trim($googleUser['email']));
-        $name = $googleUser['name'] ?? 'Usuário';
-        $avatar = $googleUser['picture'] ?? null;
+        if (! $this->nonceIsValid($request, $googleUser)) {
+            return response()->json([
+                'message' => 'Sessão de login expirada. Recarregue a página e tente novamente.',
+            ], 422);
+        }
 
         if (empty($googleUser['email_verified'])) {
             return response()->json([
@@ -48,37 +63,7 @@ class GoogleAuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('google_id', $googleId)->first();
-
-        if (! $user) {
-            $user = User::where('email', $email)->first();
-
-            if ($user) {
-                $user->update([
-                    'google_id' => $googleId,
-                    'avatar' => $avatar ?: $user->avatar,
-                ]);
-            } else {
-                $user = User::create([
-                    'name' => $name,
-                    'email' => $email,
-                    'google_id' => $googleId,
-                    'avatar' => $avatar,
-                    'password' => null,
-                    'email_verified_at' => now(),
-                ]);
-
-                event(new Registered($user));
-            }
-        } else {
-            if ($avatar && $avatar !== $user->avatar) {
-                $user->update(['avatar' => $avatar]);
-            }
-        }
-
-        if (! $user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
+        $user = $this->linker->resolve($googleUser);
 
         Auth::login($user, true);
         $request->session()->regenerate();
@@ -96,11 +81,17 @@ class GoogleAuthController extends Controller
             'credential' => ['required', 'string', 'max:4096'],
         ]);
 
-        $googleUser = $this->verifyGoogleToken($request->credential);
+        $googleUser = $this->verifier->verify($request->credential);
 
         if (! $googleUser) {
             return response()->json([
                 'message' => 'Token do Google inválido ou expirado.',
+            ], 422);
+        }
+
+        if (! $this->nonceIsValid($request, $googleUser)) {
+            return response()->json([
+                'message' => 'Sessão expirada. Recarregue a página e tente novamente.',
             ], 422);
         }
 
@@ -145,29 +136,17 @@ class GoogleAuthController extends Controller
         ]);
     }
 
-    private function verifyGoogleToken(string $credential): ?array
+    /**
+     * Nonce do OpenID Connect: emitido por nonce(), guardado na sessão e de uso
+     * único. O id_token só vale se trouxer exatamente esse valor.
+     */
+    private function nonceIsValid(Request $request, array $googleUser): bool
     {
-        try {
-            $client = new GoogleClient([
-                'client_id' => config('services.google.client_id'),
-            ]);
+        $expected = $request->session()->pull('google_nonce');
+        $received = $googleUser['nonce'] ?? null;
 
-            $payload = $client->verifyIdToken($credential);
-
-            if (! $payload) {
-                return null;
-            }
-
-            $expectedClientId = config('services.google.client_id');
-            if (($payload['aud'] ?? '') !== $expectedClientId) {
-                return null;
-            }
-
-            return $payload;
-        } catch (\Exception $e) {
-            report($e);
-
-            return null;
-        }
+        return is_string($expected) && $expected !== ''
+            && is_string($received)
+            && hash_equals($expected, $received);
     }
 }

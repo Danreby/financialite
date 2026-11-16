@@ -39,6 +39,22 @@ export default function useGoogleAuth(mode = 'login') {
     const modeRef = useRef(mode);
     modeRef.current = mode;
 
+    // Cada nonce vale para uma única tentativa. Busca um novo no servidor e
+    // reinicializa o Google Identity Services com ele.
+    const initializeWithNonce = useCallback(async (callback) => {
+        const { data } = await axios.get(route('google.nonce'));
+
+        window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback,
+            ux_mode: 'popup',
+            auto_select: false,
+            nonce: data.nonce,
+        });
+    }, []);
+
+    const handleCredentialResponseRef = useRef(null);
+
     const handleCredentialResponse = useCallback(async (response) => {
         if (!response?.credential) {
             setIsLoading(false);
@@ -90,8 +106,12 @@ export default function useGoogleAuth(mode = 'login') {
             toast.error(msg);
         } finally {
             setIsLoading(false);
+            // O nonce foi consumido (com sucesso ou não): renova para a próxima tentativa.
+            initializeWithNonce((r) => handleCredentialResponseRef.current?.(r)).catch(() => {});
         }
-    }, []);
+    }, [initializeWithNonce]);
+
+    handleCredentialResponseRef.current = handleCredentialResponse;
 
     // Pre-renders Google's own sign-in button into an off-screen container as
     // soon as the page loads. Doing this ahead of time (instead of reacting to
@@ -108,17 +128,13 @@ export default function useGoogleAuth(mode = 'login') {
         let cancelled = false;
 
         loadGsi()
-            .then(() => {
+            .then(async () => {
                 if (cancelled || !window.google?.accounts?.id) return;
 
                 if (!initializedRef.current) {
-                    window.google.accounts.id.initialize({
-                        client_id: GOOGLE_CLIENT_ID,
-                        callback: handleCredentialResponse,
-                        ux_mode: 'popup',
-                        auto_select: false,
-                    });
                     initializedRef.current = true;
+                    await initializeWithNonce((r) => handleCredentialResponseRef.current?.(r));
+                    if (cancelled) return;
                 }
 
                 if (containerRef.current && !containerRef.current.hasChildNodes()) {
@@ -136,7 +152,7 @@ export default function useGoogleAuth(mode = 'login') {
         return () => {
             cancelled = true;
         };
-    }, [handleCredentialResponse]);
+    }, [initializeWithNonce]);
 
     // The Google popup gives us no direct "closed/cancelled" event in this
     // flow, so treat regaining window focus as a signal the popup is gone and

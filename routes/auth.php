@@ -79,3 +79,8 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
+
+// Nonce do OpenID Connect: usado tanto no login (visitante) quanto no vínculo (logado).
+Route::get('auth/google/nonce', [GoogleAuthController::class, 'nonce'])
+    ->middleware('throttle:30,1')
+    ->name('google.nonce');
