@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Category;
 
+use App\Rules\UniqueIgnoringCase;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,9 +25,11 @@ class CategoryStoreRequest extends FormRequest
                 'min:2',
                 'max:255',
                 new SafeString(255),
-                Rule::unique('categories')
-                    ->whereNull('deleted_at')
-                    ->where(fn ($query) => $query->where('user_id', $userId)),
+                new UniqueIgnoringCase(
+                    'categories',
+                    'Você já possui uma categoria com este nome.',
+                    fn ($query) => $query->where('user_id', $userId),
+                ),
             ],
             'color' => [
                 'nullable',

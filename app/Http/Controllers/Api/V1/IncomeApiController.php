@@ -27,7 +27,7 @@ class IncomeApiController extends Controller
     public function store(IncomeStoreRequest $request): JsonResponse
     {
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         try {
             $income = $this->incomeService->createForUser($user, $data);
@@ -43,7 +43,7 @@ class IncomeApiController extends Controller
     public function update(IncomeUpdateRequest $request, Income $income): JsonResponse
     {
         $this->authorize('update', $income);
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         try {
             $income = $this->incomeService->updateForUser($income, $data);

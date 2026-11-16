@@ -173,7 +173,7 @@ class FaturaImportService
         $bankUser = CardUser::with('card')
             ->forUser($userId)
             ->whereHas('card', function ($q) use ($bankUserName) {
-                $q->where('name', $bankUserName);
+                $q->whereRaw('LOWER(name) = ?', [mb_strtolower($bankUserName, 'UTF-8')]);
             })
             ->first();
 
@@ -193,7 +193,7 @@ class FaturaImportService
         }
 
         $category = Category::forUser($userId)
-            ->where('name', $categoryName)
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($categoryName, 'UTF-8')])
             ->first();
 
         if (! $category) {

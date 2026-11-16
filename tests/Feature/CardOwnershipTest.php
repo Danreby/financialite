@@ -154,7 +154,7 @@ class CardOwnershipTest extends TestCase
             ->postJson('/api/v1/card-resources', ['name' => 'Cartao Novo', 'closing_day' => 5])
             ->assertCreated();
 
-        $this->assertDatabaseHas('cards', ['name' => 'cartao novo', 'user_id' => $a->id]);
+        $this->assertDatabaseHas('cards', ['name' => 'Cartao Novo', 'user_id' => $a->id]);
     }
 
     public function test_update_rejects_catalog_card(): void

@@ -106,7 +106,7 @@ class TransacaoApiController extends Controller
     public function store(FaturaStoreRequest $request): JsonResponse
     {
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')->forUser($user->id)->findOrFail($data['bank_user_id']);
@@ -129,7 +129,7 @@ class TransacaoApiController extends Controller
         $user = $request->user();
         $transacao = Transacao::findOrFail($id);
         $this->authorize('update', $transacao);
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);

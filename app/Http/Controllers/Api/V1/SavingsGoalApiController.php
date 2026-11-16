@@ -28,7 +28,7 @@ class SavingsGoalApiController extends Controller
     public function store(SavingsGoalStoreRequest $request): JsonResponse
     {
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         try {
             $goal = $this->savingsService->createForUser($user, $data);
@@ -44,7 +44,7 @@ class SavingsGoalApiController extends Controller
     public function update(SavingsGoalUpdateRequest $request, SavingsGoal $savingsGoal): JsonResponse
     {
         $this->authorize('update', $savingsGoal);
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         try {
             $goal = $this->savingsService->updateForUser($savingsGoal, $data);

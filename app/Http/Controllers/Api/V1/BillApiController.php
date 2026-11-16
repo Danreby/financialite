@@ -43,7 +43,7 @@ class BillApiController extends Controller
     public function store(BillStoreRequest $request): JsonResponse
     {
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
         $data['user_id'] = $user->id;
 
         try {
@@ -61,7 +61,7 @@ class BillApiController extends Controller
     public function update(BillUpdateRequest $request, Bill $bill): JsonResponse
     {
         $this->authorize('update', $bill);
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         try {
             $bill->update($data);

@@ -52,7 +52,7 @@ class CardController extends Controller
 
         $user = $request->user();
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
         $card = DB::transaction(function () use ($data, $user) {
             $card = Card::create([
                 'name' => $data['name'],
@@ -199,7 +199,7 @@ class CardController extends Controller
 
         $user = $request->user();
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         $exists = CardUser::forUser($user->id)
             ->forCard($data['card_id'])

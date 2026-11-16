@@ -12,22 +12,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // DetectSuspiciousActivity must run before SanitizeInput: it inspects
-        // raw input for attack patterns, and sanitizing first would mutate
-        // the very payloads it's trying to detect.
+        // DetectSuspiciousActivity only logs (block_requests is off by default).
+        // Input is never rewritten: SQL injection is handled by query bindings
+        // and XSS by output escaping.
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\DetectSuspiciousActivity::class,
-            \App\Http\Middleware\SanitizeInput::class,
             \App\Http\Middleware\LogSecurityEvents::class,
         ]);
 
         $middleware->api(append: [
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\DetectSuspiciousActivity::class,
-            \App\Http\Middleware\SanitizeInput::class,
             \App\Http\Middleware\LogSecurityEvents::class,
         ]);
 

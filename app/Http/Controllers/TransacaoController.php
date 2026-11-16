@@ -146,7 +146,7 @@ class TransacaoController extends Controller
         $this->authorize('create', Transacao::class);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')
@@ -176,7 +176,7 @@ class TransacaoController extends Controller
 
         $this->authorize('update', $fatura);
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             $cardUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
@@ -420,7 +420,6 @@ class TransacaoController extends Controller
         }
 
         $search = trim((string) $request->get('search', ''));
-        $search = e($search);
 
         $filterTotalsRow = Transacao::query()
             ->forUser($user->id)
@@ -430,7 +429,7 @@ class TransacaoController extends Controller
                 $q->whereBetween('created_at', [$start, $end]);
             })
             ->when($search !== '', function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%");
+                $q->titleContains($search);
             })
             ->selectRaw("
                 COUNT(*) as total_count,
@@ -458,7 +457,7 @@ class TransacaoController extends Controller
                 $q->whereBetween('created_at', [$start, $end]);
             })
             ->when($search !== '', function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%");
+                $q->titleContains($search);
             })
             ->when(true, function ($q) use ($order) {
                 $validOrders = [

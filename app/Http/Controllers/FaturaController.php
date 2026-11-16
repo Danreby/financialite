@@ -140,7 +140,7 @@ class FaturaController extends Controller
         $this->authorize('create', Transacao::class);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')
@@ -170,7 +170,7 @@ class FaturaController extends Controller
 
         $this->authorize('update', $fatura);
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);

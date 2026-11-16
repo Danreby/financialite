@@ -207,8 +207,10 @@ return [
     |
     */
     'suspicious_activity' => [
-        // Block requests with suspicious activity
-        'block_requests' => env('SECURITY_BLOCK_SUSPICIOUS', true),
+        // Block requests with suspicious activity. Off by default: the regex
+        // heuristics flag legitimate text (e.g. "--" or "select ... from" in
+        // a description), so the detector only logs unless this is enabled.
+        'block_requests' => env('SECURITY_BLOCK_SUSPICIOUS', false),
 
         // Block only critical threats (SQL injection, path traversal)
         // If false, also blocks XSS attempts

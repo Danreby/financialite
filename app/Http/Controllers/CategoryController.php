@@ -37,7 +37,7 @@ class CategoryController extends Controller
         $this->authorize('create', Category::class);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         $category = DB::transaction(function () use ($data, $user) {
             $category = Category::create([
@@ -61,7 +61,7 @@ class CategoryController extends Controller
         $this->authorize('update', $category);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         DB::transaction(function () use ($category, $data, $user) {
             $category->update([

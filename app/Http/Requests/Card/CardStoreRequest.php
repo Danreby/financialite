@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Card;
 
+use App\Rules\UniqueIgnoringCase;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,10 +22,12 @@ class CardStoreRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:255',
-                Rule::unique('cards', 'name')->whereNull('deleted_at')->where(
+                new UniqueIgnoringCase(
+                    'cards',
+                    'Já existe um cartão com este nome.',
                     fn ($q) => $q->where(
                         fn ($w) => $w->whereNull('user_id')->orWhere('user_id', $this->user()->id)
-                    )
+                    ),
                 ),
                 new SafeString(255),
             ],

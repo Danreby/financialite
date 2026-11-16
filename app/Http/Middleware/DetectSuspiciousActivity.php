@@ -60,7 +60,7 @@ class DetectSuspiciousActivity
 
     public function __construct(protected SecurityLoggerInterface $logger)
     {
-        $this->blockSuspiciousRequests = config('security.suspicious_activity.block_requests', true);
+        $this->blockSuspiciousRequests = config('security.suspicious_activity.block_requests', false);
         $this->blockOnlyCritical = config('security.suspicious_activity.block_only_critical', false);
     }
 
@@ -77,6 +77,7 @@ class DetectSuspiciousActivity
             if ($this->matchesPatterns($value, $this->sqlPatterns)) {
                 $this->logger->logSqlInjectionAttempt($value, [
                     'field' => $key,
+                    'value' => mb_substr($value, 0, 100),
                     'route' => $request->route()?->getName(),
                 ]);
                 $threats[] = ['type' => 'sql_injection', 'field' => $key, 'critical' => true];
@@ -85,6 +86,7 @@ class DetectSuspiciousActivity
             if ($this->matchesPatterns($value, $this->xssPatterns)) {
                 $this->logger->logXssAttempt($value, [
                     'field' => $key,
+                    'value' => mb_substr($value, 0, 100),
                     'route' => $request->route()?->getName(),
                 ]);
                 $threats[] = ['type' => 'xss', 'field' => $key, 'critical' => false];
@@ -93,6 +95,7 @@ class DetectSuspiciousActivity
             if ($this->matchesPatterns($value, $this->pathTraversalPatterns)) {
                 $this->logger->logSuspicious('Path traversal attempt detected', [
                     'field' => $key,
+                    'value' => mb_substr($value, 0, 100),
                     'route' => $request->route()?->getName(),
                 ]);
                 $threats[] = ['type' => 'path_traversal', 'field' => $key, 'critical' => true];

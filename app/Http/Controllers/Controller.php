@@ -12,19 +12,6 @@ abstract class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    protected function normalizeInsertData(array $data): array
-    {
-        $preserveCase = ['email', 'password', 'password_confirmation'];
-
-        foreach ($data as $key => $value) {
-            if (is_string($value) && ! in_array($key, $preserveCase, true)) {
-                $data[$key] = mb_strtolower(trim($value), 'UTF-8');
-            }
-        }
-
-        return $data;
-    }
-
     protected function unauthorized(string $message = 'Não autorizado.'): JsonResponse
     {
         return response()->json(['error' => $message], 403);
