@@ -156,4 +156,68 @@ class CardOwnershipTest extends TestCase
 
         $this->assertDatabaseHas('cards', ['name' => 'cartao novo', 'user_id' => $a->id]);
     }
+
+    public function test_update_rejects_catalog_card(): void
+    {
+        $a = User::factory()->create();
+        $catalog = Card::create(['name' => 'Catalogo']);
+        $this->link($catalog, $a);
+
+        $this->actingAs($a, 'sanctum')
+            ->putJson('/api/v1/card-resources/'.$catalog->id, ['name' => 'hackeado'])
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('cards', ['id' => $catalog->id, 'name' => 'Catalogo']);
+    }
+
+    public function test_update_rejects_other_users_card(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $theirs = Card::create(['name' => 'Do outro']);
+        $theirs->forceFill(['user_id' => $b->id])->save();
+        $this->link($theirs, $b);
+
+        $this->actingAs($a, 'sanctum')
+            ->putJson('/api/v1/card-resources/'.$theirs->id, ['name' => 'hackeado'])
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('cards', ['id' => $theirs->id, 'name' => 'Do outro']);
+    }
+
+    public function test_update_due_day_does_not_edit_catalog_card_details(): void
+    {
+        $a = User::factory()->create();
+        $catalog = Card::create(['name' => 'Catalogo', 'brand' => 'visa']);
+        $cardUser = $this->link($catalog, $a);
+
+        $this->actingAs($a)
+            ->patchJson(route('cards.update-due-day', $cardUser->id), [
+                'due_day' => 15,
+                'closing_day' => 5,
+                'brand' => 'elo',
+                'description' => 'alterada',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('card_user', ['id' => $cardUser->id, 'due_day' => 15]);
+        $this->assertDatabaseHas('cards', ['id' => $catalog->id, 'brand' => 'visa', 'description' => null]);
+    }
+
+    public function test_two_users_can_create_custom_cards_with_same_name(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+
+        $this->actingAs($a, 'sanctum')
+            ->postJson('/api/v1/card-resources', ['name' => 'meu cartao'])
+            ->assertCreated();
+        $this->actingAs($b, 'sanctum')
+            ->postJson('/api/v1/card-resources', ['name' => 'meu cartao'])
+            ->assertCreated();
+
+        $this->actingAs($a, 'sanctum')
+            ->postJson('/api/v1/card-resources', ['name' => 'meu cartao'])
+            ->assertStatus(422);
+    }
 }

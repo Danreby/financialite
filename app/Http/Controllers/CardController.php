@@ -80,7 +80,7 @@ class CardController extends Controller
     {
         $user = $request->user();
 
-        $card = Card::forUser($user->id)->findOrFail($id);
+        $card = Card::forUser($user->id)->where('user_id', $user->id)->findOrFail($id);
 
         $this->authorize('update', $card);
 
@@ -161,7 +161,7 @@ class CardController extends Controller
             $cardUser->save();
 
             $card = $cardUser->card;
-            if ($card) {
+            if ($card && $card->user_id === $user->id) {
                 $changed = false;
                 if (array_key_exists('brand', $data)) {
                     $card->brand = $data['brand'];

@@ -21,7 +21,11 @@ class CardStoreRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:255',
-                Rule::unique('cards', 'name')->whereNull('deleted_at'),
+                Rule::unique('cards', 'name')->whereNull('deleted_at')->where(
+                    fn ($q) => $q->where(
+                        fn ($w) => $w->whereNull('user_id')->orWhere('user_id', $this->user()->id)
+                    )
+                ),
                 new SafeString(255),
             ],
             'due_day' => [
