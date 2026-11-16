@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\InsufficientBalanceException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
@@ -244,6 +245,8 @@ class TransacaoApiController extends Controller
             }
 
             return $this->success(['message' => 'Pagamentos registrados com sucesso.', 'total_paid' => $totalPaidThisRun]);
+        } catch (InsufficientBalanceException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 

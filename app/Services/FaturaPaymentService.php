@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\InsufficientBalanceException;
 use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Models\CardUser;
@@ -23,34 +24,30 @@ class FaturaPaymentService
     public function payMonthForUser(Authenticatable $user, string $monthKey, ?CardUser $cardUser, ?BankUser $bankAccount = null): float
     {
         $bankUserId = $cardUser?->id;
-
-        $query = Transacao::with(['bankUser', 'parcelas'])
-            ->forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->notStatus('paid');
-
-        $allFaturas = $query->get();
-
         $targetMonth = Carbon::parse($monthKey.'-01');
 
-        $faturas = $allFaturas->filter(function (Transacao $transacao) use ($targetMonth) {
-            return $this->billing->faturaAppliesToMonth($transacao, $targetMonth);
-        });
+        return DB::transaction(function () use ($user, $bankUserId, $monthKey, $targetMonth, $bankAccount) {
+            $allFaturas = Transacao::with(['bankUser', 'parcelas'])
+                ->forUser($user->id)
+                ->forBankUser($bankUserId)
+                ->notStatus('paid')
+                ->lockForUpdate()
+                ->get();
 
-        if ($faturas->isEmpty()) {
-            return 0.0;
-        }
+            $faturas = $allFaturas->filter(fn (Transacao $transacao) => $this->billing->faturaAppliesToMonth($transacao, $targetMonth));
 
-        return DB::transaction(function () use ($faturas, $user, $bankUserId, $monthKey, $bankAccount) {
-            $totalPaidThisRun = 0.0;
+            if ($faturas->isEmpty()) {
+                return 0.0;
+            }
 
             $existingFatura = Fatura::where([
                 'user_id' => $user->id,
                 'month_key' => $monthKey,
                 'bank_user_id' => $bankUserId,
-            ])->first();
-            $hasExistingPayment = $existingFatura && (float) ($existingFatura->total_paid ?? 0) > 0;
+            ])->lockForUpdate()->first();
+            $hasExistingPayment = $existingFatura && $this->toCents($existingFatura->total_paid ?? 0) > 0;
 
+            $totalPaidThisRun = 0.0;
             foreach ($faturas as $transacao) {
                 if ($transacao->is_recurring && $hasExistingPayment) {
                     continue;
@@ -60,46 +57,54 @@ class FaturaPaymentService
                 $transacao->save();
             }
 
-            if ($totalPaidThisRun > 0) {
-                $paid = Fatura::firstOrNew([
-                    'user_id' => $user->id,
-                    'month_key' => $monthKey,
-                    'bank_user_id' => $bankUserId,
-                ]);
+            $totalCents = $this->toCents($totalPaidThisRun);
+            if ($totalCents <= 0) {
+                return 0.0;
+            }
 
-                if (! $paid->exists) {
-                    $paid->total_paid = 0;
-                    $paid->save();
-                }
+            $lockedAccount = $bankAccount ? $this->lockAccount($bankAccount) : null;
+            if ($lockedAccount) {
+                $this->assertCanDebit($lockedAccount, $totalCents);
+            }
 
-                $ledgerEntry = null;
-                if ($bankAccount) {
-                    $debit = min($totalPaidThisRun, max(0.0, (float) $bankAccount->balance));
-                    if ($debit > 0) {
-                        $ledgerEntry = $this->ledger->record(
-                            $bankAccount,
-                            BankLedgerEntry::TYPE_INVOICE_PAYMENT,
-                            -$debit,
-                            $paid,
-                            "Pagamento de fatura ({$monthKey})"
-                        );
-                    }
-                }
+            $paid = $existingFatura ?? Fatura::firstOrNew([
+                'user_id' => $user->id,
+                'month_key' => $monthKey,
+                'bank_user_id' => $bankUserId,
+            ]);
 
-                $this->faturaLedger->recordPaymentEvent(
-                    $paid,
-                    $totalPaidThisRun,
-                    FaturaPaymentEvent::TYPE_PAYMENT,
-                    null,
-                    $ledgerEntry,
-                    "Pagamento de fatura ({$monthKey})"
-                );
-
-                $paid->paid_at = now();
+            if (! $paid->exists) {
+                $paid->total_paid = 0;
                 $paid->save();
             }
 
-            return (float) $totalPaidThisRun;
+            $paidAmount = $totalCents / 100;
+
+            $ledgerEntry = null;
+            if ($lockedAccount) {
+                $ledgerEntry = $this->ledger->record(
+                    $lockedAccount,
+                    BankLedgerEntry::TYPE_INVOICE_PAYMENT,
+                    -$paidAmount,
+                    $paid,
+                    "Pagamento de fatura ({$monthKey})"
+                );
+                $bankAccount->balance = $lockedAccount->balance;
+            }
+
+            $this->faturaLedger->recordPaymentEvent(
+                $paid,
+                $paidAmount,
+                FaturaPaymentEvent::TYPE_PAYMENT,
+                null,
+                $ledgerEntry,
+                "Pagamento de fatura ({$monthKey})"
+            );
+
+            $paid->paid_at = now();
+            $paid->save();
+
+            return $paidAmount;
         });
     }
 
@@ -111,38 +116,51 @@ class FaturaPaymentService
         ?BankUser $bankAccount = null
     ): array {
         $bankUserId = $cardUser?->id;
-
         $targetMonth = Carbon::parse($monthKey.'-01');
 
-        $allTransacoes = Transacao::with(['bankUser', 'parcelas'])
-            ->forUser($user->id)
-            ->forBankUser($bankUserId)
-            ->get();
+        return DB::transaction(function () use ($user, $bankUserId, $monthKey, $targetMonth, $amount, $bankAccount) {
+            $allTransacoes = Transacao::with(['bankUser', 'parcelas'])
+                ->forUser($user->id)
+                ->forBankUser($bankUserId)
+                ->lockForUpdate()
+                ->get();
 
-        $totalDue = 0.0;
-        foreach ($allTransacoes as $transacao) {
-            if ($this->billing->faturaAppliesToMonth($transacao, $targetMonth)) {
-                $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $monthKey);
-                $totalDue += (float) $transacao->getInstallmentAmount($installmentNumber);
+            $totalDueCents = 0;
+            foreach ($allTransacoes as $transacao) {
+                if ($this->billing->faturaAppliesToMonth($transacao, $targetMonth)) {
+                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $monthKey);
+                    $totalDueCents += $this->toCents($transacao->getInstallmentAmount($installmentNumber));
+                }
             }
-        }
 
-        if ($totalDue <= 0) {
-            throw new \DomainException('Nenhuma transação encontrada para este mês.');
-        }
+            if ($totalDueCents <= 0) {
+                throw new \DomainException('Nenhuma transação encontrada para este mês.');
+            }
 
-        return DB::transaction(function () use ($user, $bankUserId, $monthKey, $amount, $bankAccount, $totalDue) {
-            $faturaRecord = Fatura::firstOrNew([
+            $faturaRecord = Fatura::where([
+                'user_id' => $user->id,
+                'month_key' => $monthKey,
+                'bank_user_id' => $bankUserId,
+            ])->lockForUpdate()->first() ?? new Fatura([
                 'user_id' => $user->id,
                 'month_key' => $monthKey,
                 'bank_user_id' => $bankUserId,
             ]);
 
-            $alreadyPaid = (float) ($faturaRecord->total_paid ?? 0);
-            $remaining = max(0.0, $totalDue - $alreadyPaid);
+            $remainingCents = max(0, $totalDueCents - $this->toCents($faturaRecord->total_paid ?? 0));
 
-            if ($remaining <= 0) {
+            if ($remainingCents <= 0) {
                 throw new \DomainException('Esta fatura já foi totalmente paga.');
+            }
+
+            $payCents = min($this->toCents($amount), $remainingCents);
+            if ($payCents <= 0) {
+                throw new \DomainException('Informe um valor maior que zero.');
+            }
+
+            $lockedAccount = $bankAccount ? $this->lockAccount($bankAccount) : null;
+            if ($lockedAccount) {
+                $this->assertCanDebit($lockedAccount, $payCents);
             }
 
             if (! $faturaRecord->exists) {
@@ -150,20 +168,18 @@ class FaturaPaymentService
                 $faturaRecord->save();
             }
 
-            $payAmount = min($amount, $remaining);
+            $payAmount = $payCents / 100;
 
             $ledgerEntry = null;
-            if ($bankAccount) {
-                $debit = min($payAmount, max(0.0, (float) $bankAccount->balance));
-                if ($debit > 0) {
-                    $ledgerEntry = $this->ledger->record(
-                        $bankAccount,
-                        BankLedgerEntry::TYPE_INVOICE_PAYMENT,
-                        -$debit,
-                        $faturaRecord,
-                        "Pagamento parcial de fatura ({$monthKey})"
-                    );
-                }
+            if ($lockedAccount) {
+                $ledgerEntry = $this->ledger->record(
+                    $lockedAccount,
+                    BankLedgerEntry::TYPE_INVOICE_PAYMENT,
+                    -$payAmount,
+                    $faturaRecord,
+                    "Pagamento parcial de fatura ({$monthKey})"
+                );
+                $bankAccount->balance = $lockedAccount->balance;
             }
 
             $this->faturaLedger->recordPaymentEvent(
@@ -175,17 +191,40 @@ class FaturaPaymentService
                 "Pagamento parcial de fatura ({$monthKey})"
             );
 
-            if ((float) $faturaRecord->total_paid >= $totalDue) {
+            if ($this->toCents($faturaRecord->total_paid) >= $totalDueCents) {
                 $faturaRecord->paid_at = now();
                 $faturaRecord->save();
             }
 
             return [
                 'total_paid' => (float) $faturaRecord->total_paid,
-                'total_due' => $totalDue,
+                'total_due' => $totalDueCents / 100,
                 'amount_paid_now' => $payAmount,
                 'is_fully_paid' => $faturaRecord->paid_at !== null,
             ];
         });
+    }
+
+    private function toCents(float|int|string|null $value): int
+    {
+        return (int) round(((float) $value) * 100);
+    }
+
+    /** Relê a conta dentro da transação, com lock, para decidir pelo saldo real. */
+    private function lockAccount(BankUser $bankAccount): BankUser
+    {
+        return BankUser::with('bank')->whereKey($bankAccount->id)->lockForUpdate()->firstOrFail();
+    }
+
+    private function assertCanDebit(BankUser $lockedAccount, int $debitCents): void
+    {
+        $balanceCents = $this->toCents($lockedAccount->balance);
+
+        if ($balanceCents < $debitCents) {
+            throw new InsufficientBalanceException(
+                $lockedAccount->bank?->name ?? 'bancária',
+                $debitCents - max(0, $balanceCents)
+            );
+        }
     }
 }
