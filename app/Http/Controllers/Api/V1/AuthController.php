@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\LoginThrottle;
 use App\Services\Auth\GoogleAccountLinker;
 use App\Services\Auth\GoogleLinkConflictException;
 use App\Services\Auth\GoogleTokenVerifier;
@@ -61,10 +62,10 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $key = 'login:'.$request->ip();
+        $throttle = LoginThrottle::for($request);
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
+        if ($throttle->tooManyAttempts()) {
+            $seconds = $throttle->availableIn();
 
             return $this->error("Muitas tentativas. Tente novamente em {$seconds} segundos.", 429);
         }
@@ -75,13 +76,13 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($request->only('email', 'password'))) {
-            RateLimiter::hit($key, 60);
+            $throttle->hit();
             throw ValidationException::withMessages([
                 'email' => ['Credenciais inválidas.'],
             ]);
         }
 
-        RateLimiter::clear($key);
+        $throttle->clear();
 
         $user = Auth::user();
         $user->tokens()->where('name', 'mobile-app')->delete();

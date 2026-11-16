@@ -3,11 +3,10 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
+use App\Support\LoginThrottle;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -41,7 +40,7 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+            $this->throttle()->hit();
 
             $user = User::where('email', strtolower(trim($this->input('email'))))->first();
 
@@ -56,18 +55,20 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        RateLimiter::clear($this->throttleKey());
+        $this->throttle()->clear();
     }
 
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        $throttle = $this->throttle();
+
+        if (! $throttle->tooManyAttempts()) {
             return;
         }
 
         event(new Lockout($this));
 
-        $seconds = RateLimiter::availableIn($this->throttleKey());
+        $seconds = $throttle->availableIn();
 
         throw ValidationException::withMessages([
             'email' => trans('auth.throttle', [
@@ -77,8 +78,8 @@ class LoginRequest extends FormRequest
         ]);
     }
 
-    public function throttleKey(): string
+    private function throttle(): LoginThrottle
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return LoginThrottle::for($this);
     }
 }

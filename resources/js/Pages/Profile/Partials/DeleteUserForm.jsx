@@ -2,7 +2,7 @@ import DangerButton from '@/Components/common/buttons/DangerButton';
 import InputError from '@/Components/InputError';
 import SecondaryButton from '@/Components/common/buttons/SecondaryButton';
 import FloatLabelField from '@/Components/common/inputs/FloatLabelField';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import Modal from '@/Components/common/Modal';
 import { toast } from 'react-toastify';
@@ -10,6 +10,8 @@ import { toast } from 'react-toastify';
 export default function DeleteUserForm({ className = '' }) {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const passwordInput = useRef();
+    const hasPassword = usePage().props.auth?.user?.has_password !== false;
+    const field = hasPassword ? 'password' : 'email';
 
     const {
         data,
@@ -21,6 +23,7 @@ export default function DeleteUserForm({ className = '' }) {
         clearErrors,
     } = useForm({
         password: '',
+        email: '',
     });
 
     const confirmUserDeletion = () => {
@@ -35,7 +38,11 @@ export default function DeleteUserForm({ className = '' }) {
             onSuccess: () => closeModal(),
             onError: () => {
                 passwordInput.current.focus();
-                toast.error('Erro ao excluir conta. Verifique sua senha.');
+                toast.error(
+                    hasPassword
+                        ? 'Erro ao excluir conta. Verifique sua senha.'
+                        : 'Erro ao excluir conta. Verifique seu e-mail.'
+                );
             },
             onFinish: () => reset(),
         });
@@ -74,28 +81,32 @@ export default function DeleteUserForm({ className = '' }) {
 
                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                         Depois de excluir a conta, todos os recursos e dados
-                        serão apagados permanentemente. Digite sua senha para
-                        confirmar essa ação.
+                        serão apagados permanentemente.{' '}
+                        {hasPassword
+                            ? 'Digite sua senha para confirmar essa ação.'
+                            : 'Digite seu e-mail para confirmar essa ação.'}
                     </p>
 
                     <div className="mt-6 w-3/4">
                         <FloatLabelField
-                            id="password"
-                            name="password"
-                            type="password"
-                            label="Password"
-                            ref={passwordInput}
-                            value={data.password}
-                            onChange={(e) =>
-                                setData('password', e.target.value)
+                            id={field}
+                            name={field}
+                            type={hasPassword ? 'password' : 'email'}
+                            label={
+                                hasPassword
+                                    ? 'Senha'
+                                    : 'Digite seu e-mail para confirmar'
                             }
-                            error={errors.password}
+                            ref={passwordInput}
+                            value={data[field]}
+                            onChange={(e) => setData(field, e.target.value)}
+                            error={errors[field]}
                             isRequired
                             inputProps={{ autoFocus: true }}
                         />
 
                         <InputError
-                            message={errors.password}
+                            message={errors[field]}
                             className="mt-2"
                         />
                     </div>

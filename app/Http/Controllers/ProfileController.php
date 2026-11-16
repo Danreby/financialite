@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Services\SavingsGoalServiceInterface;
+use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Services\IncomeService;
 use App\Services\NotificationService;
@@ -122,13 +123,11 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit');
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(DeleteAccountRequest $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
+
+        $user->tokens()->delete();
 
         Auth::logout();
 

@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'action.limit' => \App\Http\Middleware\ActionRateLimiter::class,
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'cache.api' => \App\Http\Middleware\CacheApiResponse::class,
         ]);
     })

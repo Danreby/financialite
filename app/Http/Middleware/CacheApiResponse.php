@@ -8,9 +8,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CacheApiResponse
 {
-    private const DEFAULT_MAX_AGE = 15;
-
-    public function handle(Request $request, Closure $next, int $maxAge = self::DEFAULT_MAX_AGE): Response
+    /**
+     * Dados financeiros nunca ficam em cache de navegador ou proxy. O parâmetro
+     * $maxAge segue aceito só para manter compatível o alias `cache.api:N`.
+     */
+    public function handle(Request $request, Closure $next, int $maxAge = 0): Response
     {
         $response = $next($request);
 
@@ -19,7 +21,7 @@ class CacheApiResponse
             $response->isSuccessful() &&
             $request->wantsJson()
         ) {
-            $response->headers->set('Cache-Control', "private, max-age={$maxAge}, stale-while-revalidate=5");
+            $response->headers->set('Cache-Control', 'private, no-store');
             $response->headers->set('Vary', 'Accept, Authorization');
         }
 
