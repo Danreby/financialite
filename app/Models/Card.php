@@ -49,6 +49,13 @@ class Card extends Model
         });
     }
 
+    public function scopeVisibleTo(Builder $query, int $userId): Builder
+    {
+        return $query->where(function (Builder $sub) use ($userId) {
+            $sub->whereNull('user_id')->orWhere('user_id', $userId);
+        });
+    }
+
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('name');

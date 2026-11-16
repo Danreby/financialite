@@ -59,6 +59,7 @@ class CardController extends Controller
                 'brand' => $data['brand'] ?? null,
                 'description' => $data['description'] ?? null,
             ]);
+            $card->forceFill(['user_id' => $user->id])->save();
 
             CardUser::create([
                 'card_id' => $card->id,
@@ -123,7 +124,9 @@ class CardController extends Controller
                 ->forCard($card->id)
                 ->delete();
 
-            $card->delete();
+            if ($card->user_id === $user->id) {
+                $card->delete();
+            }
 
             $this->notifications->info($user, 'Cartão removido', 'Um cartão foi desvinculado da sua conta.');
         });
@@ -133,7 +136,7 @@ class CardController extends Controller
 
     public function list(Request $request): JsonResponse
     {
-        $cards = Card::ordered()->get(['id', 'name']);
+        $cards = Card::visibleTo($request->user()->id)->ordered()->get(['id', 'name']);
 
         return $this->success($cards);
     }

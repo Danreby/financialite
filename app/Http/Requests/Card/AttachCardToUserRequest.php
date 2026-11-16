@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Card;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AttachCardToUserRequest extends FormRequest
 {
@@ -14,7 +15,14 @@ class AttachCardToUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'card_id' => 'required|exists:cards,id',
+            'card_id' => [
+                'required',
+                Rule::exists('cards', 'id')->where(
+                    fn ($q) => $q->whereNull('deleted_at')->where(
+                        fn ($w) => $w->whereNull('user_id')->orWhere('user_id', $this->user()->id)
+                    )
+                ),
+            ],
             'due_day' => 'required|integer|min:1|max:31',
             'closing_day' => 'required|integer|min:1|max:31',
             'brand' => 'nullable|string|max:50',
