@@ -7,6 +7,8 @@ use App\Models\Transacao;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use App\Security\Contracts\SecurityLoggerInterface;
+use Mockery;
 use Tests\TestCase;
 
 class InputPreservationTest extends TestCase
@@ -115,5 +117,20 @@ class InputPreservationTest extends TestCase
     public function test_suspicious_input_is_logged_not_blocked(): void
     {
         $this->assertFalse(config('security.suspicious_activity.block_requests'));
+
+        $logger = Mockery::mock(SecurityLoggerInterface::class)->shouldIgnoreMissing();
+        $logger->shouldReceive('logSqlInjectionAttempt')
+            ->atLeast()->once()
+            ->withArgs(fn (string $value) => str_contains($value, 'SELECT * FROM users --'));
+        $this->app->instance(SecurityLoggerInterface::class, $logger);
+
+        $user = User::factory()->create();
+        $title = 'Nota SELECT * FROM users -- teste';
+
+        $this->actingAs($user)
+            ->postJson(route('transacoes.store'), ['title' => $title, 'amount' => 10, 'type' => 'debit'])
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('transacoes', ['user_id' => $user->id, 'title' => $title]);
     }
 }

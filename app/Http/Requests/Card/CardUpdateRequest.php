@@ -16,7 +16,11 @@ class CardUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $cardId = $this->route('card');
+        // A única rota que usa esta request é api/v1/card-resources/{card_resource}.
+        $cardParam = $this->route('card_resource') ?? $this->route('card');
+        $cardId = is_object($cardParam) && method_exists($cardParam, 'getKey')
+            ? $cardParam->getKey()
+            : $cardParam;
 
         return [
             'name' => [

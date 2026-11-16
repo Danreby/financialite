@@ -157,6 +157,49 @@ class CardOwnershipTest extends TestCase
         $this->assertDatabaseHas('cards', ['name' => 'Cartao Novo', 'user_id' => $a->id]);
     }
 
+    private function ownCard(User $user, string $name): Card
+    {
+        $card = Card::create(['name' => $name]);
+        $card->forceFill(['user_id' => $user->id])->save();
+        $this->link($card, $user);
+
+        return $card;
+    }
+
+    public function test_owner_can_rename_card_by_case_only(): void
+    {
+        $a = User::factory()->create();
+        $card = $this->ownCard($a, 'nubank');
+
+        $this->actingAs($a, 'sanctum')
+            ->putJson('/api/v1/card-resources/'.$card->id, ['name' => 'Nubank'])
+            ->assertOk();
+
+        $this->assertDatabaseHas('cards', ['id' => $card->id, 'name' => 'Nubank']);
+    }
+
+    public function test_update_with_unchanged_name_succeeds(): void
+    {
+        $a = User::factory()->create();
+        $card = $this->ownCard($a, 'Inter');
+
+        $this->actingAs($a, 'sanctum')
+            ->putJson('/api/v1/card-resources/'.$card->id, ['name' => 'Inter'])
+            ->assertOk();
+    }
+
+    public function test_rename_to_another_cards_name_is_rejected_ignoring_case(): void
+    {
+        $a = User::factory()->create();
+        $this->ownCard($a, 'Inter');
+        $other = $this->ownCard($a, 'Itau');
+
+        $this->actingAs($a, 'sanctum')
+            ->putJson('/api/v1/card-resources/'.$other->id, ['name' => 'INTER'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('name');
+    }
+
     public function test_update_rejects_catalog_card(): void
     {
         $a = User::factory()->create();
