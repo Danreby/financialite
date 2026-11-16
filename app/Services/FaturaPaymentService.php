@@ -45,19 +45,16 @@ class FaturaPaymentService
                 'month_key' => $monthKey,
                 'bank_user_id' => $bankUserId,
             ])->lockForUpdate()->first();
-            $hasExistingPayment = $existingFatura && $this->toCents($existingFatura->total_paid ?? 0) > 0;
+            $alreadyPaidCents = $existingFatura ? $this->toCents($existingFatura->total_paid ?? 0) : 0;
 
             $totalPaidThisRun = 0.0;
             foreach ($faturas as $transacao) {
-                if ($transacao->is_recurring && $hasExistingPayment) {
-                    continue;
-                }
-
                 $totalPaidThisRun += $this->billing->applyPaymentForMonth($transacao, $monthKey);
                 $transacao->save();
             }
 
-            $totalCents = $this->toCents($totalPaidThisRun);
+            // Pagamentos parciais anteriores já foram debitados: cobra só o restante.
+            $totalCents = max(0, $this->toCents($totalPaidThisRun) - $alreadyPaidCents);
             if ($totalCents <= 0) {
                 return 0.0;
             }
@@ -67,7 +64,7 @@ class FaturaPaymentService
                 $this->assertCanDebit($lockedAccount, $totalCents);
             }
 
-            $paid = $existingFatura ?? Fatura::firstOrNew([
+            $paid = $existingFatura ?? new Fatura([
                 'user_id' => $user->id,
                 'month_key' => $monthKey,
                 'bank_user_id' => $bankUserId,

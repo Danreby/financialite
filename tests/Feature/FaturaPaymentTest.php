@@ -139,4 +139,37 @@ class FaturaPaymentTest extends TestCase
         $this->assertEquals(30.0, (float) $this->account->fresh()->balance);
         $this->assertSame(0, FaturaPaymentEvent::count());
     }
+
+    public function test_pay_month_after_partial_charges_only_remaining(): void
+    {
+        $this->fund(200);
+        $transacao = $this->purchase(150);
+
+        $this->service()->payPartialForUser($this->user, $this->monthKey, 100.0, $this->cardUser, $this->account);
+        $paidNow = $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+
+        $this->assertEquals(50.0, $paidNow);
+        $this->assertEquals(50.0, (float) $this->account->fresh()->balance);
+        $this->assertSame('paid', $transacao->fresh()->status);
+        $fatura = Fatura::first();
+        $this->assertEquals(150.0, (float) $fatura->total_paid);
+        $this->assertNotNull($fatura->paid_at);
+        $this->assertSame(2, FaturaPaymentEvent::count());
+    }
+
+    public function test_pay_month_after_full_partial_debits_nothing(): void
+    {
+        $this->fund(200);
+        $transacao = $this->purchase(150);
+
+        $this->service()->payPartialForUser($this->user, $this->monthKey, 150.0, $this->cardUser, $this->account);
+        $paidNow = $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+
+        $this->assertEquals(0.0, $paidNow);
+        $this->assertEquals(50.0, (float) $this->account->fresh()->balance);
+        $this->assertSame('paid', $transacao->fresh()->status);
+        $this->assertEquals(150.0, (float) Fatura::first()->total_paid);
+        $this->assertSame(1, FaturaPaymentEvent::count());
+        $this->assertSame(1, BankLedgerEntry::where('type', BankLedgerEntry::TYPE_INVOICE_PAYMENT)->count());
+    }
 }
