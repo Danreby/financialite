@@ -122,37 +122,42 @@ export default function useGoogleAuth(mode = 'login') {
     // opened from a click that happens after an async gap, which is why the
     // previous "click a hidden button inside the prompt() callback" approach
     // worked in Chromium browsers but silently failed there.
-    useEffect(() => {
+    const setupGoogle = useCallback(async () => {
         if (!GOOGLE_CLIENT_ID) return;
 
-        let cancelled = false;
+        try {
+            await loadGsi();
+            if (!window.google?.accounts?.id) return;
 
-        loadGsi()
-            .then(async () => {
-                if (cancelled || !window.google?.accounts?.id) return;
-
-                if (!initializedRef.current) {
-                    initializedRef.current = true;
+            if (!initializedRef.current) {
+                initializedRef.current = true;
+                try {
                     await initializeWithNonce((r) => handleCredentialResponseRef.current?.(r));
-                    if (cancelled) return;
+                } catch (error) {
+                    initializedRef.current = false;
+                    throw error;
                 }
+            }
 
-                if (containerRef.current && !containerRef.current.hasChildNodes()) {
-                    window.google.accounts.id.renderButton(containerRef.current, {
-                        type: 'standard',
-                        size: 'large',
-                        width: 240,
-                    });
-                }
-            })
-            .catch(() => {
-                // triggerGoogleLogin() surfaces the failure when the user clicks.
-            });
-
-        return () => {
-            cancelled = true;
-        };
+            if (containerRef.current && !containerRef.current.hasChildNodes()) {
+                window.google.accounts.id.renderButton(containerRef.current, {
+                    type: 'standard',
+                    size: 'large',
+                    width: 240,
+                });
+            }
+        } catch (error) {
+            if (error?.message === 'Falha ao carregar o Google Sign-In.') {
+                // triggerGoogleLogin() surfaces this failure when the user clicks.
+                return;
+            }
+            toast.error('Não foi possível iniciar o login com Google. Recarregue a página.');
+        }
     }, [initializeWithNonce]);
+
+    useEffect(() => {
+        setupGoogle();
+    }, [setupGoogle]);
 
     // The Google popup gives us no direct "closed/cancelled" event in this
     // flow, so treat regaining window focus as a signal the popup is gone and
@@ -179,13 +184,16 @@ export default function useGoogleAuth(mode = 'login') {
         const realButton = containerRef.current?.querySelector('div[role="button"]');
 
         if (!realButton) {
+            if (!initializedRef.current) {
+                setupGoogle();
+            }
             toast.error('Google Sign-In ainda está carregando. Tente novamente em instantes.');
             return;
         }
 
         setIsLoading(true);
         realButton.click();
-    }, [isLoading]);
+    }, [isLoading, setupGoogle]);
 
     return { triggerGoogleLogin, isLoading, containerRef };
 }

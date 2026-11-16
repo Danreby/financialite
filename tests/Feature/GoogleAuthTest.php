@@ -66,7 +66,7 @@ class GoogleAuthTest extends TestCase
 
     public function test_api_google_link_to_unverified_account_resets_password_and_tokens(): void
     {
-        $this->mockGoogle();
+        $this->mockGoogle(['nonce' => null]);
         $user = $this->unverifiedAttackerAccount();
 
         $this->postJson('/api/v1/auth/google', ['id_token' => 'x'])->assertOk();
@@ -116,13 +116,33 @@ class GoogleAuthTest extends TestCase
         $this->assertSame($nonce, session('google_nonce'));
     }
 
-    public function test_api_nonce_is_optional_but_verified_when_sent(): void
+    public function test_api_rejects_token_with_nonce_claim(): void
     {
-        $this->mockGoogle();
+        $this->mockGoogle(); // payload com nonce = token do fluxo web
+
+        $this->postJson('/api/v1/auth/google', ['id_token' => 'x'])->assertStatus(422);
+        $this->postJson('/api/v1/auth/google', ['id_token' => 'x', 'nonce' => 'nonce-ok'])->assertStatus(422);
+    }
+
+    public function test_api_accepts_token_without_nonce_claim(): void
+    {
+        $this->mockGoogle(['nonce' => null]);
 
         $this->postJson('/api/v1/auth/google', ['id_token' => 'x'])->assertOk();
-        $this->postJson('/api/v1/auth/google', ['id_token' => 'x', 'nonce' => 'nonce-ok'])->assertOk();
-        $this->postJson('/api/v1/auth/google', ['id_token' => 'x', 'nonce' => 'errado'])->assertStatus(422);
+    }
+
+    public function test_existing_different_google_id_is_not_overwritten(): void
+    {
+        $this->mockGoogle(['nonce' => null]);
+        $user = User::factory()->create(['email' => 'vitima@example.com', 'google_id' => 'outro-google']);
+
+        $this->postJson('/api/v1/auth/google', ['id_token' => 'x'])->assertStatus(409);
+        $this->assertSame('outro-google', $user->fresh()->google_id);
+
+        $this->mockGoogle();
+        $this->withSession(['google_nonce' => 'nonce-ok'])
+            ->postJson(route('google.token'), ['credential' => 'x'])->assertStatus(409);
+        $this->assertSame('outro-google', $user->fresh()->google_id);
     }
 
     public function test_user_with_null_password_logs_in_with_google_and_password_login_does_not_500(): void

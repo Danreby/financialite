@@ -257,8 +257,8 @@
       "_EyeIcon-NB_AzyEh.js"
     ]
   },
-  "_useGoogleAuth-B03uBRB0.js": {
-    "file": "assets/useGoogleAuth-B03uBRB0.js",
+  "_useGoogleAuth-D8R5tVFJ.js": {
+    "file": "assets/useGoogleAuth-D8R5tVFJ.js",
     "name": "useGoogleAuth",
     "imports": [
       "_vendor-DB_UbBTb.js"
@@ -331,7 +331,7 @@
     ]
   },
   "resources/js/Pages/Auth/Login.jsx": {
-    "file": "assets/Login-BkC9F6Cc.js",
+    "file": "assets/Login-CcASiXRQ.js",
     "name": "Login",
     "src": "resources/js/Pages/Auth/Login.jsx",
     "isDynamicEntry": true,
@@ -340,12 +340,12 @@
       "_GuestLayout-BQ2X7xqX.js",
       "_useAuthErrors-Dffd2hDW.js",
       "_AuthAlert-C39xB0Q9.js",
-      "_useGoogleAuth-B03uBRB0.js",
+      "_useGoogleAuth-D8R5tVFJ.js",
       "_EyeIcon-NB_AzyEh.js"
     ]
   },
   "resources/js/Pages/Auth/Register.jsx": {
-    "file": "assets/Register-HLVfLogY.js",
+    "file": "assets/Register-20lhUcFH.js",
     "name": "Register",
     "src": "resources/js/Pages/Auth/Register.jsx",
     "isDynamicEntry": true,
@@ -354,7 +354,7 @@
       "_GuestLayout-BQ2X7xqX.js",
       "_useAuthErrors-Dffd2hDW.js",
       "_AuthAlert-C39xB0Q9.js",
-      "_useGoogleAuth-B03uBRB0.js",
+      "_useGoogleAuth-D8R5tVFJ.js",
       "_EyeIcon-NB_AzyEh.js"
     ]
   },
@@ -387,7 +387,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-Dok918oI.js",
+    "file": "assets/Bancos-vqaAWU70.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -454,7 +454,7 @@
     ]
   },
   "resources/js/Pages/Config.jsx": {
-    "file": "assets/Config-CnqGqmBQ.js",
+    "file": "assets/Config-KxAAizSh.js",
     "name": "Config",
     "src": "resources/js/Pages/Config.jsx",
     "isDynamicEntry": true,
@@ -464,7 +464,7 @@
       "_PrimaryButton-DZvV6FhL.js",
       "_FloatLabelField-C7AT8i4P.js",
       "_EyeIcon-NB_AzyEh.js",
-      "_useGoogleAuth-B03uBRB0.js",
+      "_useGoogleAuth-D8R5tVFJ.js",
       "_BareButton-dto6OtdL.js"
     ]
   },
@@ -732,7 +732,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DDpASVXD.js",
+    "file": "assets/app-BRLLoiqP.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,

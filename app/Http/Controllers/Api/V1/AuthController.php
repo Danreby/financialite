@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Auth\GoogleAccountLinker;
+use App\Services\Auth\GoogleLinkConflictException;
 use App\Services\Auth\GoogleTokenVerifier;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -134,7 +135,6 @@ class AuthController extends Controller
     {
         $request->validate([
             'id_token' => ['required', 'string', 'max:4096'],
-            'nonce' => ['nullable', 'string', 'max:255'],
         ]);
 
         $key = 'google-login:'.$request->ip();
@@ -151,9 +151,9 @@ class AuthController extends Controller
             return $this->error('Token do Google inválido ou expirado.', 422);
         }
 
-        // Clientes mobile podem não enviar nonce; se enviarem, o id_token precisa trazê-lo igual.
-        if ($request->filled('nonce')
-            && ! hash_equals((string) $request->input('nonce'), (string) ($payload['nonce'] ?? ''))) {
+        // Clientes da API não recebem nonce do servidor: um id_token com nonce só
+        // pode ter vindo do fluxo web e não deve render um token Sanctum.
+        if (isset($payload['nonce'])) {
             return $this->error('Token do Google inválido ou expirado.', 422);
         }
 
@@ -161,7 +161,11 @@ class AuthController extends Controller
             return $this->error('Seu e-mail do Google não está verificado.', 422);
         }
 
-        $user = app(GoogleAccountLinker::class)->resolve($payload);
+        try {
+            $user = app(GoogleAccountLinker::class)->resolve($payload);
+        } catch (GoogleLinkConflictException $e) {
+            return $this->error($e->getMessage(), 409);
+        }
 
         $user->tokens()->where('name', 'mobile-app')->delete();
         $token = $user->createToken('mobile-app')->plainTextToken;

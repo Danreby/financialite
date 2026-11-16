@@ -49,6 +49,17 @@ class GoogleAccountLinker
 
     private function linkExisting(User $user, string $googleId, ?string $avatar): void
     {
+        if ($user->google_id && $user->google_id !== $googleId) {
+            throw new GoogleLinkConflictException('Esta conta já está vinculada a outra conta Google.');
+        }
+
+        DB::transaction(function () use ($user, $googleId, $avatar) {
+            $this->applyLink($user, $googleId, $avatar);
+        });
+    }
+
+    private function applyLink(User $user, string $googleId, ?string $avatar): void
+    {
         // Conta cujo e-mail nunca foi confirmado pode ter sido criada por um
         // terceiro (com senha dele) antes do dono real. Ao vincular o Google,
         // derrubamos tudo que esse terceiro possa ter.

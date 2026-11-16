@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Auth\GoogleAccountLinker;
+use App\Services\Auth\GoogleLinkConflictException;
 use App\Services\Auth\GoogleTokenVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,7 +64,11 @@ class GoogleAuthController extends Controller
             ], 422);
         }
 
-        $user = $this->linker->resolve($googleUser);
+        try {
+            $user = $this->linker->resolve($googleUser);
+        } catch (GoogleLinkConflictException $e) {
+            return response()->json(['message' => $e->getMessage()], 409);
+        }
 
         Auth::login($user, true);
         $request->session()->regenerate();
