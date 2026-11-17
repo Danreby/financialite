@@ -195,7 +195,7 @@ return [
             'default-src' => ["'self'"],
             'script-src' => ["'self'", "'nonce'", 'https://accounts.google.com/gsi/client'],
             'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://accounts.google.com/gsi/style'],
-            'img-src' => ["'self'", 'data:', 'blob:', 'https://lh3.googleusercontent.com'],
+            'img-src' => ["'self'", 'data:', 'blob:', 'https://*.googleusercontent.com'],
             'font-src' => ["'self'", 'https://fonts.bunny.net', 'https://cdn.jsdelivr.net/fontsource/', 'data:'],
             'connect-src' => ["'self'", 'https://accounts.google.com/gsi/'],
             'frame-src' => ["'self'", 'https://accounts.google.com/gsi/'],

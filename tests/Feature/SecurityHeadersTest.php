@@ -87,4 +87,49 @@ class SecurityHeadersTest extends TestCase
 
         $this->artisan('app:check-production-config')->assertExitCode(0);
     }
+
+    public function test_route_level_404_page_script_carries_the_nonce(): void
+    {
+        $this->asProduction();
+        \Illuminate\Support\Facades\Route::middleware('web')->get('/_teste-404', fn () => abort(404));
+
+        $response = $this->get('/_teste-404');
+
+        $response->assertNotFound();
+        $this->assertSame(1, preg_match("/'nonce-([^']+)'/", $response->headers->get('Content-Security-Policy'), $m));
+        preg_match_all('/<script\b[^>]*>/i', $response->getContent(), $tags);
+        $this->assertNotEmpty($tags[0]);
+        foreach ($tags[0] as $tag) {
+            $this->assertStringContainsString('nonce="'.$m[1].'"', $tag, "Script sem nonce: {$tag}");
+        }
+    }
+
+    public function test_unmatched_route_404_has_no_csp_so_inline_script_is_not_blocked(): void
+    {
+        $this->asProduction();
+
+        $response = $this->get('/rota-que-nao-existe');
+
+        $response->assertNotFound();
+        $this->assertNull($response->headers->get('Content-Security-Policy'));
+    }
+
+    public function test_preview_route_allows_self_framing_while_others_deny(): void
+    {
+        $this->asProduction();
+
+        $user = \App\Models\User::factory()->create();
+        $preview = $this->actingAs($user)->get('/anexos/999999/preview')->headers->get('Content-Security-Policy');
+        $other = $this->get('/login')->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("frame-ancestors 'self'", $preview);
+        $this->assertStringContainsString("frame-ancestors 'none'", $other);
+    }
+
+    public function test_img_src_allows_google_avatar_hosts(): void
+    {
+        $this->asProduction();
+
+        $this->assertStringContainsString('https://*.googleusercontent.com', $this->get('/login')->headers->get('Content-Security-Policy'));
+    }
 }
