@@ -9,6 +9,7 @@ use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CardApiController extends Controller
 {
@@ -47,7 +48,7 @@ class CardApiController extends Controller
 
     public function availableCards(Request $request): JsonResponse
     {
-        $cards = Card::orderBy('name')->get(['id', 'name', 'brand', 'description']);
+        $cards = Card::visibleTo($request->user()->id)->orderBy('name')->get(['id', 'name', 'brand', 'description']);
 
         return $this->success($cards);
     }
@@ -57,7 +58,14 @@ class CardApiController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'card_id' => 'required|exists:cards,id',
+            'card_id' => [
+                'required',
+                Rule::exists('cards', 'id')->where(
+                    fn ($q) => $q->whereNull('deleted_at')->where(
+                        fn ($w) => $w->whereNull('user_id')->orWhere('user_id', $user->id)
+                    )
+                ),
+            ],
             'due_day' => 'nullable|integer|min:1|max:31',
             'closing_day' => 'nullable|integer|min:1|max:31',
             'credit_limit' => 'nullable|numeric|min:0|max:999999999.99',

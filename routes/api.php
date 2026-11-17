@@ -23,11 +23,17 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('/google', [AuthController::class, 'googleLogin']);
 });
 
+// Acessíveis a usuários ainda sem e-mail verificado (o app precisa mostrar o
+// estado e permitir sair ou renovar o token).
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(function () {
-
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/user', [AuthController::class, 'user']);
     Route::post('/auth/refresh-token', [AuthController::class, 'refreshToken']);
+    Route::post('/auth/email/verification-notification', [AuthController::class, 'resendVerification'])
+        ->middleware('throttle:6,1');
+});
+
+Route::middleware(['auth:sanctum', 'verified', 'throttle:api'])->prefix('v1')->group(function () {
 
     Route::get('/dashboard', [DashboardApiController::class, 'index']);
     Route::get('/projections', [ProjectionsApiController::class, 'index']);

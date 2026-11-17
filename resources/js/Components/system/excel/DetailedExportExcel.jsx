@@ -1,9 +1,10 @@
 import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
 import DownloadIconButton from '@/Components/common/buttons/DownloadIconButton';
+import { calculateExecutiveSummary, incomeForMonth } from './detailedExportMath';
 
 
-export default function DetailedExportExcel({ data, name = "relatorio_financeiro" }) {
+export default function DetailedExportExcel({ data, name = "relatorio_financeiro", incomeSource = null }) {
 
   // Estilos reutilizáveis
   const styles = {
@@ -76,92 +77,6 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     worksheet[cellRef].s = {
       ...worksheet[cellRef].s,
       ...style
-    };
-  };
-
-  // Função para calcular resumo executivo
-  const calculateExecutiveSummary = (transactions) => {
-    const summary = {
-      total_transactions: transactions.length,
-      total_income: 0,
-      total_expenses: 0,
-      total_credit: 0,
-      total_debit: 0,
-      pending_income: 0,
-      pending_expenses: 0,
-      paid_income: 0,
-      paid_expenses: 0,
-      recurring_count: 0,
-      installments_count: 0,
-      categories_count: new Set(),
-      cards_count: new Set(),
-      period_start: null,
-      period_end: null,
-      recurring_amount: 0,
-      non_recurring_amount: 0,
-      overdue_count: 0,
-      overdue_amount: 0,
-    };
-
-    const today = new Date();
-
-    transactions.forEach(t => {
-      const amount = parseFloat(t.amount) || 0;
-      const installmentAmount = parseFloat(t.installment_amount) || amount;
-
-      // Totais por tipo
-      if (t.type === 'credit') {
-        summary.total_credit += installmentAmount;
-        summary.total_expenses += installmentAmount;
-        if (t.status === 'pending') summary.pending_expenses += installmentAmount;
-        if (t.status === 'paid') summary.paid_expenses += installmentAmount;
-        
-        // Identificar recorrentes vs não recorrentes
-        if (t.is_recurring) {
-          summary.recurring_amount += installmentAmount;
-        } else {
-          summary.non_recurring_amount += installmentAmount;
-        }
-      } else if (t.type === 'debit') {
-        summary.total_debit += amount;
-        summary.total_income += amount;
-        if (t.status === 'pending') summary.pending_income += amount;
-        if (t.status === 'paid') summary.paid_income += amount;
-      }
-
-      // Verificar vencidos
-      if (t.status === 'pending' && t.due_date) {
-        const dueDate = new Date(t.due_date);
-        if (dueDate < today) {
-          summary.overdue_count++;
-          summary.overdue_amount += (t.type === 'credit' ? installmentAmount : amount);
-        }
-      }
-
-      // Contadores
-      if (t.is_recurring) summary.recurring_count++;
-      if (t.total_installments && t.total_installments > 1) summary.installments_count++;
-      
-      if (t.category?.name) summary.categories_count.add(t.category.name);
-      if (t.bank_user?.bank?.name) summary.cards_count.add(t.bank_user.bank.name);
-
-      // Período
-      if (t.created_at) {
-        const date = new Date(t.created_at);
-        if (!summary.period_start || date < summary.period_start) summary.period_start = date;
-        if (!summary.period_end || date > summary.period_end) summary.period_end = date;
-      }
-    });
-
-    return {
-      ...summary,
-      categories_count: summary.categories_count.size,
-      cards_count: summary.cards_count.size,
-      net_balance: summary.total_income - summary.total_expenses,
-      average_income: summary.total_income / Math.max(summary.total_transactions, 1),
-      average_expense: summary.total_expenses / Math.max(summary.total_transactions, 1),
-      recurring_percentage: summary.total_expenses > 0 ? (summary.recurring_amount / summary.total_expenses) * 100 : 0,
-      non_recurring_percentage: summary.total_expenses > 0 ? (summary.non_recurring_amount / summary.total_expenses) * 100 : 0,
     };
   };
 
@@ -254,6 +169,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       
       if (!grouped[monthKey]) {
         grouped[monthKey] = {
+          key: monthKey,
           month: monthLabel,
           total_amount: 0,
           total_credit: 0,
@@ -407,17 +323,17 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     currencyCells.push([r, 1]);
     pushRow([]);
 
-    sectionHeaderRows.push(pushRow(['DÉBITO (Receitas/Débito à Vista)']));
+    sectionHeaderRows.push(pushRow(['DÉBITO (Despesas pagas à vista)']));
     r = pushRow(['Total em Débito', summary.total_debit]);
     currencyCells.push([r, 1]);
-    r = pushRow(['Débito Pago', summary.paid_income]);
+    r = pushRow(['Débito Pago', summary.paid_debit]);
     currencyCells.push([r, 1]);
-    r = pushRow(['Débito Pendente', summary.pending_income]);
+    r = pushRow(['Débito Pendente', summary.pending_debit]);
     currencyCells.push([r, 1]);
     pushRow([]);
 
     sectionHeaderRows.push(pushRow(['MÉDIAS']));
-    r = pushRow(['Ticket Médio de Receita', summary.average_income]);
+    r = pushRow(['Receita Média Mensal', summary.average_income]);
     currencyCells.push([r, 1]);
     r = pushRow(['Ticket Médio de Despesa', summary.average_expense]);
     currencyCells.push([r, 1]);
@@ -1162,16 +1078,16 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     let cumulative = 0;
 
     monthlyData.forEach(month => {
-      const income = month.total_debit;
-      const expenses = month.total_credit;
+      const income = incomeForMonth(incomeSource, month.key);
+      const expenses = month.total_credit + month.total_debit;
       const net = income - expenses;
       cumulative += net;
       const savingsRate = income > 0 ? net / income : (expenses > 0 ? -1 : 0);
       data.push([month.month, income, expenses, net, cumulative, savingsRate, month.count]);
     });
 
-    const totalIncome = monthlyData.reduce((s, m) => s + m.total_debit, 0);
-    const totalExpenses = monthlyData.reduce((s, m) => s + m.total_credit, 0);
+    const totalIncome = monthlyData.reduce((s, m) => s + incomeForMonth(incomeSource, m.key), 0);
+    const totalExpenses = monthlyData.reduce((s, m) => s + m.total_credit + m.total_debit, 0);
     const totalNet = totalIncome - totalExpenses;
     const totalSavingsRate = totalIncome > 0 ? totalNet / totalIncome : 0;
     const totalCount = monthlyData.reduce((s, m) => s + m.count, 0);
@@ -1194,7 +1110,7 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
     let runningCumulative = 0;
     monthlyData.forEach((month, rowIdx) => {
       const row = rowIdx + 1;
-      const net = month.total_debit - month.total_credit;
+      const net = incomeForMonth(incomeSource, month.key) - (month.total_credit + month.total_debit);
       runningCumulative += net;
 
       // Moeda: Receitas, Despesas, Saldo do Mês, Saldo Acumulado
@@ -1272,10 +1188,10 @@ export default function DetailedExportExcel({ data, name = "relatorio_financeiro
       }
 
       // Calcular análises
-      const summary = calculateExecutiveSummary(data);
-      const categoryData = groupByCategory(data);
+            const categoryData = groupByCategory(data);
       const bankData = groupByBank(data);
       const monthlyData = groupByMonth(data);
+      const summary = calculateExecutiveSummary(data, monthlyData, incomeSource);
       const topTransactions = getTopTransactions(data, 20);
       const recurringData = analyzeRecurring(data);
       const trendsData = analyzeTrends(monthlyData);

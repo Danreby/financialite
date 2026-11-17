@@ -37,6 +37,7 @@ class Card extends Model
     ];
 
     protected $casts = [
+        'user_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -46,6 +47,13 @@ class Card extends Model
     {
         return $query->whereHas('cardUsers', function (Builder $sub) use ($userId) {
             $sub->where('user_id', $userId);
+        });
+    }
+
+    public function scopeVisibleTo(Builder $query, int $userId): Builder
+    {
+        return $query->where(function (Builder $sub) use ($userId) {
+            $sub->whereNull('user_id')->orWhere('user_id', $userId);
         });
     }
 

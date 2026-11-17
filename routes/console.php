@@ -27,3 +27,8 @@ Schedule::command('budget:check-threshold')
     ->hourly()
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('anexos:purge')
+    ->daily()
+    ->withoutOverlapping()
+    ->runInBackground();

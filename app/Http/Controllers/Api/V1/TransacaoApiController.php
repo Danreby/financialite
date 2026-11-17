@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\InsufficientBalanceException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
@@ -105,7 +106,7 @@ class TransacaoApiController extends Controller
     public function store(FaturaStoreRequest $request): JsonResponse
     {
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')->forUser($user->id)->findOrFail($data['bank_user_id']);
@@ -128,7 +129,7 @@ class TransacaoApiController extends Controller
         $user = $request->user();
         $transacao = Transacao::findOrFail($id);
         $this->authorize('update', $transacao);
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
@@ -244,6 +245,8 @@ class TransacaoApiController extends Controller
             }
 
             return $this->success(['message' => 'Pagamentos registrados com sucesso.', 'total_paid' => $totalPaidThisRun]);
+        } catch (InsufficientBalanceException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 

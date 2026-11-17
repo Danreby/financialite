@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Google\Client as GoogleClient;
+use App\Services\Auth\GoogleAccountLinker;
+use App\Services\Auth\GoogleLinkConflictException;
+use App\Services\Auth\GoogleTokenVerifier;
+use App\Support\LoginThrottle;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,10 +62,10 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $key = 'login:'.$request->ip();
+        $throttle = LoginThrottle::for($request);
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
+        if ($throttle->tooManyAttempts()) {
+            $seconds = $throttle->availableIn();
 
             return $this->error("Muitas tentativas. Tente novamente em {$seconds} segundos.", 429);
         }
@@ -73,13 +76,13 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($request->only('email', 'password'))) {
-            RateLimiter::hit($key, 60);
+            $throttle->hit();
             throw ValidationException::withMessages([
                 'email' => ['Credenciais inválidas.'],
             ]);
         }
 
-        RateLimiter::clear($key);
+        $throttle->clear();
 
         $user = Auth::user();
         $user->tokens()->where('name', 'mobile-app')->delete();
@@ -129,6 +132,19 @@ class AuthController extends Controller
         return $this->success(['token' => $token]);
     }
 
+    public function resendVerification(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->success(['message' => 'Seu e-mail já está confirmado.']);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return $this->success(['message' => 'Enviamos um novo link de confirmação para o seu e-mail.']);
+    }
+
     public function googleLogin(Request $request): JsonResponse
     {
         $request->validate([
@@ -143,51 +159,26 @@ class AuthController extends Controller
 
         RateLimiter::hit($key, 60);
 
-        $payload = $this->verifyGoogleIdToken($request->id_token);
+        $payload = app(GoogleTokenVerifier::class)->verify($request->id_token);
 
         if (! $payload) {
             return $this->error('Token do Google inválido ou expirado.', 422);
         }
 
-        $googleId = $payload['sub'];
-        $email = strtolower(trim($payload['email']));
-        $name = $payload['name'] ?? 'Usuário';
-        $avatar = $payload['picture'] ?? null;
+        // Clientes da API não recebem nonce do servidor: um id_token com nonce só
+        // pode ter vindo do fluxo web e não deve render um token Sanctum.
+        if (isset($payload['nonce'])) {
+            return $this->error('Token do Google inválido ou expirado.', 422);
+        }
 
         if (empty($payload['email_verified'])) {
             return $this->error('Seu e-mail do Google não está verificado.', 422);
         }
 
-        $user = User::where('google_id', $googleId)->first();
-
-        if (! $user) {
-            $user = User::where('email', $email)->first();
-
-            if ($user) {
-                $user->update([
-                    'google_id' => $googleId,
-                    'avatar' => $avatar ?: $user->avatar,
-                ]);
-            } else {
-                $user = User::create([
-                    'name' => $name,
-                    'email' => $email,
-                    'google_id' => $googleId,
-                    'avatar' => $avatar,
-                    'password' => null,
-                    'email_verified_at' => now(),
-                ]);
-
-                event(new Registered($user));
-            }
-        } else {
-            if ($avatar && $avatar !== $user->avatar) {
-                $user->update(['avatar' => $avatar]);
-            }
-        }
-
-        if (! $user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
+        try {
+            $user = app(GoogleAccountLinker::class)->resolve($payload);
+        } catch (GoogleLinkConflictException $e) {
+            return $this->error($e->getMessage(), 409);
         }
 
         $user->tokens()->where('name', 'mobile-app')->delete();
@@ -208,30 +199,5 @@ class AuthController extends Controller
             ],
             'token' => $token,
         ]);
-    }
-
-    private function verifyGoogleIdToken(string $idToken): ?array
-    {
-        try {
-            $client = new GoogleClient([
-                'client_id' => config('services.google.client_id'),
-            ]);
-
-            $payload = $client->verifyIdToken($idToken);
-
-            if (! $payload) {
-                return null;
-            }
-
-            if (($payload['aud'] ?? '') !== config('services.google.client_id')) {
-                return null;
-            }
-
-            return $payload;
-        } catch (\Exception $e) {
-            report($e);
-
-            return null;
-        }
     }
 }

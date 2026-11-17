@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Services\SavingsGoalServiceInterface;
+use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Services\IncomeService;
 use App\Services\NotificationService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -107,7 +109,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse|JsonResponse
     {
         $request->user()->fill($request->validated());
 
@@ -119,16 +121,18 @@ class ProfileController extends Controller
 
         $this->notifications->info($request->user(), 'Perfil atualizado', 'Suas informações de perfil foram atualizadas.');
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Perfil atualizado com sucesso!']);
+        }
+
         return Redirect::route('profile.edit');
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(DeleteAccountRequest $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
+
+        $user->tokens()->delete();
 
         Auth::logout();
 

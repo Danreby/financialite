@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class Anexo extends Model
@@ -190,17 +192,25 @@ class Anexo extends Model
 
     public function deleteFile(): bool
     {
-        if ($this->exists) {
-            return Storage::disk($this->disk)->delete($this->full_path);
+        $apagado = Storage::disk($this->disk)->delete($this->full_path);
+
+        if (! $apagado) {
+            Log::warning('Falha ao apagar arquivo de anexo do disco.', [
+                'anexo_id' => $this->id,
+                'disk' => $this->disk,
+                'path' => $this->full_path,
+            ]);
         }
 
-        return true;
+        return $apagado;
     }
 
     protected static function booted(): void
     {
-        static::forceDeleting(function (Anexo $anexo) {
-            $anexo->deleteFile();
+        // Único ponto que apaga o arquivo: roda depois do commit, para um
+        // rollback não deixar o registro apontando para um arquivo já removido.
+        static::forceDeleted(function (Anexo $anexo) {
+            DB::afterCommit(fn () => $anexo->deleteFile());
         });
     }
 }

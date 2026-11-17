@@ -100,13 +100,15 @@ class SavingsGoal extends Model
 
     public function deposit(float $amount): self
     {
-        $this->current_amount = (float) $this->current_amount + $amount;
+        $targetCents = $this->toCents($this->target_amount);
+        $newCents = $this->toCents($this->current_amount) + $this->toCents($amount);
 
-        if ((float) $this->current_amount >= (float) $this->target_amount) {
-            $this->current_amount = (float) $this->target_amount;
+        if ($newCents >= $targetCents) {
+            $newCents = $targetCents;
             $this->completed_at = $this->completed_at ?? now();
         }
 
+        $this->current_amount = $this->fromCents($newCents);
         $this->save();
 
         return $this;
@@ -114,14 +116,25 @@ class SavingsGoal extends Model
 
     public function withdraw(float $amount): self
     {
-        $this->current_amount = max((float) $this->current_amount - $amount, 0);
+        $newCents = max($this->toCents($this->current_amount) - $this->toCents($amount), 0);
 
-        if ((float) $this->current_amount < (float) $this->target_amount) {
+        if ($newCents < $this->toCents($this->target_amount)) {
             $this->completed_at = null;
         }
 
+        $this->current_amount = $this->fromCents($newCents);
         $this->save();
 
         return $this;
+    }
+
+    private function toCents(float|int|string|null $value): int
+    {
+        return (int) round(((float) $value) * 100);
+    }
+
+    private function fromCents(int $cents): string
+    {
+        return sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
     }
 }

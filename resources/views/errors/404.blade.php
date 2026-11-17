@@ -10,7 +10,7 @@
 
     @vite(['resources/css/app.css'])
 
-    <script>
+    <script @isset($cspNonce) nonce="{{ $cspNonce }}" @endisset>
         (function () {
             try {
                 var stored = window.localStorage.getItem('theme');

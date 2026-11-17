@@ -52,13 +52,14 @@ class CardController extends Controller
 
         $user = $request->user();
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
         $card = DB::transaction(function () use ($data, $user) {
             $card = Card::create([
                 'name' => $data['name'],
                 'brand' => $data['brand'] ?? null,
                 'description' => $data['description'] ?? null,
             ]);
+            $card->forceFill(['user_id' => $user->id])->save();
 
             CardUser::create([
                 'card_id' => $card->id,
@@ -79,7 +80,7 @@ class CardController extends Controller
     {
         $user = $request->user();
 
-        $card = Card::forUser($user->id)->findOrFail($id);
+        $card = Card::forUser($user->id)->where('user_id', $user->id)->findOrFail($id);
 
         $this->authorize('update', $card);
 
@@ -123,7 +124,9 @@ class CardController extends Controller
                 ->forCard($card->id)
                 ->delete();
 
-            $card->delete();
+            if ($card->user_id === $user->id) {
+                $card->delete();
+            }
 
             $this->notifications->info($user, 'Cartão removido', 'Um cartão foi desvinculado da sua conta.');
         });
@@ -133,7 +136,7 @@ class CardController extends Controller
 
     public function list(Request $request): JsonResponse
     {
-        $cards = Card::ordered()->get(['id', 'name']);
+        $cards = Card::visibleTo($request->user()->id)->ordered()->get(['id', 'name']);
 
         return $this->success($cards);
     }
@@ -158,7 +161,7 @@ class CardController extends Controller
             $cardUser->save();
 
             $card = $cardUser->card;
-            if ($card) {
+            if ($card && $card->user_id === $user->id) {
                 $changed = false;
                 if (array_key_exists('brand', $data)) {
                     $card->brand = $data['brand'];
@@ -196,7 +199,7 @@ class CardController extends Controller
 
         $user = $request->user();
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         $exists = CardUser::forUser($user->id)
             ->forCard($data['card_id'])

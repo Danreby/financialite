@@ -43,6 +43,34 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_profile_can_be_updated_via_json_request_like_the_settings_card(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson(route('profile.update'), [
+                'name' => 'Nome Novo',
+                'email' => 'novo@example.com',
+            ]);
+
+        $response->assertOk()->assertJsonPath('message', 'Perfil atualizado com sucesso!');
+
+        $user->refresh();
+        $this->assertSame('Nome Novo', $user->name);
+        $this->assertSame('novo@example.com', $user->email);
+    }
+
+    public function test_profile_json_update_returns_validation_errors(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patchJson(route('profile.update'), ['name' => '', 'email' => 'invalido'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['name', 'email']);
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
         $user = User::factory()->create();

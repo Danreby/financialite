@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Services\BankAccountServiceInterface;
 use App\Contracts\Services\BankTransferServiceInterface;
+use App\Exceptions\BankAccountHasMovementsException;
 use App\Http\Requests\Bank\BankStoreRequest;
 use App\Http\Requests\Bank\BankTransferRequest;
 use App\Http\Requests\Bank\BankUpdateRequest;
@@ -192,6 +193,8 @@ class BankController extends Controller
             $this->notifications->info($user, 'Banco removido', 'Uma conta bancária foi removida.');
 
             return $this->success(['message' => 'Conta bancária removida.']);
+        } catch (BankAccountHasMovementsException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 

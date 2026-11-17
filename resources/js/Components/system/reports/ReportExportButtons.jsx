@@ -6,7 +6,7 @@ import Tooltip from "@/Components/common/Tooltip";
 import ExportExcel from "@/Components/system/excel/ExportExcel";
 import DetailedExportExcel from "@/Components/system/excel/DetailedExportExcel";
 
-export default function ReportExportButtons({ filters = {} }) {
+export default function ReportExportButtons({ filters = {}, incomeSource = null }) {
   const [exportData, setExportData] = useState([]);
 
   useEffect(() => {
@@ -81,6 +81,7 @@ export default function ReportExportButtons({ filters = {} }) {
       <DetailedExportExcel
         data={exportData}
         name="relatorio_financeiro"
+        incomeSource={incomeSource}
       />
     </div>
   );

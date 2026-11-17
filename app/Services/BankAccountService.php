@@ -3,9 +3,12 @@
 namespace App\Services;
 
 use App\Contracts\Services\BankAccountServiceInterface;
+use App\Exceptions\BankAccountHasMovementsException;
 use App\Models\Bank;
 use App\Models\BankLedgerEntry;
+use App\Models\BankTransfer;
 use App\Models\BankUser;
+use App\Models\Fatura;
 use App\Models\Income;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -111,7 +114,30 @@ class BankAccountService implements BankAccountServiceInterface
     public function deleteForUser(BankUser $bankUser): bool
     {
         return DB::transaction(function () use ($bankUser) {
-            return $bankUser->delete();
+            // Trava a conta para que um lançamento concorrente não escape da checagem.
+            $locked = BankUser::whereKey($bankUser->id)->lockForUpdate()->firstOrFail();
+
+            // Saldo inicial e ajustes manuais não são movimentações: saem junto com a
+            // conta (cascade). Receitas, compras no débito, pagamentos de fatura e
+            // transferências bloqueiam a exclusão. Pagamentos de fatura com débito em
+            // conta sempre geram um lançamento, então não é preciso olhar faturas
+            // (faturas.bank_user_id aponta para card_user, não para esta conta).
+            $hasMovements = BankLedgerEntry::forBankUser($locked->id)
+                ->whereNotIn('type', [
+                    BankLedgerEntry::TYPE_ACCOUNT_OPENING,
+                    BankLedgerEntry::TYPE_MANUAL_ADJUSTMENT,
+                ])
+                ->exists()
+                || BankTransfer::where(function ($query) use ($locked) {
+                    $query->where('from_bank_user_id', $locked->id)
+                        ->orWhere('to_bank_user_id', $locked->id);
+                })->exists();
+
+            if ($hasMovements) {
+                throw new BankAccountHasMovementsException;
+            }
+
+            return $locked->delete();
         });
     }
 

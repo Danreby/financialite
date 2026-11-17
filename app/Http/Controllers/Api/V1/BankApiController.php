@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Contracts\Services\BankAccountServiceInterface;
 use App\Contracts\Services\BankTransferServiceInterface;
+use App\Exceptions\BankAccountHasMovementsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bank\BankStoreRequest;
 use App\Http\Requests\Bank\BankTransferRequest;
@@ -143,6 +144,8 @@ class BankApiController extends Controller
             $this->bankAccountService->deleteForUser($bankUser);
 
             return $this->success(['message' => 'Conta bancária removida.']);
+        } catch (BankAccountHasMovementsException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 

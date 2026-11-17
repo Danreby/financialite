@@ -92,7 +92,7 @@ export default function Bancos({ stats: initialStats, activity: initialActivity 
       toast.success('Conta bancária removida.');
     } catch (error) {
       console.error(error);
-      toast.error('Não foi possível remover a conta.');
+      toast.error(error.response?.data?.error || 'Não foi possível remover a conta.');
     } finally {
       setSaving(false);
       setIsConfirmModalOpen(false);

@@ -20,19 +20,6 @@ class IncomeController extends Controller
         $this->middleware('auth');
     }
 
-    protected function normalizeInsertData(array $data): array
-    {
-        $preserveCase = ['email', 'password', 'password_confirmation', 'title', 'description'];
-
-        foreach ($data as $key => $value) {
-            if (is_string($value) && ! in_array($key, $preserveCase, true)) {
-                $data[$key] = mb_strtolower(trim($value), 'UTF-8');
-            }
-        }
-
-        return $data;
-    }
-
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Income::class);
@@ -48,7 +35,7 @@ class IncomeController extends Controller
         $this->authorize('create', Income::class);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
@@ -82,7 +69,7 @@ class IncomeController extends Controller
         $this->authorize('update', $income);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);

@@ -49,6 +49,12 @@ function formatDateBR(dateStr) {
     return d.toLocaleDateString('pt-BR');
 }
 
+const serverMessage = (err, fallback) => {
+    const data = err?.response?.data;
+    const firstValidation = data?.errors ? Object.values(data.errors)[0]?.[0] : null;
+    return firstValidation || data?.error || data?.message || fallback;
+};
+
 export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdated }) {
     const dark = isDark();
 
@@ -158,7 +164,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
             setDeletingPaymentId(null);
             onPaymentUpdated?.();
         } catch (err) {
-            const msg = err.response?.data?.message || 'Erro ao remover pagamento.';
+            const msg = serverMessage(err, 'Erro ao remover pagamento.');
             toast.error(msg);
         } finally {
             setSaving(false);
@@ -191,7 +197,7 @@ export default function BillHistoryModal({ isOpen, onClose, bill, onPaymentUpdat
             setEditingPaymentId(null);
             onPaymentUpdated?.();
         } catch (err) {
-            const msg = err.response?.data?.message || 'Erro ao atualizar pagamento.';
+            const msg = serverMessage(err, 'Erro ao atualizar pagamento.');
             toast.error(msg);
         } finally {
             setSaving(false);

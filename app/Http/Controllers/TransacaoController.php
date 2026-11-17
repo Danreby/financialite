@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InsufficientBalanceException;
 use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use App\Http\Requests\Fatura\FaturaImportRequest;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
@@ -145,7 +146,7 @@ class TransacaoController extends Controller
         $this->authorize('create', Transacao::class);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')
@@ -175,7 +176,7 @@ class TransacaoController extends Controller
 
         $this->authorize('update', $fatura);
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             $cardUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
@@ -252,6 +253,8 @@ class TransacaoController extends Controller
             return $this->success([
                 'message' => 'Pagamentos registrados com sucesso.',
             ]);
+        } catch (InsufficientBalanceException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
             $this->notifications->error($user, 'Erro ao registrar pagamentos', 'Ocorreu um erro inesperado ao registrar os pagamentos do mês.');
@@ -417,7 +420,6 @@ class TransacaoController extends Controller
         }
 
         $search = trim((string) $request->get('search', ''));
-        $search = e($search);
 
         $filterTotalsRow = Transacao::query()
             ->forUser($user->id)
@@ -427,7 +429,7 @@ class TransacaoController extends Controller
                 $q->whereBetween('created_at', [$start, $end]);
             })
             ->when($search !== '', function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%");
+                $q->titleContains($search);
             })
             ->selectRaw("
                 COUNT(*) as total_count,
@@ -455,7 +457,7 @@ class TransacaoController extends Controller
                 $q->whereBetween('created_at', [$start, $end]);
             })
             ->when($search !== '', function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%");
+                $q->titleContains($search);
             })
             ->when(true, function ($q) use ($order) {
                 $validOrders = [

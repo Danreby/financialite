@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Anexo;
 use App\Models\Transacao;
 use App\Models\User;
+use App\Services\AnexoService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -286,6 +288,123 @@ class AnexoTest extends TestCase
             ->assertJson([
                 'total_files' => 3,
             ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
+    private function storeAnexo(array $attrs = []): Anexo
+    {
+        $anexo = Anexo::factory()->create(array_merge([
+            'user_id' => $this->user->id,
+            'disk' => 'anexos',
+            'path' => 'users/'.$this->user->id.'/2026/01',
+            'stored_name' => 'arquivo.pdf',
+        ], $attrs));
+        Storage::disk('anexos')->put($anexo->full_path, 'conteudo');
+
+        return $anexo;
+    }
+
+    public function test_force_delete_removes_file(): void
+    {
+        $anexo = $this->storeAnexo();
+        $path = $anexo->full_path;
+
+        app(AnexoService::class)->forceDelete($anexo);
+
+        $this->assertDatabaseMissing('anexos', ['id' => $anexo->id]);
+        Storage::disk('anexos')->assertMissing($path);
+    }
+
+    public function test_soft_delete_keeps_file(): void
+    {
+        $anexo = $this->storeAnexo();
+
+        app(AnexoService::class)->delete($anexo);
+
+        Storage::disk('anexos')->assertExists($anexo->full_path);
+    }
+
+    public function test_failed_upload_does_not_leave_orphan_file(): void
+    {
+        $outraTransacao = Transacao::factory()->create(['user_id' => $this->otherUser->id]);
+
+        try {
+            app(AnexoService::class)->upload(
+                $this->user,
+                UploadedFile::fake()->image('x.jpg', 100, 100),
+                $outraTransacao->id
+            );
+            $this->fail('Upload deveria falhar.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+        }
+
+        $this->assertSame([], Storage::disk('anexos')->allFiles());
+        $this->assertDatabaseCount('anexos', 0);
+    }
+
+    public function test_deleting_account_removes_anexo_files(): void
+    {
+        $ativo = $this->storeAnexo(['stored_name' => 'a.pdf']);
+        $lixeira = $this->storeAnexo(['stored_name' => 'b.pdf']);
+        $lixeira->delete();
+
+        $this->user->delete();
+
+        $this->assertDatabaseCount('anexos', 0);
+        Storage::disk('anexos')->assertMissing($ativo->full_path);
+        Storage::disk('anexos')->assertMissing($lixeira->full_path);
+    }
+
+    public function test_purge_command_removes_only_old_trashed_anexos(): void
+    {
+        Carbon::setTestNow('2026-06-01 12:00:00');
+
+        $velho = $this->storeAnexo(['stored_name' => 'velho.pdf']);
+        $velho->delete();
+        Carbon::setTestNow('2026-06-20 12:00:00');
+        $recente = $this->storeAnexo(['stored_name' => 'recente.pdf']);
+        $recente->delete();
+        $ativo = $this->storeAnexo(['stored_name' => 'ativo.pdf']);
+
+        Carbon::setTestNow('2026-07-05 12:00:00'); // velho: 34 dias, recente: 15 dias
+
+        $this->artisan('anexos:purge')->assertSuccessful();
+
+        $this->assertDatabaseMissing('anexos', ['id' => $velho->id]);
+        Storage::disk('anexos')->assertMissing($velho->full_path);
+        $this->assertSoftDeleted('anexos', ['id' => $recente->id]);
+        Storage::disk('anexos')->assertExists($recente->full_path);
+        $this->assertDatabaseHas('anexos', ['id' => $ativo->id, 'deleted_at' => null]);
+        Storage::disk('anexos')->assertExists($ativo->full_path);
+    }
+
+    public function test_purge_command_handles_more_rows_than_one_chunk(): void
+    {
+        Carbon::setTestNow('2026-06-01 12:00:00');
+        Anexo::factory()->count(1005)->create([
+            'user_id' => $this->user->id,
+            'deleted_at' => now(),
+        ]);
+        Carbon::setTestNow('2026-08-01 12:00:00');
+
+        $this->artisan('anexos:purge')->assertSuccessful();
+
+        $this->assertSame(0, Anexo::withTrashed()->count());
+    }
+
+    public function test_deleting_account_handles_more_rows_than_one_chunk(): void
+    {
+        Anexo::factory()->count(1005)->create(['user_id' => $this->user->id]);
+
+        $this->user->delete();
+
+        $this->assertSame(0, Anexo::withTrashed()->count());
     }
 
     public function test_unauthenticated_user_cannot_access_anexos(): void

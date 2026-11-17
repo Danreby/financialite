@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -78,12 +79,8 @@ class ProfileApiController extends Controller
         return $this->success(['message' => 'Senha atualizada com sucesso.']);
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function destroy(DeleteAccountRequest $request): JsonResponse
     {
-        $request->validate([
-            'password' => 'required|current_password',
-        ]);
-
         $user = $request->user();
         $user->tokens()->delete();
         $user->delete();

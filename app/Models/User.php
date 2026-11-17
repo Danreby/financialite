@@ -59,6 +59,22 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Card::class, 'card_user', 'user_id', 'card_id');
     }
 
+    protected static function booted(): void
+    {
+        // O banco apaga as linhas de anexos em cascata, sem eventos de model;
+        // por isso os anexos (inclusive os da lixeira) são apagados antes,
+        // e o hook de Anexo remove os arquivos do disco.
+        static::deleting(function (User $user) {
+            Anexo::withTrashed()
+                ->where('user_id', $user->id)
+                ->lazyById()
+                ->each(function (Anexo $anexo): void {
+                    // Sem retorno: LazyCollection::each para no primeiro false.
+                    $anexo->forceDelete();
+                });
+        });
+    }
+
     public function faturas(): HasMany
     {
         return $this->hasMany(Fatura::class);

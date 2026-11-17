@@ -112,6 +112,17 @@ class Transacao extends Model
         return $this->bankUser?->card;
     }
 
+    /**
+     * Busca literal no título: %, _ e ! digitados pelo usuário não viram curinga.
+     * Usa "!" como escape porque funciona igual no MySQL e no SQLite.
+     */
+    public function scopeTitleContains($query, string $term)
+    {
+        $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
+
+        return $query->whereRaw("{$this->getTable()}.title LIKE ? ESCAPE '!'", ["%{$escaped}%"]);
+    }
+
     public function scopeForUser(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);

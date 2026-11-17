@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InsufficientBalanceException;
 use App\Http\Requests\Fatura\FaturaImportRequest;
 use App\Http\Requests\Fatura\FaturaStoreRequest;
 use App\Http\Requests\Fatura\FaturaUpdateRequest;
@@ -139,7 +140,7 @@ class FaturaController extends Controller
         $this->authorize('create', Transacao::class);
 
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (! empty($data['bank_user_id'])) {
             $cardUser = CardUser::with('card')
@@ -169,7 +170,7 @@ class FaturaController extends Controller
 
         $this->authorize('update', $fatura);
 
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
             $bankUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
@@ -246,6 +247,8 @@ class FaturaController extends Controller
             return $this->success([
                 'message' => 'Pagamentos registrados com sucesso.',
             ]);
+        } catch (InsufficientBalanceException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
             $this->notifications->error($user, 'Erro ao registrar pagamentos', 'Ocorreu um erro inesperado ao registrar os pagamentos do mês.');

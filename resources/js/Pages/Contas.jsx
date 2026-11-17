@@ -173,7 +173,8 @@ export default function Contas({ bills: initialBills = [], categories = [] }) {
 			setDeletingBill(null);
 		} catch (error) {
 			console.error(error);
-			toast.error('Não foi possível remover a conta.');
+			const data = error.response?.data;
+			toast.error(data?.error ?? data?.message ?? 'Não foi possível remover a conta.');
 		} finally {
 			setSaving(false);
 		}

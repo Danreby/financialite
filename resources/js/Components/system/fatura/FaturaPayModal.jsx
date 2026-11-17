@@ -282,7 +282,8 @@ export default function FaturaPayModal({
       if (onClose) onClose();
     } catch (error) {
       console.error(error);
-      const message = error.response?.data?.message ?? (mode === "full" ? "Erro ao registrar pagamentos do mês." : "Erro ao registrar pagamento parcial.");
+      const data = error.response?.data;
+      const message = data?.error ?? data?.message ?? (mode === "full" ? "Erro ao registrar pagamentos do mês." : "Erro ao registrar pagamento parcial.");
       toast.error(message);
       setStep("form");
     } finally {

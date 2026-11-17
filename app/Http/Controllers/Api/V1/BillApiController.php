@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Bill\BillMarkPaidRequest;
 use App\Http\Requests\Bill\BillStoreRequest;
 use App\Http\Requests\Bill\BillUpdateRequest;
 use App\Models\Bill;
@@ -43,7 +44,7 @@ class BillApiController extends Controller
     public function store(BillStoreRequest $request): JsonResponse
     {
         $user = $request->user();
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
         $data['user_id'] = $user->id;
 
         try {
@@ -61,7 +62,7 @@ class BillApiController extends Controller
     public function update(BillUpdateRequest $request, Bill $bill): JsonResponse
     {
         $this->authorize('update', $bill);
-        $data = $this->normalizeInsertData($request->validated());
+        $data = $request->validated();
 
         try {
             $bill->update($data);
@@ -121,20 +122,15 @@ class BillApiController extends Controller
         return $this->success($bills);
     }
 
-    public function markAsPaid(Request $request, Bill $bill): JsonResponse
+    public function markAsPaid(BillMarkPaidRequest $request, Bill $bill): JsonResponse
     {
         $this->authorize('update', $bill);
-
-        $request->validate([
-            'amount_paid' => 'nullable|numeric|min:0.01|max:9999999999.99',
-            'notes' => 'nullable|string|max:500',
-        ]);
 
         try {
             $result = $this->billPaymentService->markBillAsPaid(
                 $bill,
-                $request->input('amount_paid', $bill->amount),
-                $request->input('notes')
+                $request->user(),
+                $request->validated()
             );
 
             return $this->success($result);
