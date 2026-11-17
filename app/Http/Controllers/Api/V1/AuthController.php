@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Support\LoginThrottle;
 use App\Services\Auth\GoogleAccountLinker;
 use App\Services\Auth\GoogleLinkConflictException;
 use App\Services\Auth\GoogleTokenVerifier;
+use App\Support\LoginThrottle;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -130,6 +130,19 @@ class AuthController extends Controller
         $token = $user->createToken('mobile-app')->plainTextToken;
 
         return $this->success(['token' => $token]);
+    }
+
+    public function resendVerification(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->success(['message' => 'Seu e-mail já está confirmado.']);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return $this->success(['message' => 'Enviamos um novo link de confirmação para o seu e-mail.']);
     }
 
     public function googleLogin(Request $request): JsonResponse

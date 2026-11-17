@@ -3,8 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -12,10 +13,30 @@ class ApiHardeningTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    public function test_api_can_resend_verification_email(): void
     {
-        parent::setUp();
-        RateLimiter::clear('x');
+        Notification::fake();
+        $user = User::factory()->unverified()->create();
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/auth/email/verification-notification')
+            ->assertOk()
+            ->assertJsonPath('message', 'Enviamos um novo link de confirmação para o seu e-mail.');
+
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
+    }
+
+    public function test_api_resend_when_already_verified(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/auth/email/verification-notification')
+            ->assertOk()
+            ->assertJsonPath('message', 'Seu e-mail já está confirmado.');
+
+        Notification::assertNothingSent();
     }
 
     public function test_unverified_user_gets_403_on_protected_api_routes(): void

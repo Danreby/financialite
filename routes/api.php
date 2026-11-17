@@ -29,6 +29,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/user', [AuthController::class, 'user']);
     Route::post('/auth/refresh-token', [AuthController::class, 'refreshToken']);
+    Route::post('/auth/email/verification-notification', [AuthController::class, 'resendVerification'])
+        ->middleware('throttle:6,1');
 });
 
 Route::middleware(['auth:sanctum', 'verified', 'throttle:api'])->prefix('v1')->group(function () {
