@@ -18,6 +18,7 @@ class PurgeAnexosCommand extends Command
 
         Anexo::onlyTrashed()
             ->where('deleted_at', '<', $limite)
+            ->lazyById()
             ->each(function (Anexo $anexo) use (&$total) {
                 $anexo->forceDelete();
                 $total++;

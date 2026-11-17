@@ -290,6 +290,13 @@ class AnexoTest extends TestCase
             ]);
     }
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
     private function storeAnexo(array $attrs = []): Anexo
     {
         $anexo = Anexo::factory()->create(array_merge([
@@ -375,8 +382,29 @@ class AnexoTest extends TestCase
         Storage::disk('anexos')->assertExists($recente->full_path);
         $this->assertDatabaseHas('anexos', ['id' => $ativo->id, 'deleted_at' => null]);
         Storage::disk('anexos')->assertExists($ativo->full_path);
+    }
 
-        Carbon::setTestNow();
+    public function test_purge_command_handles_more_rows_than_one_chunk(): void
+    {
+        Carbon::setTestNow('2026-06-01 12:00:00');
+        Anexo::factory()->count(1005)->create([
+            'user_id' => $this->user->id,
+            'deleted_at' => now(),
+        ]);
+        Carbon::setTestNow('2026-08-01 12:00:00');
+
+        $this->artisan('anexos:purge')->assertSuccessful();
+
+        $this->assertSame(0, Anexo::withTrashed()->count());
+    }
+
+    public function test_deleting_account_handles_more_rows_than_one_chunk(): void
+    {
+        Anexo::factory()->count(1005)->create(['user_id' => $this->user->id]);
+
+        $this->user->delete();
+
+        $this->assertSame(0, Anexo::withTrashed()->count());
     }
 
     public function test_unauthenticated_user_cannot_access_anexos(): void
