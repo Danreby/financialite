@@ -5,27 +5,14 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Transacao;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use App\Security\Contracts\SecurityLoggerInterface;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 
 class InputPreservationTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // A listagem usa DATE_FORMAT do MySQL; no SQLite dos testes registramos um equivalente.
-        DB::connection()->getPdo()->sqliteCreateFunction(
-            'DATE_FORMAT',
-            fn ($date, $format) => $date === null ? null : date(str_replace(['%Y', '%m', '%d'], ['Y', 'm', 'd'], $format), strtotime($date)),
-            2
-        );
-    }
 
     public function test_transaction_title_keeps_case_and_symbols(): void
     {
