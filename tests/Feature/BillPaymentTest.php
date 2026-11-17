@@ -143,6 +143,16 @@ class BillPaymentTest extends TestCase
         )->assertNotFound();
     }
 
+    public function test_mark_as_paid_rejects_amount_above_bill_amount(): void
+    {
+        $this->actingAs($this->user)->postJson(
+            route('bills.pay', $this->bill),
+            ['due_date' => '2026-11-10', 'amount_paid' => 100.01]
+        )->assertStatus(422)->assertJsonValidationErrors('amount_paid');
+
+        $this->assertSame(0, BillPayment::count());
+    }
+
     public function test_api_pay_route_records_payment_through_the_service(): void
     {
         \Laravel\Sanctum\Sanctum::actingAs($this->user);

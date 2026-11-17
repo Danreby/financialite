@@ -16,7 +16,7 @@ class BankAccountDeletionTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const MESSAGE = 'Esta conta tem movimentações. Arquive em vez de excluir.';
+    private const MESSAGE = 'Esta conta tem movimentações e não pode ser excluída.';
 
     private User $user;
 

@@ -11,6 +11,6 @@ class BankAccountHasMovementsException extends DomainException
 {
     public function __construct()
     {
-        parent::__construct('Esta conta tem movimentações. Arquive em vez de excluir.');
+        parent::__construct('Esta conta tem movimentações e não pode ser excluída.');
     }
 }
