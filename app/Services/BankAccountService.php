@@ -3,9 +3,12 @@
 namespace App\Services;
 
 use App\Contracts\Services\BankAccountServiceInterface;
+use App\Exceptions\BankAccountHasMovementsException;
 use App\Models\Bank;
 use App\Models\BankLedgerEntry;
+use App\Models\BankTransfer;
 use App\Models\BankUser;
+use App\Models\Fatura;
 use App\Models\Income;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -111,7 +114,20 @@ class BankAccountService implements BankAccountServiceInterface
     public function deleteForUser(BankUser $bankUser): bool
     {
         return DB::transaction(function () use ($bankUser) {
-            return $bankUser->delete();
+            // Trava a conta para que um lançamento concorrente não escape da checagem.
+            $locked = BankUser::whereKey($bankUser->id)->lockForUpdate()->firstOrFail();
+
+            $hasMovements = BankLedgerEntry::forBankUser($locked->id)->exists()
+                || BankTransfer::where('from_bank_user_id', $locked->id)
+                    ->orWhere('to_bank_user_id', $locked->id)
+                    ->exists()
+                || Fatura::where('bank_user_id', $locked->id)->exists();
+
+            if ($hasMovements) {
+                throw new BankAccountHasMovementsException;
+            }
+
+            return $locked->delete();
         });
     }
 
