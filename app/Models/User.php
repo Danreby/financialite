@@ -68,7 +68,10 @@ class User extends Authenticatable implements MustVerifyEmail
             Anexo::withTrashed()
                 ->where('user_id', $user->id)
                 ->lazyById()
-                ->each(fn (Anexo $anexo) => $anexo->forceDelete());
+                ->each(function (Anexo $anexo): void {
+                    // Sem retorno: LazyCollection::each para no primeiro false.
+                    $anexo->forceDelete();
+                });
         });
     }
 
