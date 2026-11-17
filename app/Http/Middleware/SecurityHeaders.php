@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecurityHeaders
@@ -15,6 +16,7 @@ class SecurityHeaders
         $this->nonce = $this->generateNonce();
 
         view()->share('cspNonce', $this->nonce);
+        Vite::useCspNonce($this->nonce);
 
         $response = $next($request);
 
@@ -32,10 +34,9 @@ class SecurityHeaders
         $response->headers->set('Cross-Origin-Resource-Policy', 'same-origin');
         $response->headers->set('X-Permitted-Cross-Domain-Policies', 'none');
         $response->headers->set('X-DNS-Prefetch-Control', 'off');
-        $response->headers->set('X-XSS-Protection', '1; mode=block');
 
-        if (config('security.csp.enabled', false)) {
-            $this->applyContentSecurityPolicy($response);
+        if ($this->cspEnabled()) {
+            $this->applyContentSecurityPolicy($response, $request->is('anexos/*/preview'));
         }
 
         if ($request->isSecure()) {
@@ -45,9 +46,16 @@ class SecurityHeaders
         return $response;
     }
 
-    protected function applyContentSecurityPolicy(Response $response): void
+    protected function cspEnabled(): bool
     {
-        $cspHeader = $this->buildCspHeader();
+        $enabled = config('security.csp.enabled');
+
+        return $enabled === null ? app()->isProduction() : (bool) $enabled;
+    }
+
+    protected function applyContentSecurityPolicy(Response $response, bool $allowSelfFraming = false): void
+    {
+        $cspHeader = $this->buildCspHeader($allowSelfFraming);
 
         if (empty($cspHeader)) {
             return;
@@ -60,7 +68,7 @@ class SecurityHeaders
         $response->headers->set($headerName, $cspHeader);
     }
 
-    protected function buildCspHeader(): string
+    protected function buildCspHeader(bool $allowSelfFraming = false): string
     {
         $directives = config('security.csp.directives', []);
 
@@ -73,6 +81,10 @@ class SecurityHeaders
         foreach ($directives as $directive => $values) {
             if (empty($values)) {
                 continue;
+            }
+
+            if ($directive === 'frame-ancestors' && $allowSelfFraming) {
+                $values = ["'self'"];
             }
 
             $values = array_map(function ($value) {

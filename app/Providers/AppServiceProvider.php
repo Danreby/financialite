@@ -8,6 +8,7 @@ use App\Observers\TransacaoObserver;
 use Carbon\Carbon;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Vite;
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        $this->warnAboutInsecureProductionConfig();
 
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
@@ -42,5 +45,20 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Transacao::observe(TransacaoObserver::class);
+    }
+
+    /**
+     * Não derruba a aplicação, mas deixa um log critical se a produção estiver
+     * com debug ligado ou cookies de sessão sem flag Secure.
+     */
+    private function warnAboutInsecureProductionConfig(): void
+    {
+        if (! $this->app->isProduction() || $this->app->runningInConsole()) {
+            return;
+        }
+
+        if (config('app.debug') === true || config('session.secure') !== true) {
+            Log::critical('Configuração insegura em produção: APP_DEBUG deve ser false e SESSION_SECURE_COOKIE deve ser true.');
+        }
     }
 }

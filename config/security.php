@@ -176,21 +176,30 @@ return [
     | Content Security Policy
     |--------------------------------------------------------------------------
     |
-    | Configure Content Security Policy headers.
+    | 'enabled' = null liga a CSP apenas em producao (o servidor de dev do Vite
+    | usa HMR, ws:// e scripts inline sem nonce). Defina CSP_ENABLED=true/false
+    | para forcar. Em producao a politica e aplicada (nao report-only), a menos
+    | que CSP_REPORT_ONLY=true.
+    |
+    | O valor "'nonce'" e trocado por 'nonce-<aleatorio>' a cada requisicao.
+    | script-src nao tem 'unsafe-inline' nem 'unsafe-eval'. style-src mantem
+    | 'unsafe-inline' porque React, framer-motion e Chart.js escrevem atributos
+    | style inline (estilos nao executam codigo, risco bem menor).
     |
     */
     'csp' => [
-        'enabled' => env('CSP_ENABLED', false),
-        'report_only' => env('CSP_REPORT_ONLY', true),
+        'enabled' => env('CSP_ENABLED'),
+        'report_only' => env('CSP_REPORT_ONLY', false),
         'report_uri' => env('CSP_REPORT_URI', null),
         'directives' => [
             'default-src' => ["'self'"],
-            'script-src' => ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-            'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net'],
-            'style-src-elem' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net'],
-            'img-src' => ["'self'", 'data:', 'https:', 'blob:'],
-            'font-src' => ["'self'", 'https://fonts.bunny.net', 'https://fonts.gstatic.com', 'data:'],
-            'connect-src' => ["'self'", 'ws://localhost:5173', 'http://localhost:5173'],
+            'script-src' => ["'self'", "'nonce'", 'https://accounts.google.com/gsi/client'],
+            'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://accounts.google.com/gsi/style'],
+            'img-src' => ["'self'", 'data:', 'blob:', 'https://lh3.googleusercontent.com'],
+            'font-src' => ["'self'", 'https://fonts.bunny.net', 'https://cdn.jsdelivr.net/fontsource/', 'data:'],
+            'connect-src' => ["'self'", 'https://accounts.google.com/gsi/'],
+            'frame-src' => ["'self'", 'https://accounts.google.com/gsi/'],
+            // A rota anexos/*/preview troca para 'self' (SecurityHeaders).
             'frame-ancestors' => ["'none'"],
             'base-uri' => ["'self'"],
             'form-action' => ["'self'"],
