@@ -23,38 +23,44 @@ class AnexoService
     ): Anexo {
         $this->validateFile($file);
 
-        return DB::transaction(function () use ($user, $file, $transacaoId, $description) {
-            $originalName = $file->getClientOriginalName();
-            $extension = strtolower($file->getClientOriginalExtension());
-            $mimeType = $file->getMimeType();
-            $size = $file->getSize();
-            $hash = hash_file('sha256', $file->getRealPath());
+        $originalName = $file->getClientOriginalName();
+        $extension = strtolower($file->getClientOriginalExtension());
+        $mimeType = $file->getMimeType();
+        $size = $file->getSize();
+        $hash = hash_file('sha256', $file->getRealPath());
+        $storedName = $this->generateStoredName($extension);
+        $path = $this->generatePath($user->id);
 
-            $storedName = $this->generateStoredName($extension);
+        // O arquivo é gravado antes da transação e removido se ela falhar,
+        // para não sobrar arquivo órfão no disco.
+        $file->storeAs($path, $storedName, self::DEFAULT_DISK);
 
-            $path = $this->generatePath($user->id);
+        try {
+            return DB::transaction(function () use ($user, $transacaoId, $description, $originalName, $extension, $mimeType, $size, $hash, $storedName, $path) {
+                $anexo = Anexo::create([
+                    'user_id' => $user->id,
+                    'original_name' => $this->sanitizeFilename($originalName),
+                    'stored_name' => $storedName,
+                    'mime_type' => $mimeType,
+                    'extension' => $extension,
+                    'size' => $size,
+                    'disk' => self::DEFAULT_DISK,
+                    'path' => $path,
+                    'hash' => $hash,
+                    'description' => $description,
+                ]);
 
-            $file->storeAs($path, $storedName, self::DEFAULT_DISK);
+                if ($transacaoId) {
+                    $this->attachToTransacao($anexo, $transacaoId, $user->id);
+                }
 
-            $anexo = Anexo::create([
-                'user_id' => $user->id,
-                'original_name' => $this->sanitizeFilename($originalName),
-                'stored_name' => $storedName,
-                'mime_type' => $mimeType,
-                'extension' => $extension,
-                'size' => $size,
-                'disk' => self::DEFAULT_DISK,
-                'path' => $path,
-                'hash' => $hash,
-                'description' => $description,
-            ]);
+                return $anexo;
+            });
+        } catch (\Throwable $e) {
+            Storage::disk(self::DEFAULT_DISK)->delete($path.'/'.$storedName);
 
-            if ($transacaoId) {
-                $this->attachToTransacao($anexo, $transacaoId, $user->id);
-            }
-
-            return $anexo;
-        });
+            throw $e;
+        }
     }
 
     public function uploadMultiple(
