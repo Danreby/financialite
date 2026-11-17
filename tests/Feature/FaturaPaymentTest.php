@@ -172,4 +172,51 @@ class FaturaPaymentTest extends TestCase
         $this->assertSame(1, FaturaPaymentEvent::count());
         $this->assertSame(1, BankLedgerEntry::where('type', BankLedgerEntry::TYPE_INVOICE_PAYMENT)->count());
     }
+
+    public function test_pay_add_item_pay_again_debits_only_new_item(): void
+    {
+        $this->fund(200);
+        $this->purchase(100);
+
+        $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+        $this->assertEquals(100.0, (float) $this->account->fresh()->balance);
+
+        $itemB = $this->purchase(30);
+        $paidNow = $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+
+        $this->assertEquals(30.0, $paidNow);
+        $this->assertEquals(70.0, (float) $this->account->fresh()->balance);
+        $this->assertEquals(130.0, (float) Fatura::first()->total_paid);
+        $this->assertSame('paid', $itemB->fresh()->status);
+    }
+
+    public function test_pay_month_ignores_items_marked_paid_outside_the_fatura(): void
+    {
+        $this->fund(200);
+        $this->purchase(100)->update(['status' => 'paid']);
+        $this->purchase(30);
+
+        $paidNow = $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+
+        $this->assertEquals(30.0, $paidNow);
+        $this->assertEquals(170.0, (float) $this->account->fresh()->balance);
+    }
+
+    public function test_recurring_item_is_charged_once_per_month_when_new_item_is_added(): void
+    {
+        $this->fund(300);
+        $this->purchase(50)->update(['is_recurring' => true]);
+        $this->purchase(100);
+
+        $first = $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+        $this->purchase(30);
+        $second = $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+        $third = $this->service()->payMonthForUser($this->user, $this->monthKey, $this->cardUser, $this->account);
+
+        $this->assertEquals(150.0, $first);
+        $this->assertEquals(30.0, $second);
+        $this->assertEquals(0.0, $third);
+        $this->assertEquals(120.0, (float) $this->account->fresh()->balance);
+        $this->assertEquals(180.0, (float) Fatura::first()->total_paid);
+    }
 }

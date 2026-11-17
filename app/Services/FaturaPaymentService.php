@@ -11,6 +11,7 @@ use App\Models\FaturaPaymentEvent;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class FaturaPaymentService
@@ -27,14 +28,17 @@ class FaturaPaymentService
         $targetMonth = Carbon::parse($monthKey.'-01');
 
         return DB::transaction(function () use ($user, $bankUserId, $monthKey, $targetMonth, $bankAccount) {
-            $allFaturas = Transacao::with(['bankUser', 'parcelas'])
+            // Trava todas as transações do cartão, pagas ou não: o total devido do mês
+            // considera todos os itens, e o que já foi pago entra pelo total_paid.
+            $allTransacoes = Transacao::with(['bankUser', 'parcelas'])
                 ->forUser($user->id)
                 ->forBankUser($bankUserId)
-                ->notStatus('paid')
                 ->lockForUpdate()
                 ->get();
 
-            $faturas = $allFaturas->filter(fn (Transacao $transacao) => $this->billing->faturaAppliesToMonth($transacao, $targetMonth));
+            $faturas = $allTransacoes
+                ->filter(fn (Transacao $transacao) => $transacao->status !== 'paid')
+                ->filter(fn (Transacao $transacao) => $this->billing->faturaAppliesToMonth($transacao, $targetMonth));
 
             if ($faturas->isEmpty()) {
                 return 0.0;
@@ -45,16 +49,15 @@ class FaturaPaymentService
                 'month_key' => $monthKey,
                 'bank_user_id' => $bankUserId,
             ])->lockForUpdate()->first();
-            $alreadyPaidCents = $existingFatura ? $this->toCents($existingFatura->total_paid ?? 0) : 0;
 
-            $totalPaidThisRun = 0.0;
+            // Calcula antes de marcar os itens como pagos.
+            $totalCents = $this->outstandingCents($allTransacoes, $targetMonth, $monthKey, $existingFatura);
+
             foreach ($faturas as $transacao) {
-                $totalPaidThisRun += $this->billing->applyPaymentForMonth($transacao, $monthKey);
+                $this->billing->applyPaymentForMonth($transacao, $monthKey);
                 $transacao->save();
             }
 
-            // Pagamentos parciais anteriores já foram debitados: cobra só o restante.
-            $totalCents = max(0, $this->toCents($totalPaidThisRun) - $alreadyPaidCents);
             if ($totalCents <= 0) {
                 return 0.0;
             }
@@ -122,13 +125,7 @@ class FaturaPaymentService
                 ->lockForUpdate()
                 ->get();
 
-            $totalDueCents = 0;
-            foreach ($allTransacoes as $transacao) {
-                if ($this->billing->faturaAppliesToMonth($transacao, $targetMonth)) {
-                    $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $monthKey);
-                    $totalDueCents += $this->toCents($transacao->getInstallmentAmount($installmentNumber));
-                }
-            }
+            $totalDueCents = $this->monthTotalsCents($allTransacoes, $targetMonth, $monthKey)['due'];
 
             if ($totalDueCents <= 0) {
                 throw new \DomainException('Nenhuma transação encontrada para este mês.');
@@ -144,7 +141,7 @@ class FaturaPaymentService
                 'bank_user_id' => $bankUserId,
             ]);
 
-            $remainingCents = max(0, $totalDueCents - $this->toCents($faturaRecord->total_paid ?? 0));
+            $remainingCents = $this->outstandingCents($allTransacoes, $targetMonth, $monthKey, $faturaRecord);
 
             if ($remainingCents <= 0) {
                 throw new \DomainException('Esta fatura já foi totalmente paga.');
@@ -200,6 +197,73 @@ class FaturaPaymentService
                 'is_fully_paid' => $faturaRecord->paid_at !== null,
             ];
         });
+    }
+
+    /**
+     * Totais do mês em centavos, sobre todos os itens que caem nele (pagos ou não).
+     * "due" é o valor da fatura do mês; "settled" é a parte dos itens já marcados
+     * como pagos (status da transação ou da parcela do mês). Recorrentes não são
+     * marcados como pagos pelo pagamento da fatura, então só entram em "due".
+     *
+     * @return array{due: int, settled: int}
+     */
+    private function monthTotalsCents(Collection $transacoes, Carbon $targetMonth, string $monthKey): array
+    {
+        $due = 0;
+        $settled = 0;
+
+        foreach ($transacoes as $transacao) {
+            if (! $this->billing->faturaAppliesToMonth($transacao, $targetMonth)) {
+                continue;
+            }
+
+            $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $monthKey);
+            $amountCents = $this->toCents($transacao->getInstallmentAmount($installmentNumber));
+            $due += $amountCents;
+
+            if ($this->isSettledForMonth($transacao, $monthKey, $installmentNumber)) {
+                $settled += $amountCents;
+            }
+        }
+
+        return ['due' => $due, 'settled' => $settled];
+    }
+
+    /**
+     * Quanto falta pagar no mês. O já pago é o maior entre o total_paid da fatura e
+     * os itens marcados como pagos, para não cobrar de novo um item quitado fora da
+     * fatura (ex.: transação cadastrada como paga).
+     */
+    private function outstandingCents(Collection $transacoes, Carbon $targetMonth, string $monthKey, ?Fatura $fatura): int
+    {
+        $totals = $this->monthTotalsCents($transacoes, $targetMonth, $monthKey);
+        $paidCents = $this->toCents($fatura?->total_paid ?? 0);
+
+        return max(0, $totals['due'] - max($paidCents, $totals['settled']));
+    }
+
+    private function isSettledForMonth(Transacao $transacao, string $monthKey, ?int $installmentNumber): bool
+    {
+        if ($transacao->status === 'paid') {
+            return true;
+        }
+
+        if ($transacao->is_recurring) {
+            return false;
+        }
+
+        if ($installmentNumber === null) {
+            return false;
+        }
+
+        $parcela = $transacao->parcelas->firstWhere('month_key', $monthKey)
+            ?? $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
+
+        if ($parcela) {
+            return $parcela->status === 'paid';
+        }
+
+        return (int) ($transacao->current_installment ?? 0) >= $installmentNumber;
     }
 
     private function toCents(float|int|string|null $value): int
