@@ -387,7 +387,7 @@
     ]
   },
   "resources/js/Pages/Bancos.jsx": {
-    "file": "assets/Bancos-DB6ZdvfA.js",
+    "file": "assets/Bancos-DxTm5pSP.js",
     "name": "Bancos",
     "src": "resources/js/Pages/Bancos.jsx",
     "isDynamicEntry": true,
@@ -469,7 +469,7 @@
     ]
   },
   "resources/js/Pages/Contas.jsx": {
-    "file": "assets/Contas-AgWuZvUW.js",
+    "file": "assets/Contas-BKaVsG5x.js",
     "name": "Contas",
     "src": "resources/js/Pages/Contas.jsx",
     "isDynamicEntry": true,
@@ -540,7 +540,7 @@
     ]
   },
   "resources/js/Pages/Fatura.jsx": {
-    "file": "assets/Fatura-B24xTsk2.js",
+    "file": "assets/Fatura-DCC-jm5R.js",
     "name": "Fatura",
     "src": "resources/js/Pages/Fatura.jsx",
     "isDynamicEntry": true,
@@ -732,7 +732,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DWIjJney.js",
+    "file": "assets/app-BnvK-8JS.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
