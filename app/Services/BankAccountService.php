@@ -117,11 +117,21 @@ class BankAccountService implements BankAccountServiceInterface
             // Trava a conta para que um lançamento concorrente não escape da checagem.
             $locked = BankUser::whereKey($bankUser->id)->lockForUpdate()->firstOrFail();
 
-            $hasMovements = BankLedgerEntry::forBankUser($locked->id)->exists()
-                || BankTransfer::where('from_bank_user_id', $locked->id)
-                    ->orWhere('to_bank_user_id', $locked->id)
-                    ->exists()
-                || Fatura::where('bank_user_id', $locked->id)->exists();
+            // Saldo inicial e ajustes manuais não são movimentações: saem junto com a
+            // conta (cascade). Receitas, compras no débito, pagamentos de fatura e
+            // transferências bloqueiam a exclusão. Pagamentos de fatura com débito em
+            // conta sempre geram um lançamento, então não é preciso olhar faturas
+            // (faturas.bank_user_id aponta para card_user, não para esta conta).
+            $hasMovements = BankLedgerEntry::forBankUser($locked->id)
+                ->whereNotIn('type', [
+                    BankLedgerEntry::TYPE_ACCOUNT_OPENING,
+                    BankLedgerEntry::TYPE_MANUAL_ADJUSTMENT,
+                ])
+                ->exists()
+                || BankTransfer::where(function ($query) use ($locked) {
+                    $query->where('from_bank_user_id', $locked->id)
+                        ->orWhere('to_bank_user_id', $locked->id);
+                })->exists();
 
             if ($hasMovements) {
                 throw new BankAccountHasMovementsException;
