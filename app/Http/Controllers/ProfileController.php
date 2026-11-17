@@ -8,6 +8,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Services\IncomeService;
 use App\Services\NotificationService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,7 +109,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse|JsonResponse
     {
         $request->user()->fill($request->validated());
 
@@ -119,6 +120,10 @@ class ProfileController extends Controller
         $request->user()->save();
 
         $this->notifications->info($request->user(), 'Perfil atualizado', 'Suas informações de perfil foram atualizadas.');
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Perfil atualizado com sucesso!']);
+        }
 
         return Redirect::route('profile.edit');
     }

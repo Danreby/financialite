@@ -356,7 +356,7 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 					?
 				</p>
 				<p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-					Essa ação é permanente e não poderá ser desfeita.
+					A transação vai para a lixeira. Você pode restaurá-la depois.
 				</p>
 
 				<div className="mt-5 flex items-center justify-end gap-3">

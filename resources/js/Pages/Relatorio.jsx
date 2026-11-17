@@ -367,6 +367,7 @@ export default function Relatorio({ bankAccounts = [], categories = [], incomes 
 								bank_user_id: selectedBankId || undefined,
 								category_id: selectedCategoryId || undefined,
 							}}
+							incomeSource={{ monthlyRecurring: totalMonthlyIncome, oneTime: oneTimeIncomes }}
 						/>
 					</div>
 				</div>

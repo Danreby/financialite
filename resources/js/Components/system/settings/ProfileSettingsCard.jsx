@@ -17,7 +17,7 @@ export default function ProfileSettingsCard({ user, itemVariants }) {
     setErrors({})
 
     try {
-      await axios.put(route('profile.update'), { name, email })
+      await axios.patch(route('profile.update'), { name, email })
       toast.success('Perfil atualizado com sucesso!')
     } catch (error) {
       if (error.response?.data?.errors) {

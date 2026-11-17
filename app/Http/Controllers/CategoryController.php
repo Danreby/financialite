@@ -98,7 +98,7 @@ class CategoryController extends Controller
 
         $categories = Category::forUser($user->id)
             ->orderBy('name')
-            ->paginate(20, ['id', 'name', 'icon', 'color', 'type'], 'categories_page');
+            ->get(['id', 'name', 'icon', 'color', 'type']);
 
         return Inertia::render('Categorias', [
             'categories' => $categories,

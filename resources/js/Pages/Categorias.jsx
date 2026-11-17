@@ -15,11 +15,7 @@ import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer
 import { getIconEmoji, AVAILABLE_ICONS } from '@/Utils/categoryIcons';
 
 export default function Categorias({ categories }) {
-	const initialCategories = useMemo(() => {
-		if (Array.isArray(categories?.data)) return categories.data;
-		if (Array.isArray(categories)) return categories;
-		return [];
-	}, []);
+	const initialCategories = useMemo(() => (Array.isArray(categories) ? categories : []), []);
 
 	const [localCategories, setLocalCategories] = useState(initialCategories);
 	const [saving, setSaving] = useState(false);
@@ -40,12 +36,7 @@ export default function Categorias({ categories }) {
 	const [typeFilter, setTypeFilter] = useState('all');
 
 	useEffect(() => {
-		const next = Array.isArray(categories?.data)
-			? categories.data
-			: Array.isArray(categories)
-				? categories
-				: [];
-		setLocalCategories(next);
+		setLocalCategories(Array.isArray(categories) ? categories : []);
 	}, [categories]);
 
 	const filteredCategories = useMemo(() => {
