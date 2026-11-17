@@ -51,15 +51,24 @@ class SavingsGoalService implements SavingsGoalServiceInterface
     public function deposit(SavingsGoal $goal, float $amount): SavingsGoal
     {
         return DB::transaction(function () use ($goal, $amount) {
-            return $goal->deposit($amount);
+            return $this->lockFresh($goal)->deposit($amount);
         });
     }
 
     public function withdraw(SavingsGoal $goal, float $amount): SavingsGoal
     {
         return DB::transaction(function () use ($goal, $amount) {
-            return $goal->withdraw($amount);
+            return $this->lockFresh($goal)->withdraw($amount);
         });
+    }
+
+    /**
+     * Relê a meta com lock dentro da transação, para que o saldo somado seja o do banco
+     * e não o da instância carregada antes (duas requisições simultâneas não se sobrescrevem).
+     */
+    private function lockFresh(SavingsGoal $goal): SavingsGoal
+    {
+        return SavingsGoal::whereKey($goal->getKey())->lockForUpdate()->firstOrFail();
     }
 
     public function summaryForUser(int $userId): array
