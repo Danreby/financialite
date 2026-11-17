@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Bill\BillMarkPaidRequest;
+use App\Http\Requests\Bill\BillPaymentUpdateRequest;
 use App\Http\Requests\Bill\BillStoreRequest;
 use App\Http\Requests\Bill\BillUpdateRequest;
 use App\Models\Bill;
@@ -154,62 +156,38 @@ class BillController extends Controller
         return $this->success($upcomingBills);
     }
 
-    public function markAsPaid(Request $request, Bill $bill): JsonResponse
+    public function markAsPaid(BillMarkPaidRequest $request, Bill $bill): JsonResponse
     {
         $this->authorize('update', $bill);
 
-        $validated = $request->validate([
-            'due_date' => ['required', 'date'],
-            'paid_date' => ['nullable', 'date'],
-            'amount_paid' => ['nullable', 'numeric', 'min:0'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
-        $user = $request->user();
-
         $payment = $this->billPaymentService->markBillAsPaid(
             $bill,
-            $user,
-            $validated
+            $request->user(),
+            $request->validated()
         );
 
         return $this->success($payment);
     }
 
-    public function updatePayment(Request $request, Bill $bill, BillPayment $payment): JsonResponse
+    public function updatePayment(BillPaymentUpdateRequest $request, Bill $bill, int $payment): JsonResponse
     {
         $this->authorize('update', $bill);
 
-        if ($payment->bill_id !== $bill->id) {
-            abort(404);
-        }
+        $updated = $this->billPaymentService->updatePayment(
+            $bill,
+            $payment,
+            $request->user(),
+            $request->validated()
+        );
 
-        $validated = $request->validate([
-            'amount_paid' => ['required', 'numeric', 'min:0'],
-            'amount_due' => ['nullable', 'numeric', 'min:0'],
-            'paid_date' => ['nullable', 'date'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
-
-        $payment->update([
-            'amount_paid' => $validated['amount_paid'],
-            'amount_due' => $validated['amount_due'] ?? $payment->amount_due,
-            'paid_date' => $validated['paid_date'] ?? $payment->paid_date,
-            'notes' => $validated['notes'] ?? null,
-        ]);
-
-        return $this->success($payment->fresh());
+        return $this->success($updated);
     }
 
-    public function destroyPayment(Request $request, Bill $bill, BillPayment $payment): JsonResponse
+    public function destroyPayment(Request $request, Bill $bill, int $payment): JsonResponse
     {
         $this->authorize('update', $bill);
 
-        if ($payment->bill_id !== $bill->id) {
-            abort(404);
-        }
-
-        $payment->delete();
+        $this->billPaymentService->deletePayment($bill, $payment, $request->user());
 
         return $this->success(['message' => 'Pagamento removido do histórico.']);
     }

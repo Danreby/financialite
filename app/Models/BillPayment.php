@@ -13,6 +13,7 @@ class BillPayment extends Model
 
     protected $fillable = [
         'bill_id',
+        'transacao_id',
         'due_date',
         'paid_date',
         'amount_due',
