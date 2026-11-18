@@ -2,13 +2,11 @@ import { useMemo } from 'react'
 import { useTheme } from '@/Contexts/ThemeContext'
 
 export default function useThemeColors() {
-  const { themeConfig } = useTheme()
+  const { themeConfig, isDark } = useTheme()
 
   const colors = useMemo(() => themeConfig.colors, [themeConfig])
 
   const chartColors = useMemo(() => {
-    const isDark = document.documentElement.classList.contains('dark')
-    
     return {
       primary: colors.primary,
       primaryBg: isDark ? `${colors.primary}18` : `${colors.accent}08`,
@@ -27,7 +25,7 @@ export default function useThemeColors() {
         isDark ? 'rgba(14, 116, 144, 0.85)' : '#0e7490',
       ],
     }
-  }, [colors])
+  }, [colors, isDark])
 
   const cssVar = (token) => `var(--theme-${token})`
 

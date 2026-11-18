@@ -4,17 +4,13 @@ import axios from 'axios'
 import BareButton from '@/Components/common/buttons/BareButton'
 import BellIcon from '@/Components/common/icons/BellIcon'
 import SunIcon from '@/Components/common/icons/SunIcon'
+import { useTheme } from '@/Contexts/ThemeContext'
 import { AnimatePresence, motion } from 'framer-motion'
 
 export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNotifications, onOpenMobileNav }) {
   const { unreadNotificationCount: initialUnread = 0 } = usePage().props
 
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return false
-    const stored = window.localStorage.getItem('theme')
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    return stored === 'dark' || (!stored && prefersDark)
-  })
+  const { isDark, toggleColorMode } = useTheme()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(Number(initialUnread ?? 0))
   const userMenuRef = useRef(null)
@@ -27,18 +23,6 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
       setUnreadCount(incoming)
     }
   }, [initialUnread])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    if (isDark) {
-      document.documentElement.classList.add('dark')
-      window.localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      window.localStorage.setItem('theme', 'light')
-    }
-  }, [isDark])
 
   useEffect(() => {
     if (!userMenuOpen) return
@@ -94,7 +78,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
     }
   }, [])
 
-  const toggleTheme = () => setIsDark((prev) => !prev)
+  const toggleTheme = () => toggleColorMode()
   const toggleUserMenu = () => setUserMenuOpen((prev) => !prev)
 
   const initials = (() => {
@@ -114,7 +98,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
 
   return (
     <div
-      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 border-b bg-[var(--theme-bgTopbarLight)] border-[#e5e5e5] shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] text-gray-900 dark:bg-[var(--theme-bgTopbarDark)] dark:text-gray-100 dark:border-white/10 dark:shadow-[0_1px_3px_0_rgba(0,0,0,0.3)]"
+      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 border-b bg-surface-raised border-line text-content-primary"
     >
       <div className="flex items-center gap-3">
         <BareButton
@@ -152,7 +136,7 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
             onToggleNotifications()
             setUnreadCount(0)
           }}
-          className="group relative h-9 w-9 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all duration-150 active:scale-90 themed-topbar-btn"
+          className="group relative h-9 w-9 flex items-center justify-center rounded-lg border transition-colors duration-150 themed-topbar-btn"
           aria-label="Abrir notificações"
         >
           <BellIcon type={5} size={16} className="transition-transform group-hover:animate-bell-ring" />
@@ -167,8 +151,8 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
         <BareButton
           type="button"
           onClick={toggleTheme}
-          className="h-9 px-3 rounded-lg text-xs font-semibold border-2 shadow-sm transition-all duration-150 themed-topbar-btn"
-          aria-label="Alternar tema claro/escuro"
+          className="h-9 px-3 rounded-lg text-xs font-semibold border transition-colors duration-150 themed-topbar-btn"
+          aria-label={isDark ? 'Mudar para o modo claro' : 'Mudar para o modo escuro'}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.span

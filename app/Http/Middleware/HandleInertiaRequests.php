@@ -30,6 +30,7 @@ class HandleInertiaRequests extends Middleware
                     'email_verified_at' => $user->email_verified_at,
                     'is_verified' => $user->hasVerifiedEmail(),
                     'theme' => $user->theme ?? 'rose',
+                    'color_mode' => $user->color_mode,
                     'avatar' => $user->avatar,
                     'google_linked' => $user->hasGoogleLinked(),
                     'has_password' => $user->hasPasswordSet(),

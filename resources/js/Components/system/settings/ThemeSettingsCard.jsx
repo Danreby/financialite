@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useTheme, THEMES } from '@/Contexts/ThemeContext'
 
@@ -12,8 +11,7 @@ export default function ThemeSettingsCard() {
 
     setSaving(true)
     try {
-      await axios.patch(route('settings.theme'), { theme: themeKey })
-      setTheme(themeKey)
+      await setTheme(themeKey)
       toast.success('Tema atualizado!')
     } catch {
       toast.error('Erro ao atualizar tema.')
@@ -69,7 +67,6 @@ export default function ThemeSettingsCard() {
               )}
 
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">{themeConfig.icon}</span>
                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {themeConfig.label}
                 </span>

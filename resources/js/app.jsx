@@ -6,23 +6,29 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {
+    ThemeProvider,
+    applyAppearance,
+    readInitialAppearance,
+    resolveMode,
+    useTheme,
+} from './Contexts/ThemeContext';
 
-if (typeof window !== 'undefined') {
-    try {
-        const stored = window.localStorage.getItem('theme');
-        const prefersDark =
-            window.matchMedia &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches;
+function ThemedToasts() {
+    const { resolvedMode } = useTheme();
 
-        const shouldUseDark = stored === 'dark' || (!stored && prefersDark);
-
-        if (shouldUseDark) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    } catch (error) {
-    }
+    return (
+        <ToastContainer
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnHover
+            draggable
+            theme={resolvedMode}
+        />
+    );
 }
 
 const appName = import.meta.env.VITE_APP_NAME || 'Financialite';
@@ -35,25 +41,20 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.jsx'),
         ),
     setup({ el, App, props }) {
-        const root = createRoot(el);
+        const initialUser = props.initialPage?.props?.auth?.user ?? null;
 
-        root.render(
-            <>
+        // Aplica paleta e modo antes do primeiro render para não piscar.
+        const { palette, colorMode } = readInitialAppearance(initialUser);
+        applyAppearance(palette, resolveMode(colorMode));
+
+        createRoot(el).render(
+            <ThemeProvider initialUser={initialUser}>
                 <App {...props} />
-                <ToastContainer
-                    position="top-right"
-                    autoClose={4000}
-                    hideProgressBar={false}
-                    newestOnTop
-                    closeOnClick
-                    pauseOnHover
-                    draggable
-                    theme="dark"
-                />
-            </>
+                <ThemedToasts />
+            </ThemeProvider>,
         );
     },
     progress: {
-        color: '#4B5563',
+        color: 'rgb(var(--accent))',
     },
 });

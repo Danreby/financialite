@@ -35,7 +35,7 @@ const variants = {
   }),
 }
 
-export default function GuestLayout({ children, bgClassName = 'bg-gray-100 text-gray-900 dark:bg-[#070707] dark:text-gray-100' }) {
+export default function GuestLayout({ children, bgClassName = 'bg-surface-base text-content-primary' }) {
   const { component } = usePage()
   const previousComponent = usePrevious(component)
 
@@ -45,11 +45,6 @@ export default function GuestLayout({ children, bgClassName = 'bg-gray-100 text-
 
   return (
     <div className={`min-h-screen flex items-center justify-center ${bgClassName}`}>
-      <div className="absolute inset-0 overflow-hidden -z-10">
-        <div className="absolute -left-32 -top-24 h-96 w-96 rounded-full opacity-10 blur-3xl" style={{ background: 'var(--theme-primary, #7b1818)' }} />
-        <div className="absolute -right-40 bottom-8 h-80 w-80 rounded-full opacity-8 blur-3xl" style={{ background: '#2a2a2a' }} />
-      </div>
-
       <div className="w-full px-6 sm:px-0">
         <div className="flex items-center justify-center">
           <AnimatePresence mode="wait" initial={false} custom={direction}>

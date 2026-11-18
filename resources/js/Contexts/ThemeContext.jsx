@@ -1,336 +1,283 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import axios from 'axios'
+import { router } from '@inertiajs/react'
 
-const THEMES = {
+/*
+ * Aparência do app: paleta (cor de destaque) + modo claro/escuro.
+ *
+ * Fonte única de verdade:
+ * - `app.css` define os tokens neutros (superfícies, texto, linhas, cores
+ *   semânticas) e o padrão da paleta rosé, em canais RGB ("225 29 72").
+ * - Este contexto escreve só as variáveis de destaque da paleta escolhida
+ *   (`--accent*`) no <html>, já resolvidas para o modo atual, e alterna a
+ *   classe `dark`.
+ *
+ * As paletas pintam só o destaque (item ativo, botão principal, foco,
+ * destaque de gráfico). As superfícies são neutras em todas as paletas.
+ *
+ * Contraste (WCAG AA), conferido com texto branco sobre `accent`:
+ * rosé 4,70 · floresta 5,48 · ouro 5,02 · lavanda 5,70 · meia-noite 6,29 ·
+ * preto 14,68 (claro) / 7,56 (escuro). `accentText` passa de 4,5:1 sobre a
+ * superfície do cartão e sobre o fundo `accentSoft` nos dois modos.
+ */
+
+const PALETTES = {
   rose: {
     key: 'rose',
     label: 'Rosé',
-    description: 'Tema com vermelho mais forte e vibrante',
-    icon: '🌹',
-    colors: {
-      primary: '#b22222',
-      primaryHover: '#8b1a1a',
-      primaryLight: '#fecaca',
-      primaryRing: 'rgba(178, 34, 34, 0.5)',
-      accent: '#dc2626',
-      accentHover: '#b91c1c',
-      accentLight: '#fee2e2',
-      accentSecondary: '#ef4444',
-      accentTertiary: '#f87171',
-      scrollbar: '#b22222',
-      scrollbarDark: '#ef4444',
-      borderDark: 'rgba(185, 28, 28, 0.5)',
-      gradient: 'from-[#4c0404] to-transparent',
-      bgPageLight: '#fef2f2',
-      bgPageDark: '#0a0404',
-      bgSidebarLight: '#fee2e2',
-      bgSidebarDark: '#1a0606',
-      bgTopbarLight: '#fecaca',
-      bgTopbarDark: '#140505',
-      bgCardLight: '#ffffff',
-      bgCardLightHover: '#fff5f5',
-      bgButtonPrimary: '#fda4af',
-      bgButtonPrimaryHover: '#fb7185',
-      bgButtonPrimaryDark: '#be123c',
-      bgButtonPrimaryDarkHover: '#9f1239',
-    },
+    description: 'Rosa intenso',
+    light: { accent: '#E11D48', accentHover: '#BE123C', accentSoft: '#FFF1F2', accentText: '#BE123C' },
+    dark: { accent: '#E11D48', accentHover: '#BE123C', accentSoft: '#322434', accentText: '#FB7185' },
   },
-  // ocean: {
-  //   key: 'ocean',
-  //   label: 'Oceano',
-  //   description: 'Tons de azul e ciano',
-  //   icon: '🌊',
-  //   colors: {
-  //     primary: '#1e40af',
-  //     primaryHover: '#1e3a8a',
-  //     primaryLight: '#bfdbfe',
-  //     primaryRing: 'rgba(30, 64, 175, 0.5)',
-  //     accent: '#3b82f6',
-  //     accentHover: '#2563eb',
-  //     accentLight: '#dbeafe',
-  //     accentSecondary: '#60a5fa',
-  //     accentTertiary: '#93c5fd',
-  //     scrollbar: '#1e40af',
-  //     scrollbarDark: '#60a5fa',
-  //     borderDark: 'rgba(30, 58, 138, 0.5)',
-  //     gradient: 'from-[#0e2a4a] to-transparent',
-  //     bgPageLight: '#eff6ff',
-  //     bgPageDark: '#020617',
-  //     bgSidebarLight: '#dbeafe',
-  //     bgSidebarDark: '#0c1e35',
-  //     bgTopbarLight: '#bfdbfe',
-  //     bgTopbarDark: '#0a1829',
-  //     bgCardLight: '#ffffff',
-  //     bgCardLightHover: '#f0f9ff',
-  //     bgButtonPrimary: '#93c5fd',
-  //     bgButtonPrimaryHover: '#60a5fa',
-  //     bgButtonPrimaryDark: '#1e40af',
-  //     bgButtonPrimaryDarkHover: '#1e3a8a',
-  //   },
-  // },
   forest: {
     key: 'forest',
     label: 'Floresta',
-    description: 'Tons de verde e esmeralda',
-    icon: '🌿',
-    colors: {
-      primary: '#15803d',
-      primaryHover: '#166534',
-      primaryLight: '#bbf7d0',
-      primaryRing: 'rgba(21, 128, 61, 0.5)',
-      accent: '#22c55e',
-      accentHover: '#16a34a',
-      accentLight: '#dcfce7',
-      accentSecondary: '#4ade80',
-      accentTertiary: '#86efac',
-      scrollbar: '#15803d',
-      scrollbarDark: '#4ade80',
-      borderDark: 'rgba(22, 101, 52, 0.5)',
-      gradient: 'from-[#0f2d1a] to-transparent',
-      bgPageLight: '#f0fdf4',
-      bgPageDark: '#021008',
-      bgSidebarLight: '#dcfce7',
-      bgSidebarDark: '#0a2817',
-      bgTopbarLight: '#bbf7d0',
-      bgTopbarDark: '#071f12',
-      bgCardLight: '#ffffff',
-      bgCardLightHover: '#f0fdf5',
-      bgButtonPrimary: '#86efac',
-      bgButtonPrimaryHover: '#4ade80',
-      bgButtonPrimaryDark: '#15803d',
-      bgButtonPrimaryDarkHover: '#166534',
-    },
+    description: 'Verde esmeralda',
+    light: { accent: '#047857', accentHover: '#065F46', accentSoft: '#ECFDF5', accentText: '#047857' },
+    dark: { accent: '#047857', accentHover: '#065F46', accentSoft: '#163237', accentText: '#34D399' },
   },
   gold: {
     key: 'gold',
     label: 'Ouro',
-    description: 'Tons de dourado e âmbar',
-    icon: '✨',
-    colors: {
-      primary: '#d97706',
-      primaryHover: '#b45309',
-      primaryLight: '#fde68a',
-      primaryRing: 'rgba(217, 119, 6, 0.5)',
-      accent: '#f59e0b',
-      accentHover: '#d97706',
-      accentLight: '#fef3c7',
-      accentSecondary: '#eab308',
-      accentTertiary: '#ca8a04',
-      scrollbar: '#d97706',
-      scrollbarDark: '#fbbf24',
-      borderDark: 'rgba(180, 83, 9, 0.5)',
-      gradient: 'from-[#3f2a0a] to-transparent',
-      bgPageLight: '#fffbeb',
-      bgPageDark: '#0f0a02',
-      bgSidebarLight: '#fef3c7',
-      bgSidebarDark: '#1f1607',
-      bgTopbarLight: '#fde68a',
-      bgTopbarDark: '#1a1005',
-      bgCardLight: '#fffef5',
-      bgCardLightHover: '#fefce8',
-      bgButtonPrimary: '#fde68a',
-      bgButtonPrimaryHover: '#fbbf24',
-      bgButtonPrimaryDark: '#d97706',
-      bgButtonPrimaryDarkHover: '#b45309',
-    },
+    description: 'Dourado e âmbar',
+    light: { accent: '#B45309', accentHover: '#92400E', accentSoft: '#FFFBEB', accentText: '#B45309' },
+    dark: { accent: '#B45309', accentHover: '#92400E', accentSoft: '#322F27', accentText: '#FBBF24' },
   },
   lavender: {
     key: 'lavender',
     label: 'Lavanda',
-    description: 'Tons de violeta e púrpura',
-    icon: '💜',
-    colors: {
-      primary: '#7c3aed',
-      primaryHover: '#6d28d9',
-      primaryLight: '#ddd6fe',
-      primaryRing: 'rgba(124, 58, 237, 0.5)',
-      accent: '#a855f7',
-      accentHover: '#9333ea',
-      accentLight: '#ede9fe',
-      accentSecondary: '#c084fc',
-      accentTertiary: '#d8b4fe',
-      scrollbar: '#7c3aed',
-      scrollbarDark: '#c084fc',
-      borderDark: 'rgba(109, 40, 217, 0.5)',
-      gradient: 'from-[#2d0e43] to-transparent',
-      bgPageLight: '#faf5ff',
-      bgPageDark: '#0d0416',
-      bgSidebarLight: '#ede9fe',
-      bgSidebarDark: '#1e0a2e',
-      bgTopbarLight: '#ddd6fe',
-      bgTopbarDark: '#150721',
-      bgCardLight: '#ffffff',
-      bgCardLightHover: '#fbf7ff',
-      bgButtonPrimary: '#d8b4fe',
-      bgButtonPrimaryHover: '#c084fc',
-      bgButtonPrimaryDark: '#7c3aed',
-      bgButtonPrimaryDarkHover: '#6d28d9',
-    },
+    description: 'Violeta e púrpura',
+    light: { accent: '#7C3AED', accentHover: '#6D28D9', accentSoft: '#F5F3FF', accentText: '#6D28D9' },
+    dark: { accent: '#7C3AED', accentHover: '#6D28D9', accentSoft: '#262845', accentText: '#A78BFA' },
   },
   midnight: {
     key: 'midnight',
     label: 'Meia-noite',
-    description: 'Tons de índigo e azul escuro',
-    icon: '🌙',
-    colors: {
-      primary: '#4f46e5',
-      primaryHover: '#4338ca',
-      primaryLight: '#c7d2fe',
-      primaryRing: 'rgba(79, 70, 229, 0.5)',
-      accent: '#6366f1',
-      accentHover: '#4f46e5',
-      accentLight: '#e0e7ff',
-      accentSecondary: '#818cf8',
-      accentTertiary: '#a5b4fc',
-      scrollbar: '#4f46e5',
-      scrollbarDark: '#818cf8',
-      borderDark: 'rgba(67, 56, 202, 0.5)',
-      gradient: 'from-[#1a1845] to-transparent',
-      bgPageLight: '#eef2ff',
-      bgPageDark: '#050614',
-      bgSidebarLight: '#e0e7ff',
-      bgSidebarDark: '#0f1129',
-      bgTopbarLight: '#c7d2fe',
-      bgTopbarDark: '#0a0d1f',
-      bgCardLight: '#ffffff',
-      bgCardLightHover: '#f5f7ff',
-      bgButtonPrimary: '#a5b4fc',
-      bgButtonPrimaryHover: '#818cf8',
-      bgButtonPrimaryDark: '#4f46e5',
-      bgButtonPrimaryDarkHover: '#4338ca',
-    },
+    description: 'Índigo e azul escuro',
+    light: { accent: '#4F46E5', accentHover: '#4338CA', accentSoft: '#EEF2FF', accentText: '#4338CA' },
+    dark: { accent: '#4F46E5', accentHover: '#4338CA', accentSoft: '#212844', accentText: '#818CF8' },
   },
-  //  sunset: {
-  //   key: 'sunset',
-  //   label: 'Pôr do Sol',
-  //   description: 'Tons de laranja e âmbar',
-  //   icon: '🌅',
-  //   colors: {
-  //     primary: '#c2410c',
-  //     primaryHover: '#9a3412',
-  //     primaryLight: '#fed7aa',
-  //     primaryRing: 'rgba(194, 65, 12, 0.5)',
-  //     accent: '#f97316',
-  //     accentHover: '#ea580c',
-  //     accentLight: '#ffedd5',
-  //     scrollbar: '#c2410c',
-  //     scrollbarDark: '#fb923c',
-  //     borderDark: 'rgba(154, 52, 18, 0.5)',
-  //     gradient: 'from-[#3d1a0a] to-transparent',
-  //     bgPageLight: '#fff7ed',
-  //     bgPageDark: '#0c0604',
-  //     bgSidebarLight: '#ffedd5',
-  //     bgSidebarDark: '#1f1108',
-  //     bgTopbarLight: '#fed7aa',
-  //     bgTopbarDark: '#180d05',
-  //     bgCardLight: '#ffffff',
-  //     bgCardLightHover: '#fffbf5',
-  //     bgButtonPrimary: '#f97316',
-  //     bgButtonPrimaryHover: '#ea580c',
-  //     bgButtonPrimaryDark: '#c2410c',
-  //     bgButtonPrimaryDarkHover: '#9a3412',
-  //   },
-  // },
-    black: {
+  black: {
     key: 'black',
     label: 'Preto',
-    description: 'Tons de cinza e preto',
-    icon: '🖤',
-    colors: {
-      primary: '#374151',
-      primaryHover: '#1f2937',
-      primaryLight: '#d1d5db',
-      primaryRing: 'rgba(55, 65, 81, 0.5)',
-      accent: '#6b7280',
-      accentHover: '#4b5563',
-      accentLight: '#f3f4f6',
-      scrollbar: '#374151',
-      scrollbarDark: '#6b7280',
-      borderDark: 'rgba(31, 41, 55, 0.5)',
-      gradient: 'from-[#11181c] to-transparent',
-      bgPageLight: '#f9fafb',
-      bgPageDark: '#040404',
-      bgSidebarLight: '#f3f4f6', 
-      bgSidebarDark: '#1e293b',
-      bgTopbarLight: '#d1d5db',
-      bgTopbarDark: '#11181c',
-      bgCardLight: '#ffffff',
-      bgCardLightHover: '#f9fafb',
-      bgButtonPrimary: '#d1d5db',
-      bgButtonPrimaryHover: '#9ca3af',
-      bgButtonPrimaryDark: '#374151',
-      bgButtonPrimaryDarkHover: '#1f2937',
-    },
+    description: 'Grafite e preto',
+    light: { accent: '#1F2937', accentHover: '#111827', accentSoft: '#F3F4F6', accentText: '#1F2937' },
+    dark: { accent: '#4B5563', accentHover: '#374151', accentSoft: '#2C3240', accentText: '#D1D5DB' },
   },
 }
 
+const DEFAULT_PALETTE = 'rose'
+const COLOR_MODES = ['light', 'dark', 'system']
+
+// Chaves de localStorage herdadas das versões anteriores; continuam válidas.
+const PALETTE_STORAGE_KEY = 'app-theme'
+const MODE_STORAGE_KEY = 'theme' // 'light' | 'dark'; ausente = seguir o sistema
+
+const SURFACE_BASE = { light: '#F8FAFC', dark: '#0B0F14' }
+
+function hexToChannels(hex) {
+  const h = hex.replace('#', '')
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(' ')
+}
+
+function hexToRgba(hex, alpha) {
+  return `rgba(${hexToChannels(hex).split(' ').join(', ')}, ${alpha})`
+}
+
+// Formato antigo (`colors` em hex) para quem ainda lê a paleta em JS:
+// gráficos (useThemeColors) e o seletor em Configurações.
+function legacyColors(palette) {
+  const { light } = palette
+  return {
+    primary: light.accentHover,
+    primaryHover: light.accentHover,
+    primaryLight: light.accentSoft,
+    primaryRing: hexToRgba(light.accent, 0.35),
+    accent: light.accent,
+    accentHover: light.accentHover,
+    accentLight: light.accentSoft,
+  }
+}
+
+const THEMES = Object.fromEntries(
+  Object.entries(PALETTES).map(([key, palette]) => [key, { ...palette, colors: legacyColors(palette) }]),
+)
+
+function safeGet(key) {
+  try {
+    return window.localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeSet(key, value) {
+  try {
+    if (value === null) window.localStorage.removeItem(key)
+    else window.localStorage.setItem(key, value)
+  } catch {
+    // modo privado ou armazenamento bloqueado: segue só com o estado em memória
+  }
+}
+
+function systemPrefersDark() {
+  return typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+export function resolveMode(colorMode) {
+  if (colorMode === 'dark' || colorMode === 'light') return colorMode
+  return systemPrefersDark() ? 'dark' : 'light'
+}
+
+/**
+ * Lê a preferência inicial: servidor (usuário logado) > cache local > padrão.
+ * `color_mode` nulo no servidor significa "seguir o sistema", mas uma escolha
+ * antiga guardada só no navegador (chave `theme`) ainda é respeitada.
+ */
+export function readInitialAppearance(user) {
+  const storedPalette = typeof window !== 'undefined' ? safeGet(PALETTE_STORAGE_KEY) : null
+  const storedMode = typeof window !== 'undefined' ? safeGet(MODE_STORAGE_KEY) : null
+
+  const palette = (user?.theme && PALETTES[user.theme] && user.theme)
+    || (storedPalette && PALETTES[storedPalette] && storedPalette)
+    || DEFAULT_PALETTE
+
+  const colorMode = (user?.color_mode === 'light' || user?.color_mode === 'dark') ? user.color_mode
+    : (storedMode === 'light' || storedMode === 'dark') ? storedMode
+    : 'system'
+
+  return { palette, colorMode }
+}
+
+/** Escreve as variáveis da paleta e a classe `dark` no <html>. Sem React, para rodar antes do primeiro render. */
+export function applyAppearance(paletteKey, mode) {
+  if (typeof document === 'undefined') return
+  const palette = PALETTES[paletteKey] || PALETTES[DEFAULT_PALETTE]
+  const values = palette[mode] || palette.light
+  const root = document.documentElement
+
+  root.classList.toggle('dark', mode === 'dark')
+  root.setAttribute('data-theme', palette.key)
+  root.setAttribute('data-color-mode', mode)
+
+  root.style.setProperty('--accent', hexToChannels(values.accent))
+  root.style.setProperty('--accent-hover', hexToChannels(values.accentHover))
+  root.style.setProperty('--accent-soft', hexToChannels(values.accentSoft))
+  root.style.setProperty('--accent-text', hexToChannels(values.accentText))
+  // Anel de foco: no escuro usa o tom claro para passar de 3:1 sobre o grafite.
+  root.style.setProperty('--accent-ring', hexToChannels(mode === 'dark' ? values.accentText : values.accent))
+
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) meta.setAttribute('content', SURFACE_BASE[mode] || SURFACE_BASE.light)
+}
+
 const ThemeContext = createContext({
-  theme: 'rose',
-  themeConfig: THEMES.rose,
+  theme: DEFAULT_PALETTE,
+  themeConfig: THEMES[DEFAULT_PALETTE],
   themes: THEMES,
-  setTheme: () => {},
+  colorMode: 'system',
+  resolvedMode: 'light',
+  isDark: false,
+  setTheme: async () => {},
+  setColorMode: async () => {},
+  toggleColorMode: async () => {},
 })
 
-export function ThemeProvider({ children, initialTheme = 'rose' }) {
-  const [theme, setThemeState] = useState(() => {
-    if (typeof window === 'undefined') return initialTheme
-    const stored = window.localStorage.getItem('app-theme')
-    return stored && THEMES[stored] ? stored : initialTheme
-  })
+function persist(changes, isAuthenticated) {
+  if (!isAuthenticated) return Promise.resolve()
+  return axios.patch(route('settings.theme'), changes)
+}
 
-  const applyTheme = useCallback((themeKey) => {
-    const config = THEMES[themeKey]
-    if (!config) return
+export function ThemeProvider({ children, initialUser = null }) {
+  const initial = useMemo(() => readInitialAppearance(initialUser), []) // eslint-disable-line react-hooks/exhaustive-deps
+  const [theme, setThemeState] = useState(initial.palette)
+  const [colorMode, setColorModeState] = useState(initial.colorMode)
+  const [systemDark, setSystemDark] = useState(systemPrefersDark)
+  const userRef = useRef(initialUser)
 
-    const root = document.documentElement
-    root.setAttribute('data-theme', themeKey)
-
-    Object.entries(config.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--theme-${key}`, value)
-    })
-
-    const syncThemeColorMeta = () => {
-      const meta = document.querySelector('meta[name="theme-color"]')
-      if (!meta) return
-      const isDark = root.classList.contains('dark')
-      meta.setAttribute('content', isDark ? config.colors.bgPageDark : config.colors.bgPageLight)
-    }
-
-    syncThemeColorMeta()
-
-    const observer = new MutationObserver(syncThemeColorMeta)
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
-    return () => observer.disconnect()
-  }, [])
+  const resolvedMode = colorMode === 'system' ? (systemDark ? 'dark' : 'light') : colorMode
 
   useEffect(() => {
-    return applyTheme(theme)
-  }, [theme, applyTheme])
+    applyAppearance(theme, resolvedMode)
+  }, [theme, resolvedMode])
 
-  const setTheme = useCallback((themeKey) => {
-    if (!THEMES[themeKey]) return
-    setThemeState(themeKey)
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('app-theme', themeKey)
+  // Acompanha a troca de tema do sistema enquanto o modo for "sistema".
+  useEffect(() => {
+    if (!window.matchMedia) return undefined
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = (event) => setSystemDark(event.matches)
+    mq.addEventListener?.('change', onChange)
+    return () => mq.removeEventListener?.('change', onChange)
+  }, [])
+
+  // O provider fica acima do Inertia; a cada navegação pega o usuário atual
+  // para aplicar o que está salvo no servidor (ex.: logo após o login).
+  useEffect(() => {
+    return router.on('navigate', (event) => {
+      const user = event.detail?.page?.props?.auth?.user ?? null
+      const previous = userRef.current
+      userRef.current = user
+      if (!user || previous?.id === user.id) return
+
+      const next = readInitialAppearance(user)
+      setThemeState(next.palette)
+      safeSet(PALETTE_STORAGE_KEY, next.palette)
+      if (user.color_mode === 'light' || user.color_mode === 'dark') {
+        setColorModeState(user.color_mode)
+        safeSet(MODE_STORAGE_KEY, user.color_mode)
+      }
+    })
+  }, [])
+
+  const setTheme = useCallback(async (key) => {
+    if (!PALETTES[key]) return
+    const previous = theme
+    setThemeState(key)
+    safeSet(PALETTE_STORAGE_KEY, key)
+    try {
+      await persist({ theme: key }, !!userRef.current)
+    } catch (error) {
+      setThemeState(previous)
+      safeSet(PALETTE_STORAGE_KEY, previous)
+      throw error
+    }
+  }, [theme])
+
+  const setColorMode = useCallback(async (mode) => {
+    if (!COLOR_MODES.includes(mode)) return
+    setColorModeState(mode)
+    safeSet(MODE_STORAGE_KEY, mode === 'system' ? null : mode)
+    try {
+      await persist({ color_mode: mode === 'system' ? null : mode }, !!userRef.current)
+    } catch {
+      // A troca já valeu nesta sessão e ficou no cache local; o servidor
+      // recebe a próxima mudança. Não vale interromper o usuário por isso.
     }
   }, [])
 
-  const value = {
-    theme,
-    themeConfig: THEMES[theme] || THEMES.rose,
-    themes: THEMES,
-    setTheme,
-  }
-
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+  const toggleColorMode = useCallback(
+    () => setColorMode(resolvedMode === 'dark' ? 'light' : 'dark'),
+    [resolvedMode, setColorMode],
   )
+
+  const value = useMemo(() => ({
+    theme,
+    themeConfig: THEMES[theme] || THEMES[DEFAULT_PALETTE],
+    themes: THEMES,
+    colorMode,
+    resolvedMode,
+    isDark: resolvedMode === 'dark',
+    setTheme,
+    setColorMode,
+    toggleColorMode,
+  }), [theme, colorMode, resolvedMode, setTheme, setColorMode, toggleColorMode])
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {
   return useContext(ThemeContext)
 }
 
-export { THEMES }
+export { THEMES, PALETTES }
 export default ThemeContext

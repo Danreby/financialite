@@ -42,7 +42,7 @@ export default function Sidebar({ open: openProp = true, setOpen: setOpenProp })
       initial={false}
       animate={{ width: isOpen ? 220 : 72 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className={`fixed left-0 top-0 h-screen border-r z-40 ${isOpen ? 'overflow-hidden' : 'overflow-visible'} bg-[var(--theme-bgSidebarLight)] border-[#e5e5e5] shadow-[2px_0_10px_0_rgba(0,0,0,0.15)] dark:bg-[var(--theme-bgSidebarDark)] dark:border-white/10 dark:shadow-[2px_0_10px_0_rgba(0,0,0,0.4)]`}
+      className={`fixed left-0 top-0 h-screen border-r z-40 ${isOpen ? 'overflow-hidden' : 'overflow-visible'} bg-surface-raised border-line`}
       aria-expanded={isOpen}
     >
       <div className="h-full flex flex-col">
