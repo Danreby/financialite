@@ -61,6 +61,8 @@
 		--theme-accent: rgb(var(--accent));
 		--theme-accentHover: rgb(var(--accent-hover));
 		--theme-accentLight: rgb(var(--accent-soft));
+		/* Destaque como cor de texto: passa de 4,5:1 nos dois modos. */
+		--theme-accentText: rgb(var(--accent-text));
 		--theme-scrollbar: rgb(var(--line-strong));
 		--theme-scrollbarDark: rgb(var(--line-strong));
 		--theme-borderDark: rgb(var(--line));

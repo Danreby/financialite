@@ -100,7 +100,7 @@ function PartialAmountInput({ value, onChange, remaining, totalSpent, totalPaid,
               key={p.label}
               type="button"
               onClick={() => onChange(String(p.value))}
-              className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[11px] font-semibold text-gray-600 dark:text-gray-300 hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition"
+              className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[11px] font-semibold text-gray-600 dark:text-gray-300 hover:border-[var(--theme-accent)] hover:text-[var(--theme-accentText)] transition"
             >
               {p.label} · {formatCurrency(p.value)}
             </button>

@@ -45,7 +45,7 @@ export default function SimulationItem({ simulation, onRemove }) {
                             className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
                             style={isCredit ? {
                                 backgroundColor: 'color-mix(in srgb, var(--theme-accent) 13%, transparent)',
-                                color: 'var(--theme-accent)',
+                                color: 'var(--theme-accentText)',
                             } : {
                                 backgroundColor: 'rgba(249,115,22,0.13)',
                                 color: 'rgba(234,88,12,1)',

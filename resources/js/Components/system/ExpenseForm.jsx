@@ -245,8 +245,8 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
                 activeBorder: "border-[var(--theme-accent)]",
                 activeBg: "bg-[var(--theme-accent)]/5 dark:bg-[var(--theme-accent)]/10",
                 activeDot: "bg-[var(--theme-accent)]",
-                activeTitle: "text-[var(--theme-accent)]",
-                activeSub: "text-[var(--theme-accent)]/60",
+                activeTitle: "text-[var(--theme-accentText)]",
+                activeSub: "text-[var(--theme-accentText)]/60",
               },
             ].map((t) => (
               <button
@@ -337,7 +337,7 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
                   }`}
                 />
                 {showInstallmentPreview && (
-                  <p className="mt-1.5 text-[11px] font-semibold text-[var(--theme-accent)]">
+                  <p className="mt-1.5 text-[11px] font-semibold text-[var(--theme-accentText)]">
                     ≈ R${" "}
                     {perInstallment.toLocaleString("pt-BR", {
                       minimumFractionDigits: 2,
@@ -361,7 +361,7 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
                       : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f]"
                   }`}
                 >
-                  <span className={`flex items-center gap-2 text-xs font-medium ${isRecurring ? "text-[var(--theme-accent)]" : "text-gray-500 dark:text-gray-400"}`}>
+                  <span className={`flex items-center gap-2 text-xs font-medium ${isRecurring ? "text-[var(--theme-accentText)]" : "text-gray-500 dark:text-gray-400"}`}>
                     <RefreshCw className="h-3.5 w-3.5" />
                     {isRecurring ? "Mensal automático" : "Ativar recorrência"}
                   </span>

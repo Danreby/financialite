@@ -260,7 +260,7 @@ export default function MonthlySummaryChart({ data = [], onMonthClick, selectedM
                 style={
                   mode === m.value
                     ? { backgroundColor: 'var(--theme-accent)', color: '#fff' }
-                    : { color: 'var(--theme-primary)' }
+                    : { color: 'var(--theme-accentText)' }
                 }
               >
                 {m.label}

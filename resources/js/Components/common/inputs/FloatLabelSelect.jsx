@@ -33,7 +33,7 @@ export default function FloatLabelSelect({
     ].join(' ');
 
     const labelColorClass = isFocused
-        ? 'text-[var(--theme-accent)]'
+        ? 'text-[var(--theme-accentText)]'
         : 'text-gray-500 dark:text-gray-400';
 
     return (

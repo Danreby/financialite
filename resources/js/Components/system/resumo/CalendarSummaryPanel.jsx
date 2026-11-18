@@ -80,7 +80,7 @@ export default function CalendarSummaryPanel({ data = {} }) {
     <div className="flex flex-col gap-4">
       <div className="themed-card rounded-2xl p-4 sm:p-5">
         <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
-          <BarChart3 className="w-4 h-4 text-[var(--theme-accent)]" />
+          <BarChart3 className="w-4 h-4 text-[var(--theme-accentText)]" />
           Resumo do Mês
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -117,7 +117,7 @@ export default function CalendarSummaryPanel({ data = {} }) {
       {calendarStats && (
         <div className="themed-card rounded-2xl p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
-            <TrendingDown className="w-4 h-4 text-[var(--theme-accent)]" />
+            <TrendingDown className="w-4 h-4 text-[var(--theme-accentText)]" />
             Análise do Calendário
           </h3>
           <div className="space-y-2">
@@ -155,7 +155,7 @@ export default function CalendarSummaryPanel({ data = {} }) {
       {topCategories.length > 0 && (
         <div className="themed-card rounded-2xl p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
-            <TrendingUp className="w-4 h-4 text-[var(--theme-accent)]" />
+            <TrendingUp className="w-4 h-4 text-[var(--theme-accentText)]" />
             Top Categorias
           </h3>
           <div className="space-y-2">
@@ -199,7 +199,7 @@ export default function CalendarSummaryPanel({ data = {} }) {
       {topCards.length > 0 && (
         <div className="themed-card rounded-2xl p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
-            <CreditCard className="w-4 h-4 text-[var(--theme-accent)]" />
+            <CreditCard className="w-4 h-4 text-[var(--theme-accentText)]" />
             Cartões
           </h3>
           <div className="space-y-2">

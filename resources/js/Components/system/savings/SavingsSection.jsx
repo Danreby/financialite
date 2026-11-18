@@ -110,7 +110,7 @@ export default function SavingsSection({
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Total guardado:{' '}
-            <span className="font-semibold" style={{ color: 'var(--theme-accent, #22c55e)' }}>
+            <span className="font-semibold" style={{ color: 'var(--theme-accentText)' }}>
               {formatCurrencyBRL(summary.total_saved || 0)}
             </span>
             {' · '}{summary.active_count || 0} meta(s) ativa(s)
@@ -127,7 +127,7 @@ export default function SavingsSection({
             <span className="text-lg">🎯</span>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Total guardado</p>
-              <p className="text-sm font-bold" style={{ color: 'var(--theme-accent, #22c55e)' }}>
+              <p className="text-sm font-bold" style={{ color: 'var(--theme-accentText)' }}>
                 {formatCurrencyBRL(summary.total_saved || 0)}
               </p>
             </div>

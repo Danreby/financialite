@@ -168,7 +168,7 @@ export default function ResumoReceitasTab({
                   <button
                     type="button"
                     onClick={() => setShowForm(true)}
-                    className="mt-3 text-sm font-medium text-[var(--theme-accent)] hover:underline"
+                    className="mt-3 text-sm font-medium text-[var(--theme-accentText)] hover:underline"
                   >
                     Cadastrar primeira renda
                   </button>

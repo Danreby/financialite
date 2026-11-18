@@ -206,7 +206,7 @@ export default function Transacao({ transactions, bankAccounts = [], categories 
 							<div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800/60">
 								<div className="flex items-center gap-3 flex-1">
 									<div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--theme-accent)]/10">
-										<TrendingDown className="h-5 w-5 text-[var(--theme-accent)]" />
+										<TrendingDown className="h-5 w-5 text-[var(--theme-accentText)]" />
 									</div>
 									<div>
 										<p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">

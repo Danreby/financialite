@@ -104,4 +104,15 @@ class ThemePreferenceTest extends TestCase
         $this->patchJson('/settings/theme', ['color_mode' => 'dark'])
             ->assertUnauthorized();
     }
+
+    public function test_first_paint_uses_saved_mode_and_palette(): void
+    {
+        $user = User::factory()->create(['theme' => 'forest', 'color_mode' => 'dark']);
+
+        $html = $this->actingAs($user)->get('/dashboard')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/<html[^>]*class="dark"/', $html);
+        $this->assertStringContainsString('var key = "forest";', $html);
+        $this->assertStringContainsString('"accentText":"#2DD4BF"', $html);
+    }
 }

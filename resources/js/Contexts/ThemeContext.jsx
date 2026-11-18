@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { router } from '@inertiajs/react'
+import PALETTE_DATA from '@/Constants/palettes.json'
 
 /*
  * Aparência do app: paleta (cor de destaque) + modo claro/escuro.
@@ -16,55 +17,18 @@ import { router } from '@inertiajs/react'
  * destaque de gráfico). As superfícies são neutras em todas as paletas.
  *
  * Contraste (WCAG AA), conferido com texto branco sobre `accent`:
- * rosé 4,70 · floresta 5,48 · ouro 5,02 · lavanda 5,70 · meia-noite 6,29 ·
- * preto 14,68 (claro) / 7,56 (escuro). `accentText` passa de 4,5:1 sobre a
+ * rosé 4,70 · floresta (verde-azulado) 5,47 · ouro (bronze) 4,86 ·
+ * lavanda 5,70 · meia-noite 6,29 · preto 14,68 (claro) / 7,56 (escuro).
+ * Floresta e ouro ficam longe do verde de sucesso e do âmbar de alerta,
+ * para a paleta nunca se confundir com um estado. `accentText` passa de 4,5:1 sobre a
  * superfície do cartão e sobre o fundo `accentSoft` nos dois modos.
  */
 
-const PALETTES = {
-  rose: {
-    key: 'rose',
-    label: 'Rosé',
-    description: 'Rosa intenso',
-    light: { accent: '#E11D48', accentHover: '#BE123C', accentSoft: '#FFF1F2', accentText: '#BE123C' },
-    dark: { accent: '#E11D48', accentHover: '#BE123C', accentSoft: '#322434', accentText: '#FB7185' },
-  },
-  forest: {
-    key: 'forest',
-    label: 'Floresta',
-    description: 'Verde esmeralda',
-    light: { accent: '#047857', accentHover: '#065F46', accentSoft: '#ECFDF5', accentText: '#047857' },
-    dark: { accent: '#047857', accentHover: '#065F46', accentSoft: '#163237', accentText: '#34D399' },
-  },
-  gold: {
-    key: 'gold',
-    label: 'Ouro',
-    description: 'Dourado e âmbar',
-    light: { accent: '#B45309', accentHover: '#92400E', accentSoft: '#FFFBEB', accentText: '#B45309' },
-    dark: { accent: '#B45309', accentHover: '#92400E', accentSoft: '#322F27', accentText: '#FBBF24' },
-  },
-  lavender: {
-    key: 'lavender',
-    label: 'Lavanda',
-    description: 'Violeta e púrpura',
-    light: { accent: '#7C3AED', accentHover: '#6D28D9', accentSoft: '#F5F3FF', accentText: '#6D28D9' },
-    dark: { accent: '#7C3AED', accentHover: '#6D28D9', accentSoft: '#262845', accentText: '#A78BFA' },
-  },
-  midnight: {
-    key: 'midnight',
-    label: 'Meia-noite',
-    description: 'Índigo e azul escuro',
-    light: { accent: '#4F46E5', accentHover: '#4338CA', accentSoft: '#EEF2FF', accentText: '#4338CA' },
-    dark: { accent: '#4F46E5', accentHover: '#4338CA', accentSoft: '#212844', accentText: '#818CF8' },
-  },
-  black: {
-    key: 'black',
-    label: 'Preto',
-    description: 'Grafite e preto',
-    light: { accent: '#1F2937', accentHover: '#111827', accentSoft: '#F3F4F6', accentText: '#1F2937' },
-    dark: { accent: '#4B5563', accentHover: '#374151', accentSoft: '#2C3240', accentText: '#D1D5DB' },
-  },
-}
+// Valores das paletas: resources/js/Constants/palettes.json (também lido
+// pelo Blade para pintar a primeira tela já com a paleta certa).
+const PALETTES = Object.fromEntries(
+  Object.entries(PALETTE_DATA).map(([key, palette]) => [key, { key, ...palette }]),
+)
 
 const DEFAULT_PALETTE = 'rose'
 const COLOR_MODES = ['light', 'dark', 'system']
@@ -222,10 +186,11 @@ export function ThemeProvider({ children, initialUser = null }) {
       const next = readInitialAppearance(user)
       setThemeState(next.palette)
       safeSet(PALETTE_STORAGE_KEY, next.palette)
-      if (user.color_mode === 'light' || user.color_mode === 'dark') {
-        setColorModeState(user.color_mode)
-        safeSet(MODE_STORAGE_KEY, user.color_mode)
-      }
+      // Sem modo salvo no servidor, segue o sistema: o cache do usuário
+      // anterior neste navegador não vale para quem acabou de entrar.
+      const mode = user.color_mode === 'light' || user.color_mode === 'dark' ? user.color_mode : 'system'
+      setColorModeState(mode)
+      safeSet(MODE_STORAGE_KEY, mode === 'system' ? null : mode)
     })
   }, [])
 

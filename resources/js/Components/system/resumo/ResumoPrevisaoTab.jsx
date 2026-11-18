@@ -50,7 +50,7 @@ export default function ResumoPrevisaoTab({ data, isLoading }) {
   if (isLoading || !data) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-accent)]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-accentText)]" />
       </div>
     )
   }
@@ -68,10 +68,10 @@ export default function ResumoPrevisaoTab({ data, isLoading }) {
         />
         <div className="relative flex flex-col gap-1">
           <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
-            <Calculator className="w-4 h-4" style={{ color: 'var(--theme-accent)' }} />
+            <Calculator className="w-4 h-4" style={{ color: 'var(--theme-accentText)' }} />
             Total Previsto para {data.month_label}
           </div>
-          <span className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: 'var(--theme-accent)' }}>
+          <span className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: 'var(--theme-accentText)' }}>
             {formatCurrencyBRL(grandTotal)}
           </span>
           <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -183,7 +183,7 @@ export default function ResumoPrevisaoTab({ data, isLoading }) {
       <div className="themed-card rounded-2xl p-4 sm:p-5">
         <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
           <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accent)]" />
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accentText)]" />
             Média de Categorias no Débito (últimos 4 meses)
           </h2>
           <label className="flex items-center gap-2 cursor-pointer select-none">

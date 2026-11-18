@@ -24,7 +24,7 @@ export default function ThemeSettingsCard() {
     <div className="bg-white dark:bg-[#0b0b0b] rounded-2xl shadow-md border border-gray-50/90 dark:border-[var(--theme-accent,theme(colors.rose.950/0.5))] ring-1 ring-black/5 dark:ring-black/30 p-6 mb-6">
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <svg className="w-5 h-5" style={{ color: 'var(--theme-accent, #f43f5e)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" style={{ color: 'var(--theme-accentText)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
           </svg>
           Aparência
