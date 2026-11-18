@@ -84,7 +84,7 @@ export default function NotificationItem({ notification, onMarkAsRead }) {
         <p className="mt-1 text-[0.63rem] text-gray-400 dark:text-gray-600">
           {formatRelativeTime(notification.created_at)}
           {isUnread && (
-            <span className="ml-1 text-[0.63rem] text-[var(--theme-accentText)] opacity-70">
+            <span className="ml-1 text-[0.63rem] text-[var(--theme-accentText)]">
               · toque para marcar como lida
             </span>
           )}

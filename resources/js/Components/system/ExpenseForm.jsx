@@ -246,7 +246,7 @@ export default function ExpenseForm({ isOpen, onClose, onSuccess, bankAccounts =
                 activeBg: "bg-[var(--theme-accent)]/5 dark:bg-[var(--theme-accent)]/10",
                 activeDot: "bg-[var(--theme-accent)]",
                 activeTitle: "text-[var(--theme-accentText)]",
-                activeSub: "text-[var(--theme-accentText)]/60",
+                activeSub: "text-content-muted",
               },
             ].map((t) => (
               <button
