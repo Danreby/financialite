@@ -12,12 +12,11 @@ import Kbd from './Kbd';
 const SearchInput = forwardRef(function SearchInput({ hotkey = false, size = 'md', ...props }, ref) {
     const field = useField();
     const inner = useRef(null);
-    const [isMac, setIsMac] = useState(false);
-
-    useEffect(() => {
+    const [isMac] = useState(() => {
+        if (typeof navigator === 'undefined') return false;
         const platform = navigator.userAgentData?.platform || navigator.platform || '';
-        setIsMac(/mac|iphone|ipad/i.test(platform));
-    }, []);
+        return /mac|iphone|ipad/i.test(platform);
+    });
     useImperativeHandle(ref, () => inner.current);
 
     useEffect(() => {
