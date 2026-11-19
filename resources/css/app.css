@@ -53,8 +53,8 @@
 		/* Paleta padrão: brasa (claro). */
 		--accent: 194 65 12; /* #C2410C, branco por cima 5,18:1 */
 		--accent-hover: 154 52 18; /* #9A3412 */
-		--accent-soft: 255 241 234; /* #FFF1EA */
-		--accent-text: 194 65 12; /* #C2410C, 5,18:1 no card */
+		--accent-soft: 250 244 240; /* #FAF4F0, neutro puxado para o laranja: longe do danger-soft */
+		--accent-text: 194 65 12; /* #C2410C, 5,18:1 no card / 4,75:1 no soft */
 		--accent-ring: 194 65 12;
 		--on-accent: 255 255 255;
 
@@ -142,8 +142,8 @@
 		/* Paleta padrão: brasa (escuro). */
 		--accent: 210 67 14; /* #D2430E, branco por cima 4,62:1 */
 		--accent-hover: 184 58 11; /* #B83A0B */
-		--accent-soft: 57 32 24; /* #392018 */
-		--accent-text: 255 107 53; /* #FF6B35, 6,37:1 no card / 5,31:1 no soft */
+		--accent-soft: 46 41 38; /* #2E2926, neutro puxado para o laranja: longe do danger/warning-soft */
+		--accent-text: 255 107 53; /* #FF6B35, 6,37:1 no card / 5,07:1 no soft */
 		--accent-ring: 255 107 53;
 
 		--chart-1: 242 84 27; /* #F2541B, 5,21:1 no card */
@@ -237,16 +237,11 @@
 		background-repeat: no-repeat;
 	}
 
-	/* Card: grafite com realce interno no topo, borda translúcida e raio 16 px. */
-	.surface-card {
-		background-color: rgb(var(--surface-raised));
-		background-image: var(--card-highlight);
-		border: 1px solid var(--card-border);
-		border-radius: var(--radius-card);
-		box-shadow: var(--shadow-card);
-	}
-
-	/* Painel do menu lateral: o mesmo material do card, solto dentro da página. */
+	/*
+	 * Card (.surface-card) e painel do menu lateral (.surface-panel): grafite
+	 * com realce interno no topo, borda translúcida e raio 16 px.
+	 */
+	.surface-card,
 	.surface-panel {
 		background-color: rgb(var(--surface-raised));
 		background-image: var(--card-highlight);
@@ -312,9 +307,12 @@
 		color: rgb(var(--info-strong));
 	}
 
+	/* Contorno de 1 px: a pílula da paleta nunca se passa por um alerta. */
 	.pill-accent {
 		background-color: rgb(var(--accent-soft));
 		color: rgb(var(--accent-text));
+		border: 1px solid rgb(var(--accent-text) / 0.45);
+		padding: calc(0.125rem - 1px) calc(0.5rem - 1px); /* mesma altura das outras pílulas */
 	}
 
 	.themed-focus,
