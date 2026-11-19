@@ -28,6 +28,15 @@ const getFocusableElements = (container) => {
     return Array.from(container.querySelectorAll(focusableSelectors));
 };
 
+// Pilha de modais abertos: só o de cima responde a Esc, Tab e foco que escapa.
+const openModals = [];
+const isTopModal = (ref) => openModals[openModals.length - 1] === ref;
+
+const focusInside = (container) => {
+    const focusableElements = getFocusableElements(container);
+    (focusableElements[0] ?? container)?.focus();
+};
+
 export default function Modal({
     isOpen,
     onClose,
@@ -52,6 +61,8 @@ export default function Modal({
     };
 
     const handleKeyDown = useCallback((event) => {
+        if (!isTopModal(modalRef)) return;
+
         if (event.key === 'Escape' && closeOnEscape) {
             event.preventDefault();
             onClose?.();
@@ -69,7 +80,11 @@ export default function Modal({
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
 
-            if (event.shiftKey && document.activeElement === firstElement) {
+            // Foco fora do diálogo (clique fora, por exemplo): Tab traz de volta.
+            if (!modalRef.current.contains(document.activeElement)) {
+                event.preventDefault();
+                (event.shiftKey ? lastElement : firstElement).focus();
+            } else if (event.shiftKey && document.activeElement === firstElement) {
                 event.preventDefault();
                 lastElement.focus();
             } else if (!event.shiftKey && document.activeElement === lastElement) {
@@ -89,15 +104,35 @@ export default function Modal({
         document.body.style.overflow = 'hidden';
         document.body.style.paddingRight = `${scrollbarWidth}px`;
 
+        // Se o foco sair do diálogo (clique no fundo, leitor de tela), puxa de volta.
+        const handleFocusIn = (event) => {
+            if (!isTopModal(modalRef) || !modalRef.current) return;
+            if (!modalRef.current.contains(event.target)) {
+                focusInside(modalRef.current);
+            }
+        };
+
         document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('focusin', handleFocusIn);
 
         return () => {
             document.body.style.overflow = originalOverflow;
             document.body.style.paddingRight = originalPaddingRight;
 
             document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('focusin', handleFocusIn);
         };
     }, [isOpen, handleKeyDown]);
+
+    // Entra na pilha só ao abrir (não a cada nova referência de handleKeyDown).
+    useEffect(() => {
+        if (!isOpen) return undefined;
+        openModals.push(modalRef);
+        return () => {
+            const index = openModals.lastIndexOf(modalRef);
+            if (index !== -1) openModals.splice(index, 1);
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen) return;

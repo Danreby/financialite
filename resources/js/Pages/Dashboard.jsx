@@ -22,6 +22,7 @@ import BillPaymentForm from '@/Components/system/BillPaymentForm'
 import ScrollArea from '@/Components/common/ScrollArea'
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
 import { dashboardService } from '@/Services/dashboardService'
+import { TRANSACTION_CREATED_EVENT } from '@/Components/system/transactions/NewTransactionProvider'
 
 function formatDateLabel(value) {
   if (!value) return ''
@@ -38,6 +39,13 @@ export default function Dashboard({ bankAccounts = [], categories = [], bankAcco
   const [currentFilters, setCurrentFilters] = useState({})
   const [page, setPage] = useState(1)
   const [reloadKey, setReloadKey] = useState(0)
+
+  // Transação criada pelo botão global "Nova transação": recarrega os dados.
+  useEffect(() => {
+    const onCreated = () => setReloadKey((prev) => prev + 1)
+    window.addEventListener(TRANSACTION_CREATED_EVENT, onCreated)
+    return () => window.removeEventListener(TRANSACTION_CREATED_EVENT, onCreated)
+  }, [])
   const [data, setData] = useState(null)
   const [recentFaturas, setRecentFaturas] = useState([])
   const [monthlySummary, setMonthlySummary] = useState([])

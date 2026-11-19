@@ -70,6 +70,30 @@ export function useFocusTrap(active, options = {}) {
         }
     }, [active, escapeDeactivates, onEscape]);
 
+    // Declarado antes do efeito que devolve o foco: a limpeza dele roda primeiro,
+    // senão o foco devolvido ao fechar é puxado de volta para dentro do contêiner.
+    useEffect(() => {
+        if (!active || !containerRef.current) return;
+
+        const handleFocusIn = (event) => {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target)
+            ) {
+                const focusableElements = getFocusableElements(containerRef.current);
+                if (focusableElements.length > 0) {
+                    focusableElements[0].focus();
+                }
+            }
+        };
+
+        document.addEventListener('focusin', handleFocusIn);
+
+        return () => {
+            document.removeEventListener('focusin', handleFocusIn);
+        };
+    }, [active]);
+
     useEffect(() => {
         if (!active) return;
 
@@ -94,28 +118,6 @@ export function useFocusTrap(active, options = {}) {
             }
         };
     }, [active, handleKeyDown, initialFocus, returnFocusOnDeactivate]);
-
-    useEffect(() => {
-        if (!active || !containerRef.current) return;
-
-        const handleFocusIn = (event) => {
-            if (
-                containerRef.current &&
-                !containerRef.current.contains(event.target)
-            ) {
-                const focusableElements = getFocusableElements(containerRef.current);
-                if (focusableElements.length > 0) {
-                    focusableElements[0].focus();
-                }
-            }
-        };
-
-        document.addEventListener('focusin', handleFocusIn);
-
-        return () => {
-            document.removeEventListener('focusin', handleFocusIn);
-        };
-    }, [active]);
 
     return { containerRef };
 }

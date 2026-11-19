@@ -1,134 +1,98 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { Link, usePage } from '@inertiajs/react'
-import { AnimatePresence, motion } from 'framer-motion'
-import BareButton from '@/Components/common/buttons/BareButton'
-import ThemedNavIcon from '@/Components/common/ThemedNavIcon'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { LogOut, X } from 'lucide-react'
+import { Button } from '@/Components/ui'
+import NavItem from '@/Components/system/navigation/NavItem'
+import { initialsOf, isActivePath, visibleFooter, visibleGroups } from '@/Components/system/navigation/navConfig'
+import { useFocusTrap } from '@/Hooks/useFocusTrap'
 import { toPathname } from '@/Utils/url'
 
-const links = [
-  { href: () => route('dashboard'), label: 'Dashboard', icon: 8 },
-  { href: () => route('transacoes.index'), label: 'Fatura', icon: 4 },
-  { href: () => route('accounts.index'), label: 'Cartões', icon: 12 },
-  { href: () => route('categorias.index'), label: 'Categorias', icon: 13 },
-  { href: () => route('bancos.index'), label: 'Bancos', icon: 5 },
-  { href: () => route('parcelamentos.index'), label: 'Parcelamentos', icon: 14 },
-  { href: () => route('transactions.index'), label: 'Transações', icon: 9 },
-  { href: () => route('contas.index'), label: 'Contas', icon: 6 },
-  { href: () => route('extrato.index'), label: 'Extrato', icon: 11 },
-  { href: () => route('resumo-mensal.index'), label: 'Resumo Mensal', icon: 16 },
-  { href: () => route('reports.index'), label: 'Relatórios', icon: 10 },
-  { href: () => route('projecao.index'), label: 'Projeção', icon: 15 },
-  { href: () => route('about'), label: 'Sobre', icon: 7 },
-  { href: () => route('settings'), label: 'Configurações', icon: 1 },
-]
-
-const MotionLink = motion.create(Link)
-
+/**
+ * Gaveta de navegação do celular: diálogo modal com foco preso, Esc fecha,
+ * clique no fundo fecha e o foco volta para o botão que abriu.
+ */
 export default function MobileNavOverlay({ isOpen, onClose, user }) {
   const { url } = usePage()
   const currentPath = toPathname(url)
-  const initials = (() => {
-    if (!user?.name) return 'U'
-    const parts = user.name
-      .split(' ')
-      .filter((part) => part.length > 0)
-      .slice(0, 2)
+  const reduceMotion = useReducedMotion()
+  const { containerRef } = useFocusTrap(isOpen, { onEscape: onClose })
 
-    if (parts.length === 0) return 'U'
+  useEffect(() => {
+    if (!isOpen) return undefined
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [isOpen])
 
-    return parts
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('')
-  })()
+  const groups = visibleGroups()
+  const footer = visibleFooter()
 
+  const renderItem = (item) => (
+    <li key={item.route}>
+      <NavItem href={route(item.route)} label={item.label} icon={item.icon} active={isActivePath(currentPath, item.route)} onClick={onClose} />
+    </li>
+  )
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-40 flex flex-col bg-white/90 text-gray-900 dark:bg-[#050505]/95 dark:text-gray-100 backdrop-blur-sm lg:hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full themed-avatar flex items-center justify-center text-sm font-semibold ring-1 ring-gray-200 dark:ring-white/20">
-                {initials}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold leading-tight">
-                  {user?.name || 'Usuário'}
-                </span>
-                <span className="text-[11px] text-gray-500 dark:text-gray-300 truncate max-w-[180px]">
-                  {user?.email}
-                </span>
-              </div>
-            </div>
-
-            <BareButton
-              type="button"
-              onClick={onClose}
-              className="inline-flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
-              aria-label="Fechar menu"
-            >
-              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
-                <path
-                  d="M5 5l10 10M15 5L5 15"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </BareButton>
-          </div>
-
-          <motion.nav
-            className="flex-1 overflow-y-auto overscroll-contain scrollbar-custom px-3 py-4"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+        <div className="fixed inset-0 z-50 md:hidden">
+          <motion.div
+            className="absolute inset-0 bg-black/60"
+            aria-hidden="true"
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          />
+          <motion.div
+            ref={containerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navegação"
+            tabIndex={-1}
+            className="surface-panel absolute bottom-2 left-2 top-2 flex w-[min(20rem,calc(100vw-3rem))] flex-col overflow-hidden"
+            initial={reduceMotion ? { opacity: 0 } : { x: '-104%' }}
+            animate={reduceMotion ? { opacity: 1 } : { x: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { x: '-104%' }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="grid grid-cols-2 gap-2">
-              {links.map((item, index) => {
-                const isActive = currentPath === toPathname(item.href())
-                return (
-                <MotionLink
-                  key={item.label}
-                  href={item.href()}
-                  onClick={() => onClose?.()}
-                  aria-current={isActive ? 'page' : undefined}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.15, delay: index * 0.02 }}
-                  className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-theme-accent-light text-theme-primary font-semibold dark:bg-theme-accent/20'
-                      : 'bg-gray-900/5 text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/15 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10 dark:active:bg-white/15'
-                  }`}
-                >
-                  <ThemedNavIcon type={item.icon} size={15} />
-                  <span className="truncate">{item.label}</span>
-                </MotionLink>
-                )
-              })}
+            <div className="flex items-center justify-between gap-2 px-4 pb-2 pt-4">
+              <span className="flex items-center gap-2.5">
+                <img src="/favicon.ico" alt="" className="h-8 w-8 rounded-lg" aria-hidden="true" />
+                <span className="text-[15px] font-semibold tracking-tight text-content-primary">Financialite</span>
+              </span>
+              <Button variant="ghost" iconOnly icon={X} onClick={onClose} aria-label="Fechar menu" className="text-content-secondary" />
             </div>
-          </motion.nav>
 
-          <div className="px-4 pb-5 pt-3 border-t border-gray-200 dark:border-white/10 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-300">
-            {/* <span>© {new Date().getFullYear()} Finanças</span> */}
-            <Link
-              href={route('logout')}
-              method="post"
-              as="button"
-              className="text-red-500 hover:text-red-600 dark:text-red-300 dark:hover:text-red-200 font-medium"
-            >
-              Sair
-            </Link>
-          </div>
-        </motion.div>
+            <nav aria-label="Páginas" className="scrollbar-custom flex-1 overflow-y-auto overscroll-contain px-3 pb-3">
+              {groups.map((group, index) => (
+                <div key={group.id} className={index > 0 ? 'mt-4' : undefined}>
+                  <h2 className="mb-1 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-content-muted">{group.label}</h2>
+                  <ul className="space-y-0.5">{group.items.map(renderItem)}</ul>
+                </div>
+              ))}
+              <ul className="mt-4 space-y-0.5 border-t border-line pt-3">{footer.map(renderItem)}</ul>
+            </nav>
+
+            <div className="flex items-center gap-2.5 border-t border-line px-4 py-3">
+              <span className="themed-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold" aria-hidden="true">
+                {initialsOf(user?.name)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-content-primary">{user?.name || 'Usuário'}</span>
+                <span className="block truncate text-xs text-content-muted">{user?.email}</span>
+              </span>
+              <Button as={Link} href={route('logout')} method="post" variant="ghost" size="sm" icon={LogOut} className="text-danger-strong">
+                Sair
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   )
