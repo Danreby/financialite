@@ -36,7 +36,7 @@ O centro é o cartão de crédito: cada compra cai no mês de fatura certo pelo 
 
 - Nome: Financialite.
 - O usuário escolhe uma paleta de cores (rosa, verde, dourado, lavanda, meia-noite, preto) e o modo claro ou escuro. Os dois recursos continuam; o redesenho pode mudar como as cores são aplicadas, não remover a escolha.
-- Preferência firmada pelo dono do produto (18/11/2026, após três rodadas de direções): o Financialite segue o padrão da categoria, executado com capricho, sem mundo temático. Referência de acabamento: as versões web do Nubank e do Inter. As telas mantêm os componentes que já existem (o Dashboard com seus 10 blocos) e mostram todos os dados.
+- Direção visual fixada pelo dono do produto (19/11/2026): painel escuro premium conforme a imagem de referência `docs/design/referencia-dashboard.png` (grafite com brilho suave, destaque laranja, cards arredondados, menu em painel próprio). Escuro é o modo padrão; o claro continua disponível. As telas mantêm os componentes que já existem (o Dashboard com seus 10 blocos) e mostram todos os dados. Referência de acabamento: apps web do Nubank e do Inter.
 
 ## Evidence on Hand
 
