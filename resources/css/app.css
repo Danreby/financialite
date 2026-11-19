@@ -819,6 +819,47 @@
 	}
 }
 
+/*
+ * Toasts (react-toastify): superfície do card, borda translúcida, raio do chip
+ * e cores de estado dos tokens, nos dois modos. As variáveis ficam no
+ * contêiner para vencer as do :root do CSS da biblioteca.
+ */
+.Toastify {
+	--toastify-color-light: rgb(var(--surface-raised));
+	--toastify-color-dark: rgb(var(--surface-raised));
+	--toastify-text-color-light: rgb(var(--content-primary));
+	--toastify-text-color-dark: rgb(var(--content-primary));
+	--toastify-color-info: rgb(var(--info));
+	--toastify-color-success: rgb(var(--success));
+	--toastify-color-warning: rgb(var(--warning));
+	--toastify-color-error: rgb(var(--danger));
+	--toastify-color-progress-light: rgb(var(--accent));
+	--toastify-color-progress-dark: rgb(var(--accent-text));
+	--toastify-toast-bd-radius: 12px;
+	--toastify-toast-shadow: var(--shadow-pop);
+	--toastify-font-family: inherit;
+}
+
+.Toastify .Toastify__toast {
+	border: 1px solid var(--card-border);
+	background-image: var(--card-highlight);
+	font-size: 0.875rem;
+	line-height: 1.35rem;
+}
+
+.Toastify .Toastify__close-button {
+	color: rgb(var(--content-muted));
+	opacity: 1;
+}
+
+.Toastify .Toastify__close-button:hover {
+	color: rgb(var(--content-primary));
+}
+
+.Toastify .Toastify__progress-bar--wrp {
+	height: 3px;
+}
+
 @layer utilities {
 	.scrollbar-custom {
 		scrollbar-width: thin;

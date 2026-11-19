@@ -1,16 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import Input from '@/Components/ui/Input';
 
-export default forwardRef(function TextInput(
-    {
-        type = 'text',
-        className = '',
-        isFocused = false,
-        maxLength,
-        onChange,
-        ...props
-    },
-    ref,
-) {
+/** Legado: use `@/Components/ui/Input` (dentro de um `Field`). Invólucro fino. */
+export default forwardRef(function TextInput({ isFocused = false, ...props }, ref) {
     const localRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
@@ -18,34 +10,8 @@ export default forwardRef(function TextInput(
     }));
 
     useEffect(() => {
-        if (isFocused) {
-            localRef.current?.focus();
-        }
+        if (isFocused) localRef.current?.focus();
     }, [isFocused]);
 
-    const handleChange = (event) => {
-        if (typeof maxLength === 'number' && maxLength > 0) {
-            if (event.target.value && event.target.value.length > maxLength) {
-                event.target.value = event.target.value.slice(0, maxLength);
-            }
-        }
-
-        if (onChange) {
-            onChange(event);
-        }
-    };
-
-    return (
-        <input
-            {...props}
-            type={type}
-            maxLength={maxLength}
-            onChange={handleChange}
-            className={
-                'rounded-md border-gray-300 shadow-sm themed-focus ' +
-                className
-            }
-            ref={localRef}
-        />
-    );
+    return <Input ref={localRef} {...props} />;
 });

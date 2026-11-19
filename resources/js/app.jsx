@@ -4,32 +4,14 @@ import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import { ToastContainer } from 'react-toastify';
+import ToastHost from './Components/ui/Toast';
 import 'react-toastify/dist/ReactToastify.css';
 import {
     ThemeProvider,
     applyAppearance,
     readInitialAppearance,
     resolveMode,
-    useTheme,
 } from './Contexts/ThemeContext';
-
-function ThemedToasts() {
-    const { resolvedMode } = useTheme();
-
-    return (
-        <ToastContainer
-            position="top-right"
-            autoClose={4000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            pauseOnHover
-            draggable
-            theme={resolvedMode}
-        />
-    );
-}
 
 const appName = import.meta.env.VITE_APP_NAME || 'Financialite';
 
@@ -50,7 +32,7 @@ createInertiaApp({
         createRoot(el).render(
             <ThemeProvider initialUser={initialUser}>
                 <App {...props} />
-                <ThemedToasts />
+                <ToastHost />
             </ThemeProvider>,
         );
     },

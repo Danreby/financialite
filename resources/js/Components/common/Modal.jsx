@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import BareButton from '@/Components/common/buttons/BareButton';
@@ -41,6 +41,7 @@ export default function Modal({
     children,
 }) {
     const modalRef = useRef(null);
+    const reduceMotion = useReducedMotion();
     const previousFocusRef = useRef(null);
     const descriptionId = description ? 'modal-description' : undefined;
 
@@ -140,7 +141,7 @@ export default function Modal({
                     aria-hidden={!isOpen}
                 >
                     <motion.div
-                        className="absolute inset-0 bg-gray-500/75"
+                        className="absolute inset-0 bg-black/60"
                         onClick={handleOverlayClick}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -150,24 +151,24 @@ export default function Modal({
 
                     <motion.div
                         ref={modalRef}
-                        className={`relative w-full transform overflow-hidden themed-modal-panel border-l-4 border-theme-accent shadow-xl transition-all sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col [clip-path:polygon(0_0,100%_0,100%_calc(100%_-_20px),calc(100%_-_20px)_100%,0_100%)] ${widthClass}`}
+                        className={`relative w-full transform overflow-hidden surface-card shadow-pop sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col ${widthClass}`}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby={title ? 'modal-title' : undefined}
                         aria-describedby={descriptionId}
                         tabIndex={-1}
-                        initial={{ opacity: 0, y: 24, scale: 0.95 }}
+                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 24, scale: 0.95 }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.18, ease: [0.16, 1, 0.3, 1] }}
                     >
                         {(title || onClose) && (
-                            <div className="flex items-center justify-between border-b themed-modal-header px-2.5 py-2 sm:px-4 sm:py-3 flex-shrink-0">
+                            <div className="flex items-center justify-between border-b border-line px-4 py-3 sm:px-5 flex-shrink-0">
                                 <div>
                                     {title && (
                                         <h2
                                             id="modal-title"
-                                            className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100"
+                                            className="text-sm sm:text-[15px] font-semibold text-content-primary"
                                         >
                                             {title}
                                         </h2>
@@ -188,7 +189,7 @@ export default function Modal({
                                         <BareButton
                                             type="button"
                                             onClick={() => onClose?.()}
-                                            className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-1"
+                                            className="inline-flex rounded-lg p-1.5 text-content-muted transition-colors hover:bg-surface-sunken hover:text-content-primary"
                                             aria-label="Fechar modal"
                                         >
                                             <svg
@@ -210,7 +211,7 @@ export default function Modal({
                             </div>
                         )}
 
-                        <div className="px-2.5 py-3 sm:px-4 sm:py-5 md:p-6 overflow-y-auto scrollbar-custom flex-1">{children}</div>
+                        <div className="px-4 py-4 sm:px-5 sm:py-5 overflow-y-auto scrollbar-custom flex-1">{children}</div>
                     </motion.div>
                 </motion.div>
             )}
