@@ -29,6 +29,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('cache.api:15')
         ->name('dashboard.data');
 
+    Route::get('/transaction-form/options', [DashboardController::class, 'formOptions'])
+        ->name('transaction-form.options');
+
     Route::get('/reports/data', [ReportController::class, 'data'])
         ->middleware('cache.api:15')
         ->name('reports.data');
