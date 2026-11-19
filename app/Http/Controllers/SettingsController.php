@@ -9,9 +9,9 @@ use Inertia\Response as InertiaResponse;
 
 class SettingsController extends Controller
 {
-    private const VALID_THEMES = ['rose', 'black', 'forest', 'gold', 'lavender', 'midnight'];
+    private const VALID_THEMES = ['brasa', 'rose', 'black', 'forest', 'gold', 'lavender', 'midnight'];
 
-    private const VALID_COLOR_MODES = ['light', 'dark'];
+    private const VALID_COLOR_MODES = ['light', 'dark', 'system'];
 
     public function __construct()
     {
@@ -23,14 +23,14 @@ class SettingsController extends Controller
         $user = $request->user();
 
         return Inertia::render('Config', [
-            'userTheme' => $user->theme ?? 'rose',
+            'userTheme' => $user->theme ?? 'brasa',
         ]);
     }
 
     /**
      * Salva a paleta (`theme`) e/ou o modo claro/escuro (`color_mode`).
      * Os dois campos são opcionais, mas a requisição precisa trazer pelo menos um.
-     * `color_mode` aceita 'light', 'dark' ou null (seguir o sistema).
+     * `color_mode` aceita 'light', 'dark', 'system' (seguir o sistema) ou null (sem escolha: vale o padrão, escuro).
      */
     public function updateTheme(Request $request): JsonResponse
     {
@@ -64,7 +64,7 @@ class SettingsController extends Controller
         $user->update($changes);
 
         return response()->json([
-            'theme' => $user->theme ?? 'rose',
+            'theme' => $user->theme ?? 'brasa',
             'color_mode' => $user->color_mode,
         ]);
     }

@@ -1,4 +1,22 @@
 {
+  "brasa": {
+    "label": "Brasa",
+    "description": "Laranja-brasa",
+    "light": {
+      "accent": "#C2410C",
+      "accentHover": "#9A3412",
+      "accentSoft": "#FFF1EA",
+      "accentText": "#C2410C",
+      "chart": "#F2541B"
+    },
+    "dark": {
+      "accent": "#D2430E",
+      "accentHover": "#B83A0B",
+      "accentSoft": "#392018",
+      "accentText": "#FF6B35",
+      "chart": "#F2541B"
+    }
+  },
   "rose": {
     "label": "Rosé",
     "description": "Rosa intenso",
@@ -11,7 +29,7 @@
     "dark": {
       "accent": "#E11D48",
       "accentHover": "#BE123C",
-      "accentSoft": "#322434",
+      "accentSoft": "#3B1721",
       "accentText": "#FB7185"
     }
   },
@@ -27,7 +45,7 @@
     "dark": {
       "accent": "#0F766E",
       "accentHover": "#115E59",
-      "accentSoft": "#15323C",
+      "accentSoft": "#142E2E",
       "accentText": "#2DD4BF"
     }
   },
@@ -43,7 +61,7 @@
     "dark": {
       "accent": "#8C6D1F",
       "accentHover": "#715818",
-      "accentSoft": "#2C2E30",
+      "accentSoft": "#342C1A",
       "accentText": "#D4B86A"
     }
   },
@@ -59,7 +77,7 @@
     "dark": {
       "accent": "#7C3AED",
       "accentHover": "#6D28D9",
-      "accentSoft": "#262845",
+      "accentSoft": "#2A1D43",
       "accentText": "#A78BFA"
     }
   },
@@ -75,7 +93,7 @@
     "dark": {
       "accent": "#4F46E5",
       "accentHover": "#4338CA",
-      "accentSoft": "#212844",
+      "accentSoft": "#212041",
       "accentText": "#818CF8"
     }
   },
@@ -91,7 +109,7 @@
     "dark": {
       "accent": "#4B5563",
       "accentHover": "#374151",
-      "accentSoft": "#2C3240",
+      "accentSoft": "#2B2F36",
       "accentText": "#D1D5DB"
     }
   }

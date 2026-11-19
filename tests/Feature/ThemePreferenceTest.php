@@ -10,12 +10,55 @@ class ThemePreferenceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_new_user_follows_system_color_mode_by_default(): void
+    public function test_new_user_has_no_saved_color_mode_and_brasa_palette(): void
     {
         $user = User::factory()->create();
 
         $this->assertNull($user->fresh()->color_mode);
-        $this->assertSame('rose', $user->fresh()->theme);
+        $this->assertSame('brasa', $user->fresh()->theme);
+    }
+
+    public function test_dark_is_the_default_mode_on_first_paint(): void
+    {
+        // fresh(): o padrão da coluna (brasa) vem do banco, como numa requisição real.
+        $user = User::factory()->create()->fresh();
+
+        $html = $this->actingAs($user)->get('/dashboard')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/<html[^>]*class="dark"/', $html);
+        $this->assertStringContainsString('var key = "brasa";', $html);
+        $this->assertStringContainsString('<meta name="theme-color" content="#0B0B0C">', $html);
+    }
+
+    public function test_light_mode_is_not_rendered_dark(): void
+    {
+        $user = User::factory()->create(['color_mode' => 'light']);
+
+        $html = $this->actingAs($user)->get('/dashboard')->assertOk()->getContent();
+
+        $this->assertDoesNotMatchRegularExpression('/<html[^>]*class="dark"/', $html);
+        $this->assertStringContainsString('<meta name="theme-color" content="#F4F4F5">', $html);
+    }
+
+    public function test_existing_saved_palette_is_kept(): void
+    {
+        $user = User::factory()->create(['theme' => 'rose']);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertInertia(fn ($page) => $page->where('auth.user.theme', 'rose'));
+    }
+
+    public function test_brasa_palette_can_be_saved(): void
+    {
+        $user = User::factory()->create(['theme' => 'rose']);
+
+        $this->actingAs($user)
+            ->patchJson('/settings/theme', ['theme' => 'brasa'])
+            ->assertOk()
+            ->assertJson(['theme' => 'brasa']);
+
+        $this->assertSame('brasa', $user->fresh()->theme);
     }
 
     public function test_color_mode_can_be_saved(): void
@@ -25,14 +68,26 @@ class ThemePreferenceTest extends TestCase
         $this->actingAs($user)
             ->patchJson('/settings/theme', ['color_mode' => 'dark'])
             ->assertOk()
-            ->assertJson(['theme' => 'rose', 'color_mode' => 'dark']);
+            ->assertJson(['theme' => 'brasa', 'color_mode' => 'dark']);
 
         $this->assertSame('dark', $user->fresh()->color_mode);
     }
 
-    public function test_color_mode_can_be_reset_to_system(): void
+    public function test_color_mode_can_follow_the_system(): void
     {
         $user = User::factory()->create(['color_mode' => 'dark']);
+
+        $this->actingAs($user)
+            ->patchJson('/settings/theme', ['color_mode' => 'system'])
+            ->assertOk()
+            ->assertJson(['color_mode' => 'system']);
+
+        $this->assertSame('system', $user->fresh()->color_mode);
+    }
+
+    public function test_color_mode_can_be_reset_to_default(): void
+    {
+        $user = User::factory()->create(['color_mode' => 'light']);
 
         $this->actingAs($user)
             ->patchJson('/settings/theme', ['color_mode' => null])

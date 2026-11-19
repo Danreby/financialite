@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { router } from '@inertiajs/react'
 import PALETTE_DATA from '@/Constants/palettes.json'
@@ -8,20 +8,25 @@ import PALETTE_DATA from '@/Constants/palettes.json'
  *
  * Fonte única de verdade:
  * - `app.css` define os tokens neutros (superfícies, texto, linhas, cores
- *   semânticas) e o padrão da paleta rosé, em canais RGB ("225 29 72").
- * - Este contexto escreve só as variáveis de destaque da paleta escolhida
- *   (`--accent*`) no <html>, já resolvidas para o modo atual, e alterna a
+ *   semânticas, gráficos) e o padrão da paleta brasa, em canais RGB ("242 84 27").
+ * - Este contexto escreve só as variáveis da paleta escolhida (`--accent*` e
+ *   `--chart-1`) no <html>, já resolvidas para o modo atual, e alterna a
  *   classe `dark`.
+ *
+ * Modo: o escuro é o padrão quando o usuário não salvou nada (`color_mode`
+ * nulo). 'light' e 'dark' fixam o modo; 'system' segue o sistema operacional.
  *
  * As paletas pintam só o destaque (item ativo, botão principal, foco,
  * destaque de gráfico). As superfícies são neutras em todas as paletas.
  *
  * Contraste (WCAG AA), conferido com texto branco sobre `accent`:
- * rosé 4,70 · floresta (verde-azulado) 5,47 · ouro (bronze) 4,86 ·
+ * brasa 5,18 (claro, #C2410C) / 4,62 (escuro, #D2430E) · rosé 4,70 · floresta (verde-azulado) 5,47 · ouro (bronze) 4,86 ·
  * lavanda 5,70 · meia-noite 6,29 · preto 14,68 (claro) / 7,56 (escuro).
  * Floresta e ouro ficam longe do verde de sucesso e do âmbar de alerta,
  * para a paleta nunca se confundir com um estado. `accentText` passa de 4,5:1 sobre a
  * superfície do cartão e sobre o fundo `accentSoft` nos dois modos.
+ * `chart` (opcional) é o tom vivo da linha principal dos gráficos; sem ele,
+ * o gráfico usa `accentText` no escuro e `accent` no claro.
  */
 
 // Valores das paletas: resources/js/Constants/palettes.json (também lido
@@ -30,14 +35,15 @@ const PALETTES = Object.fromEntries(
   Object.entries(PALETTE_DATA).map(([key, palette]) => [key, { key, ...palette }]),
 )
 
-const DEFAULT_PALETTE = 'rose'
+const DEFAULT_PALETTE = 'brasa'
+const DEFAULT_MODE = 'dark'
 const COLOR_MODES = ['light', 'dark', 'system']
 
 // Chaves de localStorage herdadas das versões anteriores; continuam válidas.
 const PALETTE_STORAGE_KEY = 'app-theme'
-const MODE_STORAGE_KEY = 'theme' // 'light' | 'dark'; ausente = seguir o sistema
+const MODE_STORAGE_KEY = 'theme' // 'light' | 'dark' | 'system'; ausente = padrão (escuro)
 
-const SURFACE_BASE = { light: '#F8FAFC', dark: '#0B0F14' }
+const SURFACE_BASE = { light: '#F4F4F5', dark: '#0B0B0C' }
 
 function hexToChannels(hex) {
   const h = hex.replace('#', '')
@@ -90,13 +96,18 @@ function systemPrefersDark() {
 
 export function resolveMode(colorMode) {
   if (colorMode === 'dark' || colorMode === 'light') return colorMode
-  return systemPrefersDark() ? 'dark' : 'light'
+  if (colorMode === 'system') return systemPrefersDark() ? 'dark' : 'light'
+  return DEFAULT_MODE
+}
+
+function isColorMode(value) {
+  return COLOR_MODES.includes(value)
 }
 
 /**
  * Lê a preferência inicial: servidor (usuário logado) > cache local > padrão.
- * `color_mode` nulo no servidor significa "seguir o sistema", mas uma escolha
- * antiga guardada só no navegador (chave `theme`) ainda é respeitada.
+ * `color_mode` nulo no servidor significa "sem escolha" (vale o escuro), mas
+ * uma escolha antiga guardada só no navegador (chave `theme`) ainda é respeitada.
  */
 export function readInitialAppearance(user) {
   const storedPalette = typeof window !== 'undefined' ? safeGet(PALETTE_STORAGE_KEY) : null
@@ -106,9 +117,9 @@ export function readInitialAppearance(user) {
     || (storedPalette && PALETTES[storedPalette] && storedPalette)
     || DEFAULT_PALETTE
 
-  const colorMode = (user?.color_mode === 'light' || user?.color_mode === 'dark') ? user.color_mode
-    : (storedMode === 'light' || storedMode === 'dark') ? storedMode
-    : 'system'
+  const colorMode = isColorMode(user?.color_mode) ? user.color_mode
+    : isColorMode(storedMode) ? storedMode
+    : DEFAULT_MODE
 
   return { palette, colorMode }
 }
@@ -130,6 +141,8 @@ export function applyAppearance(paletteKey, mode) {
   root.style.setProperty('--accent-text', hexToChannels(values.accentText))
   // Anel de foco: no escuro usa o tom claro para passar de 3:1 sobre o grafite.
   root.style.setProperty('--accent-ring', hexToChannels(mode === 'dark' ? values.accentText : values.accent))
+  // Linha principal dos gráficos: tom vivo da paleta (a área em degradê deriva dele no CSS).
+  root.style.setProperty('--chart-1', hexToChannels(values.chart || (mode === 'dark' ? values.accentText : values.accent)))
 
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) meta.setAttribute('content', SURFACE_BASE[mode] || SURFACE_BASE.light)
@@ -139,9 +152,9 @@ const ThemeContext = createContext({
   theme: DEFAULT_PALETTE,
   themeConfig: THEMES[DEFAULT_PALETTE],
   themes: THEMES,
-  colorMode: 'system',
-  resolvedMode: 'light',
-  isDark: false,
+  colorMode: DEFAULT_MODE,
+  resolvedMode: DEFAULT_MODE,
+  isDark: true,
   setTheme: async () => {},
   setColorMode: async () => {},
   toggleColorMode: async () => {},
@@ -161,7 +174,9 @@ export function ThemeProvider({ children, initialUser = null }) {
 
   const resolvedMode = colorMode === 'system' ? (systemDark ? 'dark' : 'light') : colorMode
 
-  useEffect(() => {
+  // Layout effect: as variáveis já estão no <html> quando os efeitos dos filhos
+  // (ex.: useThemeColors lendo as cores dos gráficos) rodam.
+  useLayoutEffect(() => {
     applyAppearance(theme, resolvedMode)
   }, [theme, resolvedMode])
 
@@ -186,11 +201,11 @@ export function ThemeProvider({ children, initialUser = null }) {
       const next = readInitialAppearance(user)
       setThemeState(next.palette)
       safeSet(PALETTE_STORAGE_KEY, next.palette)
-      // Sem modo salvo no servidor, segue o sistema: o cache do usuário
+      // Sem modo salvo no servidor, vale o padrão (escuro): o cache do usuário
       // anterior neste navegador não vale para quem acabou de entrar.
-      const mode = user.color_mode === 'light' || user.color_mode === 'dark' ? user.color_mode : 'system'
-      setColorModeState(mode)
-      safeSet(MODE_STORAGE_KEY, mode === 'system' ? null : mode)
+      const saved = isColorMode(user.color_mode) ? user.color_mode : null
+      setColorModeState(saved || DEFAULT_MODE)
+      safeSet(MODE_STORAGE_KEY, saved)
     })
   }, [])
 
@@ -211,9 +226,9 @@ export function ThemeProvider({ children, initialUser = null }) {
   const setColorMode = useCallback(async (mode) => {
     if (!COLOR_MODES.includes(mode)) return
     setColorModeState(mode)
-    safeSet(MODE_STORAGE_KEY, mode === 'system' ? null : mode)
+    safeSet(MODE_STORAGE_KEY, mode)
     try {
-      await persist({ color_mode: mode === 'system' ? null : mode }, !!userRef.current)
+      await persist({ color_mode: mode }, !!userRef.current)
     } catch {
       // A troca já valeu nesta sessão e ficou no cache local; o servidor
       // recebe a próxima mudança. Não vale interromper o usuário por isso.

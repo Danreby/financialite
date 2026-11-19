@@ -22,6 +22,10 @@ export default {
         './resources/js/**/*.js',
     ],
 
+    // Classes de casca (resources/css/app.css) sempre presentes no CSS, mesmo
+    // montadas dinamicamente (ex.: `pill-${tom}`).
+    safelist: ['surface-card', 'surface-panel', 'surface-ground', 'icon-chip', 'pill', { pattern: /^pill-(danger|warning|success|info|accent)$/ }],
+
     theme: {
         extend: {
             fontFamily: {
@@ -68,6 +72,15 @@ export default {
                 danger: semantic('danger'),
                 warning: semantic('warning'),
                 info: semantic('info'),
+                // Séries dos gráficos (1 = paleta, 2 = rosa companheira, 3 = neutra).
+                chart: {
+                    1: token('chart-1'),
+                    2: token('chart-2'),
+                    3: token('chart-3'),
+                    4: token('chart-4'),
+                    5: token('chart-5'),
+                    6: token('chart-6'),
+                },
                 // Destaque da paleta do usuário. Os nomes antigos (primary,
                 // accent-light, border-dark...) continuam valendo e apontam
                 // para os tokens novos.
@@ -105,9 +118,11 @@ export default {
             },
             boxShadow: {
                 card: 'var(--shadow-card)',
+                pop: 'var(--shadow-pop)',
             },
             borderRadius: {
-                card: '12px',
+                card: 'var(--radius-card)', // 16px
+                chip: 'var(--radius-chip)', // 10px
             },
         },
     },

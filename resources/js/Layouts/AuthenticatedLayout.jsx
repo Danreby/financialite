@@ -25,7 +25,7 @@ export default function AuthenticatedLayout({ children }) {
   }, [sidebarOpen])
 
   return (
-	<div className="h-screen flex overflow-hidden relative bg-surface-base text-content-primary">
+	<div className="h-screen flex overflow-hidden relative surface-ground text-content-primary">
     <div className="hidden lg:block">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
     </div>
@@ -44,7 +44,7 @@ export default function AuthenticatedLayout({ children }) {
         />
 
     		<main 
-          className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom px-3 py-4 sm:px-4 lg:px-6 bg-surface-base"
+          className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom px-3 py-4 sm:px-4 lg:px-6"
         >
           {children}
         </main>

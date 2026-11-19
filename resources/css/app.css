@@ -5,53 +5,82 @@
 /*
  * Tokens de design do Financialite.
  *
- * Todos os valores são canais RGB ("15 23 42") para o Tailwind montar
+ * Direção fixada pela imagem de referência (docs/design/referencia-dashboard.png,
+ * contrato em .impeccable/surfaces/app.md): fundo quase preto com brilho suave
+ * no topo, cards grafite com realce interno e borda branca translúcida, raio de
+ * 16 px e destaque laranja-brasa. O escuro é o padrão; o claro é a contraparte.
+ *
+ * Todos os tokens de cor são canais RGB ("15 23 42") para o Tailwind montar
  * `rgb(var(--x) / <alpha-value>)` e aceitar opacidade (`bg-theme-accent/10`).
+ * Os efeitos (borda translúcida, realce, sombras, brilho do fundo, grade e área
+ * dos gráficos) são valores completos, porque misturam transparência.
  *
  * - Superfícies, texto, linhas e cores semânticas são neutros e fixos: não
  *   mudam com a paleta do usuário, só com o modo claro/escuro.
- * - O grupo `--accent*` é a paleta do usuário. Os valores abaixo são o padrão
- *   (rosé); o ThemeContext sobrescreve no <html> conforme a paleta e o modo.
+ * - O grupo `--accent*` e `--chart-1` vêm da paleta do usuário. Os valores
+ *   abaixo são o padrão (brasa); o ThemeContext e o script de primeira pintura
+ *   sobrescrevem no <html> conforme a paleta e o modo.
  */
 @layer base {
 	:root {
 		color-scheme: light;
 
-		--surface-base: 248 250 252; /* #F8FAFC fundo da página */
+		--surface-base: 244 244 245; /* #F4F4F5 fundo da página */
 		--surface-raised: 255 255 255; /* #FFFFFF cards, menu, topo */
-		--surface-sunken: 241 245 249; /* #F1F5F9 trilhas, segmentos, campos rebaixados */
+		--surface-sunken: 239 239 241; /* #EFEFF1 trilhas, segmentos, chips */
 
-		--content-primary: 15 23 42; /* #0F172A */
-		--content-secondary: 51 65 85; /* #334155 */
-		--content-muted: 100 116 139; /* #64748B, 4,55:1 sobre o fundo */
-		--content-subtle: 148 163 184; /* #94A3B8, só ícones decorativos e estados desabilitados */
+		--content-primary: 24 24 27; /* #18181B, 17,7:1 no card */
+		--content-secondary: 63 63 70; /* #3F3F46, 10,4:1 */
+		--content-muted: 82 82 91; /* #52525B, 7,7:1 no card / 7,0:1 no fundo */
+		--content-subtle: 161 161 170; /* #A1A1AA, só ícones decorativos e estados desabilitados */
 
-		--line: 229 231 235; /* #E5E7EB */
-		--line-strong: 203 213 225; /* #CBD5E1 */
+		--line: 228 228 231; /* #E4E4E7 */
+		--line-strong: 212 212 216; /* #D4D4D8 */
 
 		--success: 22 163 74; /* #16A34A barras e ícones */
-		--success-strong: 21 128 61; /* #15803D texto */
-		--success-soft: 220 252 231; /* #DCFCE7 fundo de etiqueta */
+		--success-strong: 21 128 61; /* #15803D texto, 4,57:1 sobre o soft */
+		--success-soft: 220 252 231; /* #DCFCE7 fundo de pílula */
 		--danger: 220 38 38; /* #DC2626 */
-		--danger-strong: 185 28 28; /* #B91C1C */
+		--danger-strong: 185 28 28; /* #B91C1C, 5,30:1 sobre o soft */
 		--danger-soft: 254 226 226; /* #FEE2E2 */
 		--warning: 217 119 6; /* #D97706 */
-		--warning-strong: 180 83 9; /* #B45309 */
+		--warning-strong: 180 83 9; /* #B45309, 4,51:1 sobre o soft */
 		--warning-soft: 254 243 199; /* #FEF3C7 */
 		--info: 37 99 235; /* #2563EB */
 		--info-strong: 29 78 216; /* #1D4ED8 */
 		--info-soft: 219 234 254; /* #DBEAFE */
 
-		--accent: 225 29 72; /* #E11D48 */
-		--accent-hover: 190 18 60; /* #BE123C */
-		--accent-soft: 255 241 242; /* #FFF1F2 */
-		--accent-text: 190 18 60; /* #BE123C */
-		--accent-ring: 225 29 72;
+		/* Paleta padrão: brasa (claro). */
+		--accent: 194 65 12; /* #C2410C, branco por cima 5,18:1 */
+		--accent-hover: 154 52 18; /* #9A3412 */
+		--accent-soft: 255 241 234; /* #FFF1EA */
+		--accent-text: 194 65 12; /* #C2410C, 5,18:1 no card */
+		--accent-ring: 194 65 12;
 		--on-accent: 255 255 255;
 
-		--shadow-card: 0 1px 2px rgb(15 23 42 / 0.04);
-		--shadow-pop: 0 8px 24px -6px rgb(15 23 42 / 0.12), 0 2px 6px -2px rgb(15 23 42 / 0.06);
-		--radius-card: 12px;
+		/* Séries dos gráficos: 1 = paleta (tom vivo), 2 = companheira rosa, 3 = neutra, 4–6 = categorias. */
+		--chart-1: 242 84 27; /* #F2541B, 3,47:1 no branco (linha, não texto) */
+		--chart-2: 219 39 119; /* #DB2777 */
+		--chart-3: 113 113 122; /* #71717A */
+		/* Séries extras para categorias (gráficos de pizza/barras). */
+		--chart-4: 37 99 235; /* #2563EB */
+		--chart-5: 13 148 136; /* #0D9488 */
+		--chart-6: 124 58 237; /* #7C3AED */
+		--chart-grid: rgb(24 24 27 / 0.08);
+		--chart-tick: rgb(var(--content-muted));
+		--chart-area-from: rgb(var(--chart-1) / 0.2);
+		--chart-area-to: rgb(var(--chart-1) / 0);
+
+		/* Efeitos de superfície. */
+		--card-border: rgb(var(--line));
+		--card-highlight: none;
+		--chip-bg: rgb(var(--surface-sunken));
+		--chip-border: rgb(var(--line));
+		--ground-glow: radial-gradient(ellipse 80% 50% at 50% -10%, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 70%);
+		--shadow-card: 0 1px 2px rgb(24 24 27 / 0.04), 0 4px 12px rgb(24 24 27 / 0.04);
+		--shadow-pop: 0 12px 32px -8px rgb(24 24 27 / 0.14), 0 2px 6px -2px rgb(24 24 27 / 0.06);
+		--radius-card: 16px;
+		--radius-chip: 10px;
 
 		/* Nomes antigos (usados em estilos inline das páginas), derivados dos tokens. */
 		--theme-primary: rgb(var(--accent-hover));
@@ -80,43 +109,60 @@
 		--theme-bgButtonPrimaryDarkHover: rgb(var(--accent-hover));
 	}
 
-	/* Modo escuro: grafite, com o mesmo papel para cada token. */
+	/* Modo escuro (padrão): grafite neutro, com o mesmo papel para cada token. */
 	.dark {
 		color-scheme: dark;
 
-		--surface-base: 11 15 20; /* #0B0F14 */
-		--surface-raised: 17 24 39; /* #111827 */
-		--surface-sunken: 22 30 43; /* #161E2B */
+		--surface-base: 11 11 12; /* #0B0B0C */
+		--surface-raised: 22 22 24; /* #161618 */
+		--surface-sunken: 16 16 18; /* #101012 */
 
-		--content-primary: 229 231 235; /* #E5E7EB, 14,3:1 sobre o card */
-		--content-secondary: 203 213 225; /* #CBD5E1 */
-		--content-muted: 148 163 184; /* #94A3B8, 6,9:1 sobre o card */
-		--content-subtle: 100 116 139; /* #64748B */
+		--content-primary: 244 244 245; /* #F4F4F5, 16,4:1 no card */
+		--content-secondary: 212 212 216; /* #D4D4D8, 12,2:1 */
+		--content-muted: 154 154 160; /* #9A9AA0, 6,46:1 no card / 7,03:1 no fundo */
+		--content-subtle: 107 107 114; /* #6B6B72, 3,4:1, só decorativo/desabilitado */
 
-		--line: 31 41 55; /* #1F2937 */
-		--line-strong: 55 65 81; /* #374151 */
+		/* Branco a 8% e 14% sobre o card, já resolvidos (o token é opaco). */
+		--line: 41 41 42; /* #29292A */
+		--line-strong: 55 55 56; /* #373738 */
 
-		--success: 34 197 94; /* #22C55E */
-		--success-strong: 74 222 128; /* #4ADE80 */
-		--success-soft: 25 52 51; /* #193433 */
-		--danger: 239 68 68; /* #EF4444 */
-		--danger-strong: 248 113 113; /* #F87171 */
-		--danger-soft: 49 36 49; /* #312431 */
-		--warning: 245 158 11; /* #F59E0B */
-		--warning-strong: 251 191 36; /* #FBBF24 */
-		--warning-soft: 50 47 39; /* #322F27 */
+		--success: 34 197 94; /* #22C55E, 7,93:1 no card */
+		--success-strong: 74 222 128; /* #4ADE80, 8,21:1 sobre o soft */
+		--success-soft: 24 47 34; /* #182F22 = sucesso a 14% sobre o card */
+		--danger: 239 68 68; /* #EF4444, 4,80:1 no card */
+		--danger-strong: 248 113 113; /* #F87171, 5,70:1 sobre o soft */
+		--danger-soft: 52 28 30; /* #341C1E */
+		--warning: 245 158 11; /* #F59E0B, 8,41:1 no card */
+		--warning-strong: 251 191 36; /* #FBBF24, 8,50:1 sobre o soft */
+		--warning-soft: 53 41 22; /* #352916 */
 		--info: 59 130 246; /* #3B82F6 */
 		--info-strong: 96 165 250; /* #60A5FA */
-		--info-soft: 28 44 69; /* #1C2C45 */
+		--info-soft: 27 37 55; /* #1B2537 */
 
-		--accent: 225 29 72;
-		--accent-hover: 190 18 60;
-		--accent-soft: 50 36 52; /* #322434 */
-		--accent-text: 251 113 133; /* #FB7185 */
-		--accent-ring: 251 113 133;
+		/* Paleta padrão: brasa (escuro). */
+		--accent: 210 67 14; /* #D2430E, branco por cima 4,62:1 */
+		--accent-hover: 184 58 11; /* #B83A0B */
+		--accent-soft: 57 32 24; /* #392018 */
+		--accent-text: 255 107 53; /* #FF6B35, 6,37:1 no card / 5,31:1 no soft */
+		--accent-ring: 255 107 53;
 
-		--shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-		--shadow-pop: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.3);
+		--chart-1: 242 84 27; /* #F2541B, 5,21:1 no card */
+		--chart-2: 244 114 182; /* #F472B6, 6,82:1 no card */
+		--chart-3: 161 161 170; /* #A1A1AA */
+		--chart-4: 96 165 250; /* #60A5FA */
+		--chart-5: 45 212 191; /* #2DD4BF */
+		--chart-6: 167 139 250; /* #A78BFA */
+		--chart-grid: rgb(255 255 255 / 0.06);
+		--chart-area-from: rgb(var(--chart-1) / 0.28);
+		--chart-area-to: rgb(var(--chart-1) / 0);
+
+		--card-border: rgb(255 255 255 / 0.07);
+		--card-highlight: linear-gradient(180deg, rgb(255 255 255 / 0.04) 0%, rgb(255 255 255 / 0) 100%);
+		--chip-bg: rgb(var(--surface-sunken));
+		--chip-border: rgb(255 255 255 / 0.08);
+		--ground-glow: radial-gradient(ellipse 70% 45% at 50% -5%, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0) 70%);
+		--shadow-card: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.35);
+		--shadow-pop: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 16px 40px -8px rgb(0 0 0 / 0.55);
 	}
 
 	html {
@@ -128,7 +174,11 @@
 		-webkit-tap-highlight-color: transparent;
 	}
 
+	/* Fundo da página com o brilho suave no topo. */
 	body {
+		background-color: rgb(var(--surface-base));
+		background-image: var(--ground-glow);
+		background-repeat: no-repeat;
 		font-variant-numeric: tabular-nums;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
@@ -175,11 +225,98 @@
 }
 
 /*
- * Classes antigas `themed-*`, redesenhadas para a direção nova (card branco,
- * borda de 1 px, raio 12 px, sombra quase imperceptível; a paleta só no
- * destaque). As páginas continuam usando os mesmos nomes até serem refeitas.
+ * Componentes de superfície da direção nova e as classes antigas `themed-*`,
+ * que passam a ter o mesmo visual de card. As páginas continuam usando os
+ * nomes antigos até serem refeitas.
  */
 @layer components {
+	/* Fundo da página com o brilho do topo, para contêineres que cobrem o body. */
+	.surface-ground {
+		background-color: rgb(var(--surface-base));
+		background-image: var(--ground-glow);
+		background-repeat: no-repeat;
+	}
+
+	/* Card: grafite com realce interno no topo, borda translúcida e raio 16 px. */
+	.surface-card {
+		background-color: rgb(var(--surface-raised));
+		background-image: var(--card-highlight);
+		border: 1px solid var(--card-border);
+		border-radius: var(--radius-card);
+		box-shadow: var(--shadow-card);
+	}
+
+	/* Painel do menu lateral: o mesmo material do card, solto dentro da página. */
+	.surface-panel {
+		background-color: rgb(var(--surface-raised));
+		background-image: var(--card-highlight);
+		border: 1px solid var(--card-border);
+		border-radius: var(--radius-card);
+		box-shadow: var(--shadow-card);
+	}
+
+	/* Quadrado escuro arredondado que segura o ícone de um indicador. */
+	.icon-chip {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: var(--radius-chip);
+		background-color: var(--chip-bg);
+		border: 1px solid var(--chip-border);
+		color: rgb(var(--content-primary));
+
+		& svg {
+			width: 1.125rem;
+			height: 1.125rem;
+		}
+	}
+
+	/*
+	 * Pílula de estado/prioridade. O texto sempre diz o estado; a cor só
+	 * reforça. Alta = .pill-danger, Média = .pill-warning, Baixa = .pill-success.
+	 */
+	.pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.125rem 0.5rem;
+		border-radius: 9999px;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		line-height: 1rem;
+		white-space: nowrap;
+		background-color: rgb(var(--surface-sunken));
+		color: rgb(var(--content-secondary));
+	}
+
+	.pill-danger {
+		background-color: rgb(var(--danger-soft));
+		color: rgb(var(--danger-strong));
+	}
+
+	.pill-warning {
+		background-color: rgb(var(--warning-soft));
+		color: rgb(var(--warning-strong));
+	}
+
+	.pill-success {
+		background-color: rgb(var(--success-soft));
+		color: rgb(var(--success-strong));
+	}
+
+	.pill-info {
+		background-color: rgb(var(--info-soft));
+		color: rgb(var(--info-strong));
+	}
+
+	.pill-accent {
+		background-color: rgb(var(--accent-soft));
+		color: rgb(var(--accent-text));
+	}
+
 	.themed-focus,
 	.themed-select {
 		@apply focus:outline-none;
@@ -201,8 +338,8 @@
 		position: relative;
 		overflow: hidden;
 		background-color: rgb(var(--surface-raised)) !important;
-		background-image: none !important;
-		border: 1px solid rgb(var(--line));
+		background-image: var(--card-highlight) !important;
+		border: 1px solid var(--card-border);
 		border-radius: var(--radius-card) !important;
 		box-shadow: var(--shadow-card) !important;
 		transition: border-color 150ms ease, box-shadow 150ms ease;
@@ -220,8 +357,9 @@
 
 	.themed-stat-card {
 		@apply p-4;
-		background: rgb(var(--surface-raised));
-		border: 1px solid rgb(var(--line));
+		background-color: rgb(var(--surface-raised));
+		background-image: var(--card-highlight);
+		border: 1px solid var(--card-border);
 		border-radius: var(--radius-card);
 		box-shadow: var(--shadow-card);
 		transition: border-color 150ms ease;
@@ -234,7 +372,8 @@
 	.themed-strip {
 		@apply border;
 		background-color: rgb(var(--surface-raised));
-		border-color: rgb(var(--line));
+		background-image: var(--card-highlight);
+		border-color: var(--card-border);
 		border-radius: var(--radius-card) !important;
 		box-shadow: var(--shadow-card);
 	}
@@ -627,7 +766,7 @@
 	/* Modais */
 	.themed-modal-panel {
 		background-color: rgb(var(--surface-raised));
-		border-color: rgb(var(--line));
+		border-color: var(--card-border);
 	}
 
 	.themed-modal-header {
@@ -655,17 +794,18 @@
 	 * ainda usam texto branco fixo no JSX, por isso o card é sempre escuro.
 	 */
 	.neu-surface {
-		background-color: #111827;
+		background-color: #161618;
+		background-image: linear-gradient(180deg, rgb(255 255 255 / 0.04) 0%, rgb(255 255 255 / 0) 100%);
 	}
 
 	.neu-outset {
-		border: 1px solid #1f2937;
-		box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+		border: 1px solid rgb(255 255 255 / 0.07);
+		box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.35);
 	}
 
 	.neu-inset {
-		background-color: #0b0f14;
-		box-shadow: inset 0 0 0 1px #374151;
+		background-color: #0b0b0c;
+		box-shadow: inset 0 0 0 1px #373738;
 	}
 
 	.neu-pressable {
@@ -673,11 +813,11 @@
 	}
 
 	.neu-pressable:hover {
-		background-color: #161e2b;
+		background-color: #1c1c1f;
 	}
 
 	.neu-pressable:active {
-		background-color: #0b0f14;
+		background-color: #0b0b0c;
 	}
 }
 
