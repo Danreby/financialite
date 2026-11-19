@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { router } from '@inertiajs/react'
+import { toast } from 'react-toastify'
 import ExpenseForm from '@/Components/system/ExpenseForm'
+import QuickIncomeForm from '@/Components/system/income/QuickIncomeForm'
 
 /** Evento disparado quando uma transação é criada pelo botão global. */
 export const TRANSACTION_CREATED_EVENT = 'financialite:transaction-created'
 
-const NewTransactionContext = createContext({ openNewTransaction: () => {} })
+const NewTransactionContext = createContext({ openNewTransaction: () => {}, openNewIncome: () => {} })
 
 export const useNewTransaction = () => useContext(NewTransactionContext)
 
@@ -19,17 +21,19 @@ function isTypingTarget(target) {
 }
 
 /**
- * "Nova transação" de qualquer tela: abre o ExpenseForm num modal, com as
+ * "Nova despesa" de qualquer tela: abre o ExpenseForm num modal, com as
  * listas (cartões, contas e categorias) buscadas na hora em
  * `transaction-form.options`. Atalho: tecla N fora de campos de texto.
+ * "Nova entrada" (só pela paleta Ctrl K) abre o QuickIncomeForm do Dashboard.
+ * O nome openNewTransaction ficou por compatibilidade: abre a despesa.
  */
 export default function NewTransactionProvider({ children }) {
   const [open, setOpen] = useState(false)
+  const [incomeOpen, setIncomeOpen] = useState(false)
   const [options, setOptions] = useState(EMPTY)
   const requestRef = useRef(0)
 
-  const openNewTransaction = useCallback(() => {
-    setOpen(true)
+  const loadOptions = useCallback(() => {
     const requestId = ++requestRef.current
     axios
       .get(route('transaction-form.options'))
@@ -44,6 +48,21 @@ export default function NewTransactionProvider({ children }) {
       .catch(() => {
         // Sem as listas o formulário ainda funciona (sem cartão e sem categoria).
       })
+  }, [])
+
+  const openNewTransaction = useCallback(() => {
+    setOpen(true)
+    loadOptions()
+  }, [loadOptions])
+
+  const openNewIncome = useCallback(() => {
+    setIncomeOpen(true)
+    loadOptions()
+  }, [loadOptions])
+
+  const created = useCallback(() => {
+    window.dispatchEvent(new CustomEvent(TRANSACTION_CREATED_EVENT))
+    router.reload({ preserveScroll: true, preserveState: true })
   }, [])
 
   const close = useCallback(() => setOpen(false), [])
@@ -62,7 +81,7 @@ export default function NewTransactionProvider({ children }) {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [openNewTransaction])
 
-  const value = useMemo(() => ({ openNewTransaction }), [openNewTransaction])
+  const value = useMemo(() => ({ openNewTransaction, openNewIncome }), [openNewTransaction, openNewIncome])
 
   return (
     <NewTransactionContext.Provider value={value}>
@@ -75,8 +94,17 @@ export default function NewTransactionProvider({ children }) {
         categories={options.categories}
         onSuccess={() => {
           setOpen(false)
-          window.dispatchEvent(new CustomEvent(TRANSACTION_CREATED_EVENT))
-          router.reload({ preserveScroll: true, preserveState: true })
+          created()
+        }}
+      />
+      <QuickIncomeForm
+        isOpen={incomeOpen}
+        onClose={() => setIncomeOpen(false)}
+        bankAccountsList={options.bankAccountsList}
+        onSuccess={() => {
+          setIncomeOpen(false)
+          toast.success('Entrada cadastrada com sucesso!')
+          created()
         }}
       />
     </NewTransactionContext.Provider>

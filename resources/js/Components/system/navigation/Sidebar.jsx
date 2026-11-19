@@ -49,6 +49,14 @@ export default function Sidebar({ open = true, setOpen, badges = {} }) {
     if (open) setHint(null)
   }, [open])
 
+  // O grupo da página atual sempre abre (e o estado salvo passa a refletir isso).
+  useEffect(() => {
+    const activeGroup = visibleGroups().find((group) => group.items.some((item) => isActivePath(currentPath, item.route)))
+    if (activeGroup) {
+      setCollapsedGroups((prev) => (prev[activeGroup.id] ? { ...prev, [activeGroup.id]: false } : prev))
+    }
+  }, [currentPath])
+
   const showHint = useCallback((label, element) => {
     const rect = element.getBoundingClientRect()
     setHint({ label, top: rect.top + rect.height / 2, left: rect.right + 12 })
@@ -81,7 +89,7 @@ export default function Sidebar({ open = true, setOpen, badges = {} }) {
       style={{ width: open ? SIDEBAR_WIDTH.open : SIDEBAR_WIDTH.closed }}
       className="surface-panel fixed bottom-3 left-3 top-3 z-30 flex flex-col overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none"
     >
-      <div className={cx('flex items-center gap-2 px-3 pb-2 pt-4', collapsed ? 'flex-col' : 'justify-between pl-4')}>
+      <div className={cx('flex items-center gap-2 px-3 pb-2 pt-3', collapsed ? 'flex-col' : 'justify-between pl-4')}>
         <Link
           href={route('dashboard')}
           className="flex min-w-0 items-center gap-2.5 rounded-chip focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
@@ -102,12 +110,12 @@ export default function Sidebar({ open = true, setOpen, badges = {} }) {
         />
       </div>
 
-      <nav aria-label="Páginas" className="scrollbar-custom flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3">
+      <nav aria-label="Páginas" className="scrollbar-custom flex-1 overflow-y-auto overflow-x-hidden px-3 pb-2">
         {groups.map((group, index) => {
           const listId = `${idPrefix}-${group.id}`
           const groupCollapsed = !collapsed && Boolean(collapsedGroups[group.id])
           return (
-            <div key={group.id} className={cx(index > 0 && (collapsed ? 'mt-2 border-t border-line pt-2' : 'mt-3'))}>
+            <div key={group.id} className={cx(index > 0 && (collapsed ? 'mt-2 border-t border-line pt-2' : 'mt-2'))}>
               {!collapsed && (
                 <h2 className="mb-1">
                   <button
@@ -131,35 +139,35 @@ export default function Sidebar({ open = true, setOpen, badges = {} }) {
             </div>
           )
         })}
-
-        <ul className={cx('space-y-0.5', collapsed ? 'mt-2 border-t border-line pt-2' : 'mt-3 border-t border-line pt-3')}>
-          {footer.map(renderItem)}
-        </ul>
       </nav>
 
-      <div className="space-y-2 px-3 pb-3">
+      <div className="space-y-2 border-t border-line px-3 pb-3 pt-2">
+        <ul className="space-y-0.5" aria-label="Ajustes">
+          {footer.map(renderItem)}
+        </ul>
+
         {collapsed ? (
           <div className="flex justify-center">
             <Button
               iconOnly
               icon={Plus}
               onClick={openNewTransaction}
-              aria-label="Nova transação"
+              aria-label="Nova despesa"
               aria-keyshortcuts="N"
-              onPointerEnter={(event) => showHint('Nova transação (N)', event.currentTarget)}
+              onPointerEnter={(event) => showHint('Nova despesa (N)', event.currentTarget)}
               onPointerLeave={hideHint}
-              onFocus={(event) => showHint('Nova transação (N)', event.currentTarget)}
+              onFocus={(event) => showHint('Nova despesa (N)', event.currentTarget)}
               onBlur={hideHint}
             />
           </div>
         ) : (
           <div className="rounded-[14px] border border-line bg-surface-sunken p-3">
-            <p className="text-sm font-semibold text-content-primary">Nova transação</p>
-            <p className="mt-0.5 text-xs leading-snug text-content-muted">
-              Registre um gasto ou uma entrada. Atalho <Kbd className="ml-0.5 h-[18px] px-1">N</Kbd>
+            <p className="text-sm font-semibold text-content-primary">Nova despesa</p>
+            <p className="sidebar-card-text mt-0.5 text-xs leading-snug text-content-muted">
+              Registre um gasto no débito ou no crédito. Atalho <Kbd className="ml-0.5 h-[18px] px-1">N</Kbd>
             </p>
             <Button size="sm" icon={Plus} onClick={openNewTransaction} aria-keyshortcuts="N" className="mt-2.5 w-full">
-              Registrar
+              Registrar despesa
             </Button>
           </div>
         )}

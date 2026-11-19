@@ -44,7 +44,7 @@ export default function MobileBottomBar() {
           <Plus className="h-4 w-4" strokeWidth={2.25} />
         </span>
         Nova
-        <span className="sr-only"> transação</span>
+        <span className="sr-only"> despesa</span>
       </button>
     </nav>
   )

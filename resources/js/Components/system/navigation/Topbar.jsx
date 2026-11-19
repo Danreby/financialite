@@ -28,7 +28,7 @@ export default function Topbar({ user, onToggleNotifications, onOpenMobileNav, m
   const { url, props } = usePage()
   const initialUnread = Number(props.unreadNotificationCount ?? 0)
   const { isDark, toggleColorMode } = useTheme()
-  const { openNewTransaction } = useNewTransaction()
+  const { openNewTransaction, openNewIncome } = useNewTransaction()
 
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(initialUnread)
@@ -240,7 +240,7 @@ export default function Topbar({ user, onToggleNotifications, onOpenMobileNav, m
         </div>
       </div>
 
-      <CommandPalette open={palette.open} initialQuery={palette.query} onClose={closePalette} onNewTransaction={openNewTransaction} />
+      <CommandPalette open={palette.open} initialQuery={palette.query} onClose={closePalette} onNewExpense={openNewTransaction} onNewIncome={openNewIncome} />
     </header>
   )
 }

@@ -21,8 +21,8 @@ export default function NavItem({ href, label, icon: Icon, active = false, colla
       onFocus={showHint}
       onBlur={onHintEnd}
       className={cx(
-        'themed-nav-item min-h-9 whitespace-nowrap py-1.5',
-        active && 'themed-nav-item-active shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]',
+        'themed-nav-item min-h-[34px] whitespace-nowrap py-1.5',
+        active && 'themed-nav-item-active',
         collapsed && 'justify-center px-0',
       )}
     >

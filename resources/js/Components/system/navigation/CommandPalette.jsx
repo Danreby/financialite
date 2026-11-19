@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { router } from '@inertiajs/react'
-import { CornerDownLeft, Plus, Search } from 'lucide-react'
+import { ArrowDownLeft, CornerDownLeft, Plus, Search } from 'lucide-react'
 import { Kbd } from '@/Components/ui'
 import cx from '@/Components/ui/cx'
 import { useFocusTrap } from '@/Hooks/useFocusTrap'
@@ -14,11 +14,11 @@ const normalize = (text) =>
     .replace(/[̀-ͯ]/g, '')
 
 /**
- * Paleta de comandos (Ctrl/⌘ K): lista os destinos do menu e a ação
- * "Nova transação". Filtra enquanto digita, setas movem, Enter abre,
+ * Paleta de comandos (Ctrl/⌘ K): lista os destinos do menu e as ações
+ * "Nova despesa" e "Nova entrada". Filtra enquanto digita, setas movem, Enter abre,
  * Esc fecha. Padrão ARIA combobox + listbox, foco preso no diálogo.
  */
-export default function CommandPalette({ open, onClose, initialQuery = '', onNewTransaction }) {
+export default function CommandPalette({ open, onClose, initialQuery = '', onNewExpense, onNewIncome }) {
   const [query, setQuery] = useState(initialQuery)
   const [activeIndex, setActiveIndex] = useState(0)
   const listRef = useRef(null)
@@ -52,21 +52,29 @@ export default function CommandPalette({ open, onClose, initialQuery = '', onNew
       haystack: normalize(`${item.label} ${item.group} ${item.keywords ?? ''}`),
       run: () => router.visit(route(item.route)),
     }))
-    const actions = onNewTransaction
-      ? [
-          {
-            key: 'nova-transacao',
-            label: 'Nova transação',
-            group: 'Ação',
-            icon: Plus,
-            shortcut: 'N',
-            haystack: normalize('nova transação gasto entrada despesa registrar adicionar'),
-            run: onNewTransaction,
-          },
-        ]
-      : []
+    const actions = []
+    if (onNewExpense) {
+      actions.push({
+        key: 'nova-despesa',
+        label: 'Nova despesa',
+        group: 'Ação',
+        icon: Plus,
+        haystack: normalize('nova despesa gasto compra débito crédito registrar adicionar transação'),
+        run: onNewExpense,
+      })
+    }
+    if (onNewIncome) {
+      actions.push({
+        key: 'nova-entrada',
+        label: 'Nova entrada',
+        group: 'Ação',
+        icon: ArrowDownLeft,
+        haystack: normalize('nova entrada receita salário pix recebimento registrar adicionar'),
+        run: onNewIncome,
+      })
+    }
     return [...actions, ...destinations]
-  }, [open, onNewTransaction])
+  }, [open, onNewExpense, onNewIncome])
 
   const results = useMemo(() => {
     const terms = normalize(query).trim().split(/\s+/).filter(Boolean)
@@ -181,10 +189,16 @@ export default function CommandPalette({ open, onClose, initialQuery = '', onNew
         </ul>
 
         {results.length === 0 && (
-          <p className="px-4 pb-6 pt-2 text-center text-sm text-content-muted" role="status">
+          <p className="px-4 pb-6 pt-2 text-center text-sm text-content-muted" aria-hidden="true">
             Nenhuma página com “{query}”. Tente “fatura”, “bancos” ou “relatórios”.
           </p>
         )}
+
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {results.length === 0
+            ? `Nenhum resultado para ${query}`
+            : `${results.length} ${results.length === 1 ? 'resultado' : 'resultados'}`}
+        </p>
 
         <div className="hidden items-center gap-3 border-t border-line px-4 py-2 text-[11px] text-content-muted sm:flex">
           <span className="inline-flex items-center gap-1">

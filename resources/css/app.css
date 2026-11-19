@@ -746,8 +746,17 @@
 		}
 	}
 
+	/* Telas baixas (até 900 px): o card do menu perde a descrição para o rodapé caber. */
+	@media (max-height: 900px) {
+		.sidebar-card-text {
+			display: none;
+		}
+	}
+
 	.themed-nav-item-active {
 		background-color: rgb(var(--accent-soft));
+		/* Realce interno do topo, o mesmo dos cards (nada no modo claro). */
+		background-image: var(--card-highlight);
 		color: rgb(var(--accent-text));
 		font-weight: 600;
 

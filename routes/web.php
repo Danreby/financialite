@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('dashboard.data');
 
     Route::get('/transaction-form/options', [DashboardController::class, 'formOptions'])
+        ->middleware('throttle:60,1')
         ->name('transaction-form.options');
 
     Route::get('/reports/data', [ReportController::class, 'data'])

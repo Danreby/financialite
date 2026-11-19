@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Bank;
+use App\Models\BankUser;
+use App\Models\Card;
+use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,6 +28,11 @@ class TransactionFormOptionsTest extends TestCase
         Category::create(['user_id' => $user->id, 'name' => 'Mercado', 'type' => 'expense']);
         Category::create(['user_id' => $other->id, 'name' => 'De outro usuário', 'type' => 'expense']);
 
+        $myCard = CardUser::create(['card_id' => Card::create(['name' => 'Meu cartão'])->id, 'user_id' => $user->id]);
+        $otherCard = CardUser::create(['card_id' => Card::create(['name' => 'Cartão de outro'])->id, 'user_id' => $other->id]);
+        $myBank = BankUser::create(['bank_id' => Bank::create(['name' => 'Meu banco'])->id, 'user_id' => $user->id]);
+        $otherBank = BankUser::create(['bank_id' => Bank::create(['name' => 'Banco de outro'])->id, 'user_id' => $other->id]);
+
         $response = $this->actingAs($user)
             ->getJson(route('transaction-form.options'))
             ->assertOk()
@@ -33,5 +42,13 @@ class TransactionFormOptionsTest extends TestCase
 
         $this->assertContains('Mercado', $names);
         $this->assertNotContains('De outro usuário', $names);
+
+        $cardIds = collect($response->json('bankAccounts'))->pluck('id');
+        $this->assertContains($myCard->id, $cardIds);
+        $this->assertNotContains($otherCard->id, $cardIds);
+
+        $bankIds = collect($response->json('bankAccountsList'))->pluck('id');
+        $this->assertContains($myBank->id, $bankIds);
+        $this->assertNotContains($otherBank->id, $bankIds);
     }
 }
