@@ -1,0 +1,1 @@
+import{j as s}from"./vendor-rgVNLKw5.js";import{B as o}from"./Button-DPiInlBf.js";import{l as m}from"./legacyClassName-IUNYcae0.js";function u({type:t="submit",className:a="",...r}){return s.jsx(o,{variant:"danger",type:t,className:m(a),...r})}export{u as D};
