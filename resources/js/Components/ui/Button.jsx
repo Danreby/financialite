@@ -1,9 +1,10 @@
 import { forwardRef } from 'react';
 import Spinner from './Spinner';
 import cx from './cx';
+import renderIcon from './renderIcon';
 
 const BASE =
-    'relative inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap font-semibold ' +
+    'relative inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap font-semibold [&_svg]:text-current ' +
     'transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out ' +
     'active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50';
 
@@ -37,8 +38,8 @@ const Button = forwardRef(function Button(
         as: Tag = 'button',
         variant = 'primary',
         size = 'md',
-        icon: Icon,
-        iconRight: IconRight,
+        icon,
+        iconRight,
         iconOnly = false,
         loading = false,
         disabled,
@@ -71,10 +72,10 @@ const Button = forwardRef(function Button(
             {loading ? (
                 <Spinner size={size === 'sm' ? 'sm' : 'md'} />
             ) : (
-                Icon && <Icon aria-hidden="true" className={s.glyph} />
+                renderIcon(icon, { className: s.glyph })
             )}
             {iconOnly ? null : children}
-            {!iconOnly && IconRight && <IconRight aria-hidden="true" className={s.glyph} />}
+            {!iconOnly && renderIcon(iconRight, { className: s.glyph })}
         </Tag>
     );
 });

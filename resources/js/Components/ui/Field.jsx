@@ -36,7 +36,7 @@ export default function Field({ id, label, helper, error, required = false, opti
                 )}
                 {children}
                 {error && (
-                    <p id={errorId} className="text-xs font-medium text-danger-strong">
+                    <p id={errorId} aria-live="polite" className="text-xs font-medium text-danger-strong">
                         {error}
                     </p>
                 )}

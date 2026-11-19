@@ -2,6 +2,7 @@ import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import MoneyText from './MoneyText';
 import Skeleton from './Skeleton';
 import cx from './cx';
+import renderIcon from './renderIcon';
 
 const TREND_ICON = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus };
 const TONE_CLASS = { positive: 'text-success-strong', negative: 'text-danger-strong', neutral: 'text-content-muted', warning: 'text-warning-strong' };
@@ -11,23 +12,20 @@ const TONE_CLASS = { positive: 'text-success-strong', negative: 'text-danger-str
  * linha de variação com seta + texto + legenda.
  * - icon: componente lucide
  * - value: número (com `money`, vira MoneyText) ou nó pronto
- * - change: texto da variação ("+4,8%"); trend: up | down | flat
+ * - change: texto da variação ("+4,8%"); trend: up | down | flat | none (sem seta, para textos)
  * - tone: positive | negative | neutral | warning (padrão: up = positivo, down = negativo).
  *   Para gastos, subir é ruim: passe tone="negative" com trend="up".
  * - caption: "vs mês anterior"
  */
-export default function StatCard({ label, value, money = false, icon: Icon, change, trend = 'flat', tone, caption, loading = false, className = '' }) {
+export default function StatCard({ label, value, money = false, icon, change, trend = 'flat', tone, caption, loading = false, className = '' }) {
     const resolvedTone = tone ?? (trend === 'up' ? 'positive' : trend === 'down' ? 'negative' : 'neutral');
-    const TrendIcon = TREND_ICON[trend] ?? Minus;
+    const TrendIcon = trend === 'none' ? null : TREND_ICON[trend] ?? Minus;
+    const iconNode = renderIcon(icon);
 
     return (
         <div className={cx('surface-card flex flex-col gap-3 p-4', className)} aria-busy={loading || undefined}>
             <div className="flex items-center gap-2.5">
-                {Icon && (
-                    <span className="icon-chip">
-                        <Icon aria-hidden="true" />
-                    </span>
-                )}
+                {iconNode && <span className="icon-chip">{iconNode}</span>}
                 <span className="truncate text-sm font-medium text-content-secondary">{label}</span>
             </div>
 
@@ -46,7 +44,7 @@ export default function StatCard({ label, value, money = false, icon: Icon, chan
                         <p className="flex min-w-0 items-center gap-1.5 text-xs">
                             {change && (
                                 <span className={cx('inline-flex shrink-0 items-center gap-0.5 font-semibold tabular-nums', TONE_CLASS[resolvedTone])}>
-                                    <TrendIcon aria-hidden="true" className="h-3.5 w-3.5" />
+                                    {TrendIcon && <TrendIcon aria-hidden="true" className="h-3.5 w-3.5" />}
                                     {change}
                                 </span>
                             )}

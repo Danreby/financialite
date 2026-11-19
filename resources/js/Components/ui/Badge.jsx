@@ -1,4 +1,5 @@
 import cx from './cx';
+import renderIcon from './renderIcon';
 
 const TONES = {
     neutral: '',
@@ -13,10 +14,10 @@ const TONES = {
  * Selo em pílula. O texto sempre diz o estado; o tom só reforça.
  * Tons: neutral, accent, success, warning, danger, info.
  */
-export default function Badge({ tone = 'neutral', icon: Icon, className = '', children, ...props }) {
+export default function Badge({ tone = 'neutral', icon, className = '', children, ...props }) {
     return (
         <span className={cx('pill', TONES[tone] ?? '', className)} {...props}>
-            {Icon && <Icon aria-hidden="true" className="h-3 w-3" />}
+            {renderIcon(icon, { className: 'h-3 w-3' })}
             {children}
         </span>
     );

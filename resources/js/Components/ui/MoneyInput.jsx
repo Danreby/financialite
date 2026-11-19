@@ -1,12 +1,13 @@
 import { forwardRef, useEffect, useRef } from 'react';
 import { useCurrencyInput } from '@/Hooks/useCurrencyInput';
 import Input from './Input';
+import cx from './cx';
 
 /**
  * Valor em reais: mostra "1.234,56" com o prefixo R$ e devolve o número em
  * `onValueChange(numero)`. Aceita `value` numérico (controlado).
  */
-const MoneyInput = forwardRef(function MoneyInput({ value, onValueChange, placeholder = '0,00', ...props }, ref) {
+const MoneyInput = forwardRef(function MoneyInput({ value, onValueChange, placeholder = '0,00', className = '', ...props }, ref) {
     const { displayValue, numericValue, handleChange, setFromNumeric } = useCurrencyInput(value ?? '');
     const lastEmitted = useRef(numericValue);
 
@@ -35,7 +36,7 @@ const MoneyInput = forwardRef(function MoneyInput({ value, onValueChange, placeh
             placeholder={placeholder}
             value={displayValue}
             onChange={handleChange}
-            className="tabular-nums"
+            className={cx('tabular-nums', className)}
             {...props}
         />
     );

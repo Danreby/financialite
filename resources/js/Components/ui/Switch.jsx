@@ -2,7 +2,7 @@ import { useId } from 'react';
 import cx from './cx';
 
 /**
- * Interruptor (role=switch). O rótulo é obrigatório e visível; `description`
+ * Interruptor (role=switch). O rótulo é obrigatório, visível e clicável; `description`
  * fica ligada por aria-describedby.
  */
 export default function Switch({ checked, onChange, label, description, disabled = false, className = '' }) {
@@ -11,9 +11,9 @@ export default function Switch({ checked, onChange, label, description, disabled
     return (
         <div className={cx('flex items-start justify-between gap-4', className)}>
             <div className="min-w-0">
-                <span id={`${id}-l`} className="text-sm font-medium text-content-primary">
+                <label htmlFor={`${id}-s`} className="cursor-pointer text-sm font-medium text-content-primary">
                     {label}
-                </span>
+                </label>
                 {description && (
                     <p id={`${id}-d`} className="mt-0.5 text-xs text-content-muted">
                         {description}
@@ -22,9 +22,9 @@ export default function Switch({ checked, onChange, label, description, disabled
             </div>
             <button
                 type="button"
+                id={`${id}-s`}
                 role="switch"
                 aria-checked={!!checked}
-                aria-labelledby={`${id}-l`}
                 aria-describedby={description ? `${id}-d` : undefined}
                 disabled={disabled}
                 onClick={() => onChange?.(!checked)}

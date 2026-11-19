@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { applyAppearance, useTheme } from '@/Contexts/ThemeContext';
 import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer';
+import FinancialIcon from '@/Components/common/icons/FinancialIcon';
+import LegacyEmptyState from '@/Components/common/EmptyState';
 import {
     AlertItem,
     Badge,
@@ -138,6 +140,7 @@ export default function UiKit() {
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <StatCard label="Taxa de economia" icon={TrendingUp} value="28,4%" change="estável" trend="flat" caption="média de 3 meses" />
+                        <StatCard label="Ícone como elemento" icon={<FinancialIcon type={1} />} value={3} change="2 fonte(s) ativa(s)" trend="none" tone="positive" />
                     </div>
                 </Section>
 
@@ -359,6 +362,15 @@ export default function UiKit() {
                                 title="Nenhuma transação encontrada"
                                 text="Nenhum lançamento bate com a busca. Tente outro termo ou limpe os filtros."
                                 action={<Button variant="secondary" size="sm">Limpar filtros</Button>}
+                            />
+                        </Card>
+                    </Section>
+                    <Section title="Vazio (invólucro antigo, ícone elemento)">
+                        <Card>
+                            <LegacyEmptyState
+                                icon={<FinancialIcon type={1} className="h-7 w-7" />}
+                                title="Nenhum cartão vinculado"
+                                description="Adicione um cartão para começar a gerenciar suas faturas e transações."
                             />
                         </Card>
                     </Section>

@@ -1,0 +1,1 @@
+const s=/^(-?m[trblxy]?-|w-|min-w-|max-w-|flex-1$|flex-auto$|flex-none$|grow|shrink|basis-|self-|justify-self-|place-self-|order-|col-|row-|hidden$|sr-only$|not-sr-only$|block$|inline-flex$|mt-auto$|ml-auto$|mr-auto$|mx-auto$)/;function o(e=""){return String(e).split(/\s+/).filter(l=>{if(!l)return!1;const t=l.split(":").pop();return s.test(t)}).join(" ")}export{o as l};

@@ -1,5 +1,6 @@
 import Field from '@/Components/ui/Field';
 import Select from '@/Components/ui/Select';
+import legacyClassName from '@/Components/ui/legacyClassName';
 
 /**
  * Legado: use `@/Components/ui/Field` + `Select`. Invólucro fino; o rótulo
@@ -21,7 +22,7 @@ export default function FloatLabelSelect({
 }) {
     return (
         <Field id={id} label={label} required={isRequired} error={error} helper={helperText} className={containerClassName}>
-            <Select name={name || id} value={value} onChange={onChange} disabled={isDisabled} className={className}>
+            <Select name={name || id} value={value} onChange={onChange} disabled={isDisabled} className={legacyClassName(className)}>
                 {children}
             </Select>
         </Field>

@@ -1,17 +1,23 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import Input from './Input';
 import { useField } from './Field';
 import Kbd from './Kbd';
 
 /**
- * Busca com ícone à esquerda e a dica de atalho "Ctrl K" à direita.
+ * Busca com ícone à esquerda e a dica de atalho "Ctrl K" (no Mac, "⌘ K") à direita.
  * Sem <Field> com rótulo, passe `aria-label` (padrão: "Buscar").
  * `hotkey` liga o atalho Ctrl/⌘ + K para focar o campo.
  */
 const SearchInput = forwardRef(function SearchInput({ hotkey = false, size = 'md', ...props }, ref) {
     const field = useField();
     const inner = useRef(null);
+    const [isMac, setIsMac] = useState(false);
+
+    useEffect(() => {
+        const platform = navigator.userAgentData?.platform || navigator.platform || '';
+        setIsMac(/mac|iphone|ipad/i.test(platform));
+    }, []);
     useImperativeHandle(ref, () => inner.current);
 
     useEffect(() => {
@@ -32,9 +38,9 @@ const SearchInput = forwardRef(function SearchInput({ hotkey = false, size = 'md
             type="search"
             size={size}
             aria-label={field || props.id ? undefined : 'Buscar'}
-            aria-keyshortcuts={hotkey ? 'Control+K' : undefined}
+            aria-keyshortcuts={hotkey ? (isMac ? 'Meta+K' : 'Control+K') : undefined}
             leading={<Search />}
-            trailing={hotkey ? <Kbd>Ctrl K</Kbd> : null}
+            trailing={hotkey ? <Kbd>{isMac ? '⌘ K' : 'Ctrl K'}</Kbd> : null}
             className="[&::-webkit-search-cancel-button]:hidden"
             {...props}
         />

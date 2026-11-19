@@ -19,6 +19,7 @@ export default function ProgressBar({
     warnAt = 0.8,
     size = 'md',
     className = '',
+    'aria-label': ariaLabel,
 }) {
     const ratio = max > 0 ? value / max : 0;
     const over = ratio > 1;
@@ -39,7 +40,7 @@ export default function ProgressBar({
             )}
             <div
                 role="progressbar"
-                aria-label={typeof label === 'string' ? label : undefined}
+                aria-label={ariaLabel ?? (typeof label === 'string' ? label : undefined)}
                 aria-valuemin={0}
                 aria-valuemax={max}
                 aria-valuenow={Math.min(Math.max(value, 0), max)}
