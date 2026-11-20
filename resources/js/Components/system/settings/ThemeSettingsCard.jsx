@@ -1,9 +1,16 @@
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
 import { useTheme, THEMES } from '@/Contexts/ThemeContext'
+import { SegmentedControl } from '@/Components/ui'
+
+const MODE_OPTIONS = [
+  { value: 'light', label: 'Claro' },
+  { value: 'dark', label: 'Escuro' },
+  { value: 'system', label: 'Automático' },
+]
 
 export default function ThemeSettingsCard() {
-  const { theme: currentTheme, setTheme } = useTheme()
+  const { theme: currentTheme, setTheme, colorMode, setColorMode } = useTheme()
   const [saving, setSaving] = useState(false)
 
   const handleSelectTheme = async (themeKey) => {
@@ -34,6 +41,20 @@ export default function ThemeSettingsCard() {
         </p>
       </div>
 
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-content-primary">Modo</p>
+          <p className="text-xs text-content-muted">Automático segue o tema do sistema.</p>
+        </div>
+        <SegmentedControl
+          label="Modo de cor"
+          options={MODE_OPTIONS}
+          value={colorMode}
+          onChange={setColorMode}
+        />
+      </div>
+
+      <p className="mb-3 text-sm font-medium text-content-primary">Cor de destaque</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {Object.values(THEMES).map((themeConfig) => {
           const isSelected = currentTheme === themeConfig.key
