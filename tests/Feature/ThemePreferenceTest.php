@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Support\Palettes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -169,5 +170,34 @@ class ThemePreferenceTest extends TestCase
         $this->assertMatchesRegularExpression('/<html[^>]*class="dark"/', $html);
         $this->assertStringContainsString('var key = "forest";', $html);
         $this->assertStringContainsString('"accentText":"#2DD4BF"', $html);
+    }
+
+    public function test_missing_palettes_file_falls_back_to_brasa(): void
+    {
+        $palettes = Palettes::colors(storage_path('framework/testing/nao-existe.json'));
+
+        $this->assertSame(['brasa'], array_keys($palettes));
+        $this->assertSame('#FF6B35', $palettes['brasa']['dark']['accentText']);
+    }
+
+    public function test_broken_palettes_file_falls_back_to_brasa(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'palettes');
+        file_put_contents($path, '{ quebrado');
+
+        try {
+            $this->assertSame(Palettes::FALLBACK, Palettes::colors($path));
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    public function test_fallback_matches_brasa_in_palettes_json(): void
+    {
+        $json = json_decode(file_get_contents(Palettes::path()), true);
+
+        $this->assertSame($json['brasa']['light'], Palettes::FALLBACK['brasa']['light']);
+        $this->assertSame($json['brasa']['dark'], Palettes::FALLBACK['brasa']['dark']);
+        $this->assertSame(array_keys($json), array_keys(Palettes::colors()));
     }
 }

@@ -4,9 +4,8 @@
     // Sem escolha salva o padrão é o escuro; 'system' é decidido pelo script abaixo.
     $serverDark = ! in_array($colorMode, ['light', 'system'], true);
     $userPalette = auth()->user()?->theme;
-    // Mesma fonte do ThemeContext; só as cores entram na página.
-    $palettes = collect(json_decode(file_get_contents(resource_path('js/Constants/palettes.json')), true))
-        ->map(fn ($p) => ['light' => $p['light'], 'dark' => $p['dark']]);
+    // Mesma fonte do ThemeContext (lida uma vez, em cache); só as cores entram na página.
+    $palettes = \App\Support\Palettes::colors();
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $serverDark])>
     <head>
