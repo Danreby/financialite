@@ -29,7 +29,7 @@ function NewTransactionButton() {
   const { openNewTransaction } = useNewTransaction()
   return (
     <Button icon={Plus} onClick={openNewTransaction} className="w-full sm:w-auto">
-      Nova transação
+      Nova despesa
     </Button>
   )
 }

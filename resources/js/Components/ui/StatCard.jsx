@@ -41,14 +41,14 @@ export default function StatCard({ label, value, money = false, icon, change, tr
                         {money ? <MoneyText value={value} /> : value}
                     </div>
                     {(change || caption) && (
-                        <p className="flex min-w-0 items-center gap-1.5 text-xs">
+                        <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
                             {change && (
                                 <span className={cx('inline-flex shrink-0 items-center gap-0.5 font-semibold tabular-nums', TONE_CLASS[resolvedTone])}>
                                     {TrendIcon && <TrendIcon aria-hidden="true" className="h-3.5 w-3.5" />}
                                     {change}
                                 </span>
                             )}
-                            {caption && <span className="truncate text-content-muted">{caption}</span>}
+                            {caption && <span className="min-w-0 text-content-muted">{caption}</span>}
                         </p>
                     )}
                 </>

@@ -103,10 +103,10 @@ export default function SpendingChart({ data = [], loading = false, selectedMont
         pointHoverRadius: s.dashed ? 0 : 5,
         pointHoverBorderWidth: 2,
         pointHoverBackgroundColor: s.color,
-        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderColor: chartColors.surface,
       })),
     }),
-    [labels, series],
+    [labels, series, chartColors.surface],
   )
 
   const external = useCallback(({ chart, tooltip }) => {
@@ -139,7 +139,7 @@ export default function SpendingChart({ data = [], loading = false, selectedMont
       plugins: {
         legend: { display: false },
         tooltip: { enabled: false, external },
-        guides: { selectedIndex, selectedColor: hexToRgba(creditColor, 0.55), cursorColor: chartColors.grid.replace(/[\d.]+\)$/, '0.22)') },
+        guides: { selectedIndex, selectedColor: hexToRgba(creditColor, 0.55), cursorColor: chartColors.cursor },
       },
       scales: {
         x: {

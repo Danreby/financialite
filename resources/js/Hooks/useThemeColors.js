@@ -20,12 +20,14 @@ const FALLBACK = {
     'chart-4': '96 165 250', 'chart-5': '45 212 191', 'chart-6': '167 139 250',
     'chart-grid': 'rgb(255 255 255 / 0.06)', 'chart-tick': '154 154 160',
     'chart-area-from': 'rgb(242 84 27 / 0.28)', 'chart-area-to': 'rgb(242 84 27 / 0)',
+    'surface-raised': '22 22 24', 'content-muted': '154 154 160',
   },
   light: {
     'chart-1': '242 84 27', 'chart-2': '219 39 119', 'chart-3': '113 113 122',
     'chart-4': '37 99 235', 'chart-5': '13 148 136', 'chart-6': '124 58 237',
     'chart-grid': 'rgb(24 24 27 / 0.08)', 'chart-tick': '82 82 91',
     'chart-area-from': 'rgb(242 84 27 / 0.2)', 'chart-area-to': 'rgb(242 84 27 / 0)',
+    'surface-raised': '255 255 255', 'content-muted': '82 82 91',
   },
 }
 
@@ -85,6 +87,9 @@ export default function useThemeColors() {
       neutral: series3,
       areaFrom: toRgba(tokens['chart-area-from']),
       areaTo: toRgba(tokens['chart-area-to']),
+      // Fundo do card (borda do ponto em destaque) e guia do cursor.
+      surface: toHex(tokens['surface-raised']),
+      cursor: toRgba([...tokens['content-muted'].slice(0, 3), 0.4]),
       // Categorias: paleta, rosa, azul, verde-azulado, violeta, neutro.
       palette: ['chart-1', 'chart-2', 'chart-4', 'chart-5', 'chart-6', 'chart-3'].map((name) => toHex(tokens[name])),
     }

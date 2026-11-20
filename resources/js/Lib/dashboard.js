@@ -37,10 +37,10 @@ export function percentChange(current, previous, threshold = TREND_THRESHOLD) {
   return { pct, abs: Math.abs(pct), direction }
 }
 
-/** Texto curto da variação: "+12%", "−8%" ou "0%". */
+/** Texto curto da variação: "+12%", "−8%" ou "estável" (dentro de ±threshold). */
 export function changeLabel(change) {
   if (!change) return ''
-  if (change.direction === 'flat') return formatPercent(change.abs)
+  if (change.direction === 'flat') return 'estável'
   return `${change.direction === 'up' ? '+' : '−'}${formatPercent(change.abs)}`
 }
 
@@ -118,22 +118,35 @@ export function buildDueDateKpi(nextDueInfo) {
   return { value, caption, tone, days, date: nearest.next_due_date }
 }
 
-/** Indicador de gasto: subir é ruim (vermelho), cair é bom (verde). */
-function spendingChange(change) {
+/** "2026-11" do dia de hoje (data local). */
+export function monthKeyOf(date) {
+  const d = new Date(date)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+/**
+ * Indicador de gasto: subir é ruim (vermelho), cair é bom (verde).
+ * `partial`: o mês ainda não acabou e é comparado com o mês anterior inteiro
+ * (a série não tem valores por dia para comparar até a mesma data).
+ */
+function spendingChange(change, partial) {
   if (!change) return {}
   return {
     change: changeLabel(change),
     trend: change.direction,
     tone: change.direction === 'up' ? 'negative' : change.direction === 'down' ? 'positive' : 'neutral',
-    caption: 'vs mês anterior',
+    caption: partial ? 'vs mês anterior inteiro (mês parcial)' : 'vs mês anterior',
   }
 }
 
 /**
  * Os cinco indicadores do resumo. Valores em reais saem como número (o card
- * formata com MoneyText); a variação vem da série mensal, quando existe.
+ * formata com MoneyText); a variação vem da série mensal, quando existe, e
+ * compara a mesma grandeza nos dois meses (débito do mês, crédito + débito do
+ * mês). A Fatura atual (saldo pendente) não tem equivalente no mês anterior,
+ * já paga, então fica sem variação.
  */
-export function buildKpis(stats = {}) {
+export function buildKpis(stats = {}, today = new Date()) {
   const summary = Array.isArray(stats.monthly_summary) ? stats.monthly_summary : []
   const monthKey = stats.current_month_key
   const invoice = num(stats.current_month_pending_bill)
@@ -142,10 +155,11 @@ export function buildKpis(stats = {}) {
   const due = buildDueDateKpi(stats.next_card_due_date)
   const monthLabel = stats.current_month_label || 'Mês atual'
 
-  const withFallback = (change, caption) => (change ? spendingChange(change) : { caption, trend: 'none' })
+  const partial = monthKey === monthKeyOf(today)
+  const withFallback = (change, caption) => (change ? spendingChange(change, partial) : { caption, trend: 'none' })
 
   return [
-    { id: 'fatura', label: 'Fatura atual', value: invoice, money: true, ...withFallback(monthOverMonth(summary, monthKey, creditOf), monthLabel) },
+    { id: 'fatura', label: 'Fatura atual', value: invoice, money: true, trend: 'none', caption: `Pendente em ${monthLabel}` },
     { id: 'debito', label: 'Transações no débito', value: debit, money: true, ...withFallback(monthOverMonth(summary, monthKey, debitOf), monthLabel) },
     { id: 'total', label: 'Total mensal', value: invoice + debit, money: true, ...withFallback(monthOverMonth(summary, monthKey, totalOf), 'Fatura + débito') },
     {
