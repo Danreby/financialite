@@ -1,133 +1,100 @@
-import React, { useState, useMemo } from 'react'
-import { formatCurrencyBRL } from '@/Lib/formatters'
-import TopSpendingPieChart from '@/Components/system/dashboard/TopSpendingPieChart'
-import LoadingOverlay from '@/Components/common/LoadingOverlay'
+import { useId, useMemo, useState } from 'react'
+import { ChartColumn } from 'lucide-react'
+import { Card, EmptyState, MoneyText, SegmentedControl, Select, Skeleton } from '@/Components/ui'
 import useThemeColors from '@/Hooks/useThemeColors'
-import { BarChart3, X } from 'lucide-react'
+import { formatPercent, withShares } from '@/Lib/dashboard'
 
-const FILTER_TABS = [
-  { key: 'all',    label: 'Todos'   },
-  { key: 'debit',  label: 'Débito'  },
-  { key: 'credit', label: 'Crédito' },
+const FILTERS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'debit', label: 'Débito' },
+  { value: 'credit', label: 'Crédito' },
 ]
 
-export default function TopSpendingCategories({
-  data = [],
-  debitData = [],
-  creditData = [],
-  label = 'Mês vigente',
-  recurringSpending = {},
-  nonRecurringSpending = {},
-  isLoading = false,
-  hasSelection = false,
-  onClearSelection,
-}) {
+const KEYS = { all: 'top_spending_categories', debit: 'debit_spending_categories', credit: 'credit_spending_categories' }
+
+/**
+ * "Maiores gastos" por categoria, do mês vigente ou do mês escolhido (no
+ * seletor ou com clique no gráfico). Barra com a fatia de cada categoria,
+ * valor e percentual escritos; recorrente × variável no filtro "Todos".
+ */
+export default function TopSpendingCategories({ stats, monthData, months = [], selectedMonth, onSelectMonth, loading, monthLoading, className = '' }) {
+  const [filter, setFilter] = useState('all')
   const { chartColors } = useThemeColors()
-  const [activeFilter, setActiveFilter] = useState('all')
+  const selectId = useId()
+  const source = monthData ?? stats ?? {}
 
-  const sourceData = useMemo(() => {
-    switch (activeFilter) {
-      case 'debit':  return Array.isArray(debitData)  ? debitData  : []
-      case 'credit': return Array.isArray(creditData) ? creditData : []
-      default:       return Array.isArray(data)       ? data       : []
-    }
-  }, [activeFilter, data, debitData, creditData])
-
-  const prepared = useMemo(() => {
-    const sorted = [...sourceData].sort((a, b) => Number(b.total || 0) - Number(a.total || 0))
-    const grandTotal = sorted.reduce((acc, item) => acc + Number(item.total || 0), 0)
-    return sorted.map((item) => ({
-      ...item,
-      share: grandTotal > 0 ? Math.round((Number(item.total || 0) / grandTotal) * 100) : 0,
-    }))
-  }, [sourceData])
-
-  const grandTotal = useMemo(
-    () => prepared.reduce((acc, item) => acc + Number(item.total || 0), 0),
-    [prepared],
-  )
-
-  const colors = chartColors.palette
-
-  const emptyLabel = activeFilter === 'all'
-    ? 'Nenhum gasto registrado neste período.'
-    : `Sem transações de ${activeFilter === 'debit' ? 'débito' : 'crédito'} neste período.`
+  const items = useMemo(() => withShares(source[KEYS[filter]]), [source, filter])
+  const total = items.reduce((sum, item) => sum + item.total, 0)
+  const recurring = Number(source.recurring_spending?.percentage) || 0
+  const variable = Number(source.non_recurring_spending?.percentage) || 0
+  const label = monthData?.period_label ?? stats?.top_spending_label ?? 'Mês vigente'
+  const busy = loading || monthLoading
 
   return (
-    <div className="relative rounded-2xl themed-card h-full flex flex-col">
-      <LoadingOverlay visible={isLoading} message="Carregando..." />
-
-      <div className="px-4 pt-4 pb-3 border-b border-gray-100 dark:border-white/[0.06]">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-theme-accent/10 dark:bg-theme-accent/20">
-              <BarChart3 className="w-3.5 h-3.5 text-theme-accent" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">
-                Maiores Gastos
-              </h2>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-tight mt-0.5 truncate">
-                {label}
-              </p>
-            </div>
-          </div>
-
-          {hasSelection && onClearSelection && (
-            <button
-              type="button"
-              onClick={onClearSelection}
-              className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-lg text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Limpar seleção"
-            >
-              <X className="w-3 h-3" />
-              Limpar
-            </button>
-          )}
+    <Card title="Maiores gastos" subtitle={`Por categoria em ${label}`} className={className} aria-busy={busy || undefined}>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={selectId} className="text-xs font-medium text-content-muted">
+            Mês
+          </label>
+          <Select id={selectId} size="sm" value={selectedMonth ?? ''} onChange={(e) => onSelectMonth?.(e.target.value || null)} disabled={loading}>
+            <option value="">Mês vigente</option>
+            {months.map((m) => (
+              <option key={m.month_key} value={m.month_key}>
+                {m.month_label}
+              </option>
+            ))}
+          </Select>
         </div>
+        <SegmentedControl size="sm" fullWidth label="Tipo de gasto" options={FILTERS} value={filter} onChange={setFilter} />
+      </div>
 
-        <div className="flex gap-1 mt-3">
-          {FILTER_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveFilter(tab.key)}
-              className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all duration-150 ${
-                activeFilter === tab.key
-                  ? 'bg-theme-accent text-white shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-              }`}
-            >
-              {tab.label}
-            </button>
+      {busy ? (
+        <div className="mt-4 flex flex-col gap-3">
+          <span className="sr-only">Carregando gastos</span>
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} lines={2} />
           ))}
         </div>
-      </div>
-
-      <div className="flex-1 p-4 flex flex-col min-h-0">
-        {prepared.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 py-10 text-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
-              <BarChart3 className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-[180px]">
-              {emptyLabel}
+      ) : items.length === 0 ? (
+        <EmptyState icon={ChartColumn} title="Sem gastos neste período" text={filter === 'all' ? 'Nenhum gasto registrado no mês.' : `Nenhuma compra no ${filter === 'debit' ? 'débito' : 'crédito'} no mês.`} className="py-6" />
+      ) : (
+        <>
+          <p className="mt-4 flex items-baseline justify-between gap-3 text-xs text-content-muted">
+            Total
+            <MoneyText value={total} className="text-base font-semibold" />
+          </p>
+          <ol className="mt-3 flex flex-col gap-3">
+            {items.map((item, index) => {
+              const color = item.category_color || chartColors.palette[index % chartColors.palette.length]
+              return (
+                <li key={item.category_id ?? `sem-${index}`}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="flex min-w-0 items-center gap-2 text-content-secondary">
+                      <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                      <span className="truncate">{item.category_name || 'Sem categoria'}</span>
+                    </span>
+                    <span className="flex shrink-0 items-baseline gap-2">
+                      <MoneyText value={item.total} className="font-semibold" />
+                      <span className="w-9 text-right text-xs text-content-muted tabular-nums">{formatPercent(item.share)}</span>
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-sunken" aria-hidden="true">
+                    <div className="h-full rounded-full" style={{ width: `${item.bar}%`, backgroundColor: color }} />
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+          {filter === 'all' && (recurring > 0 || variable > 0) && (
+            <p className="mt-4 border-t border-line pt-3 text-xs text-content-muted">
+              Recorrentes <span className="font-semibold text-content-secondary tabular-nums">{formatPercent(recurring)}</span>
+              <span aria-hidden="true"> · </span>
+              Variáveis <span className="font-semibold text-content-secondary tabular-nums">{formatPercent(variable)}</span>
             </p>
-          </div>
-        ) : (
-          <div className="flex-1 min-h-0">
-            <TopSpendingPieChart
-              labels={prepared.map((item) => item.category_name || 'Sem categoria')}
-              values={prepared.map((item) => Number(item.total || 0))}
-              total={grandTotal}
-              colors={colors}
-              items={prepared}
-              recurringSpending={activeFilter === 'all' ? recurringSpending : {}}
-              nonRecurringSpending={activeFilter === 'all' ? nonRecurringSpending : {}}
-            />
-          </div>
-        )}
-      </div>
-    </div>
+          )}
+        </>
+      )}
+    </Card>
   )
 }

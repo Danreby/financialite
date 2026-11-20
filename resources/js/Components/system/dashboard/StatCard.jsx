@@ -16,7 +16,8 @@ export default function StatCard({ title, value, delta, icon, deltaVariant }) {
   const isNegative = text.startsWith('-') || text.startsWith('−')
   const isNumeric = text.startsWith('+') || NUMERIC.test(text)
 
-  const isZero = isNumeric && !/[1-9]/.test(text)
+  // Só um número de verdade conta como zero ("+ novos" não é zero).
+  const isZero = NUMERIC.test(text) && !/[1-9]/.test(text)
 
   let trend = 'none'
   let autoTone = 'neutral'

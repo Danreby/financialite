@@ -1,157 +1,79 @@
-import React from 'react'
-import { TrendingUp, ArrowUpRight, ArrowDownRight, Minus, BarChart3 } from 'lucide-react'
-import { getIconEmoji } from '@/Utils/categoryIcons'
+import { useMemo } from 'react'
+import { ArrowDownRight, ArrowUpRight, ChartLine, Minus } from 'lucide-react'
+import { Card, EmptyState, MoneyText, Skeleton } from '@/Components/ui'
+import { buildTrends, changeLabel } from '@/Lib/dashboard'
 
-const fmt = (v) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
+const ICON = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }
+// Gasto subindo é ruim, caindo é bom.
+const TONE = { up: 'text-danger-strong', down: 'text-success-strong', flat: 'text-content-muted' }
+const WORD = { up: 'mais', down: 'menos', flat: 'estável' }
 
-const calcChange = (current, ref) => {
-  if (ref === 0) return { val: 0, dir: 'neutral' }
-  const v = ((current - ref) / ref) * 100
-  return { val: Math.abs(v), dir: v > 5 ? 'up' : v < -5 ? 'down' : 'neutral' }
+function Change({ change, suffix, empty = 'sem base de comparação' }) {
+  if (!change) return <span className="text-content-muted">{empty}</span>
+  const Icon = ICON[change.direction]
+  return (
+    <span className={`inline-flex items-center gap-0.5 font-semibold tabular-nums ${TONE[change.direction]}`}>
+      <Icon aria-hidden="true" className="h-3.5 w-3.5" />
+      {changeLabel(change)}
+      {suffix && <span className="sr-only"> ({WORD[change.direction]}) {suffix}</span>}
+    </span>
+  )
 }
 
-const dirColor = (dir) =>
-  ({ up: 'text-red-500', down: 'text-green-600 dark:text-green-400', neutral: 'text-gray-500' })[dir] ?? 'text-gray-500'
-
-const dirBg = (dir) =>
-  ({ up: 'bg-red-50 dark:bg-red-900/20', down: 'bg-green-50 dark:bg-green-900/20', neutral: 'bg-gray-100 dark:bg-gray-800' })[dir] ?? 'bg-gray-100'
-
-const DirIcon = (dir) => ({ up: ArrowUpRight, down: ArrowDownRight, neutral: Minus })[dir] ?? Minus
-
-export default function SpendingTrends({
-  currentMonth = 0,
-  previousMonth = 0,
-  threeMonthAvg = 0,
-  categoryTrends = [],
-  hasData = true,
-}) {
-  const vsMonth = calcChange(currentMonth, previousMonth)
-  const vsAvg = calcChange(currentMonth, threeMonthAvg)
-
-  const compMax = Math.max(currentMonth, previousMonth, 1)
-  const currentPct = Math.round((currentMonth / compMax) * 100)
-  const prevPct = Math.round((previousMonth / compMax) * 100)
-
-  const MonthIcon = DirIcon(vsMonth.dir)
+/** "Tendências · mês atual": gasto do mês contra o anterior e a média de 3 meses, e por categoria. */
+export default function SpendingTrends({ trends, loading, className = '' }) {
+  const t = useMemo(() => buildTrends(trends ?? {}), [trends])
 
   return (
-    <div className="themed-card rounded-2xl p-4 flex-1 min-h-0 flex flex-col">
-
-      <div className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500 mb-1 flex-shrink-0">
-        <TrendingUp className="w-3.5 h-3.5 text-theme-accent" aria-hidden="true" />
-        <span className="text-[11px] font-medium">Tendências &middot; mês atual</span>
-      </div>
-
-      {!hasData ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
-            <BarChart3 className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-          </div>
-          <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Dados insuficientes</p>
-          <p className="text-[11px] text-gray-400 dark:text-gray-500 max-w-[180px]">
-            Registre transações de débito para visualizar tendências
-          </p>
+    <Card title="Tendências · mês atual" subtitle="Comparado ao mês anterior e à média" className={className} aria-busy={loading || undefined}>
+      {loading ? (
+        <div className="flex flex-col gap-3">
+          <span className="sr-only">Carregando tendências</span>
+          <Skeleton shape="block" className="h-8 w-36" />
+          <Skeleton lines={4} />
         </div>
+      ) : !t.hasData ? (
+        <EmptyState icon={ChartLine} title="Dados insuficientes" text="Registre gastos por alguns meses para ver as tendências." className="py-6" />
       ) : (
         <>
-          <div className="flex items-start justify-between mb-3">
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
-              {fmt(currentMonth)}
-            </p>
-            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${dirBg(vsMonth.dir)} ${dirColor(vsMonth.dir)}`}>
-              <MonthIcon className="w-3 h-3" />
-              {vsMonth.val.toFixed(1)}%
-            </span>
-          </div>
-
-          <div className="space-y-1.5 mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 w-14 flex-shrink-0 text-right">Atual</span>
-              <div className="flex-1 h-2 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
-                <div
-                  className="h-full origin-left rounded-full transition-transform duration-500"
-                  style={{ transform: `scaleX(${currentPct / 100})`, backgroundColor: 'var(--theme-accent)' }}
-                />
-              </div>
-              <span className="text-[9px] text-gray-400 w-7 text-right flex-shrink-0 tabular-nums">{currentPct}%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 w-14 flex-shrink-0 text-right">Anterior</span>
-              <div className="flex-1 h-2 rounded-full bg-gray-100 dark:bg-white/[0.07] overflow-hidden">
-                <div
-                  className="h-full origin-left rounded-full bg-gray-400 dark:bg-gray-500 transition-transform duration-500"
-                  style={{ transform: `scaleX(${prevPct / 100})` }}
-                />
-              </div>
-              <span className="text-[9px] text-gray-400 w-7 text-right flex-shrink-0 tabular-nums">{prevPct}%</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <p className="text-[1.625rem] font-semibold leading-8 tracking-tight text-content-primary">
+            <MoneyText value={t.current} />
+          </p>
+          <dl className="mt-4 grid grid-cols-2 gap-3">
             {[
-              { label: 'vs Mês anterior', change: vsMonth, ref: previousMonth },
-              { label: 'vs Média 3m', change: vsAvg, ref: threeMonthAvg },
-            ].map(({ label, change, ref }) => {
-              const Icon = DirIcon(change.dir)
-              return (
-                <div key={label} className="rounded-xl bg-gray-50 dark:bg-white/[0.04] px-3 py-2">
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight mb-1">{label}</p>
-                  <div className={`inline-flex items-center gap-0.5 text-xs font-semibold ${dirColor(change.dir)}`}>
-                    <Icon className="w-3 h-3" />
-                    {change.val.toFixed(1)}%
-                  </div>
-                  <p className="text-[10px] text-gray-400 tabular-nums mt-0.5">{fmt(ref)}</p>
-                </div>
-              )
-            })}
-          </div>
+              { label: 'Mês anterior', value: t.previous, change: t.vsPrevious },
+              { label: 'Média de 3 meses', value: t.average, change: t.vsAverage },
+            ].map((row) => (
+              <div key={row.label} className="rounded-chip bg-surface-sunken px-3 py-2.5">
+                <dt className="text-xs text-content-muted">{row.label}</dt>
+                <dd className="mt-1 text-sm">
+                  <MoneyText value={row.value} className="font-medium" />
+                  <span className="mt-0.5 block text-xs">
+                    <Change change={row.change} suffix={`em relação a ${row.label.toLowerCase()}`} />
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
 
-          {categoryTrends.length > 0 ? (
+          {t.categories.length > 0 && (
             <>
-              <div className="border-t border-gray-100 dark:border-white/[0.06] pt-3 mb-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                  Por categoria
-                </span>
-              </div>
-              <div className="flex-1 min-h-0 overflow-y-auto scrollbar-custom space-y-0.5">
-                {categoryTrends.map((trend, i) => {
-                  const t = calcChange(trend.current, trend.previous)
-                  const Icon = DirIcon(t.dir)
-                  const icon = trend.categoryIcon ? getIconEmoji(trend.categoryIcon) : null
-                  return (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
-                    >
-                      {icon && <span className="text-xs leading-none flex-shrink-0">{icon}</span>}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
-                          {trend.categoryName || 'Sem categoria'}
-                        </p>
-                        <p className="text-[10px] text-gray-400 tabular-nums">{fmt(trend.current)}</p>
-                      </div>
-                      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-medium flex-shrink-0 ${dirBg(t.dir)} ${dirColor(t.dir)}`}>
-                        <Icon className="w-2.5 h-2.5" />
-                        {t.val.toFixed(0)}%
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
+            <p className="mt-4 text-xs font-medium text-content-muted">Maiores categorias do mês</p>
+            <ul className="mt-1 flex flex-col divide-y divide-line">
+              {t.categories.slice(0, 5).map((c) => (
+                <li key={c.name} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <span className="min-w-0 truncate text-content-secondary">{c.name}</span>
+                  <span className="flex shrink-0 items-baseline gap-3 text-xs">
+                    <MoneyText value={c.current} tone="muted" />
+                    <Change change={c.change} suffix="em relação ao mês anterior" empty={c.previous ? 'sem base de comparação' : 'sem gasto no mês anterior'} />
+                  </span>
+                </li>
+              ))}
+            </ul>
             </>
-          ) : (
-            <div className={`rounded-xl px-3 py-2 flex items-center gap-2 ${vsMonth.dir === 'up' ? 'bg-red-50 dark:bg-red-900/15' : vsMonth.dir === 'down' ? 'bg-green-50 dark:bg-green-900/15' : 'bg-gray-50 dark:bg-white/[0.04]'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${vsMonth.dir === 'up' ? 'bg-red-500' : vsMonth.dir === 'down' ? 'bg-green-500' : 'bg-gray-400'}`} />
-              <p className={`text-[11px] font-medium ${vsMonth.dir === 'up' ? 'text-red-700 dark:text-red-300' : vsMonth.dir === 'down' ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400'}`}>
-                {vsMonth.dir === 'up' && `Você gastou ${vsMonth.val.toFixed(1)}% a mais este mês`}
-                {vsMonth.dir === 'down' && `Você economizou ${vsMonth.val.toFixed(1)}% este mês`}
-                {vsMonth.dir === 'neutral' && 'Gastos estáveis comparado ao mês anterior'}
-              </p>
-            </div>
           )}
         </>
       )}
-    </div>
+    </Card>
   )
 }

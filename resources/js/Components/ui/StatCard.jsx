@@ -26,7 +26,7 @@ export default function StatCard({ label, value, money = false, icon, change, tr
         <div className={cx('surface-card flex flex-col gap-3 p-4', className)} aria-busy={loading || undefined}>
             <div className="flex items-center gap-2.5">
                 {iconNode && <span className="icon-chip">{iconNode}</span>}
-                <span className="truncate text-sm font-medium text-content-secondary">{label}</span>
+                <span className="min-w-0 text-sm font-medium leading-tight text-content-secondary">{label}</span>
             </div>
 
             {loading ? (

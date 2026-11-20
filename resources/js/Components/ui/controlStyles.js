@@ -7,6 +7,6 @@ export const CONTROL =
     'aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/25';
 
 export const CONTROL_SIZES = {
-    sm: 'h-8 rounded-[10px] px-2.5 text-[13px]',
+    sm: 'h-8 rounded-[10px] px-2.5 py-0 text-[13px]',
     md: 'h-10 rounded-chip px-3 text-sm',
 };
