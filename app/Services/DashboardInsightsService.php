@@ -504,15 +504,16 @@ class DashboardInsightsService
             $previousMonthEnd
         );
 
+        // Média dos três meses completos anteriores ao atual (o mês corrente,
+        // ainda parcial, fica de fora). Mesma grandeza de current/previous.
         $threeMonthTotal = $this->budgetCalculationService->calculateInstallmentAwareSpending(
             $user,
             $bankUserId,
             $threeMonthsAgoStart,
-            $currentMonthEnd
+            $previousMonthEnd
         );
 
-        $monthCount = max(1, $today->copy()->startOfMonth()->diffInMonths($threeMonthsAgoStart) + 1);
-        $threeMonthAvg = $threeMonthTotal / $monthCount;
+        $threeMonthAvg = $threeMonthTotal / 3;
 
         $currentCategorySpending = $this->budgetCalculationService->calculateInstallmentAwareCategorySpending(
             $user,

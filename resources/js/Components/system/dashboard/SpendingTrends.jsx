@@ -20,12 +20,17 @@ function Change({ change, suffix, empty = 'sem base de comparação' }) {
   )
 }
 
-/** "Tendências · mês atual": gasto do mês contra o anterior e a média de 3 meses, e por categoria. */
+/**
+ * "Tendências · mês atual": gasto do mês contra o anterior e a média dos três
+ * meses completos anteriores, e por categoria. A base (débito + parcelas de
+ * cartão ainda em aberto) é outra que a do KPI "Total mensal", por isso o
+ * card diz qual é.
+ */
 export default function SpendingTrends({ trends, loading, className = '' }) {
   const t = useMemo(() => buildTrends(trends ?? {}), [trends])
 
   return (
-    <Card title="Tendências · mês atual" subtitle="Comparado ao mês anterior e à média" className={className} aria-busy={loading || undefined}>
+    <Card title="Tendências · mês atual" subtitle="Débito + parcelas de cartão em aberto" className={className} aria-busy={loading || undefined}>
       {loading ? (
         <div className="flex flex-col gap-3">
           <span className="sr-only">Carregando tendências</span>
@@ -39,6 +44,7 @@ export default function SpendingTrends({ trends, loading, className = '' }) {
           <p className="text-[1.625rem] font-semibold leading-8 tracking-tight text-content-primary">
             <MoneyText value={t.current} />
           </p>
+          <p className="mt-0.5 text-xs text-content-muted">Gasto do mês até hoje, comparado a meses inteiros</p>
           <dl className="mt-4 grid grid-cols-2 gap-3">
             {[
               { label: 'Mês anterior', value: t.previous, change: t.vsPrevious },
