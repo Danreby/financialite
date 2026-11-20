@@ -143,8 +143,11 @@ function spendingChange(change, partial) {
  * Os cinco indicadores do resumo. Valores em reais saem como número (o card
  * formata com MoneyText); a variação vem da série mensal, quando existe, e
  * compara a mesma grandeza nos dois meses (débito do mês, crédito + débito do
- * mês). A Fatura atual (saldo pendente) não tem equivalente no mês anterior,
- * já paga, então fica sem variação.
+ * mês). O Total mensal usa o total da série (parcelas de crédito do mês +
+ * débito) para que valor e variação falem da mesma coisa; sem a série, cai em
+ * fatura pendente + débito e fica sem variação. A Fatura atual (saldo
+ * pendente) não tem equivalente no mês anterior, já paga, então fica sem
+ * variação.
  */
 export function buildKpis(stats = {}, today = new Date()) {
   const summary = Array.isArray(stats.monthly_summary) ? stats.monthly_summary : []
@@ -157,11 +160,15 @@ export function buildKpis(stats = {}, today = new Date()) {
 
   const partial = monthKey === monthKeyOf(today)
   const withFallback = (change, caption) => (change ? spendingChange(change, partial) : { caption, trend: 'none' })
+  const currentMonth = summary.find((m) => m.month_key === monthKey)
+  const total = currentMonth
+    ? { value: totalOf(currentMonth), ...withFallback(monthOverMonth(summary, monthKey, totalOf), 'Crédito + débito do mês') }
+    : { value: invoice + debit, trend: 'none', caption: 'Fatura pendente + débito' }
 
   return [
     { id: 'fatura', label: 'Fatura atual', value: invoice, money: true, trend: 'none', caption: `Pendente em ${monthLabel}` },
     { id: 'debito', label: 'Transações no débito', value: debit, money: true, ...withFallback(monthOverMonth(summary, monthKey, debitOf), monthLabel) },
-    { id: 'total', label: 'Total mensal', value: invoice + debit, money: true, ...withFallback(monthOverMonth(summary, monthKey, totalOf), 'Fatura + débito') },
+    { id: 'total', label: 'Total mensal', money: true, ...total },
     {
       id: 'restante',
       label: 'Dinheiro restante',
@@ -228,7 +235,8 @@ export const HEALTH_FACTORS = [
   { key: 'emergencyFund', label: 'Reserva de emergência', unit: 'meses', good: 6, ok: 3, max: 6, missing: 'transactions' },
   { key: 'recurringControl', label: 'Controle de despesas fixas', unit: '%', good: 80, ok: 60, max: 100, missing: 'bills' },
   { key: 'paymentDiscipline', label: 'Contas pagas em dia', unit: '%', good: 90, ok: 70, max: 100, missing: 'bills' },
-  { key: 'budgetUsage', label: 'Uso do orçamento', unit: '%', good: 30, ok: 10, max: 100, missing: 'budget' },
+  // O back end manda a parte livre do orçamento: (1 − gasto/limite) · 100.
+  { key: 'budgetUsage', label: 'Folga do orçamento', unit: '%', good: 30, ok: 10, max: 100, missing: 'budget' },
 ]
 
 export const FACTOR_STATUS = {
@@ -334,12 +342,12 @@ const PRIORITY_ORDER = { alta: 0, media: 1, baixa: 2 }
 export function deriveAlerts({ budgetProgress = {}, bills = [], nextDueInfo = null, health = null, today = new Date() } = {}) {
   const alerts = []
 
-  for (const budget of budgetProgress.budgets ?? []) {
+  for (const [index, budget] of (budgetProgress.budgets ?? []).entries()) {
     const limit = num(budget.limit)
     const spent = num(budget.spent)
     if (limit > 0 && spent > limit) {
       alerts.push({
-        id: `budget-${budget.categoryName}`,
+        id: `budget-${budget.id ?? index}`,
         kind: 'budget',
         title: `${budget.categoryName || 'Sem categoria'} acima do orçamento`,
         priority: 'alta',
