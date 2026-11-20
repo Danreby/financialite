@@ -28,15 +28,16 @@ export function useFocusTrap(active, options = {}) {
 
     const containerRef = useRef(null);
     const previousFocusRef = useRef(null);
+    // Em ref: um onEscape novo a cada render não refaz o efeito (nem devolve o foco).
+    const onEscapeRef = useRef(onEscape);
+    onEscapeRef.current = onEscape;
 
     const handleKeyDown = useCallback((event) => {
         if (!active || !containerRef.current) return;
 
         if (event.key === 'Escape' && escapeDeactivates) {
             event.preventDefault();
-            if (onEscape) {
-                onEscape();
-            }
+            onEscapeRef.current?.();
             return;
         }
 
@@ -68,7 +69,7 @@ export function useFocusTrap(active, options = {}) {
                 firstElement.focus();
             }
         }
-    }, [active, escapeDeactivates, onEscape]);
+    }, [active, escapeDeactivates]);
 
     // Declarado antes do efeito que devolve o foco: a limpeza dele roda primeiro,
     // senão o foco devolvido ao fechar é puxado de volta para dentro do contêiner.
