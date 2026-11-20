@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import BareButton from '@/Components/common/buttons/BareButton';
 
@@ -28,6 +28,10 @@ const getFocusableElements = (container) => {
     return Array.from(container.querySelectorAll(focusableSelectors));
 };
 
+// Listas e menus que um campo do modal abre em body (Autocomplete) marcam o
+// contêiner com data-modal-portal; foco ali não é "foco que escapou".
+const isInModalPortal = (target) => Boolean(target?.closest?.('[data-modal-portal]'));
+
 // Pilha de modais abertos: só o de cima responde a Esc, Tab e foco que escapa.
 const openModals = [];
 const isTopModal = (ref) => openModals[openModals.length - 1] === ref;
@@ -52,7 +56,9 @@ export default function Modal({
     const modalRef = useRef(null);
     const reduceMotion = useReducedMotion();
     const previousFocusRef = useRef(null);
-    const descriptionId = description ? 'modal-description' : undefined;
+    const uid = useId();
+    const titleId = `${uid}-title`;
+    const descriptionId = description ? `${uid}-description` : undefined;
 
     const handleOverlayClick = () => {
         if (closeOnOverlay) {
@@ -81,7 +87,7 @@ export default function Modal({
             const lastElement = focusableElements[focusableElements.length - 1];
 
             // Foco fora do diálogo (clique fora, por exemplo): Tab traz de volta.
-            if (!modalRef.current.contains(document.activeElement)) {
+            if (!modalRef.current.contains(document.activeElement) && !isInModalPortal(document.activeElement)) {
                 event.preventDefault();
                 (event.shiftKey ? lastElement : firstElement).focus();
             } else if (event.shiftKey && document.activeElement === firstElement) {
@@ -107,7 +113,7 @@ export default function Modal({
         // Se o foco sair do diálogo (clique no fundo, leitor de tela), puxa de volta.
         const handleFocusIn = (event) => {
             if (!isTopModal(modalRef) || !modalRef.current) return;
-            if (!modalRef.current.contains(event.target)) {
+            if (!modalRef.current.contains(event.target) && !isInModalPortal(event.target)) {
                 focusInside(modalRef.current);
             }
         };
@@ -189,7 +195,7 @@ export default function Modal({
                         className={`relative w-full transform overflow-hidden surface-card shadow-pop sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col ${widthClass}`}
                         role="dialog"
                         aria-modal="true"
-                        aria-labelledby={title ? 'modal-title' : undefined}
+                        aria-labelledby={title ? titleId : undefined}
                         aria-describedby={descriptionId}
                         tabIndex={-1}
                         initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
@@ -202,7 +208,7 @@ export default function Modal({
                                 <div>
                                     {title && (
                                         <h2
-                                            id="modal-title"
+                                            id={titleId}
                                             className="text-sm sm:text-[15px] font-semibold text-content-primary"
                                         >
                                             {title}
