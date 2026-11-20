@@ -168,12 +168,13 @@ export default function About() {
             </h2>
 
             <div className="flex flex-col items-center gap-4">
-              <div className="rounded-2xl bg-white p-4 shadow-md">
+              {/* O próprio QR desenha a margem branca (marginSize), então lê bem no escuro. */}
+              <div className="rounded-2xl bg-surface-raised p-4 shadow-md ring-1 ring-line">
                 <QRCodeSVG
                   value="00020126580014BR.GOV.BCB.PIX0136b82b0e92-1e07-4bf8-bc71-0f50d637dabc5204000053039865802BR5921Bernardo Santos Rolim6009SAO PAULO62140510PJqP5lNZeX63043E21"
                   size={220}
                   level="M"
-                  includeMargin={false}
+                  marginSize={2}
                 />
               </div>
               {/* <div className="text-center space-y-1">
