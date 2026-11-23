@@ -124,11 +124,11 @@ class BillPaymentTest extends TestCase
         $this->actingAs($other)->patchJson(
             route('bills.payment.update', [$this->bill, $payment]),
             ['amount_paid' => 50]
-        )->assertForbidden();
+        )->assertNotFound();
 
         $this->actingAs($other)
             ->deleteJson(route('bills.payment.destroy', [$this->bill, $payment]))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->assertNotNull(BillPayment::find($payment->id));
     }

@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Bill\CreateBill;
+use App\Actions\Bill\DeleteBill;
+use App\Actions\Bill\MarkBillAsPaid;
+use App\Actions\Bill\ToggleBillStatus;
+use App\Actions\Bill\UpdateBill;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bill\BillMarkPaidRequest;
 use App\Http\Requests\Bill\BillStoreRequest;
 use App\Http\Requests\Bill\BillUpdateRequest;
 use App\Models\Bill;
 use App\Models\BillPayment;
-use App\Services\BillPaymentService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BillApiController extends Controller
 {
-    public function __construct(
-        private BillPaymentService $billPaymentService,
-    ) {}
-
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -41,17 +42,12 @@ class BillApiController extends Controller
         return $this->success($bills);
     }
 
-    public function store(BillStoreRequest $request): JsonResponse
+    public function store(BillStoreRequest $request, CreateBill $createBill): JsonResponse
     {
-        $user = $request->user();
-        $data = $request->validated();
-        $data['user_id'] = $user->id;
-
         try {
-            $bill = Bill::create($data);
-            $bill->load('category');
+            $bill = $createBill->handle($request->user(), $request->validated());
 
-            return $this->success($bill, 201);
+            return $this->success($bill->load('category'), 201);
         } catch (\Throwable $e) {
             report($e);
 
@@ -59,16 +55,14 @@ class BillApiController extends Controller
         }
     }
 
-    public function update(BillUpdateRequest $request, Bill $bill): JsonResponse
+    public function update(BillUpdateRequest $request, int $bill, UpdateBill $updateBill): JsonResponse
     {
-        $this->authorize('update', $bill);
-        $data = $request->validated();
-
         try {
-            $bill->update($data);
-            $bill->load('category');
+            $updated = $updateBill->handle($request->user(), $bill, $request->validated());
 
-            return $this->success($bill);
+            return $this->success($updated->load('category'));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -76,10 +70,9 @@ class BillApiController extends Controller
         }
     }
 
-    public function destroy(Request $request, Bill $bill): JsonResponse
+    public function destroy(Request $request, int $bill, DeleteBill $deleteBill): JsonResponse
     {
-        $this->authorize('delete', $bill);
-        $bill->delete();
+        $deleteBill->handle($request->user(), $bill);
 
         return $this->success(['message' => 'Conta removida.']);
     }
@@ -88,7 +81,6 @@ class BillApiController extends Controller
     {
         $user = $request->user();
         $today = Carbon::today();
-        $endOfMonth = $today->copy()->endOfMonth();
 
         $bills = Bill::where('user_id', $user->id)
             ->where('status', 'active')
@@ -122,18 +114,12 @@ class BillApiController extends Controller
         return $this->success($bills);
     }
 
-    public function markAsPaid(BillMarkPaidRequest $request, Bill $bill): JsonResponse
+    public function markAsPaid(BillMarkPaidRequest $request, int $bill, MarkBillAsPaid $markBillAsPaid): JsonResponse
     {
-        $this->authorize('update', $bill);
-
         try {
-            $result = $this->billPaymentService->markBillAsPaid(
-                $bill,
-                $request->user(),
-                $request->validated()
-            );
-
-            return $this->success($result);
+            return $this->success($markBillAsPaid->handle($request->user(), $bill, $request->validated()));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -141,13 +127,8 @@ class BillApiController extends Controller
         }
     }
 
-    public function toggleStatus(Request $request, Bill $bill): JsonResponse
+    public function toggleStatus(Request $request, int $bill, ToggleBillStatus $toggleBillStatus): JsonResponse
     {
-        $this->authorize('update', $bill);
-
-        $bill->status = $bill->status === 'active' ? 'inactive' : 'active';
-        $bill->save();
-
-        return $this->success($bill);
+        return $this->success($toggleBillStatus->handle($request->user(), $bill));
     }
 }

@@ -3,8 +3,6 @@
 namespace App\Actions\Transacao;
 
 use App\Exceptions\InsufficientBalanceException;
-use App\Models\BankUser;
-use App\Models\CardUser;
 use App\Models\User;
 use App\Services\FaturaPaymentService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -17,7 +15,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  */
 class PayFaturaMonth
 {
-    public function __construct(private FaturaPaymentService $payments) {}
+    public function __construct(
+        private FaturaPaymentService $payments,
+        private ResolvePaymentAccounts $resolveAccounts,
+    ) {}
 
     /**
      * @param  array{month: string, bank_user_id?: int|string|null, bank_account_id?: int|string|null}  $data
@@ -28,25 +29,8 @@ class PayFaturaMonth
      */
     public function handle(User $user, array $data): float
     {
-        [$cardUser, $bankAccount] = self::resolveAccounts($user, $data);
+        [$cardUser, $bankAccount] = $this->resolveAccounts->handle($user, $data);
 
         return $this->payments->payMonthForUser($user, $data['month'], $cardUser, $bankAccount);
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array{0: ?CardUser, 1: ?BankUser}
-     */
-    public static function resolveAccounts(User $user, array $data): array
-    {
-        $cardUser = ! empty($data['bank_user_id'])
-            ? CardUser::forUser($user->id)->findOrFail($data['bank_user_id'])
-            : null;
-
-        $bankAccount = ! empty($data['bank_account_id'])
-            ? BankUser::forUser($user->id)->findOrFail($data['bank_account_id'])
-            : null;
-
-        return [$cardUser, $bankAccount];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Transacao\ResolvePaymentAccounts;
 use App\Models\Bank;
 use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
@@ -11,6 +12,7 @@ use App\Models\Transacao;
 use App\Models\User;
 use App\Services\BankLedgerService;
 use App\Services\FaturaService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -303,5 +305,70 @@ class TransacaoActionsTest extends TestCase
                 ->has('installments.0.parcelas', 3)
                 ->has('bankAccounts', 1)
                 ->has('categories'));
+    }
+
+    /**
+     * Cartão ou conta de outro usuário nunca chega à Action: a FormRequest recusa com 422
+     * (exists com user_id). A Action, chamada direto, responde 404 (ModelNotFoundException).
+     */
+    #[DataProvider('sides')]
+    public function test_foreign_card_on_create_is_rejected(string $side): void
+    {
+        $other = User::factory()->create();
+        $foreignCard = CardUser::create(['card_id' => Card::create(['name' => 'Alheio'])->id, 'user_id' => $other->id]);
+
+        $this->as($side)->postJson($this->url($side), [
+            'title' => 'Notebook',
+            'amount' => '100.00',
+            'type' => 'credit',
+            'bank_user_id' => $foreignCard->id,
+        ])->assertStatus(422)->assertJsonValidationErrors('bank_user_id');
+
+        $this->assertSame(0, Transacao::count());
+    }
+
+    #[DataProvider('sides')]
+    public function test_foreign_card_or_account_on_pay_month_is_rejected(string $side): void
+    {
+        $other = User::factory()->create();
+        $foreignCard = CardUser::create(['card_id' => Card::create(['name' => 'Alheio'])->id, 'user_id' => $other->id]);
+        $foreignAccount = BankUser::create(['bank_id' => Bank::create(['name' => 'Banco Alheio'])->id, 'user_id' => $other->id, 'balance' => 0]);
+        $account = $this->account('100.00');
+        $this->purchase('40.00');
+
+        $this->as($side)->postJson($this->url($side, '/pay-month'), [
+            'month' => now()->format('Y-m'),
+            'bank_user_id' => $foreignCard->id,
+            'bank_account_id' => $account->id,
+        ])->assertStatus(422)->assertJsonValidationErrors('bank_user_id');
+
+        $this->as($side)->postJson($this->url($side, '/pay-month'), [
+            'month' => now()->format('Y-m'),
+            'bank_user_id' => $this->cardUser->id,
+            'bank_account_id' => $foreignAccount->id,
+        ])->assertStatus(422)->assertJsonValidationErrors('bank_account_id');
+
+        $this->assertSame('100.00', $account->refresh()->balance);
+    }
+
+    public function test_payment_account_resolver_returns_404_for_foreign_ids(): void
+    {
+        $other = User::factory()->create();
+        $foreignCard = CardUser::create(['card_id' => Card::create(['name' => 'Alheio'])->id, 'user_id' => $other->id]);
+        $foreignAccount = BankUser::create(['bank_id' => Bank::create(['name' => 'Banco Alheio'])->id, 'user_id' => $other->id, 'balance' => 0]);
+        $resolver = app(ResolvePaymentAccounts::class);
+
+        [$card, $account] = $resolver->handle($this->user, ['bank_user_id' => $this->cardUser->id]);
+        $this->assertSame($this->cardUser->id, $card->id);
+        $this->assertNull($account);
+
+        foreach ([['bank_user_id' => $foreignCard->id], ['bank_account_id' => $foreignAccount->id]] as $data) {
+            try {
+                $resolver->handle($this->user, $data);
+                $this->fail('Esperava ModelNotFoundException para '.json_encode($data));
+            } catch (ModelNotFoundException) {
+                $this->addToAssertionCount(1);
+            }
+        }
     }
 }

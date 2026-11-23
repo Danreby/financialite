@@ -14,7 +14,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  */
 class PayFaturaPartial
 {
-    public function __construct(private FaturaPaymentService $payments) {}
+    public function __construct(
+        private FaturaPaymentService $payments,
+        private ResolvePaymentAccounts $resolveAccounts,
+    ) {}
 
     /**
      * @param  array{month: string, amount: string|int|float, bank_user_id?: int|string|null, bank_account_id?: int|string|null}  $data
@@ -25,7 +28,7 @@ class PayFaturaPartial
      */
     public function handle(User $user, array $data): array
     {
-        [$cardUser, $bankAccount] = PayFaturaMonth::resolveAccounts($user, $data);
+        [$cardUser, $bankAccount] = $this->resolveAccounts->handle($user, $data);
 
         return $this->payments->payPartialForUser($user, $data['month'], $data['amount'], $cardUser, $bankAccount);
     }

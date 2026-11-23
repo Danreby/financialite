@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Bill;
 
+use App\Models\Bill;
 use App\Support\Money;
 use Illuminate\Foundation\Http\FormRequest;
 use InvalidArgumentException;
@@ -15,7 +16,8 @@ class BillPaymentUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $bill = $this->route('bill');
+        // Conta de outro usuário fica sem teto aqui; a Action responde 404.
+        $bill = Bill::forUser((int) $this->user()?->id)->find((int) $this->route('bill'));
         $billCents = $bill?->amount !== null ? Money::fromDecimal((string) $bill->amount) : null;
 
         return [

@@ -154,21 +154,4 @@ class BillPaymentService
             'category_id' => $bill->category_id ?? null,
         ]);
     }
-
-    public function toggleBillStatus(Bill $bill, Authenticatable $user): Bill
-    {
-        return DB::transaction(function () use ($bill, $user) {
-            $newStatus = $bill->status === 'active' ? 'inactive' : 'active';
-            $bill->update(['status' => $newStatus]);
-
-            $label = $newStatus === 'active' ? 'ativada' : 'desativada';
-            $this->notificationService->info(
-                $user,
-                'Conta '.$label,
-                'A conta foi '.$label.' com sucesso.'
-            );
-
-            return $bill->fresh();
-        });
-    }
 }

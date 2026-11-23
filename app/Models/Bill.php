@@ -47,6 +47,7 @@ class Bill extends Model
         return $this->belongsTo(Category::class);
     }
 
+    /** @return HasMany<BillPayment, $this> */
     public function payments(): HasMany
     {
         return $this->hasMany(BillPayment::class);
