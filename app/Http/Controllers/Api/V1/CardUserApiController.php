@@ -1,20 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Card\AttachCardToUserRequest;
 use App\Models\CardUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class CardUserController extends Controller
+/**
+ * api/v1/card-users: vínculos do usuário com cartões (inclusive do catálogo).
+ *
+ * Antes era o CardUserController web; formato e status mantidos.
+ */
+class CardUserApiController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', CardUser::class);

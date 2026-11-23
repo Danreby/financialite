@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\V1\BankApiController;
 use App\Http\Controllers\Api\V1\BillApiController;
 use App\Http\Controllers\Api\V1\BudgetApiController;
 use App\Http\Controllers\Api\V1\CardApiController;
+use App\Http\Controllers\Api\V1\CardResourceApiController;
+use App\Http\Controllers\Api\V1\CardUserApiController;
 use App\Http\Controllers\Api\V1\CategoryApiController;
 use App\Http\Controllers\Api\V1\DashboardApiController;
 use App\Http\Controllers\Api\V1\IncomeApiController;
@@ -13,8 +15,6 @@ use App\Http\Controllers\Api\V1\ProfileApiController;
 use App\Http\Controllers\Api\V1\ProjectionsApiController;
 use App\Http\Controllers\Api\V1\SavingsGoalApiController;
 use App\Http\Controllers\Api\V1\TransacaoApiController;
-use App\Http\Controllers\CardController;
-use App\Http\Controllers\CardUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/auth')->group(function () {
@@ -118,7 +118,8 @@ Route::middleware(['auth:sanctum', 'verified', 'throttle:api'])->prefix('v1')->g
     Route::patch('/profile/password', [ProfileApiController::class, 'updatePassword']);
     Route::delete('/profile', [ProfileApiController::class, 'destroy']);
 
-    Route::apiResource('card-resources', CardController::class);
-    Route::get('card-users/stats', [CardUserController::class, 'stats'])->name('api.card-users.stats');
-    Route::apiResource('card-users', CardUserController::class);
+    // Nomes de rota mantidos: resources/js/Services/cardService.js usa card-users.*.
+    Route::apiResource('card-resources', CardResourceApiController::class);
+    Route::get('card-users/stats', [CardUserApiController::class, 'stats'])->name('api.card-users.stats');
+    Route::apiResource('card-users', CardUserApiController::class);
 });

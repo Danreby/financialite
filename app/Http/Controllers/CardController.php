@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Card\DeleteCard;
 use App\Http\Requests\Card\AttachCardToUserRequest;
-use App\Http\Requests\Card\CardStoreRequest;
-use App\Http\Requests\Card\CardUpdateRequest;
 use App\Http\Requests\Card\UpdateCardDueDayRequest;
 use App\Models\Card;
 use App\Models\CardUser;
@@ -22,96 +21,7 @@ class CardController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request): JsonResponse
-    {
-        $this->authorize('viewAny', Card::class);
-
-        $user = $request->user();
-
-        $cards = Card::forUser($user->id)
-            ->ordered()
-            ->paginate(20);
-
-        return $this->success($cards);
-    }
-
-    public function show(Request $request, int $id): JsonResponse
-    {
-        $user = $request->user();
-
-        $card = Card::forUser($user->id)->findOrFail($id);
-
-        $this->authorize('view', $card);
-
-        return $this->success($card);
-    }
-
-    public function store(CardStoreRequest $request): JsonResponse
-    {
-        $this->authorize('create', Card::class);
-
-        $user = $request->user();
-
-        $data = $request->validated();
-        $card = DB::transaction(function () use ($data, $user) {
-            $card = Card::create([
-                'name' => $data['name'],
-                'brand' => $data['brand'] ?? null,
-                'description' => $data['description'] ?? null,
-            ]);
-            $card->forceFill(['user_id' => $user->id])->save();
-
-            CardUser::create([
-                'card_id' => $card->id,
-                'user_id' => $user->id,
-                'closing_day' => $data['closing_day'] ?? null,
-                'credit_limit' => $data['credit_limit'] ?? null,
-            ]);
-
-            $this->notifications->info($user, 'Cartão adicionado', 'Um novo cartão foi vinculado à sua conta.');
-
-            return $card;
-        });
-
-        return $this->success($card, 201);
-    }
-
-    public function update(CardUpdateRequest $request, int $id): JsonResponse
-    {
-        $user = $request->user();
-
-        $card = Card::forUser($user->id)->where('user_id', $user->id)->findOrFail($id);
-
-        $this->authorize('update', $card);
-
-        $data = $request->validated();
-        DB::transaction(function () use ($card, $data, $user) {
-            $card->update([
-                'name' => $data['name'],
-                'brand' => $data['brand'] ?? $card->brand,
-                'description' => $data['description'] ?? $card->description,
-            ]);
-
-            if (isset($data['closing_day']) || isset($data['credit_limit'])) {
-                $cardUser = CardUser::forUser($user->id)->forCard($card->id)->first();
-                if ($cardUser) {
-                    if (isset($data['closing_day'])) {
-                        $cardUser->closing_day = $data['closing_day'];
-                    }
-                    if (isset($data['credit_limit'])) {
-                        $cardUser->credit_limit = $data['credit_limit'];
-                    }
-                    $cardUser->save();
-                }
-            }
-
-            $this->notifications->info($user, 'Cartão atualizado', 'As informações do cartão foram atualizadas.');
-        });
-
-        return $this->success($card);
-    }
-
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, int $id, DeleteCard $deleteCard): JsonResponse
     {
         $user = $request->user();
 
@@ -119,17 +29,7 @@ class CardController extends Controller
 
         $this->authorize('delete', $card);
 
-        DB::transaction(function () use ($user, $card) {
-            CardUser::forUser($user->id)
-                ->forCard($card->id)
-                ->delete();
-
-            if ($card->user_id === $user->id) {
-                $card->delete();
-            }
-
-            $this->notifications->info($user, 'Cartão removido', 'Um cartão foi desvinculado da sua conta.');
-        });
+        $deleteCard->handle($user, $card);
 
         return $this->success(['message' => 'Cartão removido.']);
     }
