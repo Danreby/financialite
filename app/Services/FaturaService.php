@@ -55,7 +55,9 @@ class FaturaService implements FaturaServiceInterface
             $this->createParcelas($fatura);
 
             if ($debitAccountId && $amountCents > 0) {
-                $bankAccount = BankUser::forUser($user->id)->findOrFail($debitAccountId);
+                // Lê o saldo com a linha travada: duas compras simultâneas não podem
+                // calcular o teto do débito sobre o mesmo saldo.
+                $bankAccount = BankUser::forUser($user->id)->lockForUpdate()->findOrFail($debitAccountId);
                 $debitCents = min($amountCents, max(0, Money::fromDecimal((string) $bankAccount->balance)));
 
                 if ($debitCents > 0) {

@@ -154,6 +154,26 @@ class BillPaymentTest extends TestCase
         $this->assertSame(0, BillPayment::count());
     }
 
+    public function test_amount_paid_limit_compares_cents_and_ignores_invalid_input(): void
+    {
+        $payment = $this->pay(100);
+
+        $this->actingAs($this->user)->patchJson(
+            route('bills.payment.update', [$this->bill, $payment]),
+            ['amount_paid' => '100.004']
+        )->assertOk();
+
+        $this->actingAs($this->user)->patchJson(
+            route('bills.payment.update', [$this->bill, $payment]),
+            ['amount_paid' => 'abc']
+        )->assertStatus(422)->assertJsonValidationErrors('amount_paid');
+
+        $this->actingAs($this->user)->postJson(
+            route('bills.pay', $this->bill),
+            ['due_date' => '2026-12-10', 'amount_paid' => '1e20']
+        )->assertStatus(422)->assertJsonValidationErrors('amount_paid');
+    }
+
     public function test_api_pay_route_records_payment_through_the_service(): void
     {
         Sanctum::actingAs($this->user);

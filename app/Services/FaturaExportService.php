@@ -38,7 +38,7 @@ class FaturaExportService
                     $installmentAmount = (float) $parcela->amount;
                     $row = $this->buildRow($transacao, $parcela->month_key, $parcela->installment_number, $installmentAmount);
                     $row['parcela_status'] = $parcela->status;
-                    $row['due_date'] = $parcela->due_date?->toDateString();
+                    $row['due_date'] = $parcela->due_date->toDateString();
                     $rows->push($row);
                 }
 

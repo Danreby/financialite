@@ -29,6 +29,7 @@ class CardUser extends Model
         'updated_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Card, $this> */
     public function card(): BelongsTo
     {
         return $this->belongsTo(Card::class);

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Bill;
 
+use App\Support\Money;
 use Illuminate\Foundation\Http\FormRequest;
+use InvalidArgumentException;
 
 class BillMarkPaidRequest extends FormRequest
 {
@@ -14,7 +16,7 @@ class BillMarkPaidRequest extends FormRequest
     public function rules(): array
     {
         $bill = $this->route('bill');
-        $billCents = $bill?->amount !== null ? (int) round(((float) $bill->amount) * 100) : null;
+        $billCents = $bill?->amount !== null ? Money::fromDecimal((string) $bill->amount) : null;
 
         return [
             'due_date' => ['required', 'date'],
@@ -25,7 +27,16 @@ class BillMarkPaidRequest extends FormRequest
                 'gt:0',
                 'max:9999999999.99',
                 function (string $attribute, mixed $value, \Closure $fail) use ($billCents) {
-                    if ($billCents !== null && (int) round(((float) $value) * 100) > $billCents) {
+                    // Valor não numérico ou fora do limite já falha nas regras acima.
+                    if ($billCents === null || ! is_numeric($value)) {
+                        return;
+                    }
+                    try {
+                        $paidCents = Money::fromDecimal($value);
+                    } catch (InvalidArgumentException) {
+                        return;
+                    }
+                    if ($paidCents > $billCents) {
                         $fail('O valor pago não pode ser maior que o valor da conta.');
                     }
                 },

@@ -61,11 +61,13 @@ class Transacao extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<CardUser, $this> */
     public function bankUser(): BelongsTo
     {
         return $this->belongsTo(CardUser::class, 'bank_user_id');
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
@@ -82,6 +84,7 @@ class Transacao extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<TransacaoParcela, $this> */
     public function parcelas(): HasMany
     {
         return $this->hasMany(TransacaoParcela::class, 'transacao_id')
