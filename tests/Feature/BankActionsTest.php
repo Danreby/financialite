@@ -77,14 +77,10 @@ class BankActionsTest extends TestCase
     {
         $account = $this->account();
 
-        $response = $this->as($side)->postJson($this->url($side, '/bank-accounts'), ['bank_id' => $account->bank_id]);
+        $this->as($side)->postJson($this->url($side, '/bank-accounts'), ['bank_id' => $account->bank_id])
+            ->assertStatus(422)
+            ->assertExactJson(['error' => 'Você já possui uma conta no banco "Banco A".']);
 
-        // Comportamento herdado: a web traduz o DomainException em 422, a API em 500.
-        if ($side === 'web') {
-            $response->assertStatus(422)->assertJsonPath('error', 'Você já possui uma conta no banco "Banco A".');
-        } else {
-            $response->assertStatus(500)->assertExactJson(['error' => 'Erro ao criar conta bancária.']);
-        }
         $this->assertSame(1, BankUser::count());
     }
 
@@ -135,12 +131,11 @@ class BankActionsTest extends TestCase
         $from = $this->account('10.00');
         $to = $this->account('0', null, 'Banco B');
 
-        // Comportamento herdado: os dois lados devolvem 500 com mensagem genérica.
         $this->as($side)->postJson($this->url($side, '/bank-transfers'), [
             'from_bank_user_id' => $from->id,
             'to_bank_user_id' => $to->id,
             'amount' => '40.50',
-        ])->assertStatus(500)->assertExactJson(['error' => 'Erro ao realizar transferência.']);
+        ])->assertStatus(422)->assertExactJson(['error' => 'Saldo insuficiente para realizar a transferência.']);
 
         $this->assertSame(0, BankTransfer::count());
         $this->assertSame('10.00', $from->refresh()->balance);

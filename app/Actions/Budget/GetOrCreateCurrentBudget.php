@@ -25,8 +25,7 @@ class GetOrCreateCurrentBudget
             return $budget;
         }
 
-        $incomeCents = Money::fromDecimal((string) Income::forUser($user->id)->where('is_active', true)->sum('amount'));
-        $limitCents = $incomeCents > 0 ? (int) round($incomeCents * 0.8) : self::DEFAULT_LIMIT_CENTS;
+        $limitCents = self::recommendedLimitCents($user) ?? self::DEFAULT_LIMIT_CENTS;
 
         // createOrFirst: duas requisições simultâneas esbarram no índice único
         // (user_id, month_year) e a segunda lê o orçamento criado pela primeira.
@@ -34,5 +33,16 @@ class GetOrCreateCurrentBudget
             ['user_id' => $user->id, 'month_year' => $month],
             ['monthly_limit' => Money::toDecimal($limitCents), 'is_active' => true],
         );
+    }
+
+    /**
+     * Limite recomendado: 80% da renda ativa do usuário, em centavos. Null sem renda.
+     * Única fonte da regra: usada aqui, no resumo da web e na resposta da API.
+     */
+    public static function recommendedLimitCents(User $user): ?int
+    {
+        $incomeCents = Money::fromDecimal((string) Income::forUser($user->id)->where('is_active', true)->sum('amount'));
+
+        return $incomeCents > 0 ? (int) round($incomeCents * 0.8) : null;
     }
 }

@@ -1,11 +1,6 @@
 import { apiService } from './api';
 
 export const categoryService = {
-    list: async () => {
-        const response = await apiService.get(route('categories.index'));
-        return response.data;
-    },
-
     create: async (data) => {
         const response = await apiService.post(route('categories.store'), data);
         return response.data;

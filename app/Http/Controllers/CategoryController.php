@@ -21,17 +21,6 @@ class CategoryController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request): JsonResponse
-    {
-        $this->authorize('viewAny', Category::class);
-
-        $categories = Category::forUser($request->user()->id)
-            ->ordered()
-            ->get(['id', 'name', 'color', 'icon', 'type']);
-
-        return $this->success($categories);
-    }
-
     public function store(CategoryStoreRequest $request, CreateCategory $createCategory): JsonResponse
     {
         $this->authorize('create', Category::class);

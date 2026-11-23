@@ -112,6 +112,8 @@ class BankApiController extends Controller
     {
         try {
             return $this->success($createAccount->handle($request->user(), $request->validated()), 201);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 
@@ -153,6 +155,8 @@ class BankApiController extends Controller
     {
         try {
             return $this->success($transferBetween->handle($request->user(), $request->validated()), 201);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 

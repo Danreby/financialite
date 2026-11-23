@@ -213,6 +213,8 @@ class BankController extends Controller
             );
 
             return $this->success($transfer, 201);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 

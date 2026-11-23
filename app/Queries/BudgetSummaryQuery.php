@@ -2,6 +2,7 @@
 
 namespace App\Queries;
 
+use App\Actions\Budget\GetOrCreateCurrentBudget;
 use App\Models\Budget;
 use App\Models\Income;
 use App\Models\User;
@@ -24,7 +25,8 @@ class BudgetSummaryQuery
             ->where('is_active', true)
             ->sum('amount');
 
-        $recommendedLimit = $monthlyIncome > 0 ? round($monthlyIncome * 0.8, 2) : null;
+        $recommendedCents = GetOrCreateCurrentBudget::recommendedLimitCents($user);
+        $recommendedLimit = $recommendedCents === null ? null : $recommendedCents / 100.0;
 
         $budget = Budget::forUser($user->id)
             ->forMonth(now()->format('Y-m'))

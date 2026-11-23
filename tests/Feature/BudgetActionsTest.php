@@ -92,7 +92,7 @@ class BudgetActionsTest extends TestCase
         $this->as($side)->postJson($this->url($side), [
             'monthly_limit' => '3000.00',
             'month_year' => '2026-11',
-        ])->assertStatus(500);
+        ])->assertStatus(422)->assertExactJson(['error' => 'Já existe um orçamento para este mês.']);
 
         $this->assertSame(1, Budget::count());
     }
@@ -176,7 +176,13 @@ class BudgetActionsTest extends TestCase
         $method = $side === 'api' ? 'postJson' : 'getJson';
         $this->as($side)->{$method}($this->url($side, '/get-or-create-current'))
             ->assertOk()
-            ->assertJsonPath('month_year', now()->format('Y-m'));
+            ->assertJsonPath('month_year', now()->format('Y-m'))
+            ->assertJsonPath('monthly_limit', '800.00');
+
+        if ($side === 'api') {
+            $this->as($side)->{$method}($this->url($side, '/get-or-create-current'))
+                ->assertJsonPath('recommended_limit', 800);
+        }
 
         $this->assertSame('800.00', (string) Budget::firstOrFail()->monthly_limit);
 

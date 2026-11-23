@@ -69,22 +69,6 @@ class Budget extends Model
         return $query->where('month_year', $currentMonth);
     }
 
-    public static function getOrCreateForCurrentMonth(int $userId, float $defaultLimit = 5000): self
-    {
-        $currentMonth = now()->format('Y-m');
-
-        return static::firstOrCreate(
-            [
-                'user_id' => $userId,
-                'month_year' => $currentMonth,
-            ],
-            [
-                'monthly_limit' => $defaultLimit,
-                'is_active' => true,
-            ]
-        );
-    }
-
     public function getCurrentSpending(): float
     {
         $startDate = Carbon::parse($this->month_year.'-01')->startOfMonth();

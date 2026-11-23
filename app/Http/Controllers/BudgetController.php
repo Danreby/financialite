@@ -42,15 +42,17 @@ class BudgetController extends Controller
         return $this->success($summary->current($request->user()));
     }
 
-    /**
-     * Mês já com orçamento lança DomainException, que segue como 500 (comportamento antigo).
-     */
     public function store(BudgetStoreRequest $request, CreateBudget $createBudget): JsonResponse
     {
         $this->authorize('create', Budget::class);
 
         $user = $request->user();
-        $budget = $createBudget->handle($user, $request->validated());
+
+        try {
+            $budget = $createBudget->handle($user, $request->validated());
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
+        }
 
         $this->notifications->success($user, 'Orçamento criado', 'Novo orçamento mensal foi criado com sucesso.');
 

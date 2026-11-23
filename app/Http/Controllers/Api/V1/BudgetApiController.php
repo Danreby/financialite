@@ -88,6 +88,8 @@ class BudgetApiController extends Controller
             $budget = $createBudget->handle($request->user(), $request->validated());
 
             return $this->success($budget->load('budgetCategories.category'), 201);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 
@@ -119,6 +121,15 @@ class BudgetApiController extends Controller
 
     public function getOrCreateCurrent(Request $request, GetOrCreateCurrentBudget $getOrCreate): JsonResponse
     {
-        return $this->success($getOrCreate->handle($request->user())->load('budgetCategories.category'));
+        $user = $request->user();
+        $budget = $getOrCreate->handle($user)->load('budgetCategories.category');
+        $recommendedCents = GetOrCreateCurrentBudget::recommendedLimitCents($user);
+
+        // recommended_limit explica de onde veio o limite de um orçamento recém-criado
+        // (80% da renda ativa; sem renda, o padrão de R$ 5.000,00).
+        return $this->success([
+            ...$budget->toArray(),
+            'recommended_limit' => $recommendedCents === null ? null : $recommendedCents / 100.0,
+        ]);
     }
 }
