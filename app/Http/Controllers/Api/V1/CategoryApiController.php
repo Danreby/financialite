@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Category\CreateCategory;
+use App\Actions\Category\DeleteCategory;
+use App\Actions\Category\UpdateCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\CategoryStoreRequest;
 use App\Http\Requests\Category\CategoryUpdateRequest;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,24 +17,17 @@ class CategoryApiController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $categories = Category::forUser($user->id)
+        $categories = Category::forUser($request->user()->id)
             ->orderBy('name')
             ->get();
 
         return $this->success($categories);
     }
 
-    public function store(CategoryStoreRequest $request): JsonResponse
+    public function store(CategoryStoreRequest $request, CreateCategory $createCategory): JsonResponse
     {
-        $user = $request->user();
-        $data = $request->validated();
-        $data['user_id'] = $user->id;
-
         try {
-            $category = Category::create($data);
-
-            return $this->success($category, 201);
+            return $this->success($createCategory->handle($request->user(), $request->validated()), 201);
         } catch (\Throwable $e) {
             report($e);
 
@@ -38,15 +35,12 @@ class CategoryApiController extends Controller
         }
     }
 
-    public function update(CategoryUpdateRequest $request, Category $category): JsonResponse
+    public function update(CategoryUpdateRequest $request, int $category, UpdateCategory $updateCategory): JsonResponse
     {
-        $this->authorize('update', $category);
-        $data = $request->validated();
-
         try {
-            $category->update($data);
-
-            return $this->success($category);
+            return $this->success($updateCategory->handle($request->user(), $category, $request->validated()));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -54,10 +48,9 @@ class CategoryApiController extends Controller
         }
     }
 
-    public function destroy(Request $request, Category $category): JsonResponse
+    public function destroy(Request $request, int $category, DeleteCategory $deleteCategory): JsonResponse
     {
-        $this->authorize('delete', $category);
-        $category->delete();
+        $deleteCategory->handle($request->user(), $category);
 
         return $this->success(['message' => 'Categoria removida.']);
     }

@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Category\CreateCategory;
+use App\Actions\Category\DeleteCategory;
+use App\Actions\Category\UpdateCategory;
 use App\Http\Requests\Category\CategoryStoreRequest;
 use App\Http\Requests\Category\CategoryUpdateRequest;
 use App\Models\Category;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -23,80 +25,51 @@ class CategoryController extends Controller
     {
         $this->authorize('viewAny', Category::class);
 
-        $user = $request->user();
-
-        $categories = Category::forUser($user->id)
+        $categories = Category::forUser($request->user()->id)
             ->ordered()
             ->get(['id', 'name', 'color', 'icon', 'type']);
 
         return $this->success($categories);
     }
 
-    public function store(CategoryStoreRequest $request): JsonResponse
+    public function store(CategoryStoreRequest $request, CreateCategory $createCategory): JsonResponse
     {
         $this->authorize('create', Category::class);
 
         $user = $request->user();
-        $data = $request->validated();
+        $category = $createCategory->handle($user, $request->validated());
 
-        $category = DB::transaction(function () use ($data, $user) {
-            $category = Category::create([
-                'name' => $data['name'],
-                'color' => $data['color'] ?? null,
-                'icon' => $data['icon'] ?? null,
-                'type' => $data['type'] ?? 'expense',
-                'user_id' => $user->id,
-            ]);
-
-            $this->notifications->info($user, 'Categoria criada', 'Uma nova categoria foi adicionada.');
-
-            return $category;
-        });
+        $this->notifications->info($user, 'Categoria criada', 'Uma nova categoria foi adicionada.');
 
         return $this->success($category, 201);
     }
 
-    public function update(CategoryUpdateRequest $request, Category $category): JsonResponse
+    public function update(CategoryUpdateRequest $request, int $category, UpdateCategory $updateCategory): JsonResponse
     {
-        $this->authorize('update', $category);
-
         $user = $request->user();
-        $data = $request->validated();
 
-        DB::transaction(function () use ($category, $data, $user) {
-            $category->update([
-                'name' => $data['name'],
-                'color' => $data['color'] ?? null,
-                'icon' => $data['icon'] ?? null,
-                'type' => $data['type'] ?? $category->type,
-            ]);
+        // O formulário da web omite cor e ícone quando o usuário os limpa: ausente = remover.
+        $data = $request->validated() + ['color' => null, 'icon' => null];
+        $updated = $updateCategory->handle($user, $category, $data);
 
-            $this->notifications->info($user, 'Categoria atualizada', 'Uma categoria foi atualizada.');
-        });
+        $this->notifications->info($user, 'Categoria atualizada', 'Uma categoria foi atualizada.');
 
-        return $this->success($category);
+        return $this->success($updated);
     }
 
-    public function destroy(Request $request, Category $category): JsonResponse
+    public function destroy(Request $request, int $category, DeleteCategory $deleteCategory): JsonResponse
     {
-        $this->authorize('delete', $category);
-
         $user = $request->user();
+        $deleteCategory->handle($user, $category);
 
-        DB::transaction(function () use ($category, $user) {
-            $category->delete();
-
-            $this->notifications->info($user, 'Categoria removida', 'Uma categoria foi removida.');
-        });
+        $this->notifications->info($user, 'Categoria removida', 'Uma categoria foi removida.');
 
         return $this->success(['message' => 'Categoria removida.']);
     }
 
     public function page(Request $request): InertiaResponse
     {
-        $user = $request->user();
-
-        $categories = Category::forUser($user->id)
+        $categories = Category::forUser($request->user()->id)
             ->orderBy('name')
             ->get(['id', 'name', 'icon', 'color', 'type']);
 

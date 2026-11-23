@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Bank\CreateBankAccount;
+use App\Actions\Bank\DeleteBankAccount;
+use App\Actions\Bank\TransferBetweenAccounts;
+use App\Actions\Bank\UpdateBankBalance;
 use App\Contracts\Services\BankAccountServiceInterface;
 use App\Contracts\Services\BankTransferServiceInterface;
 use App\Exceptions\BankAccountHasMovementsException;
@@ -13,6 +17,7 @@ use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Services\BankLedgerService;
 use App\Services\NotificationService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -89,9 +94,6 @@ class BankController extends Controller
     {
         $user = $request->user();
 
-        $bankUser = BankUser::with('bank')->forUser($user->id)->findOrFail($id);
-        $this->authorize('view', $bankUser);
-
         $detail = $this->bankAccountService->getBankDetail($user->id, $id);
 
         return $this->success($detail);
@@ -102,7 +104,6 @@ class BankController extends Controller
         $user = $request->user();
 
         $bankUser = BankUser::forUser($user->id)->findOrFail($id);
-        $this->authorize('view', $bankUser);
 
         $entries = $this->bankLedgerService->statementForAccount($bankUser);
 
@@ -134,15 +135,14 @@ class BankController extends Controller
         return $data;
     }
 
-    public function store(BankStoreRequest $request): JsonResponse
+    public function store(BankStoreRequest $request, CreateBankAccount $createAccount): JsonResponse
     {
         $this->authorize('create', Bank::class);
 
         $user = $request->user();
-        $data = $request->validated();
 
         try {
-            $bankUser = $this->bankAccountService->createForUser($user, $data);
+            $bankUser = $createAccount->handle($user, $request->validated());
             $bankUser->load('bank');
 
             $this->notifications->info($user, 'Banco adicionado', "Conta do banco \"{$bankUser->bank->name}\" foi vinculada.");
@@ -157,22 +157,19 @@ class BankController extends Controller
         }
     }
 
-    public function update(BankUpdateRequest $request, int $id): JsonResponse
+    public function update(BankUpdateRequest $request, int $id, UpdateBankBalance $updateBalance): JsonResponse
     {
         $user = $request->user();
-        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
-
-        $this->authorize('update', $bankUser);
-
-        $data = $request->validated();
 
         try {
-            $bankUser = $this->bankAccountService->updateBalance($bankUser, (float) $data['balance']);
+            $bankUser = $updateBalance->handle($user, $id, $request->validated('balance'));
             $bankUser->load('bank');
 
             $this->notifications->info($user, 'Saldo atualizado', 'O saldo da conta bancária foi atualizado.');
 
             return $this->success($bankUser);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -180,19 +177,18 @@ class BankController extends Controller
         }
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, int $id, DeleteBankAccount $deleteAccount): JsonResponse
     {
         $user = $request->user();
-        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
-
-        $this->authorize('delete', $bankUser);
 
         try {
-            $this->bankAccountService->deleteForUser($bankUser);
+            $deleteAccount->handle($user, $id);
 
             $this->notifications->info($user, 'Banco removido', 'Uma conta bancária foi removida.');
 
             return $this->success(['message' => 'Conta bancária removida.']);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (BankAccountHasMovementsException $e) {
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
@@ -202,19 +198,18 @@ class BankController extends Controller
         }
     }
 
-    public function transfer(BankTransferRequest $request): JsonResponse
+    public function transfer(BankTransferRequest $request, TransferBetweenAccounts $transferBetween): JsonResponse
     {
         $user = $request->user();
-        $data = $request->validated();
 
         try {
-            $transfer = $this->bankTransferService->transfer($user, $data);
+            $transfer = $transferBetween->handle($user, $request->validated());
             $transfer->load(['fromBankUser.bank', 'toBankUser.bank']);
 
             $this->notifications->info(
                 $user,
                 'Transferência realizada',
-                'Transferência de R$ '.number_format($transfer->amount, 2, ',', '.').' realizada com sucesso.'
+                'Transferência de R$ '.number_format((float) $transfer->amount, 2, ',', '.').' realizada com sucesso.'
             );
 
             return $this->success($transfer, 201);

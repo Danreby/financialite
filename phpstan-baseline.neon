@@ -259,12 +259,6 @@ parameters:
 			path: app/Http/Controllers/BankController.php
 
 		-
-			message: '#^Parameter \#1 \$num of function number_format expects float, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/BankController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 3

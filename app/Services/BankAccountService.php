@@ -10,6 +10,7 @@ use App\Models\BankTransfer;
 use App\Models\BankUser;
 use App\Models\Fatura;
 use App\Models\Income;
+use App\Support\Money;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -77,12 +78,12 @@ class BankAccountService implements BankAccountServiceInterface
                 'balance' => 0,
             ]);
 
-            $initialBalance = round((float) ($data['balance'] ?? 0), 2);
-            if ($initialBalance !== 0.0) {
-                $this->ledger->record(
+            $initialCents = Money::fromDecimal($data['balance'] ?? 0);
+            if ($initialCents !== 0) {
+                $this->ledger->recordCents(
                     $bankUser,
                     BankLedgerEntry::TYPE_ACCOUNT_OPENING,
-                    $initialBalance,
+                    $initialCents,
                     null,
                     'Saldo inicial da conta'
                 );
@@ -92,16 +93,22 @@ class BankAccountService implements BankAccountServiceInterface
         });
     }
 
-    public function updateBalance(BankUser $bankUser, float $newBalance): BankUser
+    /**
+     * Ajusta o saldo para $newBalance gerando um lançamento manual com a diferença.
+     * A diferença é calculada em centavos sobre o saldo travado, para que dois ajustes
+     * simultâneos não partam do mesmo saldo antigo.
+     */
+    public function updateBalance(BankUser $bankUser, string|int|float $newBalance): BankUser
     {
         return DB::transaction(function () use ($bankUser, $newBalance) {
-            $delta = round($newBalance, 2) - round((float) $bankUser->balance, 2);
+            $locked = BankUser::whereKey($bankUser->id)->lockForUpdate()->firstOrFail();
+            $deltaCents = Money::fromDecimal($newBalance) - Money::fromDecimal((string) $locked->balance);
 
-            if ($delta !== 0.0) {
-                $this->ledger->record(
-                    $bankUser,
+            if ($deltaCents !== 0) {
+                $this->ledger->recordCents(
+                    $locked,
                     BankLedgerEntry::TYPE_MANUAL_ADJUSTMENT,
-                    $delta,
+                    $deltaCents,
                     null,
                     'Ajuste manual de saldo'
                 );
