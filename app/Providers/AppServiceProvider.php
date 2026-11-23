@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +25,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // Segmentos de id não numéricos (ex.: /notifications/abc/read) devem dar
+        // 404 e não um TypeError (500) ao chegar no controller.
+        foreach ([
+            'id', 'anexoId', 'transacaoId', 'bankUser', 'bill', 'payment', 'budget',
+            'card', 'cardUser', 'category', 'income', 'notification', 'savingsGoal',
+            'card_resource', 'card_user',
+        ] as $parameter) {
+            Route::pattern($parameter, '[0-9]+');
+        }
 
         $this->warnAboutInsecureProductionConfig();
 
