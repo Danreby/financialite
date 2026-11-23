@@ -466,6 +466,15 @@ class DashboardInsightsService
         ];
     }
 
+    /**
+     * Tendências de gasto: débitos do mês mais as parcelas de crédito ainda não
+     * pagas (calculateInstallmentAwareSpending filtra notStatus(Paid)).
+     *
+     * O KPI "Total mensal" (monthly_summary, App\Queries\Dashboard\SpendingSeriesQuery)
+     * soma o crédito do mês pago ou não, então os dois números diferem quando a
+     * fatura do mês já foi paga. A diferença é decisão de produto e fica assim
+     * até ser combinada; não alinhar um ao outro por conta própria.
+     */
     private function getSpendingTrends(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();

@@ -164,6 +164,28 @@ class FaturaBillingService
             ]);
     }
 
+    /**
+     * Valor que uma compra no cartão pesa na fatura do mês, em reais.
+     *
+     * Parcelada com parcelas gravadas: a parcela daquele mês (ou a primeira, se
+     * nenhuma cai no mês). Recorrente ou sem parcelas gravadas: a parcela calculada
+     * pelo número do mês.
+     */
+    public function installmentAmountForMonth(Transacao $transacao, string $yearMonth): float
+    {
+        if (! $transacao->is_recurring && $transacao->parcelas->isNotEmpty()) {
+            $parcela = $transacao->parcelas->firstWhere('month_key', $yearMonth);
+
+            return $parcela
+                ? (float) $transacao->getInstallmentAmount($parcela->installment_number)
+                : (float) $transacao->getInstallmentAmount();
+        }
+
+        return (float) $transacao->getInstallmentAmount(
+            $this->resolveInstallmentNumberForMonth($transacao, $yearMonth)
+        );
+    }
+
     public function resolveInstallmentNumberForMonth(Transacao $transacao, string $yearMonth): ?int
     {
         $totalInstallments = (int) ($transacao->total_installments ?? 1);
