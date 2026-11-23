@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Card\AttachCard;
+use App\Actions\Card\DetachCardUser;
+use App\Actions\Card\UpdateCardUser;
+use App\Exceptions\CardAlreadyAttachedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Card\AttachCardToUserRequest;
+use App\Http\Requests\Card\UpdateCardDueDayRequest;
 use App\Models\CardUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * api/v1/card-users: vínculos do usuário com cartões (inclusive do catálogo).
@@ -43,45 +47,31 @@ class CardUserApiController extends Controller
         return $this->success($cardUser);
     }
 
-    public function store(AttachCardToUserRequest $request): JsonResponse
+    public function store(AttachCardToUserRequest $request, AttachCard $attachCard): JsonResponse
     {
         $this->authorize('create', CardUser::class);
 
-        $user = $request->user();
-
-        $data = $request->validated();
-
-        $existing = CardUser::forUser($user->id)
-            ->where('card_id', $data['card_id'])
-            ->first();
-
-        if ($existing) {
+        try {
+            $cardUser = $attachCard->handle($request->user(), $request->validated());
+        } catch (CardAlreadyAttachedException) {
             return $this->error('Este cartão já está associado ao usuário.', 422);
         }
 
-        $cardUser = DB::transaction(function () use ($data, $user) {
-            return CardUser::create([
-                'user_id' => $user->id,
-                'card_id' => $data['card_id'],
-            ]);
-        });
-
-        $cardUser->load('card');
-
-        return $this->success($cardUser, 201);
+        return $this->success($cardUser->load('card'), 201);
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    /**
+     * PUT|PATCH api/v1/card-users/{id}: vencimento, fechamento e limite do vínculo
+     * (bandeira e descrição só para cartão próprio).
+     */
+    public function update(UpdateCardDueDayRequest $request, int $id, UpdateCardUser $updateCardUser): JsonResponse
     {
-        $user = $request->user();
+        return $this->success($updateCardUser->handle($request->user(), $id, $request->validated()));
+    }
 
-        $cardUser = CardUser::forUser($user->id)->findOrFail($id);
-
-        $this->authorize('delete', $cardUser);
-
-        DB::transaction(function () use ($cardUser) {
-            $cardUser->delete();
-        });
+    public function destroy(Request $request, int $id, DetachCardUser $detachCardUser): JsonResponse
+    {
+        $detachCardUser->handle($request->user(), $id);
 
         return $this->success(['message' => 'Cartão desassociado do usuário.']);
     }

@@ -10,8 +10,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Rotas /api/v1/card-resources e /api/v1/card-users (usadas pelo app Android e
- * por resources/js/Services/cardService.js). Formato e status precisam ficar
+ * Rotas /api/v1/card-resources e /api/v1/card-users (usadas pelo app Android).
+ * Formato e status precisam ficar
  * iguais aos de quando eram servidas pelos controllers web.
  */
 class CardApiResourcesTest extends TestCase

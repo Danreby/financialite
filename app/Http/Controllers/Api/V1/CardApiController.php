@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Card\AttachCard;
+use App\Actions\Card\DetachCardUser;
+use App\Actions\Card\UpdateCardUser;
+use App\Exceptions\CardAlreadyAttachedException;
 use App\Http\Controllers\Controller;
 use App\Models\Card;
 use App\Models\CardUser;
@@ -53,11 +57,11 @@ class CardApiController extends Controller
         return $this->success($cards);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, AttachCard $attachCard): JsonResponse
     {
         $user = $request->user();
 
-        $request->validate([
+        $data = $request->validate([
             'card_id' => [
                 'required',
                 Rule::exists('cards', 'id')->where(
@@ -71,49 +75,29 @@ class CardApiController extends Controller
             'credit_limit' => 'nullable|numeric|min:0|max:999999999.99',
         ]);
 
-        $existing = CardUser::where('user_id', $user->id)
-            ->where('card_id', $request->card_id)
-            ->first();
-
-        if ($existing) {
+        try {
+            $cardUser = $attachCard->handle($user, $data);
+        } catch (CardAlreadyAttachedException) {
             return $this->error('Você já possui este cartão.', 422);
         }
 
-        $cardUser = CardUser::create([
-            'user_id' => $user->id,
-            'card_id' => $request->card_id,
-            'due_day' => $request->due_day,
-            'closing_day' => $request->closing_day,
-            'credit_limit' => $request->credit_limit,
-        ]);
-
-        $cardUser->load('card');
-
-        return $this->success($cardUser, 201);
+        return $this->success($cardUser->load('card'), 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, int $id, UpdateCardUser $updateCardUser): JsonResponse
     {
-        $user = $request->user();
-        $cardUser = CardUser::forUser($user->id)->findOrFail($id);
-
-        $request->validate([
+        $data = $request->validate([
             'due_day' => 'nullable|integer|min:1|max:31',
             'closing_day' => 'nullable|integer|min:1|max:31',
             'credit_limit' => 'nullable|numeric|min:0|max:999999999.99',
         ]);
 
-        $cardUser->update($request->only(['due_day', 'closing_day', 'credit_limit']));
-        $cardUser->load('card');
-
-        return $this->success($cardUser);
+        return $this->success($updateCardUser->handle($request->user(), $id, $data));
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, int $id, DetachCardUser $detachCardUser): JsonResponse
     {
-        $user = $request->user();
-        $cardUser = CardUser::forUser($user->id)->findOrFail($id);
-        $cardUser->delete();
+        $detachCardUser->handle($request->user(), $id);
 
         return $this->success(['message' => 'Cartão removido.']);
     }

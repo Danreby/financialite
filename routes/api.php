@@ -118,7 +118,7 @@ Route::middleware(['auth:sanctum', 'verified', 'throttle:api'])->prefix('v1')->g
     Route::patch('/profile/password', [ProfileApiController::class, 'updatePassword']);
     Route::delete('/profile', [ProfileApiController::class, 'destroy']);
 
-    // Nomes de rota mantidos: resources/js/Services/cardService.js usa card-users.*.
+    // Usadas pelo app Android. Nomes de rota (card-resources.*, card-users.*) mantidos.
     Route::apiResource('card-resources', CardResourceApiController::class);
     Route::get('card-users/stats', [CardUserApiController::class, 'stats'])->name('api.card-users.stats');
     Route::apiResource('card-users', CardUserApiController::class);
