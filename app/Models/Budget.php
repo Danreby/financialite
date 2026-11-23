@@ -30,7 +30,19 @@ class Budget extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<BudgetCategory, $this> */
     public function categoryLimits(): HasMany
+    {
+        return $this->hasMany(BudgetCategory::class);
+    }
+
+    /**
+     * Mesma relação de categoryLimits, com o nome que a API v1 sempre usou
+     * (chave budget_categories no JSON do app Android).
+     *
+     * @return HasMany<BudgetCategory, $this>
+     */
+    public function budgetCategories(): HasMany
     {
         return $this->hasMany(BudgetCategory::class);
     }

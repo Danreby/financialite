@@ -48,14 +48,14 @@ class SavingsGoalService implements SavingsGoalServiceInterface
         });
     }
 
-    public function deposit(SavingsGoal $goal, float $amount): SavingsGoal
+    public function deposit(SavingsGoal $goal, string|int|float $amount): SavingsGoal
     {
         return DB::transaction(function () use ($goal, $amount) {
             return $this->lockFresh($goal)->deposit($amount);
         });
     }
 
-    public function withdraw(SavingsGoal $goal, float $amount): SavingsGoal
+    public function withdraw(SavingsGoal $goal, string|int|float $amount): SavingsGoal
     {
         return DB::transaction(function () use ($goal, $amount) {
             return $this->lockFresh($goal)->withdraw($amount);

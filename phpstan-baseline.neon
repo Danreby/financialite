@@ -211,24 +211,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/BankApiController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Budget\:\:\$budgetCategories\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BudgetApiController.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\Budget\:\:budgetCategories\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/BudgetApiController.php
-
-		-
-			message: '#^Relation ''budgetCategories'' is not found in App\\Models\\Budget model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Api/V1/BudgetApiController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -562,18 +544,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 20
-			path: app/Services/DashboardInsightsService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$category_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardInsightsService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$limit\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Services/DashboardInsightsService.php
 
 		-
