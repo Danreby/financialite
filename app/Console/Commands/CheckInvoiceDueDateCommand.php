@@ -43,7 +43,7 @@ class CheckInvoiceDueDateCommand extends Command
             }
 
             $invoiceDate = Carbon::parse($invoice->month_key.'-01');
-            $dueDate = $invoiceDate->copy()->addMonth()->day(min($invoice->bankUser->due_day, $invoiceDate->copy()->addMonth()->daysInMonth));
+            $dueDate = $invoiceDate->copy()->addMonthNoOverflow()->day(min($invoice->bankUser->due_day, $invoiceDate->copy()->addMonthNoOverflow()->daysInMonth));
 
             if ($dueDate->isSameDay($twoDaysFromNow)) {
                 $bankName = $invoice->bankUser?->card?->name ?? 'Cartão';

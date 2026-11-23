@@ -50,7 +50,7 @@ class ProjectionsApiController extends Controller
             $firstBillingMonth = Carbon::parse($firstBillingMonthKey.'-01');
 
             if (! $isRecurring) {
-                $completionMonth = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
+                $completionMonth = $firstBillingMonth->copy()->addMonthsNoOverflow($totalInstallments - 1);
                 // Skip fully paid transactions
                 if ($completionMonth->lt($today)) {
                     return null;
@@ -84,7 +84,7 @@ class ProjectionsApiController extends Controller
         // ── Build 6-month projection breakdown ────────────────────────────────
         $months = [];
         for ($i = 0; $i < 6; $i++) {
-            $month = $today->copy()->addMonths($i);
+            $month = $today->copy()->addMonthsNoOverflow($i);
             $monthKey = $month->format('Y-m');
 
             $debitTotal = 0.0;
@@ -97,7 +97,7 @@ class ProjectionsApiController extends Controller
                     }
                 } else {
                     $totalInst = $tx['total_installments'];
-                    $lastMonth = $firstMonth->copy()->addMonths($totalInst - 1);
+                    $lastMonth = $firstMonth->copy()->addMonthsNoOverflow($totalInst - 1);
                     if ($month->gte($firstMonth) && $month->lte($lastMonth)) {
                         $debitTotal += $tx['amount_per_month'];
                     }

@@ -317,7 +317,7 @@ class BillController extends Controller
                 }
                 $monthDays = $today->copy()->month($startDate->month)->daysInMonth;
                 $candidate = $today->copy()->month($startDate->month)->day(min($bill->due_day, $monthDays));
-                if ($candidate->gt($today->copy()->addMonths(6))) {
+                if ($candidate->gt($today->copy()->addMonthsNoOverflow(6))) {
                     $candidate->subYear();
                 }
 
@@ -335,7 +335,7 @@ class BillController extends Controller
     {
         switch ($bill->recurrence_type) {
             case 'monthly':
-                $next = $currentDue->copy()->addMonth();
+                $next = $currentDue->copy()->addMonthNoOverflow();
 
                 return $next->day(min($bill->due_day, $next->daysInMonth));
 

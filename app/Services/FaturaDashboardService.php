@@ -96,7 +96,7 @@ class FaturaDashboardService
         $today = Carbon::today();
         $monthStart = $today->copy()->startOfMonth();
         $monthEnd = $today->copy()->endOfMonth();
-        $seriesStart = $today->copy()->startOfMonth()->subMonths(5);
+        $seriesStart = $today->copy()->startOfMonth()->subMonthsNoOverflow(5);
 
         $paidByMonth = $this->paidByMonthForUser(
             $user->id,
@@ -337,7 +337,7 @@ class FaturaDashboardService
         $mkEnd = $seriesEnd->copy()->startOfMonth();
         while ($mk->lte($mkEnd)) {
             $monthKeys[] = $mk->format('Y-m');
-            $mk->addMonth();
+            $mk->addMonthNoOverflow();
         }
 
         $creditByMonth = collect($monthKeys)->mapWithKeys(fn ($k) => [$k => 0.0]);
@@ -383,7 +383,7 @@ class FaturaDashboardService
                 'debit_total' => (float) $debitByMonth->get($monthKey, 0.0),
             ];
 
-            $cursor->addMonth();
+            $cursor->addMonthNoOverflow();
         }
 
         return $months;
@@ -442,7 +442,7 @@ class FaturaDashboardService
         $mkEnd = $endMonth->copy()->startOfMonth();
         while ($mkCursor->lte($mkEnd)) {
             $monthKeys[] = $mkCursor->format('Y-m');
-            $mkCursor->addMonth();
+            $mkCursor->addMonthNoOverflow();
         }
 
         $creditEntries = (clone $base)
@@ -457,7 +457,7 @@ class FaturaDashboardService
                     if ($this->billing->faturaAppliesToMonth($transacao, $cursor)) {
                         return true;
                     }
-                    $cursor->addMonth();
+                    $cursor->addMonthNoOverflow();
                 }
 
                 return false;

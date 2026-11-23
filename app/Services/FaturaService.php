@@ -208,7 +208,7 @@ class FaturaService implements FaturaServiceInterface
                 $parcelaAmount = round($parcelaAmount + $remainder, 2);
             }
 
-            $parcelMonth = $firstBillingMonth->copy()->addMonths($i - 1);
+            $parcelMonth = $firstBillingMonth->copy()->addMonthsNoOverflow($i - 1);
             $monthKey = $parcelMonth->format('Y-m');
             $maxDay = (int) $parcelMonth->copy()->endOfMonth()->format('d');
             $actualDueDay = min($dueDay, $maxDay);

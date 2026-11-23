@@ -96,7 +96,7 @@ class BillApiController extends Controller
             ->map(function (Bill $bill) use ($today) {
                 $dueDate = $today->copy()->day($bill->due_day);
                 if ($dueDate->lt($today)) {
-                    $dueDate->addMonth();
+                    $dueDate->addMonthNoOverflow();
                 }
 
                 $lastPayment = BillPayment::where('bill_id', $bill->id)

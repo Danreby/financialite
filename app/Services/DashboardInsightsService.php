@@ -336,8 +336,8 @@ class DashboardInsightsService
         $today = Carbon::today();
         // Dia 1 do mês: em 31/01, addMonth() a partir de hoje cairia em março e pularia fevereiro.
         $currentMonth = Carbon::now()->startOfMonth();
-        $nextMonth = $currentMonth->copy()->addMonth();
-        $monthAfterNext = $currentMonth->copy()->addMonths(2);
+        $nextMonth = $currentMonth->copy()->addMonthNoOverflow();
+        $monthAfterNext = $currentMonth->copy()->addMonthsNoOverflow(2);
 
         $activeBills = Bill::forUser($user->id)
             ->active()
@@ -468,7 +468,7 @@ class DashboardInsightsService
     {
         $today = Carbon::today();
         // Parte do dia 1 antes de voltar meses: em 31/12, subMonth() transbordaria para 01/12.
-        $threeMonthsAgoStart = $today->copy()->startOfMonth()->subMonths(3);
+        $threeMonthsAgoStart = $today->copy()->startOfMonth()->subMonthsNoOverflow(3);
 
         $hasTransactions = Transacao::where('user_id', $user->id)
             ->where('type', 'debit')
@@ -489,7 +489,7 @@ class DashboardInsightsService
         $currentMonthStart = $today->copy()->startOfMonth();
         $currentMonthEnd = $today->copy()->endOfMonth();
 
-        $previousMonthStart = $currentMonthStart->copy()->subMonth();
+        $previousMonthStart = $currentMonthStart->copy()->subMonthNoOverflow();
         $previousMonthEnd = $previousMonthStart->copy()->endOfMonth();
 
         $currentMonth = $this->budgetCalculationService->calculateInstallmentAwareSpending(

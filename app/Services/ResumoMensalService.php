@@ -372,7 +372,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
     private function buildCategoryAverages(int $userId, Carbon $targetMonth): array
     {
-        $threeMonthsAgo = $targetMonth->copy()->subMonths(3)->startOfMonth();
+        $threeMonthsAgo = $targetMonth->copy()->subMonthsNoOverflow(3)->startOfMonth();
         $targetMonthEnd = $targetMonth->copy()->endOfMonth();
 
         // Build the list of month keys in the 4-month range.
@@ -380,7 +380,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
         $cursor = $threeMonthsAgo->copy();
         while ($cursor->lte($targetMonth)) {
             $monthKeys[] = $cursor->format('Y-m');
-            $cursor->addMonth();
+            $cursor->addMonthNoOverflow();
         }
 
         $debitTransactions = Transacao::with('category')

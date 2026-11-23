@@ -105,7 +105,7 @@ class Bill extends Model
         $dueDate = $today->copy()->day(min($this->due_day, $today->daysInMonth));
 
         if ($dueDate->lt($today)) {
-            $dueDate->addMonth()->day(min($this->due_day, $dueDate->daysInMonth));
+            $dueDate->addMonthNoOverflow()->day(min($this->due_day, $dueDate->daysInMonth));
         }
 
         if ($this->end_date && $dueDate->gt($this->end_date)) {
