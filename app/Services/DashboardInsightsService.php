@@ -334,7 +334,8 @@ class DashboardInsightsService
     private function getUpcomingBills(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();
-        $currentMonth = Carbon::now();
+        // Dia 1 do mês: em 31/01, addMonth() a partir de hoje cairia em março e pularia fevereiro.
+        $currentMonth = Carbon::now()->startOfMonth();
         $nextMonth = $currentMonth->copy()->addMonth();
         $monthAfterNext = $currentMonth->copy()->addMonths(2);
 
@@ -466,7 +467,8 @@ class DashboardInsightsService
     private function getSpendingTrends(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();
-        $threeMonthsAgoStart = $today->copy()->subMonths(3)->startOfMonth();
+        // Parte do dia 1 antes de voltar meses: em 31/12, subMonth() transbordaria para 01/12.
+        $threeMonthsAgoStart = $today->copy()->startOfMonth()->subMonths(3);
 
         $hasTransactions = Transacao::where('user_id', $user->id)
             ->where('type', 'debit')
@@ -487,8 +489,8 @@ class DashboardInsightsService
         $currentMonthStart = $today->copy()->startOfMonth();
         $currentMonthEnd = $today->copy()->endOfMonth();
 
-        $previousMonthStart = $today->copy()->subMonth()->startOfMonth();
-        $previousMonthEnd = $today->copy()->subMonth()->endOfMonth();
+        $previousMonthStart = $currentMonthStart->copy()->subMonth();
+        $previousMonthEnd = $previousMonthStart->copy()->endOfMonth();
 
         $currentMonth = $this->budgetCalculationService->calculateInstallmentAwareSpending(
             $user,

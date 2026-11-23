@@ -96,7 +96,7 @@ class FaturaDashboardService
         $today = Carbon::today();
         $monthStart = $today->copy()->startOfMonth();
         $monthEnd = $today->copy()->endOfMonth();
-        $seriesStart = $today->copy()->subMonths(5)->startOfMonth();
+        $seriesStart = $today->copy()->startOfMonth()->subMonths(5);
 
         $paidByMonth = $this->paidByMonthForUser(
             $user->id,
