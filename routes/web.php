@@ -81,7 +81,7 @@ Route::get('/_ui', function () {
     return Inertia::render('Dev/UiKit');
 })->name('dev.ui');
 
-require __DIR__.'/Fatura.php';
+require __DIR__.'/transacoes.php';
 require __DIR__.'/Income.php';
 require __DIR__.'/Anexo.php';
 require __DIR__.'/SavingsGoal.php';

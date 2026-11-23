@@ -55,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Bank::class, 'bank_user', 'user_id', 'bank_id');
     }
 
+    /** @return BelongsToMany<Card, $this> */
     public function cards(): BelongsToMany
     {
         return $this->belongsToMany(Card::class, 'card_user', 'user_id', 'card_id');
