@@ -1,0 +1,459 @@
+{
+    "month_key": "2026-11",
+    "month_label": "Novembro de 2026",
+    "summary": {
+        "total_income": 5300,
+        "total_expenses": 390,
+        "balance": 4910
+    },
+    "incomes": [
+        {
+            "id": 1,
+            "title": "Salário",
+            "description": null,
+            "amount": 5000,
+            "type": "salary",
+            "type_label": "Salário",
+            "payment_day_label": "Dia 5",
+            "is_recurring": true,
+            "bank_name": null,
+            "bank_account_name": null
+        },
+        {
+            "id": 2,
+            "title": "Pix recebido",
+            "description": null,
+            "amount": 300,
+            "type": "pix",
+            "type_label": "Pix",
+            "payment_day_label": "12/11/2026",
+            "is_recurring": false,
+            "bank_name": null,
+            "bank_account_name": null
+        }
+    ],
+    "expenses_by_category": [
+        {
+            "category_id": 1,
+            "category_name": "Mercado",
+            "category_icon": "cart",
+            "category_color": "#00aa00",
+            "total": 170,
+            "count": 3
+        },
+        {
+            "category_id": 2,
+            "category_name": "Lazer",
+            "category_icon": "film",
+            "category_color": "#aa00aa",
+            "total": 130,
+            "count": 2
+        },
+        {
+            "category_id": null,
+            "category_name": "Sem categoria",
+            "category_icon": null,
+            "category_color": null,
+            "total": 90,
+            "count": 1
+        }
+    ],
+    "category_averages": [
+        {
+            "category_id": 1,
+            "category_name": "Mercado",
+            "category_icon": "cart",
+            "category_color": "#00aa00",
+            "current_total": 170,
+            "average": 117.5,
+            "diff": 52.5,
+            "diff_percent": 44.7
+        },
+        {
+            "category_id": 2,
+            "category_name": "Lazer",
+            "category_icon": "film",
+            "category_color": "#aa00aa",
+            "current_total": 130,
+            "average": 62.5,
+            "diff": 67.5,
+            "diff_percent": 108
+        },
+        {
+            "category_id": null,
+            "category_name": "Sem categoria",
+            "category_icon": null,
+            "category_color": null,
+            "current_total": 90,
+            "average": 22.5,
+            "diff": 67.5,
+            "diff_percent": 300
+        }
+    ],
+    "calendar": [
+        {
+            "date": "2026-11-01",
+            "day": 1,
+            "weekday": 0,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-02",
+            "day": 2,
+            "weekday": 1,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-03",
+            "day": 3,
+            "weekday": 2,
+            "transactions": [
+                {
+                    "id": 5,
+                    "title": "Farmacia",
+                    "amount": 90,
+                    "type": "credit",
+                    "status": "unpaid",
+                    "category_name": null,
+                    "category_icon": null,
+                    "category_color": null,
+                    "bank_name": "Cartão Azul"
+                }
+            ],
+            "total": 90,
+            "count": 1
+        },
+        {
+            "date": "2026-11-04",
+            "day": 4,
+            "weekday": 3,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-05",
+            "day": 5,
+            "weekday": 4,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-06",
+            "day": 6,
+            "weekday": 5,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-07",
+            "day": 7,
+            "weekday": 6,
+            "transactions": [
+                {
+                    "id": 6,
+                    "title": "FeiraX2",
+                    "amount": 30,
+                    "type": "credit",
+                    "status": "unpaid",
+                    "category_name": "Mercado",
+                    "category_icon": "cart",
+                    "category_color": "#00aa00",
+                    "bank_name": null
+                }
+            ],
+            "total": 30,
+            "count": 1
+        },
+        {
+            "date": "2026-11-08",
+            "day": 8,
+            "weekday": 0,
+            "transactions": [
+                {
+                    "id": 7,
+                    "title": "Bar",
+                    "amount": 80,
+                    "type": "debit",
+                    "status": "paid",
+                    "category_name": "Lazer",
+                    "category_icon": "film",
+                    "category_color": "#aa00aa",
+                    "bank_name": null
+                }
+            ],
+            "total": 80,
+            "count": 1
+        },
+        {
+            "date": "2026-11-09",
+            "day": 9,
+            "weekday": 1,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-10",
+            "day": 10,
+            "weekday": 2,
+            "transactions": [
+                {
+                    "id": 8,
+                    "title": "Acougue",
+                    "amount": 40,
+                    "type": "debit",
+                    "status": "paid",
+                    "category_name": "Mercado",
+                    "category_icon": "cart",
+                    "category_color": "#00aa00",
+                    "bank_name": null
+                }
+            ],
+            "total": 40,
+            "count": 1
+        },
+        {
+            "date": "2026-11-11",
+            "day": 11,
+            "weekday": 3,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-12",
+            "day": 12,
+            "weekday": 4,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-13",
+            "day": 13,
+            "weekday": 5,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-14",
+            "day": 14,
+            "weekday": 6,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-15",
+            "day": 15,
+            "weekday": 0,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-16",
+            "day": 16,
+            "weekday": 1,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-17",
+            "day": 17,
+            "weekday": 2,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-18",
+            "day": 18,
+            "weekday": 3,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-19",
+            "day": 19,
+            "weekday": 4,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-20",
+            "day": 20,
+            "weekday": 5,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-21",
+            "day": 21,
+            "weekday": 6,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-22",
+            "day": 22,
+            "weekday": 0,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-23",
+            "day": 23,
+            "weekday": 1,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-24",
+            "day": 24,
+            "weekday": 2,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-25",
+            "day": 25,
+            "weekday": 3,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-26",
+            "day": 26,
+            "weekday": 4,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-27",
+            "day": 27,
+            "weekday": 5,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-28",
+            "day": 28,
+            "weekday": 6,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-29",
+            "day": 29,
+            "weekday": 0,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        },
+        {
+            "date": "2026-11-30",
+            "day": 30,
+            "weekday": 1,
+            "transactions": [],
+            "total": 0,
+            "count": 0
+        }
+    ],
+    "expenses_by_card": [
+        {
+            "bank_user_id": 1,
+            "card_name": "Cartão Azul",
+            "total": 240,
+            "count": 3,
+            "transactions": [
+                {
+                    "id": 1,
+                    "title": "MercadoX3",
+                    "amount": 100,
+                    "total_amount": 300,
+                    "installments": "2/3",
+                    "category_name": "Mercado",
+                    "category_icon": "cart",
+                    "category_color": "#00aa00",
+                    "date": "20/09",
+                    "is_recurring": false
+                },
+                {
+                    "id": 5,
+                    "title": "Farmacia",
+                    "amount": 90,
+                    "total_amount": 90,
+                    "installments": null,
+                    "category_name": null,
+                    "category_icon": null,
+                    "category_color": null,
+                    "date": "03/11",
+                    "is_recurring": false
+                },
+                {
+                    "id": 3,
+                    "title": "Streaming",
+                    "amount": 50,
+                    "total_amount": 50,
+                    "installments": null,
+                    "category_name": "Lazer",
+                    "category_icon": "film",
+                    "category_color": "#aa00aa",
+                    "date": "10/10",
+                    "is_recurring": true
+                }
+            ]
+        }
+    ],
+    "expenses_by_bank": [
+        {
+            "bank_user_id": null,
+            "bank_name": "Sem banco",
+            "total": 120,
+            "count": 2,
+            "transactions": [
+                {
+                    "id": 7,
+                    "title": "Bar",
+                    "amount": 80,
+                    "category_name": "Lazer",
+                    "category_icon": "film",
+                    "category_color": "#aa00aa",
+                    "date": "08/11",
+                    "is_recurring": false
+                },
+                {
+                    "id": 8,
+                    "title": "Acougue",
+                    "amount": 40,
+                    "category_name": "Mercado",
+                    "category_icon": "cart",
+                    "category_color": "#00aa00",
+                    "date": "10/11",
+                    "is_recurring": false
+                }
+            ]
+        }
+    ]
+}

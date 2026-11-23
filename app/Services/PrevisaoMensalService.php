@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Contracts\Services\PrevisaoMensalServiceInterface;
+use App\Enums\BillPaymentStatus;
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Fatura;
@@ -40,7 +43,7 @@ class PrevisaoMensalService implements PrevisaoMensalServiceInterface
 
         $creditTransactions = Transacao::with(['bankUser.card', 'parcelas'])
             ->forUser($userId)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->whereNotNull('bank_user_id')
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
@@ -85,8 +88,8 @@ class PrevisaoMensalService implements PrevisaoMensalServiceInterface
     {
         $creditTransactions = Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->forUser($user->id)
-            ->where('type', 'credit')
-            ->notStatus('paid')
+            ->where('type', TransacaoType::Credit)
+            ->notStatus(TransacaoStatus::Paid)
             ->get();
 
         if ($creditTransactions->isEmpty()) {
@@ -137,7 +140,7 @@ class PrevisaoMensalService implements PrevisaoMensalServiceInterface
 
             if ($isEstimated) {
                 $average = BillPayment::where('bill_id', $bill->id)
-                    ->where('status', 'paid')
+                    ->where('status', BillPaymentStatus::Paid)
                     ->avg('amount_paid');
                 $amount = round((float) ($average ?? 0), 2);
             } else {
@@ -168,7 +171,7 @@ class PrevisaoMensalService implements PrevisaoMensalServiceInterface
 
         $debitTransactions = Transacao::with('category')
             ->forUser($userId)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$lookbackStart, $targetMonthEnd])
             ->get();
 

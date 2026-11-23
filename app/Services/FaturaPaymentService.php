@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\TransacaoParcelaStatus;
+use App\Enums\TransacaoStatus;
 use App\Exceptions\InsufficientBalanceException;
 use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
@@ -38,7 +40,7 @@ class FaturaPaymentService
                 ->get();
 
             $faturas = $allTransacoes
-                ->filter(fn (Transacao $transacao) => $transacao->status !== 'paid')
+                ->filter(fn (Transacao $transacao) => $transacao->status !== TransacaoStatus::Paid)
                 ->filter(fn (Transacao $transacao) => $this->billing->faturaAppliesToMonth($transacao, $targetMonth));
 
             if ($faturas->isEmpty()) {
@@ -241,7 +243,7 @@ class FaturaPaymentService
 
     private function isSettledForMonth(Transacao $transacao, string $monthKey, ?int $installmentNumber): bool
     {
-        if ($transacao->status === 'paid') {
+        if ($transacao->status === TransacaoStatus::Paid) {
             return true;
         }
 
@@ -257,7 +259,7 @@ class FaturaPaymentService
             ?? $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
 
         if ($parcela) {
-            return $parcela->status === 'paid';
+            return $parcela->status === TransacaoParcelaStatus::Paid;
         }
 
         return (int) ($transacao->current_installment ?? 0) >= $installmentNumber;

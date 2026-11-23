@@ -9,6 +9,7 @@ use App\Actions\Bill\MarkBillAsPaid;
 use App\Actions\Bill\ToggleBillStatus;
 use App\Actions\Bill\UpdateBill;
 use App\Actions\Bill\UpdateBillPayment;
+use App\Enums\BillStatus;
 use App\Http\Requests\Bill\BillMarkPaidRequest;
 use App\Http\Requests\Bill\BillPaymentUpdateRequest;
 use App\Http\Requests\Bill\BillStoreRequest;
@@ -98,7 +99,7 @@ class BillController extends Controller
         $user = $request->user();
         $updated = $toggleBillStatus->handle($user, $bill);
 
-        $label = $updated->status === 'active' ? 'ativada' : 'desativada';
+        $label = $updated->status === BillStatus::Active ? 'ativada' : 'desativada';
         $this->notifications->info($user, 'Conta '.$label, 'A conta foi '.$label.' com sucesso.');
 
         return $this->success($updated);

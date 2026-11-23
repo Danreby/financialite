@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\BillStatus;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Category;
@@ -79,7 +80,7 @@ class BillActionsTest extends TestCase
         $bill = Bill::firstOrFail();
         $this->assertSame('#3b82f6', $bill->color);
         $this->assertSame('FileText', $bill->icon);
-        $this->assertSame('active', $bill->status);
+        $this->assertSame(BillStatus::Active, $bill->status);
     }
 
     #[DataProvider('sides')]
@@ -151,7 +152,7 @@ class BillActionsTest extends TestCase
 
         $bill->refresh();
         $this->assertSame('Internet', $bill->title);
-        $this->assertSame('active', $bill->status);
+        $this->assertSame(BillStatus::Active, $bill->status);
         $this->assertNotSoftDeleted($bill);
         $this->assertSame(0, BillPayment::count());
     }

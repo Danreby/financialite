@@ -7,6 +7,7 @@ use App\Actions\Bill\DeleteBill;
 use App\Actions\Bill\MarkBillAsPaid;
 use App\Actions\Bill\ToggleBillStatus;
 use App\Actions\Bill\UpdateBill;
+use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bill\BillMarkPaidRequest;
 use App\Http\Requests\Bill\BillStoreRequest;
@@ -83,7 +84,7 @@ class BillApiController extends Controller
         $today = Carbon::today();
 
         $bills = Bill::where('user_id', $user->id)
-            ->where('status', 'active')
+            ->where('status', BillStatus::Active)
             ->get()
             ->map(function (Bill $bill) use ($today) {
                 $dueDate = $today->copy()->day($bill->due_day);

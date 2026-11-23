@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\BillPaymentStatus;
+use App\Enums\BillStatus;
 use App\Models\Bill;
 use App\Services\NotificationService;
 use Carbon\Carbon;
@@ -26,8 +28,8 @@ class CheckUpcomingBillsCommand extends Command
         $oneDayFromNow = $today->copy()->addDay();
         $twoDaysFromNow = $today->copy()->addDays(2);
 
-        $bills = Bill::with(['user', 'payments' => fn ($q) => $q->where('status', 'paid')->latest('due_date')])
-            ->where('status', 'active')
+        $bills = Bill::with(['user', 'payments' => fn ($q) => $q->where('status', BillPaymentStatus::Paid)->latest('due_date')])
+            ->where('status', BillStatus::Active)
             ->get();
 
         $notified1Day = 0;

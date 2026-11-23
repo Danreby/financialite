@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TransacaoType;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -25,7 +26,7 @@ class FaturaExportService
         $rows = collect();
 
         foreach ($transactions as $transacao) {
-            if ($transacao->type === 'debit') {
+            if ($transacao->type === TransacaoType::Debit) {
                 $rows->push($this->buildRow($transacao, null, null));
 
                 continue;
@@ -37,7 +38,7 @@ class FaturaExportService
                 foreach ($transacao->parcelas as $parcela) {
                     $installmentAmount = (float) $parcela->amount;
                     $row = $this->buildRow($transacao, $parcela->month_key, $parcela->installment_number, $installmentAmount);
-                    $row['parcela_status'] = $parcela->status;
+                    $row['parcela_status'] = $parcela->status->value;
                     $row['due_date'] = $parcela->due_date->toDateString();
                     $rows->push($row);
                 }
@@ -79,7 +80,7 @@ class FaturaExportService
         $monthLabel = $createdAt ? ucfirst($createdAt->translatedFormat('F Y')) : null;
         $createdAtFormatted = $createdAt ? $createdAt->format('d/m/Y H:i') : null;
 
-        if ($fatura->type === 'credit') {
+        if ($fatura->type === TransacaoType::Credit) {
             $invoiceMonthKey = $overrideInvoiceMonth ?? $this->billing->resolveBillingMonthKey($fatura);
             $invoiceCarbon = Carbon::parse($invoiceMonthKey.'-01');
             $invoiceMonthLabel = ucfirst($invoiceCarbon->translatedFormat('F Y'));
@@ -97,8 +98,8 @@ class FaturaExportService
             'title' => $fatura->title,
             'description' => $fatura->description,
             'amount' => (float) $fatura->amount,
-            'type' => $fatura->type,
-            'status' => $fatura->status,
+            'type' => $fatura->type->value,
+            'status' => $fatura->status->value,
             'created_at' => $fatura->created_at,
             'total_installments' => $fatura->total_installments,
             'current_installment' => $fatura->current_installment,

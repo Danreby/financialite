@@ -6,6 +6,7 @@ use App\Actions\Budget\CreateBudget;
 use App\Actions\Budget\DeleteBudget;
 use App\Actions\Budget\GetOrCreateCurrentBudget;
 use App\Actions\Budget\UpdateBudget;
+use App\Enums\TransacaoType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Budget\BudgetStoreRequest;
 use App\Http\Requests\Budget\BudgetUpdateRequest;
@@ -48,12 +49,12 @@ class BudgetApiController extends Controller
         $endOfMonth = Carbon::now()->endOfMonth();
 
         $totalSpent = Transacao::where('user_id', $user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('amount');
 
         $categorySpending = Transacao::where('user_id', $user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->whereNotNull('category_id')
             ->select('category_id', DB::raw('SUM(amount) as total'))

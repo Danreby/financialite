@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Services\ResumoMensalServiceInterface;
+use App\Enums\TransacaoType;
 use App\Models\Income;
 use App\Models\Transacao;
 use Carbon\Carbon;
@@ -101,13 +102,13 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
         $debitTransactions = Transacao::with('category')
             ->forUser($userId)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$targetMonth, $targetMonthEnd])
             ->get();
 
         $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
 
@@ -167,14 +168,14 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
         $debitTransactions = Transacao::with(['category', 'bankUser.card'])
             ->forUser($userId)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$targetMonth, $targetMonthEnd])
             ->orderByDesc('created_at')
             ->get();
 
         $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->whereBetween('created_at', [$targetMonth, $targetMonthEnd])
             ->orderByDesc('created_at')
             ->get();
@@ -195,7 +196,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
             $dayTransactions = $grouped->get($dateKey, collect());
 
             $items = $dayTransactions->map(function (Transacao $t) use ($monthKey) {
-                if ($t->type === 'credit') {
+                if ($t->type === TransacaoType::Credit) {
                     if (! $t->is_recurring && $t->parcelas->isNotEmpty()) {
                         $parcela = $t->parcelas->firstWhere('month_key', $monthKey);
                         $displayAmount = $parcela
@@ -213,8 +214,8 @@ class ResumoMensalService implements ResumoMensalServiceInterface
                     'id' => $t->id,
                     'title' => $t->title,
                     'amount' => round($displayAmount, 2),
-                    'type' => $t->type,
-                    'status' => $t->status,
+                    'type' => $t->type->value,
+                    'status' => $t->status->value,
                     'category_name' => optional($t->category)->name,
                     'category_icon' => optional($t->category)->icon,
                     'category_color' => optional($t->category)->color,
@@ -245,7 +246,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
         $creditTransactions = Transacao::with(['category', 'bankUser.card', 'parcelas'])
             ->forUser($userId)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->whereNotNull('bank_user_id')
             ->get()
             ->filter(fn (Transacao $t) => $this->billing->faturaAppliesToMonth($t, $targetMonth));
@@ -304,7 +305,7 @@ class ResumoMensalService implements ResumoMensalServiceInterface
     {
         $debitTransactions = Transacao::with(['category', 'bankUser.card'])
             ->forUser($userId)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$targetMonth, $targetMonthEnd])
             ->get();
 
@@ -385,13 +386,13 @@ class ResumoMensalService implements ResumoMensalServiceInterface
 
         $debitTransactions = Transacao::with('category')
             ->forUser($userId)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$threeMonthsAgo, $targetMonthEnd])
             ->get();
 
         $creditTransactions = Transacao::with(['category', 'bankUser', 'parcelas'])
             ->forUser($userId)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->get();
 
         $allRows = collect();

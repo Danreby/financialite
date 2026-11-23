@@ -2,6 +2,7 @@
 
 namespace App\Actions\Bill;
 
+use App\Enums\BillStatus;
 use App\Models\Bill;
 use App\Models\User;
 use App\Support\Money;
@@ -27,7 +28,7 @@ class CreateBill
             'end_date' => $data['end_date'] ?? null,
             'color' => $data['color'] ?? '#3b82f6',
             'icon' => $data['icon'] ?? 'FileText',
-            'status' => $data['status'] ?? 'active',
+            'status' => $data['status'] ?? BillStatus::Active,
             'category_id' => $data['category_id'] ?? null,
             'user_id' => $user->id,
         ]);

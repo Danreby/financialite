@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\TransacaoParcelaStatus;
+use App\Enums\TransacaoStatus;
 use App\Models\CardUser;
 use App\Models\Transacao;
 use Carbon\Carbon;
@@ -87,7 +89,7 @@ class FaturaBillingService
         }
 
         if ($totalInstallments <= 1) {
-            $transacao->status = 'paid';
+            $transacao->status = TransacaoStatus::Paid;
             $transacao->paid_date = now()->toDateString();
 
             $this->markParcelaAsPaid($transacao, 1);
@@ -101,7 +103,7 @@ class FaturaBillingService
             if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
                 $parcela = $transacao->parcelas->firstWhere('month_key', $monthKey);
                 if ($parcela) {
-                    if ($parcela->status === 'paid') {
+                    if ($parcela->status === TransacaoParcelaStatus::Paid) {
                         return 0.0;
                     }
                     $targetInstallment = $parcela->installment_number;
@@ -118,16 +120,16 @@ class FaturaBillingService
             $this->markParcelaAsPaid($transacao, $targetInstallment);
 
             $highestPaid = $transacao->parcelas()
-                ->where('status', 'paid')
+                ->where('status', TransacaoParcelaStatus::Paid)
                 ->max('installment_number') ?? $targetInstallment;
             $transacao->current_installment = (int) $highestPaid;
 
             $unpaidCount = $transacao->parcelas()
-                ->where('status', '!=', 'paid')
+                ->where('status', '!=', TransacaoParcelaStatus::Paid)
                 ->count();
 
             if ($unpaidCount === 0 || (int) $highestPaid >= $totalInstallments) {
-                $transacao->status = 'paid';
+                $transacao->status = TransacaoStatus::Paid;
                 $transacao->paid_date = now()->toDateString();
             }
 
@@ -144,7 +146,7 @@ class FaturaBillingService
         $this->markParcelaAsPaid($transacao, $currentInstallment);
 
         if ($currentInstallment >= $totalInstallments) {
-            $transacao->status = 'paid';
+            $transacao->status = TransacaoStatus::Paid;
             $transacao->paid_date = now()->toDateString();
         }
 
@@ -155,9 +157,9 @@ class FaturaBillingService
     {
         $transacao->parcelas()
             ->where('installment_number', $installmentNumber)
-            ->where('status', '!=', 'paid')
+            ->where('status', '!=', TransacaoParcelaStatus::Paid)
             ->update([
-                'status' => 'paid',
+                'status' => TransacaoParcelaStatus::Paid,
                 'paid_date' => now()->toDateString(),
             ]);
     }
@@ -288,16 +290,18 @@ class FaturaBillingService
                     $parcela = $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
                 }
 
-                $effectiveStatus = $transacao->status;
+                $effectiveStatus = $transacao->status->value;
                 if ($transacao->is_recurring) {
-                    $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at) ? 'paid' : 'pending';
+                    $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at)
+                        ? TransacaoParcelaStatus::Paid->value
+                        : TransacaoParcelaStatus::Pending->value;
                 } elseif ($parcela) {
-                    $effectiveStatus = $parcela->status;
+                    $effectiveStatus = $parcela->status->value;
                 } elseif ($totalInstallments > 1 && (int) ($transacao->current_installment ?? 0) >= $installmentNumber) {
-                    $effectiveStatus = 'paid';
+                    $effectiveStatus = TransacaoParcelaStatus::Paid->value;
                 }
 
-                if ($effectiveStatus === 'paid') {
+                if ($effectiveStatus === TransacaoParcelaStatus::Paid->value) {
                     return 0.0;
                 }
 
@@ -343,15 +347,15 @@ class FaturaBillingService
                         ? (float) $parcela->amount
                         : (float) $fatura->getInstallmentAmount($installmentIndex);
 
-                    $effectiveStatus = $fatura->status;
+                    $effectiveStatus = $fatura->status->value;
                     if ($fatura->is_recurring) {
                         $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at)
-                            ? 'paid'
-                            : 'pending';
+                            ? TransacaoParcelaStatus::Paid->value
+                            : TransacaoParcelaStatus::Pending->value;
                     } elseif ($parcela) {
-                        $effectiveStatus = $parcela->status;
+                        $effectiveStatus = $parcela->status->value;
                     } elseif ($totalInstallments > 1 && (int) ($fatura->current_installment ?? 0) >= $installmentIndex) {
-                        $effectiveStatus = 'paid';
+                        $effectiveStatus = TransacaoParcelaStatus::Paid->value;
                     }
 
                     return [
@@ -361,7 +365,7 @@ class FaturaBillingService
                         'description' => $fatura->description,
                         'amount' => (float) $fatura->amount,
                         'installment_amount' => $installmentAmount,
-                        'type' => $fatura->type,
+                        'type' => $fatura->type->value,
                         'status' => $effectiveStatus,
                         'created_at' => $fatura->created_at,
                         'paid_date' => $parcela?->paid_date ?? $fatura->paid_date,

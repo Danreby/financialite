@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Actions\Card\AttachCard;
 use App\Actions\Card\DetachCardUser;
 use App\Actions\Card\UpdateCardUser;
+use App\Enums\TransacaoType;
 use App\Exceptions\CardAlreadyAttachedException;
 use App\Http\Controllers\Controller;
 use App\Models\Card;
@@ -24,7 +25,7 @@ class CardApiController extends Controller
 
         // Pre-load current month spending per card_user_id
         $spendingMap = Transacao::forUser($user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereYear('created_at', $monthStart->year)
             ->whereMonth('created_at', $monthStart->month)
             ->whereNotNull('bank_user_id')

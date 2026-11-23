@@ -2,6 +2,7 @@
 
 namespace App\Queries;
 
+use App\Enums\BillPaymentStatus;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\User;
@@ -36,12 +37,12 @@ class UpcomingBillsQuery
                     ->whereDate('due_date', $nextDueDate->format('Y-m-d'))
                     ->first();
 
-                $status = $payment ? $payment->status : 'pending';
+                $status = $payment ? $payment->status->value : BillPaymentStatus::Pending->value;
                 $daysUntil = $today->diffInDays($nextDueDate, false);
 
                 // Update status to overdue if it's past due
                 if (! $payment && $nextDueDate->lt($today)) {
-                    $status = 'overdue';
+                    $status = BillPaymentStatus::Overdue->value;
                 }
 
                 $upcomingBills[] = [

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TransacaoType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -76,7 +77,7 @@ class Budget extends Model
 
         return Transacao::forUser($this->user_id)
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->sum('amount');
     }
 
@@ -87,7 +88,7 @@ class Budget extends Model
 
         $spending = Transacao::forUser($this->user_id)
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereNotNull('category_id')
             ->selectRaw('category_id, SUM(amount) as total')
             ->groupBy('category_id')

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BillPaymentStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,7 @@ class BillPayment extends Model
         'paid_date' => 'date',
         'amount_due' => 'decimal:2',
         'amount_paid' => 'decimal:2',
+        'status' => BillPaymentStatus::class,
     ];
 
     public function bill(): BelongsTo
@@ -36,26 +38,26 @@ class BillPayment extends Model
 
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('status', 'pending');
+        return $query->where('status', BillPaymentStatus::Pending);
     }
 
     public function scopePaid(Builder $query): Builder
     {
-        return $query->where('status', 'paid');
+        return $query->where('status', BillPaymentStatus::Paid);
     }
 
     public function scopeOverdue(Builder $query): Builder
     {
-        return $query->where('status', 'overdue')
+        return $query->where('status', BillPaymentStatus::Overdue)
             ->orWhere(function ($q) {
-                $q->where('status', 'pending')
+                $q->where('status', BillPaymentStatus::Pending)
                     ->whereDate('due_date', '<', now());
             });
     }
 
     public function scopeUpcoming(Builder $query, int $days = 30): Builder
     {
-        return $query->where('status', 'pending')
+        return $query->where('status', BillPaymentStatus::Pending)
             ->whereDate('due_date', '>=', now())
             ->whereDate('due_date', '<=', now()->addDays($days));
     }

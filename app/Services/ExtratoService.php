@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Contracts\Services\ExtratoServiceInterface;
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Models\Income;
 use App\Models\Transacao;
 use Carbon\Carbon;
@@ -24,17 +26,17 @@ class ExtratoService implements ExtratoServiceInterface
         $incomes = $this->fetchIncomes($userId, $bankUserId);
 
         $totalIncome = $incomes->sum('amount');
-        $totalExpenses = $transactions->where('type', 'debit')->sum('amount')
-            + $transactions->where('type', 'credit')->sum(fn ($t) => $t['installment_amount'] ?? $t['amount']);
+        $totalExpenses = $transactions->where('type', TransacaoType::Debit->value)->sum('amount')
+            + $transactions->where('type', TransacaoType::Credit->value)->sum(fn ($t) => $t['installment_amount'] ?? $t['amount']);
 
-        $paidExpenses = $transactions->where('status', 'paid');
-        $unpaidExpenses = $transactions->whereIn('status', ['unpaid', 'overdue']);
+        $paidExpenses = $transactions->where('status', TransacaoStatus::Paid->value);
+        $unpaidExpenses = $transactions->whereIn('status', [TransacaoStatus::Unpaid->value, TransacaoStatus::Overdue->value]);
 
-        $totalPaid = $paidExpenses->where('type', 'debit')->sum('amount')
-            + $paidExpenses->where('type', 'credit')->sum(fn ($t) => $t['installment_amount'] ?? $t['amount']);
+        $totalPaid = $paidExpenses->where('type', TransacaoType::Debit->value)->sum('amount')
+            + $paidExpenses->where('type', TransacaoType::Credit->value)->sum(fn ($t) => $t['installment_amount'] ?? $t['amount']);
 
-        $totalUnpaid = $unpaidExpenses->where('type', 'debit')->sum('amount')
-            + $unpaidExpenses->where('type', 'credit')->sum(fn ($t) => $t['installment_amount'] ?? $t['amount']);
+        $totalUnpaid = $unpaidExpenses->where('type', TransacaoType::Debit->value)->sum('amount')
+            + $unpaidExpenses->where('type', TransacaoType::Credit->value)->sum(fn ($t) => $t['installment_amount'] ?? $t['amount']);
 
         $balance = $totalIncome - $totalPaid;
 
@@ -66,7 +68,7 @@ class ExtratoService implements ExtratoServiceInterface
         return Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->forUser($userId)
             ->forBankUser($bankUserId)
-            ->when($type && in_array($type, Transacao::VALID_TYPES, true), fn ($q) => $q->where('type', $type))
+            ->when($type && TransacaoType::tryFrom((string) $type) !== null, fn ($q) => $q->where('type', $type))
             ->when($categoryId, fn ($q) => $q->where('category_id', (int) $categoryId))
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->orderByDesc('created_at')
@@ -99,7 +101,7 @@ class ExtratoService implements ExtratoServiceInterface
 
     private function mapTransaction(Transacao $t): array
     {
-        $installmentAmount = $t->type === 'credit'
+        $installmentAmount = $t->type === TransacaoType::Credit
             ? (float) $t->getInstallmentAmount()
             : (float) $t->amount;
 
@@ -109,8 +111,8 @@ class ExtratoService implements ExtratoServiceInterface
             'description' => $t->description,
             'amount' => (float) $t->amount,
             'installment_amount' => round($installmentAmount, 2),
-            'type' => $t->type,
-            'status' => $t->status,
+            'type' => $t->type->value,
+            'status' => $t->status->value,
             'is_recurring' => (bool) $t->is_recurring,
             'total_installments' => $t->total_installments,
             'current_installment' => $t->current_installment,
@@ -131,11 +133,11 @@ class ExtratoService implements ExtratoServiceInterface
             ->groupBy(fn ($t) => Carbon::parse($t['created_at'])->toDateString())
             ->map(function ($items, $date) {
                 $dayTotal = $items->sum(function ($t) {
-                    $value = $t['type'] === 'credit'
+                    $value = $t['type'] === TransacaoType::Credit->value
                         ? ($t['installment_amount'] ?? $t['amount'])
                         : $t['amount'];
 
-                    return $t['status'] === 'paid' ? $value : 0;
+                    return $t['status'] === TransacaoStatus::Paid->value ? $value : 0;
                 });
 
                 return [

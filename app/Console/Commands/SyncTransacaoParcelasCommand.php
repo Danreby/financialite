@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\TransacaoParcelaStatus;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
 use App\Services\FaturaService;
@@ -73,7 +74,7 @@ class SyncTransacaoParcelasCommand extends Command
 
             if ($needsRecreation) {
                 $paidStatuses = $parcelas
-                    ->where('status', 'paid')
+                    ->where('status', TransacaoParcelaStatus::Paid)
                     ->pluck('paid_date', 'installment_number')
                     ->all();
 
@@ -85,7 +86,7 @@ class SyncTransacaoParcelasCommand extends Command
                         TransacaoParcela::where('transacao_id', $transacao->id)
                             ->where('installment_number', $installmentNumber)
                             ->update([
-                                'status' => 'paid',
+                                'status' => TransacaoParcelaStatus::Paid,
                                 'paid_date' => $paidDate,
                             ]);
                     }

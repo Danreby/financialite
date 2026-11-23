@@ -2,6 +2,8 @@
 
 namespace App\Queries;
 
+use App\Enums\BillPaymentStatus;
+use App\Enums\BillStatus;
 use App\Models\Bill;
 use App\Models\User;
 use Carbon\Carbon;
@@ -37,7 +39,7 @@ class BillListQuery
         unset($data['payments']);
 
         $paidPayments = $bill->relationLoaded('payments')
-            ? $bill->payments->where('status', 'paid')->sortByDesc('due_date')
+            ? $bill->payments->where('status', BillPaymentStatus::Paid)->sortByDesc('due_date')
             : collect();
 
         $currentYear = Carbon::now()->year;
@@ -65,11 +67,11 @@ class BillListQuery
             'paid_date' => $p->paid_date?->format('Y-m-d'),
             'amount_due' => (float) $p->amount_due,
             'amount_paid' => (float) $p->amount_paid,
-            'status' => $p->status,
+            'status' => $p->status->value,
             'notes' => $p->notes,
         ])->all();
 
-        if ($bill->status !== 'active' || ! $bill->due_day) {
+        if ($bill->status !== BillStatus::Active || ! $bill->due_day) {
             $data['is_paid_this_period'] = false;
             $data['next_due_date'] = null;
 
@@ -87,7 +89,7 @@ class BillListQuery
         }
 
         $isPaid = $bill->relationLoaded('payments') && $bill->payments->contains(
-            fn ($p) => $p->status === 'paid' && Carbon::parse($p->due_date)->isSameDay($currentPeriodDue)
+            fn ($p) => $p->status === BillPaymentStatus::Paid && Carbon::parse($p->due_date)->isSameDay($currentPeriodDue)
         );
 
         if ($isPaid) {

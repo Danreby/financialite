@@ -1,0 +1,117 @@
+{
+    "total_income": 120,
+    "total_expenses": 200,
+    "pending_income": 440,
+    "pending_expenses": 0,
+    "overdue_count": 0,
+    "current_month_key": "2026-12",
+    "current_month_label": "Dezembro 2026",
+    "top_spending_label": "Dezembro 2026",
+    "current_month_pending_bill": 150,
+    "current_month_debit_total": 0,
+    "monthly_summary": [
+        {
+            "month_key": "2026-06",
+            "month_label": "Jun 2026",
+            "invoice_total": 0,
+            "credit_total": 0,
+            "debit_total": 0
+        },
+        {
+            "month_key": "2026-07",
+            "month_label": "Jul 2026",
+            "invoice_total": 0,
+            "credit_total": 0,
+            "debit_total": 0
+        },
+        {
+            "month_key": "2026-08",
+            "month_label": "Ago 2026",
+            "invoice_total": 0,
+            "credit_total": 0,
+            "debit_total": 0
+        },
+        {
+            "month_key": "2026-09",
+            "month_label": "Set 2026",
+            "invoice_total": 0,
+            "credit_total": 0,
+            "debit_total": 0
+        },
+        {
+            "month_key": "2026-10",
+            "month_label": "Out 2026",
+            "invoice_total": 220,
+            "credit_total": 220,
+            "debit_total": 200
+        },
+        {
+            "month_key": "2026-11",
+            "month_label": "Nov 2026",
+            "invoice_total": 0,
+            "credit_total": 240,
+            "debit_total": 0
+        }
+    ],
+    "top_spending_categories": [
+        {
+            "category_id": 1,
+            "category_name": "Mercado",
+            "category_icon": "cart",
+            "category_color": "#00aa00",
+            "total": 100
+        },
+        {
+            "category_id": 2,
+            "category_name": "Lazer",
+            "category_icon": "film",
+            "category_color": "#aa00aa",
+            "total": 50
+        }
+    ],
+    "debit_spending_categories": [],
+    "credit_spending_categories": [
+        {
+            "category_id": 1,
+            "category_name": "Mercado",
+            "category_icon": "cart",
+            "category_color": "#00aa00",
+            "total": 100
+        },
+        {
+            "category_id": 2,
+            "category_name": "Lazer",
+            "category_icon": "film",
+            "category_color": "#aa00aa",
+            "total": 50
+        }
+    ],
+    "recurring_spending": {
+        "total": 50,
+        "percentage": 33.3
+    },
+    "non_recurring_spending": {
+        "total": 100,
+        "percentage": 66.7
+    },
+    "total_monthly_income": 5300,
+    "remaining_money": 5150,
+    "next_card_due_date": {
+        "cards": [
+            {
+                "card_id": 1,
+                "card_name": "Cartão Azul",
+                "closing_day": 5,
+                "days_until_due": 20,
+                "next_due_date": "2026-12-05"
+            }
+        ],
+        "nearest": {
+            "card_id": 1,
+            "card_name": "Cartão Azul",
+            "closing_day": 5,
+            "days_until_due": 20,
+            "next_due_date": "2026-12-05"
+        }
+    }
+}

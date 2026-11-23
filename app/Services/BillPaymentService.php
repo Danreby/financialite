@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\BillPaymentStatus;
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Transacao;
@@ -54,7 +57,7 @@ class BillPaymentService
                 'paid_date' => $paidDate,
                 'amount_due' => $bill->amount ?? $amountPaid,
                 'amount_paid' => $amountPaid,
-                'status' => 'paid',
+                'status' => BillPaymentStatus::Paid,
                 'notes' => $notes,
             ])->save();
 
@@ -143,8 +146,8 @@ class BillPaymentService
                 ? "Pagamento de conta: {$bill->description}"
                 : "Pagamento de conta: {$bill->title}",
             'amount' => $amount,
-            'type' => 'debit',
-            'status' => 'paid',
+            'type' => TransacaoType::Debit,
+            'status' => TransacaoStatus::Paid,
             'paid_date' => $paidDate,
             'total_installments' => 1,
             'current_installment' => 1,

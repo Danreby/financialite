@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BillStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,6 +35,7 @@ class Bill extends Model
         'due_day' => 'integer',
         'start_date' => 'date',
         'end_date' => 'date',
+        'status' => BillStatus::class,
         'deleted_at' => 'datetime',
     ];
 
@@ -60,7 +62,7 @@ class Bill extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', 'active');
+        return $query->where('status', BillStatus::Active);
     }
 
     public function scopeRecurrent(Builder $query): Builder
@@ -77,7 +79,7 @@ class Bill extends Model
     {
         $now = Carbon::now();
 
-        if ($this->status !== 'active') {
+        if ($this->status !== BillStatus::Active) {
             return null;
         }
 
@@ -139,7 +141,7 @@ class Bill extends Model
 
     public function getDueDateForMonth(Carbon $month): ?Carbon
     {
-        if ($this->status !== 'active') {
+        if ($this->status !== BillStatus::Active) {
             return null;
         }
 

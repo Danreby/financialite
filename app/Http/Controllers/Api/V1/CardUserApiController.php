@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Actions\Card\AttachCard;
 use App\Actions\Card\DetachCardUser;
 use App\Actions\Card\UpdateCardUser;
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Exceptions\CardAlreadyAttachedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Card\AttachCardToUserRequest;
@@ -91,12 +93,12 @@ class CardUserApiController extends Controller
                     'card_id' => $cardUser->card_id,
                     'card_name' => $cardUser->card->name,
                     'total_faturas' => $cardUser->transacoes()->count(),
-                    'paid_faturas' => $cardUser->transacoes()->where('status', 'paid')->count(),
-                    'unpaid_faturas' => $cardUser->transacoes()->where('status', 'unpaid')->count(),
-                    'overdue_faturas' => $cardUser->transacoes()->where('status', 'overdue')->count(),
+                    'paid_faturas' => $cardUser->transacoes()->where('status', TransacaoStatus::Paid)->count(),
+                    'unpaid_faturas' => $cardUser->transacoes()->where('status', TransacaoStatus::Unpaid)->count(),
+                    'overdue_faturas' => $cardUser->transacoes()->where('status', TransacaoStatus::Overdue)->count(),
                     'total_amount' => $cardUser->transacoes()->sum('amount'),
-                    'income_amount' => $cardUser->transacoes()->where('type', 'credit')->sum('amount'),
-                    'expense_amount' => $cardUser->transacoes()->where('type', 'debit')->sum('amount'),
+                    'income_amount' => $cardUser->transacoes()->where('type', TransacaoType::Credit)->sum('amount'),
+                    'expense_amount' => $cardUser->transacoes()->where('type', TransacaoType::Debit)->sum('amount'),
                 ];
             });
 

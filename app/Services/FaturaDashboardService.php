@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\BillPaymentStatus;
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\CardUser;
@@ -35,7 +38,7 @@ class FaturaDashboardService
             ->orderBy('created_at', 'desc');
 
         $allFaturas = (clone $baseQuery)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->get();
 
         $paidByMonth = $this->paidByMonthForUser(
@@ -119,7 +122,7 @@ class FaturaDashboardService
             ->when($categoryId, function ($q, $categoryId) {
                 $q->where('category_id', $categoryId);
             })
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->sum('amount');
 
@@ -129,7 +132,7 @@ class FaturaDashboardService
             ->when($categoryId, function ($q, $categoryId) {
                 $q->where('category_id', $categoryId);
             })
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -153,14 +156,14 @@ class FaturaDashboardService
 
         $debitEntriesForMonth = (clone $base)
             ->with('category')
-            ->where('type', 'debit')
-            ->where('status', 'paid')
+            ->where('type', TransacaoType::Debit)
+            ->where('status', TransacaoStatus::Paid)
             ->whereBetween('created_at', [$targetMonth, $targetMonthEnd])
             ->get();
 
         $creditEntriesForMonth = (clone $base)
             ->with(['category', 'bankUser', 'parcelas'])
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->get()
             ->filter(function (Transacao $transacao) use ($targetMonth) {
                 return $this->billing->faturaAppliesToMonth($transacao, $targetMonth);
@@ -319,7 +322,7 @@ class FaturaDashboardService
             ->when($categoryId, function ($q, $categoryId) {
                 $q->where('category_id', $categoryId);
             })
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$seriesStart, $seriesEnd])
             ->get();
 
@@ -349,7 +352,7 @@ class FaturaDashboardService
             ->when($categoryId, function ($q, $categoryId) {
                 $q->where('category_id', $categoryId);
             })
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->get();
 
         foreach ($creditTransactions as $t) {
@@ -394,23 +397,23 @@ class FaturaDashboardService
     {
         return [
             'total_income' => (clone $base)
-                ->where('type', 'credit')
-                ->where('status', 'paid')
+                ->where('type', TransacaoType::Credit)
+                ->where('status', TransacaoStatus::Paid)
                 ->sum('amount'),
             'total_expenses' => (clone $base)
-                ->where('type', 'debit')
-                ->where('status', 'paid')
+                ->where('type', TransacaoType::Debit)
+                ->where('status', TransacaoStatus::Paid)
                 ->sum('amount'),
             'pending_income' => (clone $base)
-                ->where('type', 'credit')
-                ->where('status', '!=', 'paid')
+                ->where('type', TransacaoType::Credit)
+                ->where('status', '!=', TransacaoStatus::Paid)
                 ->sum('amount'),
             'pending_expenses' => (clone $base)
-                ->where('type', 'debit')
-                ->where('status', '!=', 'paid')
+                ->where('type', TransacaoType::Debit)
+                ->where('status', '!=', TransacaoStatus::Paid)
                 ->sum('amount'),
             'overdue_count' => (clone $base)
-                ->where('status', 'overdue')
+                ->where('status', TransacaoStatus::Overdue)
                 ->count(),
         ];
     }
@@ -433,8 +436,8 @@ class FaturaDashboardService
 
         $debitEntries = (clone $base)
             ->with('category')
-            ->where('type', 'debit')
-            ->where('status', 'paid')
+            ->where('type', TransacaoType::Debit)
+            ->where('status', TransacaoStatus::Paid)
             ->whereBetween('created_at', [$startMonth, $endMonth])
             ->get();
 
@@ -448,7 +451,7 @@ class FaturaDashboardService
 
         $creditEntries = (clone $base)
             ->with(['category', 'bankUser', 'parcelas'])
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->get()
             ->filter(function (Transacao $transacao) use ($startMonth, $endMonth) {
                 $cursor = $startMonth->copy()->startOfMonth();
@@ -611,7 +614,7 @@ class FaturaDashboardService
         $variableBillData = [];
         foreach ($activeBills->filter(fn ($b) => is_null($b->amount)) as $bill) {
             $payments = BillPayment::where('bill_id', $bill->id)
-                ->where('status', 'paid')
+                ->where('status', BillPaymentStatus::Paid)
                 ->orderByDesc('due_date')
                 ->take(3)
                 ->get();

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\Transacao;
@@ -37,8 +39,8 @@ class BudgetCalculationService
         $allCreditTransactions = Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
-            ->where('type', 'credit')
-            ->notStatus('paid')
+            ->where('type', TransacaoType::Credit)
+            ->notStatus(TransacaoStatus::Paid)
             ->get();
 
         if ($allCreditTransactions->isEmpty()) {
@@ -95,7 +97,7 @@ class BudgetCalculationService
         $debitSpent = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
             ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->sum('amount');
 
         $pendingInvoiceTotal = $this->calculatePendingInvoiceTotal($user, $bankUserId, $currentMonth);
@@ -122,7 +124,7 @@ class BudgetCalculationService
         return Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
             ->whereBetween('created_at', [$monthStart, $monthEnd])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereNotNull('category_id')
             ->selectRaw('category_id, SUM(amount) as spent')
             ->groupBy('category_id')
@@ -234,7 +236,7 @@ class BudgetCalculationService
         $debitTotal = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
             ->whereBetween('created_at', [$periodStart, $periodEnd])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->sum('amount');
 
         $creditTotal = $this->calculateCreditInstallmentSpending(
@@ -256,7 +258,7 @@ class BudgetCalculationService
         $debitSpending = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
             ->whereBetween('created_at', [$periodStart, $periodEnd])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereNotNull('category_id')
             ->selectRaw('category_id, SUM(amount) as spent')
             ->groupBy('category_id')
@@ -266,9 +268,9 @@ class BudgetCalculationService
         $allCreditTransactions = Transacao::with(['bankUser.card', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->whereNotNull('category_id')
-            ->notStatus('paid')
+            ->notStatus(TransacaoStatus::Paid)
             ->get();
 
         $creditByCategory = [];
@@ -312,8 +314,8 @@ class BudgetCalculationService
         $allCreditTransactions = Transacao::with(['bankUser.card', 'parcelas'])
             ->forUser($user->id)
             ->forBankUser($bankUserId)
-            ->where('type', 'credit')
-            ->notStatus('paid')
+            ->where('type', TransacaoType::Credit)
+            ->notStatus(TransacaoStatus::Paid)
             ->get();
 
         if ($allCreditTransactions->isEmpty()) {

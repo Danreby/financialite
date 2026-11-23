@@ -28,11 +28,10 @@ class NotificationApiController extends Controller
         return $this->success(['count' => $count]);
     }
 
-    public function markAsRead(Request $request, Notification $notification): JsonResponse
+    public function markAsRead(Request $request, int $notification): JsonResponse
     {
-        if ($notification->user_id !== $request->user()->id) {
-            return $this->unauthorized();
-        }
+        // Notificação de outro usuário responde 404, como os demais recursos.
+        $notification = Notification::forUser($request->user()->id)->findOrFail($notification);
 
         $notification->update(['is_read' => true, 'read_at' => now()]);
 

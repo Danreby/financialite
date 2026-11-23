@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TransacaoType;
 use App\Models\Budget;
 use App\Models\Notification;
 use App\Models\Transacao;
@@ -90,7 +91,7 @@ class BudgetAlertService
         }
 
         $totalSpent = (float) Transacao::where('user_id', $userId)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('amount');
 

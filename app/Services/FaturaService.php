@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Contracts\Services\FaturaServiceInterface;
+use App\Enums\TransacaoParcelaStatus;
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Models\CardUser;
@@ -31,7 +34,7 @@ class FaturaService implements FaturaServiceInterface
         $data['user_id'] = $user->id;
         $data['total_installments'] = max($data['total_installments'] ?? 1, 1);
         $data['current_installment'] = 0;
-        $data['status'] = $data['status'] ?? 'unpaid';
+        $data['status'] = $data['status'] ?? TransacaoStatus::Unpaid;
         $data['is_recurring'] = $data['is_recurring'] ?? false;
 
         if ($data['is_recurring']) {
@@ -39,8 +42,8 @@ class FaturaService implements FaturaServiceInterface
             $data['current_installment'] = 0;
         }
 
-        if (($data['type'] ?? null) === 'debit') {
-            $data['status'] = 'paid';
+        if (($data['type'] ?? null) === TransacaoType::Debit->value) {
+            $data['status'] = TransacaoStatus::Paid;
             $data['paid_date'] = Carbon::today()->toDateString();
             $data['total_installments'] = 1;
             $data['current_installment'] = 1;
@@ -114,8 +117,8 @@ class FaturaService implements FaturaServiceInterface
         $parcelas = $transacao->parcelas;
 
         $transacao->parcelas()
-            ->where('status', 'paid')
-            ->update(['status' => 'pending', 'paid_date' => null]);
+            ->where('status', TransacaoParcelaStatus::Paid)
+            ->update(['status' => TransacaoParcelaStatus::Pending, 'paid_date' => null]);
 
         $transacao->current_installment = 0;
         $transacao->save();
@@ -178,8 +181,8 @@ class FaturaService implements FaturaServiceInterface
                     ? $transacao->created_at->toDateString()
                     : Carbon::today()->toDateString(),
                 'month_key' => $firstBillingMonthKey,
-                'status' => $transacao->status === 'paid' ? 'paid' : 'pending',
-                'paid_date' => $transacao->status === 'paid' ? ($transacao->paid_date ?? now())->toDateString() : null,
+                'status' => $transacao->status === TransacaoStatus::Paid ? TransacaoParcelaStatus::Paid : TransacaoParcelaStatus::Pending,
+                'paid_date' => $transacao->status === TransacaoStatus::Paid ? ($transacao->paid_date ?? now())->toDateString() : null,
             ]);
 
             return;
@@ -192,7 +195,7 @@ class FaturaService implements FaturaServiceInterface
         $now = now();
         $parcelas = array_map(fn (array $row) => $row + [
             'transacao_id' => $transacao->id,
-            'status' => 'pending',
+            'status' => TransacaoParcelaStatus::Pending->value,
             'paid_date' => null,
             'created_at' => $now,
             'updated_at' => $now,

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\TransacaoParcelaStatus;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
 use App\Services\FaturaBillingService;
@@ -64,7 +65,7 @@ class FixParcelaMonthsCommand extends Command
                 }
 
                 $first = $parcelas->sortKeys()->first();
-                $hasPaid = $parcelas->contains(fn (TransacaoParcela $p) => $p->status === 'paid');
+                $hasPaid = $parcelas->contains(fn (TransacaoParcela $p) => $p->status === TransacaoParcelaStatus::Paid);
 
                 $rows[] = [
                     $transacao->id,

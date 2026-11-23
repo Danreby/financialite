@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,6 +42,8 @@ class Transacao extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'type' => TransacaoType::class,
+        'status' => TransacaoStatus::class,
         'paid_date' => 'datetime',
         'is_recurring' => 'boolean',
         'total_installments' => 'integer',
@@ -51,10 +55,6 @@ class Transacao extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
-
-    public const VALID_TYPES = ['credit', 'debit'];
-
-    public const VALID_STATUSES = ['paid', 'unpaid', 'overdue'];
 
     public function user(): BelongsTo
     {
@@ -155,12 +155,12 @@ class Transacao extends Model
     {
         return $query
             ->when($filters['type'] ?? null, function (Builder $q, $type) {
-                if (in_array($type, self::VALID_TYPES, true)) {
+                if ($type = TransacaoType::tryFrom((string) $type)) {
                     $q->where('type', $type);
                 }
             })
             ->when($filters['status'] ?? null, function (Builder $q, $status) {
-                if (in_array($status, self::VALID_STATUSES, true)) {
+                if ($status = TransacaoStatus::tryFrom((string) $status)) {
                     $q->where('status', $status);
                 }
             })
@@ -198,13 +198,9 @@ class Transacao extends Model
         return $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 
-    public function scopeNotStatus(Builder $query, string $status): Builder
+    public function scopeNotStatus(Builder $query, TransacaoStatus $status): Builder
     {
-        if (in_array($status, self::VALID_STATUSES, true)) {
-            return $query->where('status', '!=', $status);
-        }
-
-        return $query;
+        return $query->where('status', '!=', $status);
     }
 
     public function scopeForBankUser(Builder $query, ?int $bankUserId): Builder
@@ -219,15 +215,5 @@ class Transacao extends Model
     public function belongsToUser(int $userId): bool
     {
         return $this->user_id === $userId;
-    }
-
-    public static function isValidType(string $type): bool
-    {
-        return in_array($type, self::VALID_TYPES, true);
-    }
-
-    public static function isValidStatus(string $status): bool
-    {
-        return in_array($status, self::VALID_STATUSES, true);
     }
 }

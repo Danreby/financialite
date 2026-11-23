@@ -28,9 +28,10 @@ class NotificationController extends Controller
         return $this->success($notifications);
     }
 
-    public function markAsRead(Notification $notification): JsonResponse
+    public function markAsRead(Request $request, int $notification): JsonResponse
     {
-        $this->authorize('markAsRead', $notification);
+        // Notificação de outro usuário responde 404, como os demais recursos.
+        $notification = Notification::forUser($request->user()->id)->findOrFail($notification);
 
         $notification->markAsRead();
 

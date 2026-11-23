@@ -1,0 +1,85 @@
+{
+    "id": 1,
+    "title": "MercadoX3",
+    "description": null,
+    "amount": "300.00",
+    "type": "credit",
+    "status": "unpaid",
+    "paid_date": null,
+    "total_installments": 3,
+    "current_installment": 1,
+    "is_recurring": false,
+    "user_id": 1,
+    "bank_user_id": 1,
+    "created_at": "2026-09-20T15:00:00.000000Z",
+    "updated_at": "2026-11-01T11:00:00.000000Z",
+    "category_id": 1,
+    "bank_user": {
+        "id": 1,
+        "card_id": 1,
+        "user_id": 1,
+        "created_at": "2026-09-01T12:00:00.000000Z",
+        "updated_at": "2026-09-01T12:00:00.000000Z",
+        "due_day": 12,
+        "closing_day": 5,
+        "credit_limit": null,
+        "card": {
+            "id": 1,
+            "name": "Cartão Azul",
+            "created_at": "2026-09-01T12:00:00.000000Z",
+            "updated_at": "2026-09-01T12:00:00.000000Z",
+            "brand": null,
+            "description": null,
+            "user_id": null
+        }
+    },
+    "category": {
+        "id": 1,
+        "name": "Mercado",
+        "created_at": "2026-09-01T12:00:00.000000Z",
+        "updated_at": "2026-09-01T12:00:00.000000Z",
+        "user_id": 1,
+        "color": "#00aa00",
+        "icon": "cart",
+        "type": "expense"
+    },
+    "anexos": [],
+    "parcelas": [
+        {
+            "id": 1,
+            "transacao_id": 1,
+            "installment_number": 1,
+            "amount": "100.00",
+            "due_date": "2026-10-12T03:00:00.000000Z",
+            "status": "paid",
+            "paid_date": "2026-11-01T03:00:00.000000Z",
+            "created_at": "2026-09-20T15:00:00.000000Z",
+            "updated_at": "2026-11-01T11:00:00.000000Z",
+            "month_key": "2026-10"
+        },
+        {
+            "id": 2,
+            "transacao_id": 1,
+            "installment_number": 2,
+            "amount": "100.00",
+            "due_date": "2026-11-12T03:00:00.000000Z",
+            "status": "pending",
+            "paid_date": null,
+            "created_at": "2026-09-20T15:00:00.000000Z",
+            "updated_at": "2026-09-20T15:00:00.000000Z",
+            "month_key": "2026-11"
+        },
+        {
+            "id": 3,
+            "transacao_id": 1,
+            "installment_number": 3,
+            "amount": "100.00",
+            "due_date": "2026-12-12T03:00:00.000000Z",
+            "status": "pending",
+            "paid_date": null,
+            "created_at": "2026-09-20T15:00:00.000000Z",
+            "updated_at": "2026-09-20T15:00:00.000000Z",
+            "month_key": "2026-12"
+        }
+    ]
+}

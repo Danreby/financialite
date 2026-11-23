@@ -2,6 +2,7 @@
 
 namespace App\Queries;
 
+use App\Enums\TransacaoType;
 use App\Models\CardUser;
 use App\Models\Category;
 use App\Models\Transacao;
@@ -60,13 +61,18 @@ class TransactionListQuery
         $scoped = fn (Builder $query) => $this->applyFilters($query, $user, $filters, $monthRange, $search);
 
         $filterTotalsRow = $scoped(Transacao::query())
-            ->selectRaw("
+            ->selectRaw('
                 COUNT(*) as total_count,
-                SUM(CASE WHEN type = 'debit'  THEN amount ELSE 0 END) as debit_total,
-                SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as credit_total,
-                SUM(CASE WHEN type = 'debit'  THEN 1 ELSE 0 END) as debit_count,
-                SUM(CASE WHEN type = 'credit' THEN 1 ELSE 0 END) as credit_count
-            ")
+                SUM(CASE WHEN type = ? THEN amount ELSE 0 END) as debit_total,
+                SUM(CASE WHEN type = ? THEN amount ELSE 0 END) as credit_total,
+                SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) as debit_count,
+                SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) as credit_count
+            ', [
+                TransacaoType::Debit->value,
+                TransacaoType::Credit->value,
+                TransacaoType::Debit->value,
+                TransacaoType::Credit->value,
+            ])
             ->first();
 
         $filterTotals = [
@@ -88,8 +94,8 @@ class TransactionListQuery
                 'title' => $transacao->title,
                 'description' => $transacao->description,
                 'amount' => (float) $transacao->amount,
-                'type' => $transacao->type,
-                'status' => $transacao->status,
+                'type' => $transacao->type->value,
+                'status' => $transacao->status->value,
                 'paid_date' => $transacao->paid_date,
                 'created_at' => $transacao->created_at,
                 'total_installments' => $transacao->total_installments,

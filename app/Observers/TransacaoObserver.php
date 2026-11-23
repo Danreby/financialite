@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\TransacaoType;
 use App\Models\Transacao;
 use App\Services\BudgetAlertService;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
@@ -30,7 +31,7 @@ class TransacaoObserver implements ShouldHandleEventsAfterCommit
 
     private function evaluateBudget(Transacao $transacao): void
     {
-        if ($transacao->type !== 'debit') {
+        if ($transacao->type !== TransacaoType::Debit) {
             return;
         }
 

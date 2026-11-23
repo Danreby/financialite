@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\TransacaoType;
 use App\Http\Controllers\Controller;
 use App\Models\Income;
 use App\Models\Transacao;
@@ -21,7 +22,7 @@ class ProjectionsApiController extends Controller
 
         // ── Current month debit (actual spending so far) ──────────────────────
         $currentMonthDebit = Transacao::where('user_id', $user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereYear('created_at', $today->year)
             ->whereMonth('created_at', $today->month)
             ->sum('amount');
@@ -37,7 +38,7 @@ class ProjectionsApiController extends Controller
         // ── Credit transactions with future installments ───────────────────────
         $allCreditTxs = Transacao::with(['bankUser.card', 'category'])
             ->where('user_id', $user->id)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->orderByDesc('created_at')
             ->get();
 

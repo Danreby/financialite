@@ -70,7 +70,7 @@ class InstallmentsQuery
             'total_installments' => $totalInstallments,
             'current_installment' => $currentInstallment,
             'remaining_installments' => max($totalInstallments - $currentInstallment, 0),
-            'status' => $tx->status ?? 'unpaid',
+            'status' => $tx->status->value,
             'created_at' => $tx->created_at,
             'first_billing_month' => $firstBillingMonth->format('Y-m'),
             'completion_month' => $completionDate->format('Y-m'),
@@ -80,12 +80,12 @@ class InstallmentsQuery
             'category_name' => $tx->category?->name,
             'category_icon' => $tx->category?->icon,
             'category_color' => $tx->category?->color,
-            'type' => $tx->type ?? 'credit',
+            'type' => $tx->type->value,
             'parcelas' => $tx->parcelas->map(fn ($p) => [
                 'installment_number' => $p->installment_number,
                 'amount' => (float) $p->amount,
                 'due_date' => $p->due_date->format('Y-m-d'),
-                'status' => $p->status,
+                'status' => $p->status->value,
                 'paid_date' => $p->paid_date?->format('Y-m-d'),
             ])->values()->toArray(),
         ];

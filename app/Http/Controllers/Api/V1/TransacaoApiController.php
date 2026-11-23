@@ -7,6 +7,7 @@ use App\Actions\Transacao\DeleteTransacao;
 use App\Actions\Transacao\PayFaturaMonth;
 use App\Actions\Transacao\RestoreTransacao;
 use App\Actions\Transacao\UpdateTransacao;
+use App\Enums\TransacaoType;
 use App\Exceptions\InsufficientBalanceException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\PeriodSpendingRequest;
@@ -68,7 +69,7 @@ class TransacaoApiController extends Controller
         $filters = [
             'bank_user_id' => $bankUserId,
             'category_id' => $categoryId,
-            'type' => 'credit',
+            'type' => TransacaoType::Credit->value,
         ];
 
         $dashboard = $this->dashboardService->buildDashboardData($user, $filters);
