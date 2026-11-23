@@ -26,7 +26,7 @@ class FaturaBillingService
 
         $monthKey = $dayOfPurchase < $cutoffDay
             ? $createdAt->format('Y-m')
-            : $createdAt->copy()->addMonth()->format('Y-m');
+            : $createdAt->copy()->addMonthNoOverflow()->format('Y-m');
 
         return $monthKey;
     }
@@ -50,7 +50,7 @@ class FaturaBillingService
 
         $candidate = $day < $cutoffDay
             ? $today->copy()
-            : $today->copy()->addMonth();
+            : $today->copy()->addMonthNoOverflow();
 
         return $candidate->format('Y-m');
     }
@@ -72,7 +72,7 @@ class FaturaBillingService
             return ! $targetMonth->lt($first);
         }
 
-        $last = (clone $first)->addMonths($totalInstallments - 1);
+        $last = (clone $first)->addMonthsNoOverflow($totalInstallments - 1);
 
         return ! $targetMonth->lt($first) && ! $targetMonth->gt($last);
     }
@@ -247,7 +247,7 @@ class FaturaBillingService
                     'installment_index' => $installmentIndex,
                 ]);
 
-                $month = $month->copy()->addMonth();
+                $month = $month->copy()->addMonthNoOverflow();
                 $installmentIndex++;
             }
         }

@@ -59,7 +59,7 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
       <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accent)]" />
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accentText)]" />
             Calendário
           </h2>
           <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500">
@@ -121,7 +121,7 @@ export default function ResumoCalendar({ days = [], monthKey = '' }) {
                   ? 'text-gray-800 dark:text-gray-100'
                   : 'text-gray-300 dark:text-gray-700'
                 }
-                ${isToday && !hasTransactions ? 'text-[var(--theme-accent)]' : ''}
+                ${isToday && !hasTransactions ? 'text-[var(--theme-accentText)]' : ''}
               `}>
                 {day.day}
               </span>

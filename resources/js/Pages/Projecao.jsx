@@ -47,7 +47,7 @@ function StatCard({ label, value, sub, icon, accentBg = false }) {
             </div>
             <span
                 className="text-xl lg:text-2xl font-bold relative"
-                style={accentBg ? { color: 'var(--theme-accent)' } : {}}
+                style={accentBg ? { color: 'var(--theme-accentText)' } : {}}
             >
                 <span className={!accentBg ? 'text-gray-900 dark:text-gray-100' : ''}>{value}</span>
             </span>
@@ -141,7 +141,7 @@ export default function Projecao({
                                     className="hidden sm:inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
                                     style={{
                                         backgroundColor: 'color-mix(in srgb, var(--theme-accent) 12%, transparent)',
-                                        color: 'var(--theme-accent)',
+                                        color: 'var(--theme-accentText)',
                                     }}
                                 >
                                     Simulador
@@ -282,7 +282,7 @@ export default function Projecao({
                                     className="text-[11px] font-semibold rounded-full px-2 py-0.5"
                                     style={hasSimulations ? {
                                         backgroundColor: 'color-mix(in srgb, var(--theme-accent) 13%, transparent)',
-                                        color: 'var(--theme-accent)',
+                                        color: 'var(--theme-accentText)',
                                     } : {
                                         backgroundColor: 'rgba(156,163,175,0.12)',
                                         color: 'rgb(156,163,175)',

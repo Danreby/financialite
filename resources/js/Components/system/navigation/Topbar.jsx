@@ -1,67 +1,51 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import axios from 'axios'
-import BareButton from '@/Components/common/buttons/BareButton'
-import BellIcon from '@/Components/common/icons/BellIcon'
-import SunIcon from '@/Components/common/icons/SunIcon'
-import { AnimatePresence, motion } from 'framer-motion'
+import { Bell, LogOut, Menu, Moon, Settings, Sun, UserRound } from 'lucide-react'
+import { Button, Kbd, SearchInput } from '@/Components/ui'
+import cx from '@/Components/ui/cx'
+import { useTheme } from '@/Contexts/ThemeContext'
+import CommandPalette from '@/Components/system/navigation/CommandPalette'
+import { currentPageLabel, initialsOf } from '@/Components/system/navigation/navConfig'
+import { useNewTransaction } from '@/Components/system/transactions/NewTransactionProvider'
+import { toPathname } from '@/Utils/url'
 
-export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNotifications, onOpenMobileNav }) {
-  const { unreadNotificationCount: initialUnread = 0 } = usePage().props
+const isMacPlatform = () => {
+  if (typeof navigator === 'undefined') return false
+  const platform = navigator.userAgentData?.platform || navigator.platform || ''
+  return /mac|iphone|ipad/i.test(platform)
+}
 
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return false
-    const stored = window.localStorage.getItem('theme')
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    return stored === 'dark' || (!stored && prefersDark)
-  })
+const menuItemClass =
+  'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-content-secondary transition-colors hover:bg-surface-sunken hover:text-content-primary focus-visible:bg-surface-sunken focus-visible:text-content-primary focus-visible:outline-none'
+
+/**
+ * Topo do app. No computador: busca (abre a paleta de comandos, Ctrl/⌘ K),
+ * sino, tema e menu do usuário. No celular: botão do menu, nome da página
+ * e os mesmos ícones.
+ */
+export default function Topbar({ user, onToggleNotifications, onOpenMobileNav, mobileNavOpen = false }) {
+  const { url, props } = usePage()
+  const initialUnread = Number(props.unreadNotificationCount ?? 0)
+  const { isDark, toggleColorMode } = useTheme()
+  const { openNewTransaction, openNewIncome } = useNewTransaction()
+
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(Number(initialUnread ?? 0))
+  const [unreadCount, setUnreadCount] = useState(initialUnread)
+  const [palette, setPalette] = useState({ open: false, query: '' })
+  const [isMac] = useState(isMacPlatform)
   const userMenuRef = useRef(null)
-  const lastInertiaUnreadRef = useRef(Number(initialUnread ?? 0))
+  const userButtonRef = useRef(null)
+  const lastInertiaUnreadRef = useRef(initialUnread)
+
+  const pageLabel = currentPageLabel(toPathname(url))
 
   useEffect(() => {
-    const incoming = Number(initialUnread ?? 0)
-    if (incoming !== lastInertiaUnreadRef.current) {
-      lastInertiaUnreadRef.current = incoming
-      setUnreadCount(incoming)
+    if (initialUnread !== lastInertiaUnreadRef.current) {
+      lastInertiaUnreadRef.current = initialUnread
+      setUnreadCount(initialUnread)
     }
   }, [initialUnread])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    if (isDark) {
-      document.documentElement.classList.add('dark')
-      window.localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      window.localStorage.setItem('theme', 'light')
-    }
-  }, [isDark])
-
-  useEffect(() => {
-    if (!userMenuOpen) return
-
-    const handleClickOutside = (event) => {
-      if (!userMenuRef.current) return
-      if (!userMenuRef.current.contains(event.target)) {
-        setUserMenuOpen(false)
-      }
-    }
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setUserMenuOpen(false)
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [userMenuOpen])
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
@@ -73,157 +57,190 @@ export default function Topbar({ user, sidebarOpen, setSidebarOpen, onToggleNoti
         //
       }
     }
-
-    const interval = setInterval(() => {
-      if (!document.hidden) {
-        fetchUnreadCount()
-      }
-    }, 90_000)
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchUnreadCount()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
+    const interval = setInterval(fetchUnreadCount, 90_000)
+    document.addEventListener('visibilitychange', fetchUnreadCount)
     return () => {
       clearInterval(interval)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      document.removeEventListener('visibilitychange', fetchUnreadCount)
     }
   }, [])
 
-  const toggleTheme = () => setIsDark((prev) => !prev)
-  const toggleUserMenu = () => setUserMenuOpen((prev) => !prev)
+  const openPalette = useCallback((query = '') => setPalette({ open: true, query }), [])
+  const closePalette = useCallback(() => setPalette((prev) => ({ ...prev, open: false })), [])
 
-  const initials = (() => {
-    if (!user?.name) return 'U'
+  // Ctrl/⌘ K abre (ou fecha) a paleta de qualquer lugar, inclusive de dentro de campos.
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return
+      if (!palette.open && document.querySelector('[role="dialog"][aria-modal="true"]')) return
+      event.preventDefault()
+      setPalette((prev) => ({ open: !prev.open, query: '' }))
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [palette.open])
 
-    const parts = user.name
-      .split(' ')
-      .filter((part) => part.length > 0)
-      .slice(0, 2)
+  useEffect(() => {
+    if (!userMenuOpen) return undefined
+    const menu = userMenuRef.current
+    menu?.querySelector('[role="menuitem"]')?.focus()
 
-    if (parts.length === 0) return 'U'
+    const onPointerDown = (event) => {
+      if (menu && !menu.contains(event.target) && !userButtonRef.current?.contains(event.target)) setUserMenuOpen(false)
+    }
+    const onKeyDown = (event) => {
+      if (!menu) return
+      const items = Array.from(menu.querySelectorAll('[role="menuitem"]'))
+      const index = items.indexOf(document.activeElement)
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setUserMenuOpen(false)
+        userButtonRef.current?.focus()
+      } else if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        items[(index + 1) % items.length]?.focus()
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        items[(index - 1 + items.length) % items.length]?.focus()
+      } else if (event.key === 'Tab') {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [userMenuOpen])
 
-    return parts
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('')
-  })()
+  const onSearchKeyDown = (event) => {
+    if (event.ctrlKey || event.metaKey || event.altKey) return
+    if (event.key === 'Enter' || event.key === 'ArrowDown' || event.key === ' ') {
+      event.preventDefault()
+      openPalette('')
+    } else if (event.key.length === 1) {
+      event.preventDefault()
+      openPalette(event.key)
+    }
+  }
+
+  const iconButton = 'text-content-secondary'
 
   return (
-    <div
-      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 border-b bg-[var(--theme-bgTopbarLight)] border-[#e5e5e5] shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] text-gray-900 dark:bg-[var(--theme-bgTopbarDark)] dark:text-gray-100 dark:border-white/10 dark:shadow-[0_1px_3px_0_rgba(0,0,0,0.3)]"
-    >
-      <div className="flex items-center gap-3">
-        <BareButton
-          type="button"
-          onClick={() => setSidebarOpen((prev) => !prev)}
-          className="hidden lg:inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus-visible:ring-offset-[#0b0b0b]"
-          aria-label="Abrir/Fechar menu de navegação"
-          aria-expanded={sidebarOpen}
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </BareButton>
+    <header className="flex items-center gap-2 px-3 pb-2 pt-3 sm:px-4 md:gap-3 md:pl-5 md:pr-6 md:pt-3">
+      <Button
+        variant="ghost"
+        iconOnly
+        icon={Menu}
+        onClick={onOpenMobileNav}
+        aria-label="Abrir menu"
+        aria-expanded={mobileNavOpen}
+        aria-haspopup="dialog"
+        className={cx(iconButton, '-ml-1 md:hidden')}
+      />
+      <p className="min-w-0 flex-1 truncate text-base font-semibold text-content-primary md:hidden">{pageLabel}</p>
 
-        {onOpenMobileNav && (
-          <BareButton
-            type="button"
-            onClick={onOpenMobileNav}
-            className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-gray-300 dark:hover:bg-gray-900/40 dark:focus-visible:ring-offset-[#0b0b0b] md:hidden"
-            aria-label="Abrir menu de navegação"
-          >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </BareButton>
-        )}
+      <div
+        className="hidden w-full max-w-sm md:block"
+        onMouseDown={(event) => {
+          if (event.button !== 0) return
+          event.preventDefault()
+          openPalette('')
+        }}
+      >
+        <SearchInput
+          readOnly
+          placeholder="Buscar páginas e ações"
+          aria-label="Buscar páginas e ações"
+          aria-haspopup="dialog"
+          aria-keyshortcuts={isMac ? 'Meta+K' : 'Control+K'}
+          trailing={<Kbd>{isMac ? '⌘ K' : 'Ctrl K'}</Kbd>}
+          onKeyDown={onSearchKeyDown}
+          className="cursor-pointer [&::-webkit-search-cancel-button]:hidden"
+        />
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* <Link href="#" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Ajuda</Link> */}
-
-        <BareButton
-          type="button"
-          onClick={() => {
-            onToggleNotifications()
-            setUnreadCount(0)
-          }}
-          className="group relative h-9 w-9 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all duration-150 active:scale-90 themed-topbar-btn"
-          aria-label="Abrir notificações"
-        >
-          <BellIcon type={5} size={16} className="transition-transform group-hover:animate-bell-ring" />
+      <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+        <span className="relative inline-flex">
+          <Button
+            variant="ghost"
+            iconOnly
+            icon={Bell}
+            onClick={() => {
+              onToggleNotifications()
+              setUnreadCount(0)
+            }}
+            aria-label={unreadCount > 0 ? `Notificações, ${unreadCount} não lidas` : 'Notificações'}
+            className={iconButton}
+          />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: 'var(--theme-accent, #f43f5e)' }} />
-              <span className="relative inline-flex rounded-full h-3 w-3" style={{ backgroundColor: 'var(--theme-accent, #f43f5e)' }} />
-            </span>
+            <span
+              className="pointer-events-none absolute right-2 top-2 h-2 w-2 rounded-full bg-theme-accent ring-2 ring-[rgb(var(--surface-base))]"
+              aria-hidden="true"
+            />
           )}
-        </BareButton>
+        </span>
 
-        <BareButton
-          type="button"
-          onClick={toggleTheme}
-          className="h-9 px-3 rounded-lg text-xs font-semibold border-2 shadow-sm transition-all duration-150 themed-topbar-btn"
-          aria-label="Alternar tema claro/escuro"
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={isDark ? 'dark' : 'light'}
-              initial={{ y: 8, opacity: 0, rotate: -10, scale: 0.9 }}
-              animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ y: -8, opacity: 0, rotate: 10, scale: 0.9 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="inline-flex items-center justify-center"
-            >
-              {isDark ? <SunIcon type={2} /> : <SunIcon type={1} />}
-            </motion.span>
-          </AnimatePresence>
-        </BareButton>
+        <Button
+          variant="ghost"
+          iconOnly
+          icon={isDark ? Sun : Moon}
+          onClick={toggleColorMode}
+          aria-label={isDark ? 'Usar modo claro' : 'Usar modo escuro'}
+          className={iconButton}
+        />
 
-        <div className="relative" ref={userMenuRef}>
-          <BareButton
+        <div className="relative">
+          <button
+            ref={userButtonRef}
             type="button"
-            onClick={toggleUserMenu}
-            className="h-8 w-8 rounded-full themed-avatar flex items-center justify-center text-sm font-semibold text-white ring-1 ring-black/10 hover:ring-black/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
-            aria-haspopup="true"
+            onClick={() => setUserMenuOpen((prev) => !prev)}
+            aria-haspopup="menu"
             aria-expanded={userMenuOpen}
+            aria-label={`Menu de ${user?.name ?? 'usuário'}`}
+            className="themed-avatar ml-1 flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ring-2 ring-transparent transition-shadow hover:ring-line-strong focus-visible:outline-none focus-visible:ring-theme-accent"
           >
-              {initials}
-          </BareButton>
+            {initialsOf(user?.name)}
+          </button>
 
           {userMenuOpen && (
             <div
+              ref={userMenuRef}
               role="menu"
               aria-label="Menu do usuário"
-              className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-[#111] dark:text-gray-100 dark:ring-black/40"
+              className="surface-card absolute right-0 z-40 mt-2 w-60 overflow-hidden py-1 shadow-pop"
             >
-              <Link
-                href={route('profile.edit')}
-                role="menuitem"
-                className="block px-3 py-2 text-left hover:bg-gray-100 focus-visible:outline-none focus-visible:bg-gray-100 dark:hover:bg-gray-800 dark:focus-visible:bg-gray-800"
-                onClick={() => setUserMenuOpen(false)}
-              >
+              <div className="border-b border-line px-3 pb-2 pt-1.5" role="none">
+                <p className="truncate text-sm font-semibold text-content-primary">{user?.name}</p>
+                <p className="truncate text-xs text-content-muted">{user?.email}</p>
+              </div>
+              <Link href={route('profile.edit')} role="menuitem" tabIndex={-1} className={menuItemClass} onClick={() => setUserMenuOpen(false)}>
+                <UserRound className="h-4 w-4" aria-hidden="true" />
                 Perfil
               </Link>
-
+              <Link href={route('settings')} role="menuitem" tabIndex={-1} className={menuItemClass} onClick={() => setUserMenuOpen(false)}>
+                <Settings className="h-4 w-4" aria-hidden="true" />
+                Configurações
+              </Link>
               <Link
                 href={route('logout')}
                 method="post"
                 as="button"
                 role="menuitem"
-                className="block w-full px-3 py-2 text-left text-red-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-800 dark:focus-visible:bg-gray-800"
+                tabIndex={-1}
+                className={cx(menuItemClass, 'text-danger-strong hover:text-danger-strong focus-visible:text-danger-strong')}
                 onClick={() => setUserMenuOpen(false)}
               >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
                 Sair
               </Link>
             </div>
           )}
         </div>
       </div>
-    </div>
+
+      <CommandPalette open={palette.open} initialQuery={palette.query} onClose={closePalette} onNewExpense={openNewTransaction} onNewIncome={openNewIncome} />
+    </header>
   )
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransacaoController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', [DashboardController::class, 'home']);
 
@@ -27,6 +28,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/data', [DashboardController::class, 'data'])
         ->middleware('cache.api:15')
         ->name('dashboard.data');
+
+    Route::get('/transaction-form/options', [DashboardController::class, 'formOptions'])
+        ->middleware('throttle:60,1')
+        ->name('transaction-form.options');
 
     Route::get('/reports/data', [ReportController::class, 'data'])
         ->middleware('cache.api:15')
@@ -63,6 +68,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('cache.api:10')
         ->name('notifications.unread-count');
 });
+
+// Vitrine interna do kit de componentes (resources/js/Components/ui).
+// Existe só no ambiente local; em qualquer outro responde 404, logado ou não.
+Route::get('/_ui', function () {
+    abort_unless(app()->environment('local'), 404);
+
+    if (! auth()->check()) {
+        return redirect()->guest(route('login'));
+    }
+
+    return Inertia::render('Dev/UiKit');
+})->name('dev.ui');
 
 require __DIR__.'/Fatura.php';
 require __DIR__.'/Income.php';

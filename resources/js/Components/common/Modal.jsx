@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useCallback, useRef } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import BareButton from '@/Components/common/buttons/BareButton';
 
@@ -28,6 +28,19 @@ const getFocusableElements = (container) => {
     return Array.from(container.querySelectorAll(focusableSelectors));
 };
 
+// Listas e menus que um campo do modal abre em body (Autocomplete) marcam o
+// contêiner com data-modal-portal; foco ali não é "foco que escapou".
+const isInModalPortal = (target) => Boolean(target?.closest?.('[data-modal-portal]'));
+
+// Pilha de modais abertos: só o de cima responde a Esc, Tab e foco que escapa.
+const openModals = [];
+const isTopModal = (ref) => openModals[openModals.length - 1] === ref;
+
+const focusInside = (container) => {
+    const focusableElements = getFocusableElements(container);
+    (focusableElements[0] ?? container)?.focus();
+};
+
 export default function Modal({
     isOpen,
     onClose,
@@ -41,8 +54,11 @@ export default function Modal({
     children,
 }) {
     const modalRef = useRef(null);
+    const reduceMotion = useReducedMotion();
     const previousFocusRef = useRef(null);
-    const descriptionId = description ? 'modal-description' : undefined;
+    const uid = useId();
+    const titleId = `${uid}-title`;
+    const descriptionId = description ? `${uid}-description` : undefined;
 
     const handleOverlayClick = () => {
         if (closeOnOverlay) {
@@ -51,6 +67,8 @@ export default function Modal({
     };
 
     const handleKeyDown = useCallback((event) => {
+        if (!isTopModal(modalRef)) return;
+
         if (event.key === 'Escape' && closeOnEscape) {
             event.preventDefault();
             onClose?.();
@@ -68,7 +86,11 @@ export default function Modal({
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
 
-            if (event.shiftKey && document.activeElement === firstElement) {
+            // Foco fora do diálogo (clique fora, por exemplo): Tab traz de volta.
+            if (!modalRef.current.contains(document.activeElement) && !isInModalPortal(document.activeElement)) {
+                event.preventDefault();
+                (event.shiftKey ? lastElement : firstElement).focus();
+            } else if (event.shiftKey && document.activeElement === firstElement) {
                 event.preventDefault();
                 lastElement.focus();
             } else if (!event.shiftKey && document.activeElement === lastElement) {
@@ -88,15 +110,35 @@ export default function Modal({
         document.body.style.overflow = 'hidden';
         document.body.style.paddingRight = `${scrollbarWidth}px`;
 
+        // Se o foco sair do diálogo (clique no fundo, leitor de tela), puxa de volta.
+        const handleFocusIn = (event) => {
+            if (!isTopModal(modalRef) || !modalRef.current) return;
+            if (!modalRef.current.contains(event.target) && !isInModalPortal(event.target)) {
+                focusInside(modalRef.current);
+            }
+        };
+
         document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('focusin', handleFocusIn);
 
         return () => {
             document.body.style.overflow = originalOverflow;
             document.body.style.paddingRight = originalPaddingRight;
 
             document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('focusin', handleFocusIn);
         };
     }, [isOpen, handleKeyDown]);
+
+    // Entra na pilha só ao abrir (não a cada nova referência de handleKeyDown).
+    useEffect(() => {
+        if (!isOpen) return undefined;
+        openModals.push(modalRef);
+        return () => {
+            const index = openModals.lastIndexOf(modalRef);
+            if (index !== -1) openModals.splice(index, 1);
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -140,7 +182,7 @@ export default function Modal({
                     aria-hidden={!isOpen}
                 >
                     <motion.div
-                        className="absolute inset-0 bg-gray-500/75"
+                        className="absolute inset-0 bg-black/60"
                         onClick={handleOverlayClick}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -150,24 +192,24 @@ export default function Modal({
 
                     <motion.div
                         ref={modalRef}
-                        className={`relative w-full transform overflow-hidden themed-modal-panel border-l-4 border-theme-accent shadow-xl transition-all sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col [clip-path:polygon(0_0,100%_0,100%_calc(100%_-_20px),calc(100%_-_20px)_100%,0_100%)] ${widthClass}`}
+                        className={`relative w-full transform overflow-hidden surface-card shadow-pop sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col ${widthClass}`}
                         role="dialog"
                         aria-modal="true"
-                        aria-labelledby={title ? 'modal-title' : undefined}
+                        aria-labelledby={title ? titleId : undefined}
                         aria-describedby={descriptionId}
                         tabIndex={-1}
-                        initial={{ opacity: 0, y: 24, scale: 0.95 }}
+                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 24, scale: 0.95 }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.18, ease: [0.16, 1, 0.3, 1] }}
                     >
                         {(title || onClose) && (
-                            <div className="flex items-center justify-between border-b themed-modal-header px-2.5 py-2 sm:px-4 sm:py-3 flex-shrink-0">
+                            <div className="flex items-center justify-between border-b border-line px-4 py-3 sm:px-5 flex-shrink-0">
                                 <div>
                                     {title && (
                                         <h2
-                                            id="modal-title"
-                                            className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100"
+                                            id={titleId}
+                                            className="text-sm sm:text-[15px] font-semibold text-content-primary"
                                         >
                                             {title}
                                         </h2>
@@ -188,7 +230,7 @@ export default function Modal({
                                         <BareButton
                                             type="button"
                                             onClick={() => onClose?.()}
-                                            className="inline-flex rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-1"
+                                            className="inline-flex rounded-lg p-1.5 text-content-muted transition-colors hover:bg-surface-sunken hover:text-content-primary"
                                             aria-label="Fechar modal"
                                         >
                                             <svg
@@ -210,7 +252,7 @@ export default function Modal({
                             </div>
                         )}
 
-                        <div className="px-2.5 py-3 sm:px-4 sm:py-5 md:p-6 overflow-y-auto scrollbar-custom flex-1">{children}</div>
+                        <div className="px-4 py-4 sm:px-5 sm:py-5 overflow-y-auto scrollbar-custom flex-1">{children}</div>
                     </motion.div>
                 </motion.div>
             )}

@@ -334,9 +334,10 @@ class DashboardInsightsService
     private function getUpcomingBills(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();
-        $currentMonth = Carbon::now();
-        $nextMonth = $currentMonth->copy()->addMonth();
-        $monthAfterNext = $currentMonth->copy()->addMonths(2);
+        // Dia 1 do mês: em 31/01, addMonth() a partir de hoje cairia em março e pularia fevereiro.
+        $currentMonth = Carbon::now()->startOfMonth();
+        $nextMonth = $currentMonth->copy()->addMonthNoOverflow();
+        $monthAfterNext = $currentMonth->copy()->addMonthsNoOverflow(2);
 
         $activeBills = Bill::forUser($user->id)
             ->active()
@@ -466,7 +467,8 @@ class DashboardInsightsService
     private function getSpendingTrends(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();
-        $threeMonthsAgoStart = $today->copy()->subMonths(3)->startOfMonth();
+        // Parte do dia 1 antes de voltar meses: em 31/12, subMonth() transbordaria para 01/12.
+        $threeMonthsAgoStart = $today->copy()->startOfMonth()->subMonthsNoOverflow(3);
 
         $hasTransactions = Transacao::where('user_id', $user->id)
             ->where('type', 'debit')
@@ -487,8 +489,8 @@ class DashboardInsightsService
         $currentMonthStart = $today->copy()->startOfMonth();
         $currentMonthEnd = $today->copy()->endOfMonth();
 
-        $previousMonthStart = $today->copy()->subMonth()->startOfMonth();
-        $previousMonthEnd = $today->copy()->subMonth()->endOfMonth();
+        $previousMonthStart = $currentMonthStart->copy()->subMonthNoOverflow();
+        $previousMonthEnd = $previousMonthStart->copy()->endOfMonth();
 
         $currentMonth = $this->budgetCalculationService->calculateInstallmentAwareSpending(
             $user,
@@ -504,15 +506,16 @@ class DashboardInsightsService
             $previousMonthEnd
         );
 
+        // Média dos três meses completos anteriores ao atual (o mês corrente,
+        // ainda parcial, fica de fora). Mesma grandeza de current/previous.
         $threeMonthTotal = $this->budgetCalculationService->calculateInstallmentAwareSpending(
             $user,
             $bankUserId,
             $threeMonthsAgoStart,
-            $currentMonthEnd
+            $previousMonthEnd
         );
 
-        $monthCount = max(1, $today->copy()->startOfMonth()->diffInMonths($threeMonthsAgoStart) + 1);
-        $threeMonthAvg = $threeMonthTotal / $monthCount;
+        $threeMonthAvg = $threeMonthTotal / 3;
 
         $currentCategorySpending = $this->budgetCalculationService->calculateInstallmentAwareCategorySpending(
             $user,

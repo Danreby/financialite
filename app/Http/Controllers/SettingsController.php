@@ -9,6 +9,10 @@ use Inertia\Response as InertiaResponse;
 
 class SettingsController extends Controller
 {
+    private const VALID_THEMES = ['brasa', 'rose', 'black', 'forest', 'gold', 'lavender', 'midnight'];
+
+    private const VALID_COLOR_MODES = ['light', 'dark', 'system'];
+
     public function __construct()
     {
         $this->middleware('auth');
@@ -19,24 +23,50 @@ class SettingsController extends Controller
         $user = $request->user();
 
         return Inertia::render('Config', [
-            'userTheme' => $user->theme ?? 'rose',
+            'userTheme' => $user->theme ?? 'brasa',
         ]);
     }
 
+    /**
+     * Salva a paleta (`theme`) e/ou o modo claro/escuro (`color_mode`).
+     * Os dois campos são opcionais, mas a requisição precisa trazer pelo menos um.
+     * `color_mode` aceita 'light', 'dark', 'system' (seguir o sistema) ou null (sem escolha: vale o padrão, escuro).
+     */
     public function updateTheme(Request $request): JsonResponse
     {
         $user = $request->user();
-        $theme = $request->input('theme');
+        $changes = [];
 
-        $validThemes = ['rose', 'black', 'forest', 'gold', 'lavender', 'midnight'];
+        if ($request->has('theme')) {
+            $theme = $request->input('theme');
 
-        if (! in_array($theme, $validThemes, true)) {
-            return response()->json(['error' => 'Tema inválido.'], 422);
+            if (! in_array($theme, self::VALID_THEMES, true)) {
+                return response()->json(['error' => 'Tema inválido.'], 422);
+            }
+
+            $changes['theme'] = $theme;
         }
 
-        $user->update(['theme' => $theme]);
+        if ($request->exists('color_mode')) {
+            $mode = $request->input('color_mode');
 
-        return response()->json(['theme' => $theme]);
+            if ($mode !== null && ! in_array($mode, self::VALID_COLOR_MODES, true)) {
+                return response()->json(['error' => 'Modo de cor inválido.'], 422);
+            }
+
+            $changes['color_mode'] = $mode;
+        }
+
+        if ($changes === []) {
+            return response()->json(['error' => 'Informe o tema ou o modo de cor.'], 422);
+        }
+
+        $user->update($changes);
+
+        return response()->json([
+            'theme' => $user->theme ?? 'brasa',
+            'color_mode' => $user->color_mode,
+        ]);
     }
 
     public function about(): InertiaResponse

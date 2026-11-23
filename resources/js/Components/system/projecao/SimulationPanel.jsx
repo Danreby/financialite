@@ -85,7 +85,7 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                             }`}
                             style={form.mode === m.value ? {
                                 backgroundColor: 'color-mix(in srgb, var(--theme-accent) 13%, transparent)',
-                                color: 'var(--theme-accent)',
+                                color: 'var(--theme-accentText)',
                                 borderColor: 'color-mix(in srgb, var(--theme-accent) 40%, transparent)',
                             } : {}}
                         >
@@ -153,7 +153,7 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                     className="-mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
                     style={{
                         backgroundColor: 'color-mix(in srgb, var(--theme-accent) 10%, transparent)',
-                        color: 'var(--theme-accent)',
+                        color: 'var(--theme-accentText)',
                     }}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5 shrink-0" aria-hidden="true">
@@ -193,7 +193,7 @@ export default function SimulationPanel({ bankAccounts = [], categories = [], on
                             }`}
                             style={form.type === t.value ? {
                                 backgroundColor: 'color-mix(in srgb, var(--theme-accent) 13%, transparent)',
-                                color: 'var(--theme-accent)',
+                                color: 'var(--theme-accentText)',
                                 borderColor: 'color-mix(in srgb, var(--theme-accent) 40%, transparent)',
                             } : {}}
                         >

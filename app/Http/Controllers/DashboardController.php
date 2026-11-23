@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Services\PrevisaoMensalServiceInterface;
-use App\Models\BankUser;
 use App\Models\CardUser;
-use App\Models\Category;
 use App\Models\Transacao;
 use App\Services\DashboardInsightsService;
 use App\Services\FaturaDashboardService;
+use App\Support\TransactionFormOptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,41 +36,16 @@ class DashboardController extends Controller
 
     public function index(Request $request): InertiaResponse
     {
-        $user = $request->user();
+        return Inertia::render('Dashboard', TransactionFormOptions::forUser($request->user()->id));
+    }
 
-        $bankAccounts = CardUser::with('card')
-            ->forUser($user->id)
-            ->get()
-            ->map(function ($cardUser) {
-                return [
-                    'id' => $cardUser->id,
-                    'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
-                    'due_day' => $cardUser->due_day,
-                    'closing_day' => $cardUser->closing_day,
-                    'credit_limit' => $cardUser->credit_limit,
-                    'brand' => $cardUser->card?->brand,
-                ];
-            });
-
-        $categories = Category::forUser($user->id)
-            ->orderBy('name')
-            ->get(['id', 'name', 'icon', 'color', 'type']);
-
-        $bankAccountsList = BankUser::with('bank')
-            ->forUser($user->id)
-            ->orderBy('created_at')
-            ->get()
-            ->map(fn ($bu) => [
-                'id' => $bu->id,
-                'name' => $bu->bank?->name ?? ('Banco #'.$bu->id),
-                'balance' => (float) $bu->balance,
-            ]);
-
-        return Inertia::render('Dashboard', [
-            'bankAccounts' => $bankAccounts,
-            'categories' => $categories,
-            'bankAccountsList' => $bankAccountsList,
-        ]);
+    /**
+     * Listas do formulário de nova transação, para o botão global
+     * "Nova transação" abrir o ExpenseForm em qualquer tela.
+     */
+    public function formOptions(Request $request): JsonResponse
+    {
+        return response()->json(TransactionFormOptions::forUser($request->user()->id));
     }
 
     public function data(Request $request): JsonResponse

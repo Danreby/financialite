@@ -91,48 +91,38 @@ export const colors = {
     },
 };
 
+// Cores semânticas como referência aos tokens de resources/css/app.css
+// (mudam sozinhas entre claro e escuro). Use em estilos inline e gráficos.
+const token = (name, alpha) => (alpha === undefined ? `rgb(var(--${name}))` : `rgb(var(--${name}) / ${alpha})`);
+
 export const semanticColors = {
-    income: colors.success[500],
-    expense: colors.danger[500],
-    
-    paid: colors.success[500],
-    pending: colors.warning[500],
-    overdue: colors.danger[500],
-    
-    error: colors.danger[500],
-    success: colors.success[500],
-    warning: colors.warning[500],
-    info: colors.info[500],
-    
-    background: {
-        light: '#ffffff',
-        dark: '#0a0a0a',
-    },
-    
-    surface: {
-        light: '#ffffff',
-        dark: '#111111',
-    },
-    
-    border: {
-        light: colors.gray[200],
-        dark: colors.gray[800],
-    },
-    
+    income: token('success'),
+    expense: token('danger'),
+
+    paid: token('success'),
+    pending: token('warning'),
+    overdue: token('danger'),
+
+    error: token('danger'),
+    success: token('success'),
+    warning: token('warning'),
+    info: token('info'),
+
+    background: token('surface-base'),
+    surface: token('surface-raised'),
+    sunken: token('surface-sunken'),
+    border: token('line'),
+
     text: {
-        primary: {
-            light: colors.gray[900],
-            dark: colors.gray[100],
-        },
-        secondary: {
-            light: colors.gray[600],
-            dark: colors.gray[400],
-        },
-        muted: {
-            light: colors.gray[400],
-            dark: colors.gray[600],
-        },
+        primary: token('content-primary'),
+        secondary: token('content-secondary'),
+        muted: token('content-muted'),
+        subtle: token('content-subtle'),
     },
+
+    accent: token('accent'),
+    accentText: token('accent-text'),
+    token,
 };
 
 export const typography = {

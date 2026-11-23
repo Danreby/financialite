@@ -45,7 +45,7 @@ export default function SavingsCard({ goal, onEdit, onDelete, onDeposit, onWithd
               <span className="text-gray-500 dark:text-gray-400">
                 {formatCurrencyBRL(goal.current_amount)} de {formatCurrencyBRL(goal.target_amount)}
               </span>
-              <span className="font-semibold" style={{ color: 'var(--theme-accent, #f43f5e)' }}>
+              <span className="font-semibold" style={{ color: 'var(--theme-accentText)' }}>
                 {progress}%
               </span>
             </div>

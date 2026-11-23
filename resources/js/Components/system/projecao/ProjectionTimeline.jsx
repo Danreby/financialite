@@ -61,7 +61,7 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
                     {highestCombinedMonth?.combinedTotal > 0 && (
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                             Pico{' '}
-                            <span className="font-semibold" style={{ color: 'var(--theme-accent)' }}>
+                            <span className="font-semibold" style={{ color: 'var(--theme-accentText)' }}>
                                 {formatCurrencyBRL(highestCombinedMonth.combinedTotal)}
                             </span>
                             {' '}em {highestCombinedMonth.ym}
@@ -84,7 +84,7 @@ export default function ProjectionTimeline({ projectionData, onChangeMonthsAhead
                             }`}
                             style={monthsAhead === value ? {
                                 backgroundColor: 'color-mix(in srgb, var(--theme-accent) 14%, transparent)',
-                                color: 'var(--theme-accent)',
+                                color: 'var(--theme-accentText)',
                             } : {}}
                         >
                             {label}

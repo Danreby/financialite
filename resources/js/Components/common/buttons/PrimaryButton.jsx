@@ -1,16 +1,11 @@
-import React from 'react'
+import Button from '@/Components/ui/Button'
+import legacyClassName from '@/Components/ui/legacyClassName'
 
-export default function PrimaryButton({ children, className = '', ...props }) {
-  return (
-    <button
-      className={`group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-transparent px-6 py-3 text-sm font-semibold text-theme-primary shadow-[0_0_0_2px_color-mix(in_srgb,var(--theme-primary)_25%,transparent)] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-white hover:shadow-[0_0_0_5px_color-mix(in_srgb,var(--theme-primary)_40%,transparent)] focus-visible:text-white focus-visible:shadow-[0_0_0_5px_color-mix(in_srgb,var(--theme-primary)_40%,transparent)] focus-visible:outline-none active:scale-95 disabled:opacity-60 disabled:pointer-events-none disabled:cursor-not-allowed dark:text-theme-accent dark:shadow-[0_0_0_2px_color-mix(in_srgb,var(--theme-accent)_25%,transparent)] dark:hover:text-white dark:hover:shadow-[0_0_0_5px_color-mix(in_srgb,var(--theme-accent)_40%,transparent)] dark:focus-visible:text-white dark:focus-visible:shadow-[0_0_0_5px_color-mix(in_srgb,var(--theme-accent)_40%,transparent)] ${className}`}
-      {...props}
-    >
-      <span
-        aria-hidden="true"
-        className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-theme-primary opacity-0 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:h-[150px] group-hover:w-[150px] group-hover:opacity-100 group-focus-visible:h-[150px] group-focus-visible:w-[150px] group-focus-visible:opacity-100 dark:bg-theme-accent"
-      />
-      <span className="relative z-10">{children}</span>
-    </button>
-  )
+/**
+ * Legado: use `@/Components/ui/Button` (variant="primary").
+ * Sem `type`, continua "submit" como o <button> antigo. Do `className` antigo
+ * só passam classes de layout (largura, margem...); tamanho e raio são do kit.
+ */
+export default function PrimaryButton({ type = 'submit', className = '', ...props }) {
+  return <Button variant="primary" type={type} className={legacyClassName(className)} {...props} />
 }

@@ -259,7 +259,7 @@ export default function FaturaDetailModal({
                     key={t}
                     className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium cursor-pointer transition-colors ${
                       editData.type === t
-                        ? "border-[var(--theme-accent)] bg-[var(--theme-accent)]/10 text-[var(--theme-accent)]"
+                        ? "border-[var(--theme-accent)] bg-[var(--theme-accent)]/10 text-[var(--theme-accentText)]"
                         : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >

@@ -1,10 +1,16 @@
 import React, { useState } from 'react'
-import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useTheme, THEMES } from '@/Contexts/ThemeContext'
+import { SegmentedControl } from '@/Components/ui'
+
+const MODE_OPTIONS = [
+  { value: 'light', label: 'Claro' },
+  { value: 'dark', label: 'Escuro' },
+  { value: 'system', label: 'Automático' },
+]
 
 export default function ThemeSettingsCard() {
-  const { theme: currentTheme, setTheme } = useTheme()
+  const { theme: currentTheme, setTheme, colorMode, setColorMode } = useTheme()
   const [saving, setSaving] = useState(false)
 
   const handleSelectTheme = async (themeKey) => {
@@ -12,8 +18,7 @@ export default function ThemeSettingsCard() {
 
     setSaving(true)
     try {
-      await axios.patch(route('settings.theme'), { theme: themeKey })
-      setTheme(themeKey)
+      await setTheme(themeKey)
       toast.success('Tema atualizado!')
     } catch {
       toast.error('Erro ao atualizar tema.')
@@ -26,7 +31,7 @@ export default function ThemeSettingsCard() {
     <div className="bg-white dark:bg-[#0b0b0b] rounded-2xl shadow-md border border-gray-50/90 dark:border-[var(--theme-accent,theme(colors.rose.950/0.5))] ring-1 ring-black/5 dark:ring-black/30 p-6 mb-6">
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <svg className="w-5 h-5" style={{ color: 'var(--theme-accent, #f43f5e)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" style={{ color: 'var(--theme-accentText)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
           </svg>
           Aparência
@@ -36,6 +41,20 @@ export default function ThemeSettingsCard() {
         </p>
       </div>
 
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-content-primary">Modo</p>
+          <p className="text-xs text-content-muted">Automático segue o tema do sistema.</p>
+        </div>
+        <SegmentedControl
+          label="Modo de cor"
+          options={MODE_OPTIONS}
+          value={colorMode}
+          onChange={setColorMode}
+        />
+      </div>
+
+      <p className="mb-3 text-sm font-medium text-content-primary">Cor de destaque</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {Object.values(THEMES).map((themeConfig) => {
           const isSelected = currentTheme === themeConfig.key
@@ -69,7 +88,6 @@ export default function ThemeSettingsCard() {
               )}
 
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">{themeConfig.icon}</span>
                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {themeConfig.label}
                 </span>

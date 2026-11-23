@@ -16,7 +16,7 @@ export default function ResumoExpensesByCategory({ expenses = [] }) {
     <div className="themed-card rounded-2xl p-4 sm:p-5 h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <PieChart className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accent)]" />
+          <PieChart className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accentText)]" />
           Despesas por Categoria
         </h2>
         <span className="text-xs sm:text-sm font-bold text-red-500 dark:text-red-400">

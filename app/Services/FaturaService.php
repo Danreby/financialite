@@ -186,6 +186,31 @@ class FaturaService implements FaturaServiceInterface
             return;
         }
 
+        $now = now();
+        $parcelas = array_map(fn (array $row) => $row + [
+            'transacao_id' => $transacao->id,
+            'status' => 'pending',
+            'paid_date' => null,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $this->buildInstallmentSchedule($transacao));
+
+        TransacaoParcela::insert($parcelas);
+    }
+
+    /**
+     * Cronograma esperado de uma compra parcelada: número, valor, vencimento e
+     * mês de fatura de cada parcela. Usado ao criar parcelas e para conferir
+     * parcelas já gravadas.
+     *
+     * @return array<int, array{installment_number: int, amount: float, due_date: string, month_key: string}>
+     */
+    public function buildInstallmentSchedule(Transacao $transacao): array
+    {
+        $totalInstallments = max((int) $transacao->total_installments, 1);
+        $totalAmount = (float) $transacao->amount;
+        $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($transacao);
+
         $baseAmount = round($totalAmount / $totalInstallments, 2);
         $remainder = round($totalAmount - ($baseAmount * $totalInstallments), 2);
 
@@ -208,26 +233,21 @@ class FaturaService implements FaturaServiceInterface
                 $parcelaAmount = round($parcelaAmount + $remainder, 2);
             }
 
-            $parcelMonth = $firstBillingMonth->copy()->addMonths($i - 1);
+            $parcelMonth = $firstBillingMonth->copy()->addMonthsNoOverflow($i - 1);
             $monthKey = $parcelMonth->format('Y-m');
             $maxDay = (int) $parcelMonth->copy()->endOfMonth()->format('d');
             $actualDueDay = min($dueDay, $maxDay);
             $dueDate = $parcelMonth->copy()->setDay($actualDueDay);
 
             $parcelas[] = [
-                'transacao_id' => $transacao->id,
                 'installment_number' => $i,
                 'amount' => $parcelaAmount,
                 'due_date' => $dueDate->toDateString(),
                 'month_key' => $monthKey,
-                'status' => 'pending',
-                'paid_date' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
             ];
         }
 
-        TransacaoParcela::insert($parcelas);
+        return $parcelas;
     }
 
     public function deleteForUser(Transacao $fatura): bool

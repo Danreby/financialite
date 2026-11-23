@@ -344,7 +344,7 @@ class BudgetCalculationService
 
         while ($current->lte($end)) {
             $monthKeys[] = $current->format('Y-m');
-            $current->addMonth();
+            $current->addMonthNoOverflow();
         }
 
         return $monthKeys;

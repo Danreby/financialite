@@ -57,7 +57,7 @@ class ProfileApiController extends Controller
     public function updateTheme(Request $request): JsonResponse
     {
         $request->validate([
-            'theme' => 'required|string|in:rose,black,forest,gold,lavender,midnight',
+            'theme' => 'required|string|in:brasa,rose,black,forest,gold,lavender,midnight',
         ]);
 
         $user = $request->user();

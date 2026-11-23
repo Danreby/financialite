@@ -1,117 +1,213 @@
-import React, { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { usePage } from '@inertiajs/react'
+import { useCallback, useEffect, useId, useState } from 'react'
+import { Link, usePage } from '@inertiajs/react'
+import { ChevronDown, PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react'
+import { Button, Kbd } from '@/Components/ui'
+import cx from '@/Components/ui/cx'
 import NavItem from '@/Components/system/navigation/NavItem'
+import { initialsOf, isActivePath, visibleFooter, visibleGroups } from '@/Components/system/navigation/navConfig'
+import { useNewTransaction } from '@/Components/system/transactions/NewTransactionProvider'
 import { toPathname } from '@/Utils/url'
 
-export default function Sidebar({ open: openProp = true, setOpen: setOpenProp }) {
-  const [isOpen, setIsOpen] = useState(Boolean(openProp))
-  const { url } = usePage()
+const GROUPS_STORAGE_KEY = 'sidebar-groups'
+
+function readCollapsedGroups() {
+  try {
+    const raw = window.localStorage.getItem(GROUPS_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : {}
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+export const SIDEBAR_WIDTH = { open: 248, closed: 76 }
+
+/**
+ * Menu lateral em painel próprio (.surface-panel) flutuando dentro da página.
+ * Recolhe para só ícones (estado salvo em `sidebar-open` pelo layout) e cada
+ * grupo recolhe sozinho (estado salvo em `sidebar-groups`).
+ */
+export default function Sidebar({ open = true, setOpen, badges = {} }) {
+  const { url, props } = usePage()
+  const user = props.auth?.user
   const currentPath = toPathname(url)
+  const { openNewTransaction } = useNewTransaction()
+  const idPrefix = useId()
+
+  const [collapsedGroups, setCollapsedGroups] = useState(readCollapsedGroups)
+  const [hint, setHint] = useState(null)
 
   useEffect(() => {
-    setIsOpen(Boolean(openProp))
-  }, [openProp])
-
-  const notifyParent = (val) => {
-    if (typeof setOpenProp === 'function') setOpenProp(val)
-  }
-
-  const toggle = () => {
-    const next = !isOpen
-    setIsOpen(next)
-    notifyParent(next)
-  }
-
-  const openIfClosed = () => {
-    if (!isOpen) {
-      setIsOpen(true)
-      notifyParent(true)
+    try {
+      window.localStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(collapsedGroups))
+    } catch {
+      //
     }
-  }
+  }, [collapsedGroups])
 
-  const onLogoKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      openIfClosed()
+  useEffect(() => {
+    if (open) setHint(null)
+  }, [open])
+
+  // O grupo da página atual sempre abre (e o estado salvo passa a refletir isso).
+  useEffect(() => {
+    const activeGroup = visibleGroups().find((group) => group.items.some((item) => isActivePath(currentPath, item.route)))
+    if (activeGroup) {
+      setCollapsedGroups((prev) => (prev[activeGroup.id] ? { ...prev, [activeGroup.id]: false } : prev))
     }
-  }
+  }, [currentPath])
+
+  const showHint = useCallback((label, element) => {
+    const rect = element.getBoundingClientRect()
+    setHint({ label, top: rect.top + rect.height / 2, left: rect.right + 12 })
+  }, [])
+  const hideHint = useCallback(() => setHint(null), [])
+
+  const groups = visibleGroups()
+  const footer = visibleFooter()
+  const collapsed = !open
+  const settingsActive = isActivePath(currentPath, 'settings')
+
+  const renderItem = (item) => (
+    <li key={item.route}>
+      <NavItem
+        href={route(item.route)}
+        label={item.label}
+        icon={item.icon}
+        active={isActivePath(currentPath, item.route)}
+        collapsed={collapsed}
+        badge={badges[item.route]}
+        onHint={showHint}
+        onHintEnd={hideHint}
+      />
+    </li>
+  )
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isOpen ? 220 : 72 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className={`fixed left-0 top-0 h-screen border-r z-40 ${isOpen ? 'overflow-hidden' : 'overflow-visible'} bg-[var(--theme-bgSidebarLight)] border-[#e5e5e5] shadow-[2px_0_10px_0_rgba(0,0,0,0.15)] dark:bg-[var(--theme-bgSidebarDark)] dark:border-white/10 dark:shadow-[2px_0_10px_0_rgba(0,0,0,0.4)]`}
-      aria-expanded={isOpen}
+    <aside
+      aria-label="Menu principal"
+      style={{ width: open ? SIDEBAR_WIDTH.open : SIDEBAR_WIDTH.closed }}
+      className="surface-panel fixed bottom-3 left-3 top-3 z-30 flex flex-col overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none"
     >
-      <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between px-4 py-4">
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={isOpen ? toggle : openIfClosed}
-            onKeyDown={onLogoKeyDown}
-            aria-label={isOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
-            className={`flex items-center gap-3 ${isOpen ? 'opacity-100' : 'justify-center'} cursor-pointer`}
-          >
-            <div className="h-10 w-10 rounded-lg flex items-center justify-center ring-1 transition-all duration-150 themed-icon-wrapper">
-              <img src="/favicon.ico" alt="" className="h-10 w-10" aria-hidden />
-            </div>
-
-            <AnimatePresence initial={false}>
-              {isOpen && (
-                <motion.span
-                  key="brand"
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -6 }}
-                  transition={{ duration: 0.18 }}
-                  className="text-sm font-semibold text-gray-900 select-none dark:text-gray-100"
-                >
-                  Financialite
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        <nav className="mt-3 flex-1 px-2 space-y-1">
-          <NavItem type={8} open={isOpen} href={route('dashboard')} label="Dashboard" currentPath={currentPath} />
-          <NavItem type={4} open={isOpen} href={route('transacoes.index')} label="Fatura" currentPath={currentPath} />
-          <NavItem type={12} open={isOpen} href={route('accounts.index')} label="Cartões" currentPath={currentPath} />
-          <NavItem type={13} open={isOpen} href={route('categorias.index')} label="Categorias" currentPath={currentPath} />
-          <NavItem type={5} open={isOpen} href={route('bancos.index')} label="Bancos" currentPath={currentPath} />
-          <NavItem type={14} open={isOpen} href={route('parcelamentos.index')} label="Parcelamentos" currentPath={currentPath} />
-          <NavItem type={9} open={isOpen} href={route('transactions.index')} label="Transações" currentPath={currentPath} />
-          <NavItem type={6} open={isOpen} href={route('contas.index')} label="Contas" currentPath={currentPath} />
-          <NavItem type={11} open={isOpen} href={route('extrato.index')} label="Extrato" currentPath={currentPath} />
-          <NavItem type={16} open={isOpen} href={route('resumo-mensal.index')} label="Resumo Mensal" currentPath={currentPath} />
-          <NavItem type={10} open={isOpen} href={route('reports.index')} label="Relatórios" currentPath={currentPath} />
-          <NavItem type={15} open={isOpen} href={route('projecao.index')} label="Projeção" currentPath={currentPath} />
-          <NavItem type={7} open={isOpen} href={route('about')} label="Sobre" currentPath={currentPath} />
-        </nav>
-
-        <nav className="px-2">
-          <NavItem type={1} open={isOpen} href={route('settings')} label="Configurações" currentPath={currentPath} />
-        </nav>
-
-        <AnimatePresence initial={false}>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="px-3 py-4"
-            >
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {/* © {new Date().getFullYear()} Finanças */}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className={cx('flex items-center gap-2 px-3 pb-2 pt-3', collapsed ? 'flex-col' : 'justify-between pl-4')}>
+        <Link
+          href={route('dashboard')}
+          className="flex min-w-0 items-center gap-2.5 rounded-chip focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
+          aria-label={collapsed ? 'Financialite, ir para o Dashboard' : undefined}
+        >
+          <img src="/favicon.ico" alt="" className="h-8 w-8 shrink-0 rounded-lg" aria-hidden="true" />
+          {!collapsed && <span className="truncate text-[15px] font-semibold tracking-tight text-content-primary">Financialite</span>}
+        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
+          icon={collapsed ? PanelLeftOpen : PanelLeftClose}
+          onClick={() => setOpen?.(!open)}
+          aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+          aria-expanded={open}
+          className="text-content-muted"
+        />
       </div>
-    </motion.aside>
+
+      <nav aria-label="Páginas" className="scrollbar-custom flex-1 overflow-y-auto overflow-x-hidden px-3 pb-2">
+        {groups.map((group, index) => {
+          const listId = `${idPrefix}-${group.id}`
+          const groupCollapsed = !collapsed && Boolean(collapsedGroups[group.id])
+          return (
+            <div key={group.id} className={cx(index > 0 && (collapsed ? 'mt-2 border-t border-line pt-2' : 'mt-2'))}>
+              {!collapsed && (
+                <h2 className="mb-1">
+                  <button
+                    type="button"
+                    aria-expanded={!groupCollapsed}
+                    aria-controls={listId}
+                    onClick={() => setCollapsedGroups((prev) => ({ ...prev, [group.id]: !prev[group.id] }))}
+                    className="flex w-full items-center justify-between rounded-md px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-content-muted transition-colors hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
+                  >
+                    {group.label}
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={cx('h-3.5 w-3.5 transition-transform duration-150 motion-reduce:transition-none', groupCollapsed && '-rotate-90')}
+                    />
+                  </button>
+                </h2>
+              )}
+              <ul id={listId} hidden={groupCollapsed} className="space-y-0.5" aria-label={collapsed ? group.label : undefined}>
+                {group.items.map(renderItem)}
+              </ul>
+            </div>
+          )
+        })}
+      </nav>
+
+      <div className="space-y-2 border-t border-line px-3 pb-3 pt-2">
+        <ul className="space-y-0.5" aria-label="Ajustes">
+          {footer.map(renderItem)}
+        </ul>
+
+        {collapsed ? (
+          <div className="flex justify-center">
+            <Button
+              iconOnly
+              icon={Plus}
+              onClick={openNewTransaction}
+              aria-label="Nova despesa"
+              aria-keyshortcuts="N"
+              onPointerEnter={(event) => showHint('Nova despesa (N)', event.currentTarget)}
+              onPointerLeave={hideHint}
+              onFocus={(event) => showHint('Nova despesa (N)', event.currentTarget)}
+              onBlur={hideHint}
+            />
+          </div>
+        ) : (
+          <div className="rounded-[14px] border border-line bg-surface-sunken p-3">
+            <p className="text-sm font-semibold text-content-primary">Nova despesa</p>
+            <p className="sidebar-card-text mt-0.5 text-xs leading-snug text-content-muted">
+              Registre um gasto no débito ou no crédito. Atalho <Kbd className="ml-0.5 h-[18px] px-1">N</Kbd>
+            </p>
+            <Button size="sm" icon={Plus} onClick={openNewTransaction} aria-keyshortcuts="N" className="mt-2.5 w-full">
+              Registrar despesa
+            </Button>
+          </div>
+        )}
+
+        {user && (
+          <Link
+            href={route('settings')}
+            aria-current={settingsActive ? 'page' : undefined}
+            aria-label={collapsed ? `${user.name}, abrir configurações` : undefined}
+            onPointerEnter={(event) => collapsed && showHint(user.name, event.currentTarget)}
+            onPointerLeave={hideHint}
+            onFocus={(event) => collapsed && showHint(user.name, event.currentTarget)}
+            onBlur={hideHint}
+            className={cx(
+              'flex items-center gap-2.5 rounded-chip p-1.5 transition-colors hover:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent',
+              collapsed && 'justify-center',
+            )}
+          >
+            <span className="themed-avatar flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold" aria-hidden="true">
+              {initialsOf(user.name)}
+            </span>
+            {!collapsed && (
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-content-primary">{user.name}</span>
+                <span className="block truncate text-xs text-content-muted">{user.email}</span>
+              </span>
+            )}
+          </Link>
+        )}
+      </div>
+
+      {collapsed && hint && (
+        <span
+          role="presentation"
+          style={{ top: hint.top, left: hint.left }}
+          className="pointer-events-none fixed z-50 -translate-y-1/2 whitespace-nowrap rounded-chip border border-line bg-surface-raised px-2.5 py-1 text-xs font-semibold text-content-primary shadow-pop"
+        >
+          {hint.label}
+        </span>
+      )}
+    </aside>
   )
 }

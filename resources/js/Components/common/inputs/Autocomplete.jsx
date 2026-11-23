@@ -147,6 +147,7 @@ export default function Autocomplete({
               dropdownRef.current = el
             }}
             role="listbox"
+            data-modal-portal
             style={dropdownStyle}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -159,6 +160,8 @@ export default function Autocomplete({
                 key={opt[valueKey]}
                 role="option"
                 aria-selected={highlightIndex === idx}
+                // Mantém o foco no campo: a lista fica em body, fora do Modal.
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(opt)}
                 onMouseEnter={() => setHighlightIndex(idx)}
                 className={`cursor-pointer px-3 py-2 text-sm transition-colors
@@ -181,6 +184,7 @@ export default function Autocomplete({
       {isOpen && search.trim() && filtered.length === 0 && (
         <motion.div
           ref={dropdownRef}
+          data-modal-portal
           style={dropdownStyle}
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}

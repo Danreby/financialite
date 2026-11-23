@@ -1,643 +1,181 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { useCallback, useState } from 'react'
 import axios from 'axios'
 import { Head } from '@inertiajs/react'
 import { toast } from 'react-toastify'
-import { CreditCard, ArrowDownLeft, Wallet, Banknote, CalendarClock } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
-import StatsOverview from '@/Components/system/dashboard/StatsOverview'
+import { Button, PageHeader, Select } from '@/Components/ui'
+import DashboardKpis from '@/Components/system/dashboard/DashboardKpis'
+import SpendingChart from '@/Components/system/dashboard/SpendingChart'
+import MonthAlerts from '@/Components/system/dashboard/MonthAlerts'
+import RecentActivity from '@/Components/system/dashboard/RecentActivity'
 import MonthlyForecastCard from '@/Components/system/dashboard/MonthlyForecastCard'
 import QuickActions from '@/Components/system/dashboard/QuickActions'
-import MonthlySummaryChart from '@/Components/system/dashboard/MonthlySummaryChart'
 import TopSpendingCategories from '@/Components/system/dashboard/TopSpendingCategories'
 import BudgetProgress from '@/Components/system/dashboard/BudgetProgress'
 import UpcomingBills from '@/Components/system/dashboard/UpcomingBills'
-import SpendingTrends from '@/Components/system/dashboard/SpendingTrends'
 import FinancialHealthScore from '@/Components/system/dashboard/FinancialHealthScore'
-import CategoryBadge from '@/Components/common/CategoryBadge'
-import { formatCurrencyBRL } from '@/Lib/formatters'
+import SpendingTrends from '@/Components/system/dashboard/SpendingTrends'
 import FaturaDetailModal from '@/Components/system/fatura/FaturaDetailModal'
 import BillForm from '@/Components/system/BillForm'
 import BudgetForm from '@/Components/system/BudgetForm'
 import BillPaymentForm from '@/Components/system/BillPaymentForm'
-import ScrollArea from '@/Components/common/ScrollArea'
-import FadeInContainer, { FadeInItem } from '@/Components/common/FadeInContainer'
-import { dashboardService } from '@/Services/dashboardService'
+import { useNewTransaction } from '@/Components/system/transactions/NewTransactionProvider'
+import useDashboardData from '@/Hooks/useDashboardData'
+import { toDetailItem } from '@/Lib/dashboard'
 
-function formatDateLabel(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-  }).format(date)
+// Fica dentro do AuthenticatedLayout, onde está o NewTransactionProvider.
+function NewTransactionButton() {
+  const { openNewTransaction } = useNewTransaction()
+  return (
+    <Button icon={Plus} onClick={openNewTransaction} className="w-full sm:w-auto">
+      Nova despesa
+    </Button>
+  )
 }
 
-export default function Dashboard({ bankAccounts = [], categories = [], bankAccountsList = [] }) {
-  const [currentFilters, setCurrentFilters] = useState({})
-  const [page, setPage] = useState(1)
-  const [reloadKey, setReloadKey] = useState(0)
-  const [data, setData] = useState(null)
-  const [recentFaturas, setRecentFaturas] = useState([])
-  const [monthlySummary, setMonthlySummary] = useState([])
-  const [topSpendingCategories, setTopSpendingCategories] = useState([])
-  const [debitSpendingCategories, setDebitSpendingCategories] = useState([])
-  const [creditSpendingCategories, setCreditSpendingCategories] = useState([])
-  const [topSpendingLabel, setTopSpendingLabel] = useState('Mês vigente')
-  const [selectedFaturaItem, setSelectedFaturaItem] = useState(null)
-  const [recurringSpending, setRecurringSpending] = useState({ total: 0, percentage: 0 })
-  const [nonRecurringSpending, setNonRecurringSpending] = useState({ total: 0, percentage: 0 })
-  const [monthlyForecast, setMonthlyForecast] = useState({
-    monthLabel: 'Mês atual',
-    invoiceTotal: 0,
-    billsTotal: 0,
-    debitTotal: 0,
-  })
+export default function Dashboard({ bankAccounts = [], categories = [] }) {
+  const dashboard = useDashboardData()
+  const { loading, stats, insights, transactions, reload } = dashboard
 
-  const [selectedMonthKey, setSelectedMonthKey] = useState(null)
-  const [monthData, setMonthData] = useState(null)
-  const [isLoadingMonth, setIsLoadingMonth] = useState(false)
-  const [dashboardInsights, setDashboardInsights] = useState(null)
-  const [showBillForm, setShowBillForm] = useState(false)
-  const [showBudgetForm, setShowBudgetForm] = useState(false)
-  const [currentBudget, setCurrentBudget] = useState(null)
-  const [isLoadingBudget, setIsLoadingBudget] = useState(false)
-  const [editingBill, setEditingBill] = useState(null)
+  const [detailItem, setDetailItem] = useState(null)
   const [payingBill, setPayingBill] = useState(null)
+  const [billForm, setBillForm] = useState({ open: false, bill: null })
+  const [budgetForm, setBudgetForm] = useState({ open: false, budget: null })
+  const [loadingBudget, setLoadingBudget] = useState(false)
 
-  const prevReloadKeyRef = useRef(reloadKey)
+  const done = useCallback(
+    (close) => () => {
+      close()
+      reload()
+    },
+    [reload],
+  )
 
-  const handleMonthClick = useCallback(async (monthKey) => {
-    let shouldFetchData = true
-
-    setSelectedMonthKey((prevKey) => {
-      if (prevKey === monthKey) {
-        setMonthData(null)
-        shouldFetchData = false
-        return null
-      }
-      return monthKey
-    })
-
-    if (!shouldFetchData) return
-
-    setIsLoadingMonth(true)
-
-    try {
-      const params = {
-        month_from: monthKey,
-        month_to: monthKey,
-      }
-
-      if (currentFilters.bank_user_id) params.bank_user_id = currentFilters.bank_user_id
-      if (currentFilters.category_id) params.category_id = currentFilters.category_id
-
-      const response = await axios.get(route('transacoes.top_spending_by_period'), { params })
-      setMonthData(response.data || {})
-    } catch (err) {
-      console.error('Error fetching month data:', err)
-      toast.error('Erro ao carregar dados do mês.')
-      setSelectedMonthKey(null)
-      setMonthData(null)
-    } finally {
-      setIsLoadingMonth(false)
-    }
-  }, [currentFilters])
-
-  const handleClearSelection = useCallback(() => {
-    setSelectedMonthKey(null)
-    setMonthData(null)
-  }, [])
-
-  const activeTopSpending = monthData?.top_spending_categories ?? topSpendingCategories
-  const activeDebitSpending = monthData?.debit_spending_categories ?? debitSpendingCategories
-  const activeCreditSpending = monthData?.credit_spending_categories ?? creditSpendingCategories
-  const activeTopSpendingLabel = monthData?.period_label ?? topSpendingLabel
-  const activeRecurring = monthData?.recurring_spending ?? recurringSpending
-  const activeNonRecurring = monthData?.non_recurring_spending ?? nonRecurringSpending
-
-  const monthlyChartTrend = (() => {
-    const current = Number(dashboardInsights?.spending_trends?.current_month ?? 0)
-    const previous = Number(dashboardInsights?.spending_trends?.previous_month ?? 0)
-    if (!dashboardInsights?.spending_trends?.has_data || previous === 0) return null
-    const pct = ((current - previous) / previous) * 100
-    const direction = pct > 5 ? 'up' : pct < -5 ? 'down' : 'neutral'
-    return { pct: Math.abs(pct), direction }
-  })()
-
-  const [stats, setStats] = useState([])
-
-  const handleBankFilterChange = (event) => {
-    const value = event.target.value || undefined
-    setCurrentFilters((prev) => ({
-      ...prev,
-      bank_user_id: value,
-    }))
-    setPage(1)
-    setSelectedMonthKey(null)
-    setMonthData(null)
-  }
-
-  const handleBillSuccess = () => {
-    setShowBillForm(false)
-    setEditingBill(null)
-    setReloadKey((prev) => prev + 1)
-  }
-
-  const handleBudgetSuccess = () => {
-    setShowBudgetForm(false)
-    setCurrentBudget(null)
-    setReloadKey((prev) => prev + 1)
-  }
-
-  const handleBillPayClick = (bill) => {
-    setPayingBill(bill)
-  }
-
-  const handleBillEditClick = (bill) => {
-    setEditingBill(bill)
-    setShowBillForm(true)
-  }
-
-  const handleBillToggle = async (bill) => {
+  const toggleBill = async (bill) => {
     try {
       await axios.patch(route('bills.toggle', bill.id))
-      toast.success('Status da conta alterado com sucesso.')
-      setReloadKey((prev) => prev + 1)
-    } catch (error) {
-      toast.error('Erro ao alterar status da conta.')
+      toast.success('Status da conta alterado.')
+      reload()
+    } catch {
+      toast.error('Não foi possível alterar o status da conta.')
     }
   }
 
-  const handlePaymentSuccess = () => {
-    setPayingBill(null)
-    setReloadKey((prev) => prev + 1)
-  }
-
-  const handleOpenBudgetForm = async () => {
-    setIsLoadingBudget(true)
+  const openBudgetForm = async () => {
+    setLoadingBudget(true)
+    let budget = null
     try {
-      const response = await axios.get(route('budgets.current'))
-      setCurrentBudget(response.data)
+      budget = (await axios.get(route('budgets.current'))).data
     } catch (error) {
-      if (error.response?.status !== 404) {
-        console.error('Error loading budget:', error)
-        toast.error('Erro ao carregar orçamento atual.')
-      }
-      setCurrentBudget(null)
+      if (error.response?.status !== 404) toast.error('Não foi possível carregar o orçamento atual.')
     } finally {
-      setIsLoadingBudget(false)
-      setShowBudgetForm(true)
+      setLoadingBudget(false)
+      setBudgetForm({ open: true, budget })
     }
   }
 
-  useEffect(() => {
-    let cancelled = false;
-
-    if (reloadKey !== prevReloadKeyRef.current) {
-      prevReloadKeyRef.current = reloadKey
-      dashboardService.invalidateCache()
-    }
-
-    ;(async () => {
-      try {
-        const response = await dashboardService.getData(currentFilters, page)
-
-        if (cancelled) return
-
-        const payload = response.transactions || {}
-        setData(payload)
-
-        const faturas = payload.data || []
-        setRecentFaturas(faturas)
-
-        const statsPayload = response.stats || {}
-
-        const currentMonthDebitTotal = Number(statsPayload.current_month_debit_total || 0)
-        const remainingMoney = Number(statsPayload.remaining_money || 0)
-        const totalMonthlyIncome = Number(statsPayload.total_monthly_income || 0)
-
-        const monthlySummaryPayload = Array.isArray(statsPayload.monthly_summary)
-          ? statsPayload.monthly_summary
-          : []
-
-        const topSpendingPayload = Array.isArray(statsPayload.top_spending_categories)
-          ? statsPayload.top_spending_categories
-          : []
-        const topSpendingLabelPayload = statsPayload.top_spending_label || 'Mês vigente'
-
-        const currentMonthPendingBill = Number(statsPayload.current_month_pending_bill || 0)
-        const currentMonthBillsTotal = Number(statsPayload.current_month_bills_total || 0)
-        const currentMonthLabel = statsPayload.current_month_label || 'Mês atual'
-
-        const totalMonthlySpent = currentMonthPendingBill + currentMonthDebitTotal
-
-        setMonthlyForecast({
-          monthLabel: currentMonthLabel,
-          invoiceTotal: currentMonthPendingBill,
-          billsTotal: currentMonthBillsTotal,
-          debitTotal: currentMonthDebitTotal,
-        })
-
-        const nextDueInfo = statsPayload.next_card_due_date ?? null
-        const nearestDue = nextDueInfo?.nearest ?? null
-
-        const buildDueDateCard = () => {
-          if (!nearestDue) {
-            return {
-              id: 5,
-              title: 'Próximo fechamento',
-              value: '—',
-              delta: 'Nenhum cartão pendente',
-              deltaVariant: 'neutral',
-              icon: CalendarClock,
-            }
-          }
-
-          const days = nearestDue.days_until_due
-          const value =
-            days === 0
-              ? 'Hoje'
-              : days === 1
-              ? 'Amanhã'
-              : `${days} dias`
-
-          const allCards = nextDueInfo?.cards ?? []
-          const delta = allCards.length > 1
-            ? `${nearestDue.card_name} +${allCards.length - 1}`
-            : nearestDue.card_name
-
-          const deltaVariant =
-            days === 0 ? 'danger' : days <= 3 ? 'warning' : 'neutral'
-
-          return {
-            id: 5,
-            title: 'Próximo fechamento em',
-            value,
-            delta,
-            deltaVariant,
-            icon: CalendarClock,
-          }
-        }
-
-        setStats([
-          {
-            id: 1,
-            title: 'Fatura Atual',
-            value: formatCurrencyBRL(currentMonthPendingBill),
-            delta: currentMonthLabel,
-            icon: CreditCard,
-          },
-          {
-            id: 2,
-            title: 'Transações no débito',
-            value: formatCurrencyBRL(currentMonthDebitTotal),
-            delta: '',
-            icon: Banknote,
-          },
-          {
-            id: 3,
-            title: 'Total Mensal',
-            value: formatCurrencyBRL(totalMonthlySpent),
-            delta: '',
-            icon: Wallet,
-          },
-          {
-            id: 4,
-            title: 'Dinheiro restante',
-            value: formatCurrencyBRL(remainingMoney),
-            delta: totalMonthlyIncome > 0
-              ? `Renda: ${formatCurrencyBRL(totalMonthlyIncome)}`
-              : 'Sem renda cadastrada',
-            icon: ArrowDownLeft,
-          },
-          buildDueDateCard(),
-        ])
-
-        setMonthlySummary(monthlySummaryPayload)
-
-        const totalTopSpending = topSpendingPayload.reduce(
-          (acc, item) => acc + Number(item.total || 0),
-          0,
-        )
-
-        const normalizedTopSpending = totalTopSpending > 0
-          ? topSpendingPayload.map((item) => ({
-              ...item,
-              share: Math.max(
-                5,
-                Math.round((Number(item.total || 0) / totalTopSpending) * 100),
-              ),
-            }))
-          : topSpendingPayload
-
-        setTopSpendingCategories(normalizedTopSpending)
-        setDebitSpendingCategories(Array.isArray(statsPayload.debit_spending_categories) ? statsPayload.debit_spending_categories : [])
-        setCreditSpendingCategories(Array.isArray(statsPayload.credit_spending_categories) ? statsPayload.credit_spending_categories : [])
-        setTopSpendingLabel(topSpendingLabelPayload)
-
-        setRecurringSpending({
-          total: Number(statsPayload.recurring_spending?.total || 0),
-          percentage: Number(statsPayload.recurring_spending?.percentage || 0),
-        })
-
-        setNonRecurringSpending({
-          total: Number(statsPayload.non_recurring_spending?.total || 0),
-          percentage: Number(statsPayload.non_recurring_spending?.percentage || 0),
-        })
-
-        setDashboardInsights(response.insights || null)
-      } catch (error) {
-        if (cancelled) return
-        console.error(error)
-        if (error.response?.data?.message) {
-          toast.error(error.response.data.message)
-        } else {
-          toast.error('Não foi possível carregar os dados do dashboard.')
-        }
-      }
-    })()
-
-    return () => { cancelled = true }
-  }, [currentFilters, page, reloadKey])
+  const monthLabel = stats?.current_month_label
 
   return (
     <AuthenticatedLayout>
       <Head title="Dashboard" />
 
-      <FadeInContainer className="w-full max-w-[1920px] mx-auto pb-6">
-        <div
-          className="rounded-2xl p-4 mb-3"
-          style={{
-            background: 'linear-gradient(160deg, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 75%)',
-          }}
-        >
-          <FadeInItem className="flex flex-col gap-3 mb-4 md:flex-row md:items-center md:justify-between">
-            <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
-              Visão geral
-            </h1>
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 pb-6 xl:gap-5">
+        <PageHeader
+          title="Visão geral"
+          subtitle={monthLabel ? `Como está ${monthLabel}: gastos, contas e alertas.` : 'Gastos, contas e alertas do mês.'}
+          className="pt-1"
+          actions={
+            <>
+              <div className="flex w-full items-center gap-2 sm:w-auto">
+                <label htmlFor="dashboard-cartao" className="shrink-0 text-sm font-medium text-content-secondary">
+                  Cartão
+                </label>
+                <div className="min-w-0 flex-1 sm:w-60 sm:flex-none">
+                  <Select id="dashboard-cartao" value={dashboard.cardId} onChange={(e) => dashboard.changeCard(e.target.value)}>
+                    <option value="">Todos os cartões</option>
+                    {bankAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name}
+                        {account.due_day ? ` (vence dia ${account.due_day})` : ''}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <NewTransactionButton />
+            </>
+          }
+        />
 
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm lg:text-base">
-              <label className="text-xs lg:text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                Banco do dashboard
-              </label>
-              <select
-                value={currentFilters.bank_user_id || ''}
-                onChange={handleBankFilterChange}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm themed-focus dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-gray-100 sm:w-auto sm:min-w-[260px]"
-              >
-                <option value="">Todos os bancos</option>
-                {bankAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.name}
-                    {account.due_day ? ` - vence dia ${account.due_day}` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </FadeInItem>
+        <DashboardKpis stats={stats} loading={loading} />
 
-          <FadeInItem type="feature">
-            <StatsOverview stats={stats} />
-          </FadeInItem>
+        <div className="grid gap-4 xl:grid-cols-12 xl:gap-5">
+          <div className="flex min-w-0 flex-col gap-4 xl:col-span-8 xl:gap-5">
+            <SpendingChart data={stats?.monthly_summary ?? []} loading={loading} selectedMonth={dashboard.selectedMonth} onMonthClick={dashboard.toggleMonth} />
+            <RecentActivity transactions={transactions} loading={loading} onOpen={(tx) => setDetailItem(toDetailItem(tx))} />
+          </div>
+          <div className="min-w-0 xl:relative xl:col-span-4">
+            <MonthAlerts stats={stats} insights={insights} loading={loading} onPayBill={setPayingBill} className="flex flex-col xl:absolute xl:inset-0" />
+          </div>
         </div>
 
-        <FadeInContainer stagger className="mt-3">
-          <FadeInItem>
-            <MonthlyForecastCard
-              monthLabel={monthlyForecast.monthLabel}
-              invoiceTotal={monthlyForecast.invoiceTotal}
-              billsTotal={monthlyForecast.billsTotal}
-              debitTotal={monthlyForecast.debitTotal}
-            />
-          </FadeInItem>
-        </FadeInContainer>
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-12 xl:gap-5">
+          <MonthlyForecastCard stats={stats} loading={loading} className="xl:col-span-7" />
+          <QuickActions categories={categories} onChanged={reload} className="xl:col-span-5" />
+        </div>
 
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
-          <FadeInItem>
-            <QuickActions
-              bankAccounts={bankAccounts}
-              bankAccountsList={bankAccountsList}
-              categories={categories}
-              onTransactionCreated={() => setReloadKey((prev) => prev + 1)}
-            />
-          </FadeInItem>
-          
-          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl p-4 overflow-hidden">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100">
-                Transações recentes
-              </h2>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Últimos lançamentos</span>
-            </div>
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3 xl:gap-5">
+          <TopSpendingCategories
+            stats={stats}
+            monthData={dashboard.monthData}
+            months={stats?.monthly_summary ?? []}
+            selectedMonth={dashboard.selectedMonth}
+            onSelectMonth={dashboard.selectMonth}
+            loading={loading}
+            monthLoading={dashboard.monthLoading}
+          />
+          <BudgetProgress progress={insights?.budget_progress} loading={loading || loadingBudget} onConfigure={openBudgetForm} />
+          <UpcomingBills
+            bills={insights?.upcoming_bills ?? []}
+            loading={loading}
+            onPay={setPayingBill}
+            onEdit={(bill) => setBillForm({ open: true, bill })}
+            onAdd={() => setBillForm({ open: true, bill: null })}
+            onToggle={toggleBill}
+          />
+        </div>
 
-            <ScrollArea maxHeightClassName="max-h-[260px]" className="space-y-3 pr-1">
-              {recentFaturas && recentFaturas.length > 0 ? (
-                recentFaturas.slice(0, 5).map((fatura) => {
-                  const isDebit = fatura.type === 'debit'
-                  const labelDate = formatDateLabel(fatura.created_at)
-                  const bankName = fatura.bank_user?.card?.name
-                  const category = fatura.category
-                  const categoryName = category?.name
-                  const categoryIcon = category?.icon
-                  const categoryColor = category?.color
-                  const typeLabel = isDebit ? 'Débito' : 'Crédito'
-                  const subtitleParts = [typeLabel]
-                  if (bankName) subtitleParts.push(bankName)
-                  if (labelDate) subtitleParts.push(labelDate)
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-12 xl:gap-5">
+          <FinancialHealthScore health={insights?.financial_health} loading={loading} className="xl:col-span-7" />
+          <SpendingTrends trends={insights?.spending_trends} loading={loading} className="xl:col-span-5" />
+        </div>
+      </div>
 
-                  const handleClick = () => {
-                    setSelectedFaturaItem({
-                      id: fatura.id,
-                      bank_user_id: fatura.bank_user_id,
-                      category_id: fatura.category_id,
-                      title: fatura.title,
-                      description: fatura.description,
-                      amount: fatura.amount,
-                      type: fatura.type,
-                      status: fatura.status,
-                      created_at: fatura.created_at,
-                      paid_date: fatura.paid_date,
-                      total_installments: fatura.total_installments,
-                      current_installment: fatura.current_installment,
-                      display_installment: null,
-                      is_recurring: fatura.is_recurring,
-                      bank_name: bankName,
-                      category_name: categoryName,
-                      category_icon: categoryIcon,
-                      category_color: categoryColor,
-                    })
-                  }
-
-                  return (
-                    <Transaction
-                      key={fatura.id}
-                      title={fatura.title}
-                      subtitle={subtitleParts.join(' • ')}
-                      value={`${formatCurrencyBRL(fatura.amount)}`}
-                      negative={isDebit}
-                      onClick={handleClick}
-                      categoryName={categoryName}
-                      categoryIcon={categoryIcon}
-                      categoryColor={categoryColor}
-                    />
-                  )
-                })
-              ) : (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Nenhuma transação recente encontrada.
-                </p>
-              )}
-            </ScrollArea>
-          </FadeInItem>
-        </FadeInContainer>
-
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 lg:items-start">
-          <FadeInItem className="lg:col-span-2 themed-card rounded-2xl overflow-hidden">
-            <MonthlySummaryChart
-              data={monthlySummary}
-              onMonthClick={handleMonthClick}
-              selectedMonthKey={selectedMonthKey}
-              trend={monthlyChartTrend}
-            />
-          </FadeInItem>
-
-          <FadeInItem className="lg:h-[360px]">
-            <TopSpendingCategories
-              data={activeTopSpending}
-              debitData={activeDebitSpending}
-              creditData={activeCreditSpending}
-              label={activeTopSpendingLabel}
-              recurringSpending={activeRecurring}
-              nonRecurringSpending={activeNonRecurring}
-              isLoading={isLoadingMonth}
-              hasSelection={!!selectedMonthKey}
-              onClearSelection={handleClearSelection}
-            />
-          </FadeInItem>
-        </FadeInContainer>
-
-        <FadeInContainer stagger className="mt-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5 items-stretch">
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 flex flex-col overflow-clip [overflow-clip-margin:4px]">
-            <FinancialHealthScore
-              score={dashboardInsights?.financial_health?.score ?? 0}
-              hasData={dashboardInsights?.financial_health?.has_data ?? false}
-              missingData={dashboardInsights?.financial_health?.missing_data ?? {}}
-              factors={dashboardInsights?.financial_health?.factors ?? {
-                savingsRate: 0,
-                budgetAdherence: 0,
-                budgetUsage: 0,
-                debtRatio: 0,
-                emergencyFund: 0,
-                recurringControl: 0,
-                paymentDiscipline: 0,
-              }}
-            />
-          </FadeInItem>
-
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 flex flex-col overflow-clip [overflow-clip-margin:4px]">
-            <BudgetProgress
-              totalBudget={dashboardInsights?.budget_progress?.total_budget ?? 0}
-              totalSpent={dashboardInsights?.budget_progress?.total_spent ?? 0}
-              budgets={dashboardInsights?.budget_progress?.budgets ?? []}
-              onConfigureClick={handleOpenBudgetForm}
-            />
-          </FadeInItem>
-
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 flex flex-col overflow-clip [overflow-clip-margin:4px]">
-            <UpcomingBills
-              bills={dashboardInsights?.upcoming_bills ?? []}
-              onPayClick={handleBillPayClick}
-              onEditClick={handleBillEditClick}
-              onAddClick={() => {
-                setEditingBill(null)
-                setShowBillForm(true)
-              }}
-              onToggleClick={handleBillToggle}
-            />
-          </FadeInItem>
-
-          <FadeInItem className="lg:col-span-1 xl:col-span-1 flex flex-col overflow-clip [overflow-clip-margin:4px]">
-            <SpendingTrends
-              currentMonth={dashboardInsights?.spending_trends?.current_month ?? 0}
-              previousMonth={dashboardInsights?.spending_trends?.previous_month ?? 0}
-              threeMonthAvg={dashboardInsights?.spending_trends?.three_month_avg ?? 0}
-              categoryTrends={dashboardInsights?.spending_trends?.category_trends ?? []}
-              hasData={dashboardInsights?.spending_trends?.has_data ?? false}
-            />
-          </FadeInItem>
-        </FadeInContainer>
-
-        <FaturaDetailModal
-          isOpen={!!selectedFaturaItem}
-          onClose={() => setSelectedFaturaItem(null)}
-          item={selectedFaturaItem}
-          bankAccounts={bankAccounts}
-          categories={categories}
-          onUpdated={() => {
-            setSelectedFaturaItem(null)
-            setReloadKey((prev) => prev + 1)
-          }}
-        />
-
-        <BillForm
-          isOpen={showBillForm}
-          onClose={() => {
-            setShowBillForm(false)
-            setEditingBill(null)
-          }}
-          onSuccess={handleBillSuccess}
-          categories={categories}
-          bill={editingBill}
-        />
-
-        <BillPaymentForm
-          isOpen={!!payingBill}
-          onClose={() => setPayingBill(null)}
-          onSuccess={handlePaymentSuccess}
-          bill={payingBill}
-        />
-
-        <BudgetForm
-          isOpen={showBudgetForm}
-          onClose={() => {
-            setShowBudgetForm(false)
-            setCurrentBudget(null)
-          }}
-          onSuccess={handleBudgetSuccess}
-          categories={categories}
-          budget={currentBudget}
-        />
-      </FadeInContainer>
+      <FaturaDetailModal
+        isOpen={!!detailItem}
+        onClose={() => setDetailItem(null)}
+        item={detailItem}
+        bankAccounts={bankAccounts}
+        categories={categories}
+        onUpdated={done(() => setDetailItem(null))}
+      />
+      <BillForm
+        isOpen={billForm.open}
+        onClose={() => setBillForm({ open: false, bill: null })}
+        onSuccess={done(() => setBillForm({ open: false, bill: null }))}
+        categories={categories}
+        bill={billForm.bill}
+      />
+      <BillPaymentForm isOpen={!!payingBill} onClose={() => setPayingBill(null)} onSuccess={done(() => setPayingBill(null))} bill={payingBill} />
+      <BudgetForm
+        isOpen={budgetForm.open}
+        onClose={() => setBudgetForm({ open: false, budget: null })}
+        onSuccess={done(() => setBudgetForm({ open: false, budget: null }))}
+        categories={categories}
+        budget={budgetForm.budget}
+      />
     </AuthenticatedLayout>
-  )
-}
-
-function Transaction({ title, subtitle, value, onClick, categoryName, categoryIcon, categoryColor }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent dark:hover:bg-gray-900/30"
-    >
-      <div className="min-w-0 flex-1">
-        <div className="text-sm lg:text-base font-medium text-gray-900 dark:text-gray-200">{title}</div>
-        <div className="flex items-center gap-2 mt-1">
-          <div className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">{subtitle}</div>
-          {categoryName && (
-            <CategoryBadge
-              name={categoryName}
-              icon={categoryIcon}
-              color={categoryColor}
-              size="sm"
-            />
-          )}
-        </div>
-      </div>
-      <div className="text-sm lg:text-base font-semibold text-theme-accent">
-        {value}
-      </div>
-    </button>
   )
 }

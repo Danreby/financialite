@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T00:00:00Z",
+  "title": "Design System: Financialite",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Brasa", "canonical": "#D2430E", "tonalRamp": ["#3A1405", "#5E1F08", "#8A2E0B", "#B83A0B", "#D2430E", "#F2541B", "#FF8A5C", "#FFC9B3"] },
+      "primary-text": { "role": "primary", "displayName": "Brasa Texto", "canonical": "#FF6B35", "tonalRamp": ["#3A1405", "#5E1F08", "#8A2E0B", "#C2410C", "#E5501C", "#FF6B35", "#FF9A70", "#FFD2BE"] },
+      "ground": { "role": "neutral", "displayName": "Fundo Grafite", "canonical": "#0B0B0C", "tonalRamp": ["#0B0B0C", "#101012", "#161618", "#1C1C1F", "#29292A", "#373738", "#6B6B72", "#9A9AA0"] },
+      "card-graphite": { "role": "neutral", "displayName": "Card Grafite", "canonical": "#161618", "tonalRamp": ["#0B0B0C", "#101012", "#161618", "#1C1C1F", "#29292A", "#373738", "#6B6B72", "#9A9AA0"] },
+      "success": { "role": "semantic", "displayName": "Sucesso", "canonical": "#22C55E", "tonalRamp": ["#182F22", "#14532D", "#15803D", "#16A34A", "#22C55E", "#4ADE80", "#86EFAC", "#DCFCE7"] },
+      "danger": { "role": "semantic", "displayName": "Perigo", "canonical": "#EF4444", "tonalRamp": ["#341C1E", "#7F1D1D", "#B91C1C", "#DC2626", "#EF4444", "#F87171", "#FCA5A5", "#FEE2E2"] },
+      "warning": { "role": "semantic", "displayName": "Aviso", "canonical": "#F59E0B", "tonalRamp": ["#352916", "#78350F", "#B45309", "#D97706", "#F59E0B", "#FBBF24", "#FCD34D", "#FEF3C7"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Valor do indicador", "purpose": "Numero grande do StatCard, 600, tabular." },
+      "headline": { "displayName": "Titulo da pagina", "purpose": "Um h1 por tela (PageHeader)." },
+      "title": { "displayName": "Titulo de card", "purpose": "Cabecalho de Card." },
+      "body": { "displayName": "Corpo", "purpose": "Texto, tabelas e campos; tabular-nums no body." },
+      "label": { "displayName": "Rotulo", "purpose": "Rotulos, legendas, cabecalho de tabela, em cinza apagado." }
+    },
+    "shadows": [
+      { "name": "card-dark", "value": "0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.35)", "purpose": "Cards e paineis no modo escuro." },
+      { "name": "card-light", "value": "0 1px 2px rgb(24 24 27 / 0.04), 0 4px 12px rgb(24 24 27 / 0.04)", "purpose": "Cards e paineis no modo claro." },
+      { "name": "pop-dark", "value": "0 1px 0 rgb(255 255 255 / 0.05) inset, 0 16px 40px -8px rgb(0 0 0 / 0.55)", "purpose": "Tooltip do grafico, dicas flutuantes, toasts, menu do usuario (escuro)." },
+      { "name": "pop-light", "value": "0 12px 32px -8px rgb(24 24 27 / 0.14), 0 2px 6px -2px rgb(24 24 27 / 0.06)", "purpose": "Mesmos usos, modo claro." },
+      { "name": "button-primary", "value": "0 1px 0 rgb(255 255 255 / 0.12) inset, 0 6px 14px -6px rgb(var(--accent) / 0.6)", "purpose": "Botao principal: sombra tingida pela paleta, sem halo." },
+      { "name": "card-highlight", "value": "linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0))", "purpose": "Realce de topo dos cards, so no escuro." },
+      { "name": "ground-glow-dark", "value": "radial-gradient(ellipse 70% 45% at 50% -5%, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0) 70%)", "purpose": "Brilho suave no topo da pagina." }
+    ],
+    "motion": [
+      { "name": "fast", "value": "150ms ease-out", "purpose": "Cor, borda, sombra de botoes, campos, itens e linhas." },
+      { "name": "layout", "value": "200ms ease-out", "purpose": "Largura do menu lateral, margem do conteudo." },
+      { "name": "progress", "value": "300ms ease-out", "purpose": "Largura da barra de progresso." },
+      { "name": "chart", "value": "500ms easeOutQuart", "purpose": "Entrada dos graficos; desligada com prefers-reduced-motion." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce => 0.001ms", "purpose": "Regra global no fim de app.css." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acao principal da tela; um por area.",
+      "html": "<button class=\"ds-btn-primary\">Nova despesa</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border: 0; border-radius: 10px; background: #D2430E; color: #fff; font: 600 14px Inter, sans-serif; cursor: pointer; box-shadow: 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 6px 14px -6px rgb(210 67 14 / 0.6); transition: background-color 150ms ease-out, transform 150ms ease-out; } .ds-btn-primary:hover { background: #B83A0B; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid #FF6B35; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acao de apoio, em poco com linha de 1 px.",
+      "html": "<button class=\"ds-btn-secondary\">Cancelar</button>",
+      "css": ".ds-btn-secondary { height: 40px; padding: 0 16px; border: 1px solid #29292A; border-radius: 10px; background: #101012; color: #F4F4F5; font: 600 14px Inter, sans-serif; cursor: pointer; transition: background-color 150ms ease-out, border-color 150ms ease-out; } .ds-btn-secondary:hover { background: #161618; border-color: #373738; } .ds-btn-secondary:focus-visible { outline: 2px solid #FF6B35; outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Superficie grafite com realce de topo, borda translucida e raio 16 px.",
+      "html": "<section class=\"ds-card\"><h2 class=\"ds-card-title\">Gastos mensais</h2><p class=\"ds-card-sub\">Ultimos 6 meses</p></section>",
+      "css": ".ds-card { background-color: #161618; background-image: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0)); border: 1px solid rgb(255 255 255 / 0.07); border-radius: 16px; box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.35); padding: 20px; color: #F4F4F5; font-family: Inter, sans-serif; } .ds-card-title { margin: 0; font-size: 15px; line-height: 24px; font-weight: 600; } .ds-card-sub { margin: 2px 0 0; font-size: 14px; color: #9A9AA0; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "stat-card",
+      "description": "Indicador: chip de icone, rotulo, valor grande e variacao com seta e texto.",
+      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-head\"><span class=\"ds-chip\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7h18v12H3z\"/><path d=\"M3 11h18\"/></svg></span><span class=\"ds-stat-label\">Gasto no mes</span></div><div class=\"ds-stat-value\">R$ 4.250,00</div><p class=\"ds-stat-delta\"><span class=\"ds-stat-up\">&#8599; +4,8%</span> <span class=\"ds-stat-cap\">vs mes anterior</span></p></div>",
+      "css": ".ds-stat { display: flex; flex-direction: column; gap: 12px; padding: 16px; background-color: #161618; background-image: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0)); border: 1px solid rgb(255 255 255 / 0.07); border-radius: 16px; box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.35); font-family: Inter, sans-serif; color: #F4F4F5; } .ds-stat-head { display: flex; align-items: center; gap: 10px; } .ds-chip { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: #101012; border: 1px solid rgb(255 255 255 / 0.08); } .ds-stat-label { font-size: 14px; font-weight: 500; color: #D4D4D8; } .ds-stat-value { font-size: 26px; line-height: 32px; font-weight: 600; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; } .ds-stat-delta { margin: 0; font-size: 12px; } .ds-stat-up { color: #F87171; font-weight: 600; } .ds-stat-cap { color: #9A9AA0; }"
+    },
+    {
+      "name": "Priority Pills",
+      "kind": "chip",
+      "refersTo": "pill-danger",
+      "description": "Selos Alta, Media e Baixa; o texto diz o estado e a cor reforca.",
+      "html": "<span class=\"ds-pill ds-pill-danger\">Alta</span> <span class=\"ds-pill ds-pill-warning\">Media</span> <span class=\"ds-pill ds-pill-success\">Baixa</span> <span class=\"ds-pill ds-pill-accent\">3 pendentes</span>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font: 600 11px/16px Inter, sans-serif; white-space: nowrap; } .ds-pill-danger { background: #341C1E; color: #F87171; } .ds-pill-warning { background: #352916; color: #FBBF24; } .ds-pill-success { background: #182F22; color: #4ADE80; } .ds-pill-accent { background: #2E2926; color: #FF6B35; border: 1px solid rgb(255 107 53 / 0.45); padding: 1px 7px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo em poco com linha de 1 px; foco na cor da paleta com anel de 3 px.",
+      "html": "<input class=\"ds-input\" placeholder=\"Buscar paginas e acoes\" aria-label=\"Buscar\">",
+      "css": ".ds-input { display: block; width: 240px; height: 40px; padding: 0 12px; border: 1px solid #29292A; border-radius: 10px; background: #101012; color: #F4F4F5; font: 400 14px Inter, sans-serif; transition: border-color 150ms ease-out, box-shadow 150ms ease-out; } .ds-input::placeholder { color: #9A9AA0; } .ds-input:hover { border-color: #373738; } .ds-input:focus { outline: none; border-color: #D2430E; box-shadow: 0 0 0 3px rgb(210 67 14 / 0.25); }"
+    },
+    {
+      "name": "Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Item do menu lateral; ativo em Brasa Nevoa com texto e icone da paleta.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item\" href=\"#\">Transacoes</a><a class=\"ds-nav-item ds-nav-active\" aria-current=\"page\" href=\"#\">Visao geral</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 2px; width: 220px; padding: 12px; background: #161618; border: 1px solid rgb(255 255 255 / 0.07); border-radius: 16px; font-family: Inter, sans-serif; } .ds-nav-item { display: flex; align-items: center; min-height: 34px; padding: 6px 12px; border-radius: 8px; color: #D4D4D8; font-size: 14px; font-weight: 500; text-decoration: none; transition: background-color 150ms ease-out; } .ds-nav-item:hover { background: #101012; color: #F4F4F5; } .ds-nav-item:focus-visible { outline: 2px solid #FF6B35; } .ds-nav-active, .ds-nav-active:hover { background: #2E2926; color: #FF6B35; font-weight: 600; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Painel de Brasa",
+    "overview": "Um painel de leitura calma em grafite, com uma unica brasa acesa. O fundo e quase preto com um brilho suave no topo; os cards sao grafite com realce interno e borda branca translucida; o destaque (laranja-brasa por padrao) aparece so onde a acao ou o estado ativo precisa de atencao. A direcao foi fixada pelo dono do produto com a imagem docs/design/referencia-dashboard.png. Numeros grandes em 600 com algarismos tabulares, rotulos em cinza, icones de traco fino em chips escuros. O escuro e o modo padrao; o claro e a contraparte. A paleta do usuario personaliza o destaque sem nunca disfarcar um alerta.",
+    "keyCharacteristics": [
+      "Fundo #0B0B0C com brilho radial no topo; cards grafite #161618 com borda branca a 7% e realce de topo a 4%.",
+      "Raio 16 px nos cards, 10 px em controles e chips, pilula completa nos selos.",
+      "Uma cor de destaque por vez, vinda da paleta do usuario; cores semanticas fixas e independentes dela.",
+      "Inter em toda a interface, com tabular-nums no body.",
+      "Profundidade tonal (camadas de grafite e linha fina), com sombra suave so em cards e flutuantes.",
+      "Movimento curto (150 a 200 ms), desligado com prefers-reduced-motion."
+    ],
+    "rules": [
+      { "name": "The Palette Never Disguises Rule", "body": "A paleta troca o destaque, mas jamais toma o lugar de uma cor de estado. Alerta e sempre perigo ou aviso; a pilula de destaque tem contorno de 1 px, o accent-soft e um neutro tingido longe do danger-soft e do warning-soft, e o texto sempre diz o estado.", "section": "colors" },
+      { "name": "The One Ember Rule", "body": "O destaque acende acao, estado ativo e a serie principal. Um card, um botao principal e um item ativo por area; o resto fica em grafite.", "section": "colors" },
+      { "name": "The Text Is Not The Fill Rule", "body": "Destaque como fundo usa accent; como texto ou icone usa accent-text. Nunca use accent puro como texto no escuro.", "section": "colors" },
+      { "name": "The Tinted Not Solid Rule", "body": "Perigo em botao e tonal, porque vermelho solido com texto branco nao passa de 4,5:1 no escuro.", "section": "colors" },
+      { "name": "The Tabular Always Rule", "body": "Todo valor em reais usa MoneyText ou tabular-nums. Gasto comum e neutro; so receita e verde e so estouro e vermelho.", "section": "typography" },
+      { "name": "The Muted Labels Rule", "body": "Rotulo fica em cinza apagado; o numero fica em Tinta. A hierarquia vem do contraste de tom e do peso, nao de caixa alta nem de espacamento largo.", "section": "typography" },
+      { "name": "The Tonal First Rule", "body": "Para separar areas, use um degrau de superficie e uma linha de 1 px antes de pensar em sombra.", "section": "elevation" },
+      { "name": "The Soft Lift Rule", "body": "Sombras sao difusas e escuras, com um filete interno de luz no topo no escuro. Nenhuma sombra dura com deslocamento sem desfoque.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar os tokens (bg-surface-raised, text-content-muted, border-line, bg-theme-accent, text-danger-strong) e o kit de Components/ui; nunca escrever hex no JSX.",
+      "Do usar bg-theme-accent para fundo e text-theme-accent para texto.",
+      "Do garantir contraste de texto 4,5:1 nos dois modos, foco visivel e rotulo em todo campo (WCAG 2.1 AA).",
+      "Do acompanhar toda cor de estado com texto ou seta.",
+      "Do usar MoneyText para reais.",
+      "Do testar qualquer tela nova no escuro, no claro e em pelo menos duas paletas.",
+      "Do respeitar prefers-reduced-motion em toda animacao nova."
+    ],
+    "donts": [
+      "Don't usar o destaque da paleta como cor de alerta, nem alerta com a cor da paleta.",
+      "Don't colocar texto na cor accent pura sobre grafite: use accent-text.",
+      "Don't criar kickers ou eyebrows.",
+      "Don't usar sombras duras com deslocamento sem desfoque, halos coloridos difusos, nem relevo neumorfico.",
+      "Don't usar glifos de texto ou emoji como icone; use lucide-react.",
+      "Don't usar fonte de sistema como face de exibicao; a interface e Inter.",
+      "Don't aninhar card dentro de card.",
+      "Don't transmitir estado so por cor.",
+      "Don't reintroduzir themed-* ou neu-* em telas novas."
+    ]
+  }
+}

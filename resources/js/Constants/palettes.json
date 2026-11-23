@@ -1,0 +1,116 @@
+{
+  "brasa": {
+    "label": "Brasa",
+    "description": "Laranja-brasa",
+    "light": {
+      "accent": "#C2410C",
+      "accentHover": "#9A3412",
+      "accentSoft": "#FAF4F0",
+      "accentText": "#C2410C",
+      "chart": "#F2541B"
+    },
+    "dark": {
+      "accent": "#D2430E",
+      "accentHover": "#B83A0B",
+      "accentSoft": "#2E2926",
+      "accentText": "#FF6B35",
+      "chart": "#F2541B"
+    }
+  },
+  "rose": {
+    "label": "Rosé",
+    "description": "Rosa intenso",
+    "light": {
+      "accent": "#E11D48",
+      "accentHover": "#BE123C",
+      "accentSoft": "#FBF4F5",
+      "accentText": "#BE123C"
+    },
+    "dark": {
+      "accent": "#E11D48",
+      "accentHover": "#BE123C",
+      "accentSoft": "#2D282A",
+      "accentText": "#FB7185"
+    }
+  },
+  "forest": {
+    "label": "Floresta",
+    "description": "Verde-azulado",
+    "light": {
+      "accent": "#0F766E",
+      "accentHover": "#115E59",
+      "accentSoft": "#F0FDFA",
+      "accentText": "#0F766E"
+    },
+    "dark": {
+      "accent": "#0F766E",
+      "accentHover": "#115E59",
+      "accentSoft": "#142E2E",
+      "accentText": "#2DD4BF"
+    }
+  },
+  "gold": {
+    "label": "Ouro",
+    "description": "Bronze e dourado",
+    "light": {
+      "accent": "#8C6D1F",
+      "accentHover": "#715818",
+      "accentSoft": "#FAF6EC",
+      "accentText": "#7A5F1B"
+    },
+    "dark": {
+      "accent": "#8C6D1F",
+      "accentHover": "#715818",
+      "accentSoft": "#2B2A27",
+      "accentText": "#D4B86A"
+    }
+  },
+  "lavender": {
+    "label": "Lavanda",
+    "description": "Violeta e púrpura",
+    "light": {
+      "accent": "#7C3AED",
+      "accentHover": "#6D28D9",
+      "accentSoft": "#F5F3FF",
+      "accentText": "#6D28D9"
+    },
+    "dark": {
+      "accent": "#7C3AED",
+      "accentHover": "#6D28D9",
+      "accentSoft": "#2A1D43",
+      "accentText": "#A78BFA"
+    }
+  },
+  "midnight": {
+    "label": "Meia-noite",
+    "description": "Índigo e azul escuro",
+    "light": {
+      "accent": "#4F46E5",
+      "accentHover": "#4338CA",
+      "accentSoft": "#EEF2FF",
+      "accentText": "#4338CA"
+    },
+    "dark": {
+      "accent": "#4F46E5",
+      "accentHover": "#4338CA",
+      "accentSoft": "#212041",
+      "accentText": "#818CF8"
+    }
+  },
+  "black": {
+    "label": "Preto",
+    "description": "Grafite e preto",
+    "light": {
+      "accent": "#1F2937",
+      "accentHover": "#111827",
+      "accentSoft": "#F3F4F6",
+      "accentText": "#1F2937"
+    },
+    "dark": {
+      "accent": "#4B5563",
+      "accentHover": "#374151",
+      "accentSoft": "#2B2F36",
+      "accentText": "#D1D5DB"
+    }
+  }
+}

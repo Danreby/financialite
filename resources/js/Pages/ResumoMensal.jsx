@@ -29,8 +29,9 @@ import ResumoReceitasTab from '@/Components/system/resumo/ResumoReceitasTab'
 import ResumoPrevisaoTab from '@/Components/system/resumo/ResumoPrevisaoTab'
 
 function getMonthKey(offset = 0) {
-  const d = new Date()
-  d.setMonth(d.getMonth() + offset)
+  // Parte do dia 1: em 31/01, setMonth(+1) a partir de hoje cairia em março.
+  const today = new Date()
+  const d = new Date(today.getFullYear(), today.getMonth() + offset, 1)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
   return `${y}-${m}`
@@ -231,7 +232,7 @@ export default function ResumoMensal({
               exit={{ opacity: 0 }}
               className="flex items-center justify-center py-20"
             >
-              <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-accent)]" />
+              <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-accentText)]" />
             </motion.div>
           )}
         </AnimatePresence>

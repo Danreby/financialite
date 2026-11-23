@@ -23,7 +23,7 @@ function FilterPill({ label, active, onClick }) {
 /* ─── Active filter chip ─────────────────────────────────────── */
 function ActiveChip({ label, onRemove }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--theme-accent)]/30 bg-[var(--theme-accent)]/10 px-2.5 py-0.5 text-[11px] font-medium text-[var(--theme-accent)]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--theme-accent)]/30 bg-[var(--theme-accent)]/10 px-2.5 py-0.5 text-[11px] font-medium text-[var(--theme-accentText)]">
       {label}
       <button
         type="button"
@@ -174,7 +174,7 @@ export default function TransactionFilters({
           onClick={() => setAdvancedOpen((v) => !v)}
           className={`ml-auto flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors flex-shrink-0 ${
             advancedOpen || advancedCount > 0
-              ? "text-[var(--theme-accent)] bg-[var(--theme-accent)]/10"
+              ? "text-[var(--theme-accentText)] bg-[var(--theme-accent)]/10"
               : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           }`}
         >

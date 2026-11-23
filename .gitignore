@@ -25,3 +25,11 @@ Thumbs.db
 *.md
 graphify-out/
 .playwright-cli/
+
+# Impeccable: contexto de design versionado
+!PRODUCT.md
+!DESIGN.md
+!.impeccable/surfaces/*.md
+.impeccable/mocks/
+.impeccable/questions/
+.impeccable/review/

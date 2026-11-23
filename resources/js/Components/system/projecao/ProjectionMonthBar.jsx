@@ -77,7 +77,7 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                                     ? 'font-bold'
                                     : 'text-gray-400 dark:text-gray-500'
                             }`}
-                            style={isCurrentMonth ? { color: 'var(--theme-accent)' } : {}}
+                            style={isCurrentMonth ? { color: 'var(--theme-accentText)' } : {}}
                         >
                             {formatYM(ym)}
                         </span>
@@ -123,7 +123,7 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                     <div className="w-[90px] shrink-0 flex flex-col items-end">
                         <span
                             className="text-xs font-bold"
-                            style={hasSimulated ? { color: 'var(--theme-accent)' } : {}}
+                            style={hasSimulated ? { color: 'var(--theme-accentText)' } : {}}
                         >
                             <span className={!hasSimulated ? 'text-gray-700 dark:text-gray-200' : ''}>
                                 {formatCurrencyBRL(combinedTotal)}
@@ -169,12 +169,12 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                             </span>
                         )}
                         {simulatedCreditTotal > 0 && (
-                            <span style={{ color: 'var(--theme-accent)' }}>
+                            <span style={{ color: 'var(--theme-accentText)' }}>
                                 +cred {formatCurrencyBRL(simulatedCreditTotal)}
                             </span>
                         )}
                         {simulatedDebitTotal > 0 && (
-                            <span style={{ color: 'var(--theme-accent)' }}>
+                            <span style={{ color: 'var(--theme-accentText)' }}>
                                 +déb {formatCurrencyBRL(simulatedDebitTotal)}
                             </span>
                         )}
@@ -273,7 +273,7 @@ export default function ProjectionMonthBar({ data, maxValue, index = 0 }) {
                                             </span>
                                             <span
                                                 className="shrink-0 text-xs font-semibold ml-3"
-                                                style={{ color: 'var(--theme-accent)' }}
+                                                style={{ color: 'var(--theme-accentText)' }}
                                             >
                                                 {formatCurrencyBRL(item.amount)}
                                             </span>

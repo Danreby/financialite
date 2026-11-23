@@ -14,7 +14,7 @@ export default function ResumoCategoryAverages({ averages = [] }) {
     <div className="themed-card rounded-2xl p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accent)]" />
+          <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--theme-accentText)]" />
           Média por Categoria (últimos 4 meses)
         </h2>
       </div>

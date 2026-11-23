@@ -586,9 +586,9 @@ class TransacaoController extends Controller
 
             $firstBillingMonth = $createdAt->day <= $dueDay
                 ? $createdAt->copy()->startOfMonth()
-                : $createdAt->copy()->addMonth()->startOfMonth();
+                : $createdAt->copy()->addMonthNoOverflow()->startOfMonth();
 
-            $completionDate = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
+            $completionDate = $firstBillingMonth->copy()->addMonthsNoOverflow($totalInstallments - 1);
 
             return [
                 'id' => $tx->id,

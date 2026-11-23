@@ -61,7 +61,7 @@ class ProjecaoController extends Controller
 
             $completionMonth = null;
             if (! $isRecurring) {
-                $completionCarbon = $firstBillingMonth->copy()->addMonths($totalInstallments - 1);
+                $completionCarbon = $firstBillingMonth->copy()->addMonthsNoOverflow($totalInstallments - 1);
                 $completionMonth = $completionCarbon->format('Y-m');
 
                 if ($completionCarbon->lt($today)) {

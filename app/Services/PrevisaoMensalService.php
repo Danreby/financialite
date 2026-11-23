@@ -164,7 +164,7 @@ class PrevisaoMensalService implements PrevisaoMensalServiceInterface
     private function buildDebitCategoryAverages(int $userId, Carbon $targetMonth, Carbon $targetMonthEnd): array
     {
         $monthCount = 4;
-        $lookbackStart = $targetMonth->copy()->subMonths($monthCount - 1)->startOfMonth();
+        $lookbackStart = $targetMonth->copy()->subMonthsNoOverflow($monthCount - 1)->startOfMonth();
 
         $debitTransactions = Transacao::with('category')
             ->forUser($userId)
