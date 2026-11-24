@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -79,18 +80,20 @@ class SavingsGoal extends Model
 
     public function getProgressAttribute(): float
     {
-        if ((float) $this->target_amount <= 0) {
+        $targetCents = $this->targetCents();
+        if ($targetCents <= 0) {
             return 0;
         }
 
-        $progress = ((float) $this->current_amount / (float) $this->target_amount) * 100;
+        // Proporção para exibição (percentual), não valor monetário.
+        $progress = ($this->currentCents() / $targetCents) * 100;
 
         return min(round($progress, 1), 100);
     }
 
     public function getRemainingAttribute(): float
     {
-        return max((float) $this->target_amount - (float) $this->current_amount, 0);
+        return max($this->targetCents() - $this->currentCents(), 0) / 100;
     }
 
     public function getIsCompletedAttribute(): bool
@@ -98,43 +101,43 @@ class SavingsGoal extends Model
         return $this->completed_at !== null;
     }
 
-    public function deposit(float $amount): self
+    public function deposit(string|int|float $amount): self
     {
-        $targetCents = $this->toCents($this->target_amount);
-        $newCents = $this->toCents($this->current_amount) + $this->toCents($amount);
+        $targetCents = $this->targetCents();
+        $newCents = $this->currentCents() + Money::fromDecimal($amount);
 
         if ($newCents >= $targetCents) {
             $newCents = $targetCents;
             $this->completed_at = $this->completed_at ?? now();
         }
 
-        $this->current_amount = $this->fromCents($newCents);
+        $this->current_amount = Money::toDecimal($newCents);
         $this->save();
 
         return $this;
     }
 
-    public function withdraw(float $amount): self
+    public function withdraw(string|int|float $amount): self
     {
-        $newCents = max($this->toCents($this->current_amount) - $this->toCents($amount), 0);
+        $newCents = max($this->currentCents() - Money::fromDecimal($amount), 0);
 
-        if ($newCents < $this->toCents($this->target_amount)) {
+        if ($newCents < $this->targetCents()) {
             $this->completed_at = null;
         }
 
-        $this->current_amount = $this->fromCents($newCents);
+        $this->current_amount = Money::toDecimal($newCents);
         $this->save();
 
         return $this;
     }
 
-    private function toCents(float|int|string|null $value): int
+    private function targetCents(): int
     {
-        return (int) round(((float) $value) * 100);
+        return Money::fromDecimal((string) ($this->target_amount ?? '0'));
     }
 
-    private function fromCents(int $cents): string
+    private function currentCents(): int
     {
-        return sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
+        return Money::fromDecimal((string) ($this->current_amount ?? '0'));
     }
 }

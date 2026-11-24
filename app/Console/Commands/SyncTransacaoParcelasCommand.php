@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
 use App\Services\FaturaService;
+use App\Support\Money;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -54,9 +55,10 @@ class SyncTransacaoParcelasCommand extends Command
             }
 
             if (! $needsRecreation) {
-                $parcelasSum = (float) $parcelas->sum('amount');
-                $transacaoAmount = (float) $transacao->amount;
-                if (abs($parcelasSum - $transacaoAmount) > 0.02) {
+                $parcelasCents = $parcelas->sum(fn ($p) => Money::fromDecimal((string) $p->getAttribute('amount')));
+                $transacaoCents = Money::fromDecimal((string) $transacao->amount);
+                // Tolerância de 2 centavos para parcelas gravadas pelo cálculo antigo em float.
+                if (abs($parcelasCents - $transacaoCents) > 2) {
                     $needsRecreation = true;
                 }
             }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Bill;
 use App\Models\BillPayment;
 use App\Models\Transacao;
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
@@ -32,9 +33,7 @@ class BillPaymentService
         return DB::transaction(function () use ($bill, $user, $paymentData) {
             $dueDate = Carbon::parse($paymentData['due_date'])->toDateString();
             $paidDate = $paymentData['paid_date'] ?? now();
-            $amountPaid = $this->toAmount(
-                $this->toCents($paymentData['amount_paid'] ?? $bill->amount ?? 0)
-            );
+            $amountPaid = Money::toDecimal(Money::fromDecimal($paymentData['amount_paid'] ?? $bill->amount ?? 0));
             $notes = $paymentData['notes'] ?? null;
 
             $payment = BillPayment::where('bill_id', $bill->id)
@@ -86,7 +85,7 @@ class BillPaymentService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $amountPaid = $this->toAmount($this->toCents($data['amount_paid']));
+            $amountPaid = Money::toDecimal(Money::fromDecimal($data['amount_paid']));
             $paidDate = $data['paid_date'] ?? $payment->paid_date;
 
             $transacao = $this->lockLinkedTransacao($payment, $user);
@@ -130,16 +129,6 @@ class BillPaymentService
             ->whereKey($payment->transacao_id)
             ->lockForUpdate()
             ->first();
-    }
-
-    private function toCents(float|int|string|null $value): int
-    {
-        return (int) round(((float) $value) * 100);
-    }
-
-    private function toAmount(int $cents): string
-    {
-        return sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
     }
 
     private function createTransactionRecord(

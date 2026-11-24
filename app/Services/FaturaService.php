@@ -10,6 +10,7 @@ use App\Models\Fatura;
 use App\Models\FaturaPaymentEvent;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
@@ -46,22 +47,22 @@ class FaturaService implements FaturaServiceInterface
             $data['is_recurring'] = false;
         }
 
-        $amount = (float) ($data['amount'] ?? 0);
+        $amountCents = Money::fromDecimal($data['amount'] ?? 0);
 
-        return DB::transaction(function () use ($data, $debitAccountId, $user, $amount) {
+        return DB::transaction(function () use ($data, $debitAccountId, $user, $amountCents) {
             $fatura = Transacao::create($data);
 
             $this->createParcelas($fatura);
 
-            if ($debitAccountId && $amount > 0) {
+            if ($debitAccountId && $amountCents > 0) {
                 $bankAccount = BankUser::forUser($user->id)->findOrFail($debitAccountId);
-                $debit = min($amount, max(0.0, (float) $bankAccount->balance));
+                $debitCents = min($amountCents, max(0, Money::fromDecimal((string) $bankAccount->balance)));
 
-                if ($debit > 0) {
-                    $this->ledger->record(
+                if ($debitCents > 0) {
+                    $this->ledger->recordCents(
                         $bankAccount,
                         BankLedgerEntry::TYPE_DEBIT_PURCHASE,
-                        -$debit,
+                        -$debitCents,
                         $fatura,
                         "Compra no débito: {$fatura->title}"
                     );
@@ -75,7 +76,7 @@ class FaturaService implements FaturaServiceInterface
     public function updateForUser(Transacao $fatura, array $data): Transacao
     {
         return DB::transaction(function () use ($fatura, $data) {
-            $oldAmount = (float) $fatura->amount;
+            $oldAmountCents = Money::fromDecimal((string) $fatura->amount);
             $oldInstallments = (int) $fatura->total_installments;
             $wasPaid = $fatura->paid_date !== null;
             $wasRecurring = (bool) $fatura->is_recurring;
@@ -89,10 +90,10 @@ class FaturaService implements FaturaServiceInterface
                 $fatura->save();
             }
 
-            $newAmount = (float) $fatura->amount;
+            $newAmountCents = Money::fromDecimal((string) $fatura->amount);
             $newInstallments = (int) $fatura->total_installments;
 
-            if ($oldAmount !== $newAmount || $oldInstallments !== $newInstallments) {
+            if ($oldAmountCents !== $newAmountCents || $oldInstallments !== $newInstallments) {
                 $fatura->parcelas()->delete();
                 $this->createParcelas($fatura);
             }
@@ -120,7 +121,7 @@ class FaturaService implements FaturaServiceInterface
         if ($parcelas->isNotEmpty()) {
             $entries = $parcelas
                 ->filter(fn ($p) => $p->month_key !== null)
-                ->map(fn ($p) => ['month_key' => $p->month_key, 'amount' => (float) $p->amount])
+                ->map(fn ($p) => ['month_key' => $p->month_key, 'cents' => Money::fromDecimal((string) $p->amount)])
                 ->values();
         } else {
             try {
@@ -128,7 +129,7 @@ class FaturaService implements FaturaServiceInterface
             } catch (\Throwable) {
                 $monthKey = $transacao->created_at->format('Y-m');
             }
-            $entries = collect([['month_key' => $monthKey, 'amount' => (float) $transacao->amount]]);
+            $entries = collect([['month_key' => $monthKey, 'cents' => Money::fromDecimal((string) $transacao->amount)]]);
         }
 
         foreach ($entries as $entry) {
@@ -142,16 +143,16 @@ class FaturaService implements FaturaServiceInterface
                 continue;
             }
 
-            $this->faturaLedger->recordPaymentEvent(
+            $this->faturaLedger->recordPaymentEventCents(
                 $faturaRecord,
-                $entry['amount'],
+                $entry['cents'],
                 FaturaPaymentEvent::TYPE_REVERSAL,
                 $transacao,
                 null,
                 'Fatura reaberta: pagamento revertido'
             );
 
-            if ((float) $faturaRecord->total_paid < 0.01) {
+            if (Money::fromDecimal((string) $faturaRecord->total_paid) <= 0) {
                 $faturaRecord->paid_at = null;
                 $faturaRecord->total_paid = 0;
                 $faturaRecord->save();
@@ -162,7 +163,7 @@ class FaturaService implements FaturaServiceInterface
     public function createParcelas(Transacao $transacao): void
     {
         $totalInstallments = max((int) $transacao->total_installments, 1);
-        $totalAmount = (float) $transacao->amount;
+        $totalAmount = Money::toDecimal(Money::fromDecimal((string) $transacao->amount));
 
         $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($transacao);
 
@@ -203,16 +204,17 @@ class FaturaService implements FaturaServiceInterface
      * mês de fatura de cada parcela. Usado ao criar parcelas e para conferir
      * parcelas já gravadas.
      *
-     * @return array<int, array{installment_number: int, amount: float, due_date: string, month_key: string}>
+     * O total é dividido em centavos com Money::split: as parcelas somam exatamente
+     * o valor da compra e o centavo que sobra vai para as primeiras parcelas
+     * (R$ 100,00 em 3 = 33,34 + 33,33 + 33,33).
+     *
+     * @return array<int, array{installment_number: int, amount: string, due_date: string, month_key: string}>
      */
     public function buildInstallmentSchedule(Transacao $transacao): array
     {
         $totalInstallments = max((int) $transacao->total_installments, 1);
-        $totalAmount = (float) $transacao->amount;
+        $amounts = Money::split(Money::fromDecimal((string) $transacao->amount), $totalInstallments);
         $firstBillingMonthKey = $this->billing->resolveBillingMonthKey($transacao);
-
-        $baseAmount = round($totalAmount / $totalInstallments, 2);
-        $remainder = round($totalAmount - ($baseAmount * $totalInstallments), 2);
 
         $createdAt = $transacao->created_at
             ? ($transacao->created_at instanceof Carbon ? $transacao->created_at : Carbon::parse($transacao->created_at))
@@ -228,11 +230,6 @@ class FaturaService implements FaturaServiceInterface
 
         $parcelas = [];
         for ($i = 1; $i <= $totalInstallments; $i++) {
-            $parcelaAmount = $baseAmount;
-            if ($i === $totalInstallments) {
-                $parcelaAmount = round($parcelaAmount + $remainder, 2);
-            }
-
             $parcelMonth = $firstBillingMonth->copy()->addMonthsNoOverflow($i - 1);
             $monthKey = $parcelMonth->format('Y-m');
             $maxDay = (int) $parcelMonth->copy()->endOfMonth()->format('d');
@@ -241,7 +238,7 @@ class FaturaService implements FaturaServiceInterface
 
             $parcelas[] = [
                 'installment_number' => $i,
-                'amount' => $parcelaAmount,
+                'amount' => Money::toDecimal($amounts[$i - 1]),
                 'due_date' => $dueDate->toDateString(),
                 'month_key' => $monthKey,
             ];

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -87,24 +88,43 @@ class Transacao extends Model
             ->orderBy('installment_number');
     }
 
+    /**
+     * Valor da parcela em reais, para exibição e para os cálculos antigos que ainda
+     * usam float. Contas de dinheiro devem usar getInstallmentAmountCents().
+     */
     public function getInstallmentAmount(?int $installmentNumber = null): float
     {
-        if ($this->total_installments <= 1) {
-            return (float) $this->amount;
+        return $this->getInstallmentAmountCents($installmentNumber) / 100;
+    }
+
+    /**
+     * Valor da parcela em centavos. Usa a parcela gravada quando ela está carregada;
+     * sem parcelas, divide o total com Money::split (resto nas primeiras parcelas).
+     */
+    public function getInstallmentAmountCents(?int $installmentNumber = null): int
+    {
+        $totalCents = Money::fromDecimal((string) ($this->amount ?? '0'));
+        $totalInstallments = (int) $this->total_installments;
+
+        if ($totalInstallments <= 1) {
+            return $totalCents;
         }
 
         if ($installmentNumber !== null && $this->relationLoaded('parcelas')) {
             $parcela = $this->parcelas->firstWhere('installment_number', $installmentNumber);
             if ($parcela) {
-                return (float) $parcela->amount;
+                return Money::fromDecimal((string) $parcela->amount);
             }
         }
 
         if ($this->relationLoaded('parcelas') && $this->parcelas->isNotEmpty()) {
-            return (float) $this->parcelas->first()->amount;
+            return Money::fromDecimal((string) $this->parcelas->first()->amount);
         }
 
-        return (float) $this->amount / max((int) $this->total_installments, 1);
+        $split = Money::split($totalCents, $totalInstallments);
+        $index = $installmentNumber === null ? 0 : min(max($installmentNumber, 1), $totalInstallments) - 1;
+
+        return $split[$index];
     }
 
     public function getBankAttribute()
