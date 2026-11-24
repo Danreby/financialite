@@ -6,6 +6,7 @@ use App\Http\Requests\Budget\BudgetStoreRequest;
 use App\Http\Requests\Budget\BudgetUpdateRequest;
 use App\Models\Budget;
 use App\Models\BudgetCategory;
+use App\Models\Income;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ class BudgetController extends Controller
         $user = $request->user();
         $currentMonth = now()->format('Y-m');
 
-        $monthlyIncome = (float) \App\Models\Income::forUser($user->id)
+        $monthlyIncome = (float) Income::forUser($user->id)
             ->where('is_active', true)
             ->sum('amount');
 
@@ -187,7 +188,7 @@ class BudgetController extends Controller
             ->first();
 
         if (! $budget) {
-            $monthlyIncome = \App\Models\Income::forUser($user->id)
+            $monthlyIncome = Income::forUser($user->id)
                 ->where('is_active', true)
                 ->sum('amount');
 

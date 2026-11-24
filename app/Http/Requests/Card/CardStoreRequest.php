@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Card;
 
+use App\Models\Card;
 use App\Rules\UniqueIgnoringCase;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
@@ -41,7 +42,7 @@ class CardStoreRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:50',
-                Rule::in(\App\Models\Card::VALID_BRANDS),
+                Rule::in(Card::VALID_BRANDS),
             ],
             'description' => [
                 'nullable',

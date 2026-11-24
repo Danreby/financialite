@@ -11,6 +11,7 @@ use App\Models\Income;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Collection;
 
 class FaturaDashboardService
 {
@@ -548,7 +549,7 @@ class FaturaDashboardService
         ];
     }
 
-    private function paidByMonthForUser(int $userId, ?int $bankUserId = null, bool $shouldFilterByBankUser = false): \Illuminate\Support\Collection
+    private function paidByMonthForUser(int $userId, ?int $bankUserId = null, bool $shouldFilterByBankUser = false): Collection
     {
         $query = Fatura::where('user_id', $userId);
 

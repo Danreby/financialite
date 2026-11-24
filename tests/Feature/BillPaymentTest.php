@@ -8,6 +8,7 @@ use App\Models\Transacao;
 use App\Models\User;
 use App\Services\BillPaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class BillPaymentTest extends TestCase
@@ -155,7 +156,7 @@ class BillPaymentTest extends TestCase
 
     public function test_api_pay_route_records_payment_through_the_service(): void
     {
-        \Laravel\Sanctum\Sanctum::actingAs($this->user);
+        Sanctum::actingAs($this->user);
 
         $this->postJson("/api/v1/bills/{$this->bill->id}/pay", [
             'due_date' => '2026-11-10',

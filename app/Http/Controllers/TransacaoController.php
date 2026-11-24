@@ -305,7 +305,7 @@ class TransacaoController extends Controller
                 'amount_paid_now' => $result['amount_paid_now'],
                 'is_fully_paid' => $result['is_fully_paid'],
             ]);
-        } catch (\DomainException $e) {
+        } catch (DomainException $e) {
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
@@ -581,7 +581,7 @@ class TransacaoController extends Controller
             $amount = (float) $tx->amount;
             $installmentAmount = (float) $tx->getInstallmentAmount();
 
-            $createdAt = \Carbon\Carbon::parse($tx->created_at);
+            $createdAt = Carbon::parse($tx->created_at);
             $dueDay = $tx->bankUser?->due_day ?? 1;
 
             $firstBillingMonth = $createdAt->day <= $dueDay

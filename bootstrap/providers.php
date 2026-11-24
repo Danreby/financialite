@@ -1,7 +1,11 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\SecurityServiceProvider;
+use App\Providers\ServiceBindingProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\SecurityServiceProvider::class,
-    App\Providers\ServiceBindingProvider::class,
+    AppServiceProvider::class,
+    SecurityServiceProvider::class,
+    ServiceBindingProvider::class,
 ];

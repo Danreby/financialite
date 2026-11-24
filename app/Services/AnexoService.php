@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\Anexo;
 use App\Models\Transacao;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -107,7 +110,7 @@ class AnexoService
         $anexo->transacoes()->detach($transacaoId);
     }
 
-    public function listForTransacao(int $transacaoId, int $userId): \Illuminate\Database\Eloquent\Collection
+    public function listForTransacao(int $transacaoId, int $userId): Collection
     {
         $transacao = Transacao::where('id', $transacaoId)
             ->where('user_id', $userId)
@@ -118,7 +121,7 @@ class AnexoService
             ->get();
     }
 
-    public function listForUser(int $userId, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function listForUser(int $userId, array $filters = []): LengthAwarePaginator
     {
         $query = Anexo::forUser($userId)
             ->orderBy('created_at', 'desc');
@@ -156,7 +159,7 @@ class AnexoService
             throw new \RuntimeException('Arquivo não encontrado no disco.');
         }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk($anexo->disk);
 
         return $disk->download(
@@ -175,7 +178,7 @@ class AnexoService
             throw new \RuntimeException('Arquivo não encontrado no disco.');
         }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk($anexo->disk);
 
         return $disk->response(
@@ -190,7 +193,7 @@ class AnexoService
 
     public function getTemporaryUrl(Anexo $anexo, int $minutes = 5): ?string
     {
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk($anexo->disk);
 
         if (method_exists($disk, 'temporaryUrl')) {

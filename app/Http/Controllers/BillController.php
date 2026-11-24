@@ -14,6 +14,7 @@ use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -219,7 +220,7 @@ class BillController extends Controller
         ]);
     }
 
-    private function buildBillList(int $userId): \Illuminate\Support\Collection
+    private function buildBillList(int $userId): Collection
     {
         return Bill::forUser($userId)
             ->with([

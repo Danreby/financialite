@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\Transacao;
+use App\Models\TransacaoParcela;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -153,7 +154,7 @@ class BudgetCalculationService
             $installmentAmount = 0.0;
 
             if ($transacaoId && $displayInstallment) {
-                $parcela = \App\Models\TransacaoParcela::where('transacao_id', $transacaoId)
+                $parcela = TransacaoParcela::where('transacao_id', $transacaoId)
                     ->where('installment_number', $displayInstallment)
                     ->first();
                 $installmentAmount = $parcela ? (float) $parcela->amount : (float) ($item['amount'] ?? 0) / max((int) ($item['total_installments'] ?? 1), 1);

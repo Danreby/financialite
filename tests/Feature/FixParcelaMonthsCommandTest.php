@@ -7,6 +7,7 @@ use App\Models\CardUser;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
 use App\Models\User;
+use App\Services\FaturaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -142,7 +143,7 @@ class FixParcelaMonthsCommandTest extends TestCase
             'created_at' => '2027-01-05 10:00:00',
         ]);
         $transacao->parcelas()->delete();
-        app(\App\Services\FaturaService::class)->createParcelas($transacao->fresh());
+        app(FaturaService::class)->createParcelas($transacao->fresh());
         $snapshot = fn () => $transacao->parcelas()->orderBy('installment_number')->get()
             ->map(fn ($p) => [$p->id, $p->month_key, $p->due_date->toDateString(), (string) $p->updated_at])
             ->all();

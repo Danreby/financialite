@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\BankUser;
 use App\Models\CardUser;
 use App\Models\Category;
+use Illuminate\Support\Collection;
 
 /**
  * Listas que o formulário de nova transação (ExpenseForm) precisa:
@@ -14,7 +15,7 @@ use App\Models\Category;
 class TransactionFormOptions
 {
     /**
-     * @return array{bankAccounts: \Illuminate\Support\Collection, categories: \Illuminate\Support\Collection, bankAccountsList: \Illuminate\Support\Collection}
+     * @return array{bankAccounts: Collection, categories: Collection, bankAccountsList: Collection}
      */
     public static function forUser(int $userId): array
     {

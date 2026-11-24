@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -71,9 +72,9 @@ class Bill extends Model
         return $query->where('recurrence_type', 'none');
     }
 
-    public function getNextDueDate(): ?\Carbon\Carbon
+    public function getNextDueDate(): ?Carbon
     {
-        $now = \Carbon\Carbon::now();
+        $now = Carbon::now();
 
         if ($this->status !== 'active') {
             return null;
@@ -99,7 +100,7 @@ class Bill extends Model
         }
     }
 
-    private function getNextMonthlyDueDate(\Carbon\Carbon $now): \Carbon\Carbon
+    private function getNextMonthlyDueDate(Carbon $now): Carbon
     {
         $today = $now->copy()->startOfDay();
         $dueDate = $today->copy()->day(min($this->due_day, $today->daysInMonth));
@@ -115,7 +116,7 @@ class Bill extends Model
         return $dueDate;
     }
 
-    private function getNextYearlyDueDate(\Carbon\Carbon $now): \Carbon\Carbon
+    private function getNextYearlyDueDate(Carbon $now): Carbon
     {
         $today = $now->copy()->startOfDay();
         $startMonth = $this->start_date->month;
@@ -135,7 +136,7 @@ class Bill extends Model
         return $dueDate;
     }
 
-    public function getDueDateForMonth(\Carbon\Carbon $month): ?\Carbon\Carbon
+    public function getDueDateForMonth(Carbon $month): ?Carbon
     {
         if ($this->status !== 'active') {
             return null;

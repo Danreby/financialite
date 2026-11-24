@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Category;
 
+use App\Models\Category;
 use App\Rules\UniqueIgnoringCase;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
@@ -50,7 +51,7 @@ class CategoryUpdateRequest extends FormRequest
             'type' => [
                 'sometimes',
                 'string',
-                Rule::in(\App\Models\Category::VALID_TYPES),
+                Rule::in(Category::VALID_TYPES),
             ],
         ];
     }

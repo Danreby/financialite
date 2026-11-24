@@ -34,7 +34,7 @@ jobs:
       - name: Cache Composer packages
         uses: actions/cache@v4
         with:
-          path: ~/.composer/cache
+          path: ~/.cache/composer
           key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: composer-${{ runner.os }}-
 
@@ -43,6 +43,43 @@ jobs:
 
       - name: Run Laravel Pint
         run: vendor/bin/pint --test
+
+  analysis:
+    name: Static Analysis and Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-scripts --prefer-dist --optimize-autoloader
+
+      - name: Run PHPStan (Larastan)
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Audit Composer dependencies
+        run: composer audit
+
+      - name: Audit npm dependencies
+        run: npm audit --audit-level=high
 
   tests:
     name: PHPUnit Tests
@@ -75,7 +112,7 @@ jobs:
       - name: Cache Composer packages
         uses: actions/cache@v4
         with:
-          path: ~/.composer/cache
+          path: ~/.cache/composer
           key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: composer-${{ runner.os }}-
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -74,7 +75,7 @@ class Budget extends Model
 
     public function getCurrentSpending(): float
     {
-        $startDate = \Carbon\Carbon::parse($this->month_year.'-01')->startOfMonth();
+        $startDate = Carbon::parse($this->month_year.'-01')->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
         return Transacao::forUser($this->user_id)
@@ -85,7 +86,7 @@ class Budget extends Model
 
     public function getCategorySpending(): array
     {
-        $startDate = \Carbon\Carbon::parse($this->month_year.'-01')->startOfMonth();
+        $startDate = Carbon::parse($this->month_year.'-01')->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
         $spending = Transacao::forUser($this->user_id)

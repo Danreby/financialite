@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Contracts\Services\SavingsGoalServiceInterface;
 use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\BankUser;
+use App\Models\CardUser;
 use App\Services\IncomeService;
 use App\Services\NotificationService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -30,7 +32,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $bankAccounts = \App\Models\CardUser::with('card')
+        $bankAccounts = CardUser::with('card')
             ->forUser($user->id)
             ->get()
             ->map(fn ($cu) => [
@@ -38,7 +40,7 @@ class ProfileController extends Controller
                 'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
             ]);
 
-        $bankAccountsList = \App\Models\BankUser::with('bank')
+        $bankAccountsList = BankUser::with('bank')
             ->where('user_id', $user->id)
             ->get()
             ->map(fn ($bu) => [

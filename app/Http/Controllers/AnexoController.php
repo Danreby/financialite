@@ -9,6 +9,7 @@ use App\Models\Anexo;
 use App\Services\AnexoService;
 use App\Services\NotificationService;
 use DomainException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -68,7 +69,7 @@ class AnexoController extends Controller
                     ];
                 }),
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Transação não encontrada.');
         }
     }
@@ -125,7 +126,7 @@ class AnexoController extends Controller
             return $this->success([
                 'data' => $this->formatAnexoResponse($anexo),
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Anexo não encontrado.');
         }
     }
@@ -139,7 +140,7 @@ class AnexoController extends Controller
             $this->authorize('download', $anexo);
 
             return $this->anexoService->download($anexo);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Anexo não encontrado.');
         } catch (\RuntimeException $e) {
             return $this->notFound($e->getMessage());
@@ -159,7 +160,7 @@ class AnexoController extends Controller
             }
 
             return $this->anexoService->inline($anexo);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Anexo não encontrado.');
         } catch (\RuntimeException $e) {
             return $this->notFound($e->getMessage());
@@ -181,7 +182,7 @@ class AnexoController extends Controller
                 'message' => 'Anexo atualizado com sucesso.',
                 'data' => $this->formatAnexoResponse($anexo),
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Anexo não encontrado.');
         }
     }
@@ -197,7 +198,7 @@ class AnexoController extends Controller
             $this->anexoService->delete($anexo);
 
             return $this->success(['message' => 'Anexo removido com sucesso.']);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Anexo não encontrado.');
         } catch (\Throwable $e) {
             $this->notifications->error($user, 'Erro ao remover anexo', 'Ocorreu um erro ao remover o anexo.');
@@ -222,7 +223,7 @@ class AnexoController extends Controller
             ]);
         } catch (DomainException $e) {
             return $this->unauthorized($e->getMessage());
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Recurso não encontrado.');
         }
     }
@@ -242,7 +243,7 @@ class AnexoController extends Controller
             ]);
         } catch (DomainException $e) {
             return $this->unauthorized($e->getMessage());
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return $this->notFound('Recurso não encontrado.');
         }
     }

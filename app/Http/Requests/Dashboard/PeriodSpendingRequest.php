@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Dashboard;
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PeriodSpendingRequest extends FormRequest
@@ -27,8 +28,8 @@ class PeriodSpendingRequest extends FormRequest
                     }
 
                     if ($monthFrom) {
-                        $from = \Carbon\Carbon::parse($monthFrom.'-01');
-                        $to = \Carbon\Carbon::parse($value.'-01');
+                        $from = Carbon::parse($monthFrom.'-01');
+                        $to = Carbon::parse($value.'-01');
 
                         if ($from->diffInMonths($to) > 12) {
                             $fail('O período não pode exceder 12 meses.');

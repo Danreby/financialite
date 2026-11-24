@@ -7,6 +7,7 @@ use App\Models\Income;
 use App\Models\Transacao;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Collection;
 
 class ExtratoService implements ExtratoServiceInterface
 {
@@ -61,7 +62,7 @@ class ExtratoService implements ExtratoServiceInterface
         ?int $bankUserId,
         ?string $type,
         ?int $categoryId
-    ): \Illuminate\Support\Collection {
+    ): Collection {
         return Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->forUser($userId)
             ->forBankUser($bankUserId)
@@ -73,7 +74,7 @@ class ExtratoService implements ExtratoServiceInterface
             ->map(fn (Transacao $t) => $this->mapTransaction($t));
     }
 
-    private function fetchIncomes(int $userId, ?int $bankUserId): \Illuminate\Support\Collection
+    private function fetchIncomes(int $userId, ?int $bankUserId): Collection
     {
         return Income::forUser($userId)
             ->active()
@@ -124,7 +125,7 @@ class ExtratoService implements ExtratoServiceInterface
         ];
     }
 
-    private function groupByDay(\Illuminate\Support\Collection $transactions): array
+    private function groupByDay(Collection $transactions): array
     {
         return $transactions
             ->groupBy(fn ($t) => Carbon::parse($t['created_at'])->toDateString())

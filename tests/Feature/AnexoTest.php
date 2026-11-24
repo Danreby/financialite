@@ -7,6 +7,7 @@ use App\Models\Transacao;
 use App\Models\User;
 use App\Services\AnexoService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -341,7 +342,7 @@ class AnexoTest extends TestCase
                 $outraTransacao->id
             );
             $this->fail('Upload deveria falhar.');
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+        } catch (ModelNotFoundException) {
         }
 
         $this->assertSame([], Storage::disk('anexos')->allFiles());

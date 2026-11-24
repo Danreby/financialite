@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class SecurityHeadersTest extends TestCase
@@ -91,7 +93,7 @@ class SecurityHeadersTest extends TestCase
     public function test_route_level_404_page_script_carries_the_nonce(): void
     {
         $this->asProduction();
-        \Illuminate\Support\Facades\Route::middleware('web')->get('/_teste-404', fn () => abort(404));
+        Route::middleware('web')->get('/_teste-404', fn () => abort(404));
 
         $response = $this->get('/_teste-404');
 
@@ -118,7 +120,7 @@ class SecurityHeadersTest extends TestCase
     {
         $this->asProduction();
 
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $preview = $this->actingAs($user)->get('/anexos/999999/preview')->headers->get('Content-Security-Policy');
         $other = $this->get('/login')->headers->get('Content-Security-Policy');
 

@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-pz7NSw9t.js";import{B as t}from"./Button-C_8ZvmeV.js";import{l as s}from"./legacyClassName-IUNYcae0.js";function i({className:a="",...o}){return r.jsx(t,{variant:"secondary",className:s(a),...o})}export{i as S};
