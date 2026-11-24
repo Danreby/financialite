@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Notification\ClearNotifications;
+use App\Actions\Notification\CountUnreadNotifications;
+use App\Actions\Notification\VisibleNotificationsQuery;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,16 +17,11 @@ class NotificationController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(): JsonResponse
+    public function index(VisibleNotificationsQuery $visible): JsonResponse
     {
         $this->authorize('viewAny', Notification::class);
 
-        $user = Auth::user();
-
-        $notifications = Notification::forUser($user->id)
-            ->where('title', 'not like', '__meta:%')
-            ->orderByDesc('created_at')
-            ->get();
+        $notifications = $visible->handle(Auth::user())->get();
 
         return $this->success($notifications);
     }
@@ -54,28 +52,17 @@ class NotificationController extends Controller
         return $this->success(['status' => 'ok']);
     }
 
-    public function clearAll(Request $request): JsonResponse
+    public function clearAll(Request $request, ClearNotifications $clear): JsonResponse
     {
         $this->authorize('viewAny', Notification::class);
 
-        $user = Auth::user();
-
-        Notification::forUser($user->id)
-            ->where('title', 'not like', '__meta:%')
-            ->delete();
+        $clear->handle(Auth::user());
 
         return $this->success(['status' => 'ok']);
     }
 
-    public function unreadCount(): JsonResponse
+    public function unreadCount(CountUnreadNotifications $count): JsonResponse
     {
-        $user = Auth::user();
-
-        $count = Notification::forUser($user->id)
-            ->unread()
-            ->where('title', 'not like', '__meta:%')
-            ->count();
-
-        return $this->success(['unread_count' => $count]);
+        return $this->success(['unread_count' => $count->handle(Auth::user())]);
     }
 }

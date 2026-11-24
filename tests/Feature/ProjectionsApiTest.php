@@ -89,17 +89,6 @@ class ProjectionsApiTest extends TestCase
         $this->assertSame(1, $remaining['Farmacia']);
         $this->assertNull($remaining['Streaming']);
 
-        // BUG conhecido: Carbon 3 devolve diffInMonths com sinal, então
-        // $today->diffInMonths($firstBillingMonth) é negativo para faturas passadas e
-        // "restantes" vira total + meses decorridos (4 em vez de 2 para o mercadoX3).
-        // Só a API tem essa conta (a página web não calcula restantes). Não corrigido na Task 35.
-        if ($remaining['MercadoX3'] !== 2) {
-            $this->markTestIncomplete(
-                'Bug em remaining_installments: mercadoX3 (3x, outubro cobrado) devolve '
-                .var_export($remaining['MercadoX3'], true).', esperado 2 '
-                .'(ProjectionsApiController::index, $today->diffInMonths($firstBillingMonth)).'
-            );
-        }
         $this->assertSame(2, $remaining['MercadoX3']);
         $this->assertSame(2, $remaining['FeiraX2']);
     }

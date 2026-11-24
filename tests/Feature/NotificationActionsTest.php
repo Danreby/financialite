@@ -102,11 +102,12 @@ class NotificationActionsTest extends TestCase
     {
         $first = $this->notify('Primeira');
         $this->notify('Segunda');
+        $meta = $this->notify('__meta:budget_alert');
         $theirs = $this->notify('Do outro', User::factory()->create());
 
         $this->actingAs($this->user, 'sanctum');
 
-        $this->getJson('/api/v1/notifications')->assertOk()->assertJsonPath('total', 2);
+        $this->getJson('/api/v1/notifications')->assertOk()->assertJsonPath('total', 2); // a linha __meta: não aparece
         $this->getJson('/api/v1/notifications/unread-count')->assertOk()->assertJsonPath('count', 2);
 
         $this->patchJson('/api/v1/notifications/'.$first->id.'/read')->assertOk();
@@ -116,7 +117,8 @@ class NotificationActionsTest extends TestCase
         $this->getJson('/api/v1/notifications/unread-count')->assertJsonPath('count', 0);
 
         $this->deleteJson('/api/v1/notifications/clear-all')->assertOk();
-        $this->assertSame(0, Notification::where('user_id', $this->user->id)->count());
+        $this->assertSame(0, Notification::where('user_id', $this->user->id)->where('title', 'not like', '__meta:%')->count());
+        $this->assertDatabaseHas('notifications', ['id' => $meta->id]);
         $this->assertDatabaseHas('notifications', ['id' => $theirs->id, 'is_read' => false]);
     }
 

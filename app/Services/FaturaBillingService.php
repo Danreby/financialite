@@ -208,7 +208,7 @@ class FaturaBillingService
             return null;
         }
 
-        $offset = $first->diffInMonths($current);
+        $offset = (int) $first->diffInMonths($current);
         $installment = $offset + 1;
 
         if ($installment > $totalInstallments) {

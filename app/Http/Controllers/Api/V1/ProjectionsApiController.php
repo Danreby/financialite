@@ -61,7 +61,9 @@ class ProjectionsApiController extends Controller
             // How many installments remain from today?
             $paidInstallments = 0;
             if (! $isRecurring && $firstBillingMonth->lt($today)) {
-                $paidInstallments = $today->diffInMonths($firstBillingMonth);
+                // Carbon 3 devolve diferença com sinal: conta os meses por ano e mês.
+                $paidInstallments = ($today->year - $firstBillingMonth->year) * 12
+                    + ($today->month - $firstBillingMonth->month);
                 $paidInstallments = min($paidInstallments, $totalInstallments);
             }
             $remainingInstallments = $isRecurring ? null : ($totalInstallments - $paidInstallments);

@@ -553,12 +553,6 @@ parameters:
 			path: app/Services/ExtratoService.php
 
 		-
-			message: '#^Method App\\Services\\FaturaBillingService\:\:resolveInstallmentNumberForMonth\(\) should return int\|null but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/FaturaBillingService.php
-
-		-
 			message: '#^Property App\\Models\\Transacao\:\:\$paid_date \(Carbon\\Carbon\|null\) does not accept string\.$#'
 			identifier: assign.propertyType
 			count: 3

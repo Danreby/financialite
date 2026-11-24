@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Notification\ClearNotifications;
+use App\Actions\Notification\CountUnreadNotifications;
+use App\Actions\Notification\VisibleNotificationsQuery;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
@@ -9,23 +12,17 @@ use Illuminate\Http\Request;
 
 class NotificationApiController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, VisibleNotificationsQuery $visible): JsonResponse
     {
-        $user = $request->user();
-        $notifications = Notification::where('user_id', $user->id)
-            ->orderByDesc('created_at')
+        $notifications = $visible->handle($request->user())
             ->paginate($request->input('per_page', 20));
 
         return $this->success($notifications);
     }
 
-    public function unreadCount(Request $request): JsonResponse
+    public function unreadCount(Request $request, CountUnreadNotifications $count): JsonResponse
     {
-        $count = Notification::where('user_id', $request->user()->id)
-            ->where('is_read', false)
-            ->count();
-
-        return $this->success(['count' => $count]);
+        return $this->success(['count' => $count->handle($request->user())]);
     }
 
     public function markAsRead(Request $request, int $notification): JsonResponse
@@ -47,9 +44,9 @@ class NotificationApiController extends Controller
         return $this->success(['message' => 'Todas notificações marcadas como lidas.']);
     }
 
-    public function clearAll(Request $request): JsonResponse
+    public function clearAll(Request $request, ClearNotifications $clear): JsonResponse
     {
-        Notification::where('user_id', $request->user()->id)->delete();
+        $clear->handle($request->user());
 
         return $this->success(['message' => 'Notificações removidas.']);
     }
