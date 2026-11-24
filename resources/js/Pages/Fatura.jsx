@@ -225,7 +225,7 @@ export default function Fatura({ monthlyGroups = [], bankAccounts = [], debitAcc
 								onMonthChange={handleChangeMonth}
 							/>
 							<div className="flex justify-start md:justify-end">
-								<FaturaPendingExportButton monthlyGroups={monthlyGroups} />
+								<FaturaPendingExportButton monthlyGroups={monthlyGroups} filters={filters} />
 							</div>
 						</div>
 

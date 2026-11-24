@@ -6,6 +6,7 @@ use App\Enums\TransacaoParcelaStatus;
 use App\Enums\TransacaoStatus;
 use App\Models\CardUser;
 use App\Models\Transacao;
+use App\Models\TransacaoParcela;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -218,6 +219,105 @@ class FaturaBillingService
         return $installment;
     }
 
+    /**
+     * Meses de fatura de um lançamento no cartão: um por parcela gravada; sem
+     * parcelas, a partir do mês de fatura da compra (recorrente: todo mês até
+     * $projectionEnd; parcelado: total_installments meses).
+     *
+     * @return list<array{month_key: string, installment_index: int}>
+     */
+    public function billingEntries(Transacao $transacao, Carbon $projectionEnd): array
+    {
+        $entries = [];
+        $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
+        $isRecurring = (bool) $transacao->is_recurring;
+
+        if (! $isRecurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+            foreach ($transacao->parcelas as $parcela) {
+                if (! $parcela->month_key) {
+                    continue;
+                }
+
+                if (Carbon::parse($parcela->month_key.'-01')->gt($projectionEnd)) {
+                    continue;
+                }
+
+                $entries[] = [
+                    'month_key' => $parcela->month_key,
+                    'installment_index' => $parcela->installment_number,
+                ];
+            }
+
+            return $entries;
+        }
+
+        $month = Carbon::parse($this->resolveBillingMonthKey($transacao).'-01');
+        $installmentIndex = 1;
+
+        while (! $month->gt($projectionEnd)) {
+            if (! $isRecurring && $installmentIndex > $totalInstallments) {
+                break;
+            }
+
+            $entries[] = [
+                'month_key' => $month->format('Y-m'),
+                'installment_index' => $installmentIndex,
+            ];
+
+            $month = $month->copy()->addMonthNoOverflow();
+            $installmentIndex++;
+        }
+
+        return $entries;
+    }
+
+    public function entryParcela(Transacao $transacao, int $installmentIndex): ?TransacaoParcela
+    {
+        if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
+            return $transacao->parcelas->firstWhere('installment_number', $installmentIndex);
+        }
+
+        return null;
+    }
+
+    /** Valor da parcela $installmentIndex: a gravada, ou a divisão do total. */
+    public function entryAmount(Transacao $transacao, int $installmentIndex): float
+    {
+        $parcela = $this->entryParcela($transacao, $installmentIndex);
+
+        return $parcela
+            ? (float) $parcela->amount
+            : (float) $transacao->getInstallmentAmount($installmentIndex);
+    }
+
+    /**
+     * Status de uma parcela na fatura: recorrente segue o pagamento da fatura do
+     * mês; parcela gravada usa o próprio status; parcelado sem parcelas gravadas
+     * conta como pago até current_installment.
+     *
+     * @param  object|null  $faturaPayment  registro de PaidInvoicesByMonthQuery do mês
+     */
+    public function entryStatus(Transacao $transacao, int $installmentIndex, ?object $faturaPayment): string
+    {
+        if ($transacao->is_recurring) {
+            return ($faturaPayment && $faturaPayment->paid_at)
+                ? TransacaoParcelaStatus::Paid->value
+                : TransacaoParcelaStatus::Pending->value;
+        }
+
+        $parcela = $this->entryParcela($transacao, $installmentIndex);
+        if ($parcela) {
+            return $parcela->status->value;
+        }
+
+        $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
+        if ($totalInstallments > 1 && (int) ($transacao->current_installment ?? 0) >= $installmentIndex) {
+            return TransacaoParcelaStatus::Paid->value;
+        }
+
+        return $transacao->status->value;
+    }
+
     public function groupFaturasByMonth($transacoes, ?Collection $paidByMonth = null): array
     {
         $entries = collect();
@@ -225,54 +325,8 @@ class FaturaBillingService
         $projectionEnd = Carbon::today()->copy()->addYear()->startOfMonth();
 
         foreach ($transacoes as $transacao) {
-            $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
-            $isRecurring = (bool) $transacao->is_recurring;
-
-            if (! $isRecurring && $transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
-                foreach ($transacao->parcelas as $parcela) {
-                    if (! $parcela->month_key) {
-                        continue;
-                    }
-
-                    $parcelaMonth = Carbon::parse($parcela->month_key.'-01');
-                    if ($parcelaMonth->gt($projectionEnd)) {
-                        continue;
-                    }
-
-                    $entries->push([
-                        'transacao' => $transacao,
-                        'month_key' => $parcela->month_key,
-                        'installment_index' => $parcela->installment_number,
-                    ]);
-                }
-
-                continue;
-            }
-
-            $firstBillingMonthKey = $this->resolveBillingMonthKey($transacao);
-            $month = Carbon::parse($firstBillingMonthKey.'-01');
-
-            $installmentIndex = 1;
-
-            while (true) {
-                if ($month->gt($projectionEnd)) {
-                    break;
-                }
-
-                if (! $isRecurring && $installmentIndex > $totalInstallments) {
-                    break;
-                }
-
-                $monthKey = $month->format('Y-m');
-
-                $entries->push([
-                    'transacao' => $transacao,
-                    'month_key' => $monthKey,
-                    'installment_index' => $installmentIndex,
-                ]);
-
-                $month = $month->copy()->addMonthNoOverflow();
-                $installmentIndex++;
+            foreach ($this->billingEntries($transacao, $projectionEnd) as $entry) {
+                $entries->push(['transacao' => $transacao] + $entry);
             }
         }
 
@@ -286,50 +340,20 @@ class FaturaBillingService
             $faturaPayment = $paidByMonth ? $paidByMonth->get($yearMonth) : null;
             $totalPaid = $faturaPayment ? (float) ($faturaPayment->total_paid ?? 0.0) : 0.0;
 
-            $totalSpent = $items->sum(function ($entry) {
-                $transacao = $entry['transacao'];
-                $installmentNumber = $entry['installment_index'];
-
-                if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
-                    $parcela = $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
-                    if ($parcela) {
-                        return (float) $parcela->amount;
-                    }
-                }
-
-                return (float) $transacao->getInstallmentAmount($installmentNumber);
-            });
+            $totalSpent = $items->sum(
+                fn ($entry) => $this->entryAmount($entry['transacao'], $entry['installment_index'])
+            );
 
             // Sum only items that are not yet paid — used as the "A pagar" amount
             $totalPending = $items->sum(function ($entry) use ($faturaPayment) {
                 $transacao = $entry['transacao'];
                 $installmentNumber = $entry['installment_index'];
 
-                $parcela = null;
-                $totalInstallments = max((int) ($transacao->total_installments ?? 1), 1);
-
-                if ($transacao->relationLoaded('parcelas') && $transacao->parcelas->isNotEmpty()) {
-                    $parcela = $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
-                }
-
-                $effectiveStatus = $transacao->status->value;
-                if ($transacao->is_recurring) {
-                    $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at)
-                        ? TransacaoParcelaStatus::Paid->value
-                        : TransacaoParcelaStatus::Pending->value;
-                } elseif ($parcela) {
-                    $effectiveStatus = $parcela->status->value;
-                } elseif ($totalInstallments > 1 && (int) ($transacao->current_installment ?? 0) >= $installmentNumber) {
-                    $effectiveStatus = TransacaoParcelaStatus::Paid->value;
-                }
-
-                if ($effectiveStatus === TransacaoParcelaStatus::Paid->value) {
+                if ($this->entryStatus($transacao, $installmentNumber, $faturaPayment) === TransacaoParcelaStatus::Paid->value) {
                     return 0.0;
                 }
 
-                return $parcela
-                    ? (float) $parcela->amount
-                    : (float) $transacao->getInstallmentAmount($installmentNumber);
+                return $this->entryAmount($transacao, $installmentNumber);
             });
 
             $isPaid = ($totalSpent > 0 && $totalPending < 0.01)
@@ -358,27 +382,9 @@ class FaturaBillingService
                     $installmentIndex = $entry['installment_index'];
                     $monthKey = $entry['month_key'];
 
-                    $parcela = null;
-                    $totalInstallments = max((int) ($fatura->total_installments ?? 1), 1);
-
-                    if ($fatura->relationLoaded('parcelas') && $fatura->parcelas->isNotEmpty()) {
-                        $parcela = $fatura->parcelas->firstWhere('installment_number', $installmentIndex);
-                    }
-
-                    $installmentAmount = $parcela
-                        ? (float) $parcela->amount
-                        : (float) $fatura->getInstallmentAmount($installmentIndex);
-
-                    $effectiveStatus = $fatura->status->value;
-                    if ($fatura->is_recurring) {
-                        $effectiveStatus = ($faturaPayment && $faturaPayment->paid_at)
-                            ? TransacaoParcelaStatus::Paid->value
-                            : TransacaoParcelaStatus::Pending->value;
-                    } elseif ($parcela) {
-                        $effectiveStatus = $parcela->status->value;
-                    } elseif ($totalInstallments > 1 && (int) ($fatura->current_installment ?? 0) >= $installmentIndex) {
-                        $effectiveStatus = TransacaoParcelaStatus::Paid->value;
-                    }
+                    $parcela = $this->entryParcela($fatura, $installmentIndex);
+                    $installmentAmount = $this->entryAmount($fatura, $installmentIndex);
+                    $effectiveStatus = $this->entryStatus($fatura, $installmentIndex, $faturaPayment);
 
                     return [
                         'id' => $fatura->id.'-'.$installmentIndex,

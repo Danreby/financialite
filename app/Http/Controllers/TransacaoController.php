@@ -22,7 +22,6 @@ use App\Queries\InstallmentsQuery;
 use App\Queries\TransactionListQuery;
 use App\Services\DashboardInsightsService;
 use App\Services\FaturaDashboardService;
-use App\Services\FaturaExportService;
 use App\Services\FaturaImportService;
 use App\Services\NotificationService;
 use DomainException;
@@ -35,30 +34,12 @@ use Inertia\Response;
 class TransacaoController extends Controller
 {
     public function __construct(
-        private FaturaExportService $exportService,
         private FaturaImportService $importService,
         private FaturaDashboardService $dashboardService,
         private NotificationService $notifications,
         private DashboardInsightsService $insights
     ) {
         $this->middleware('auth');
-    }
-
-    public function exportData(Request $request): JsonResponse
-    {
-        $this->authorize('viewAny', Transacao::class);
-
-        $user = $request->user();
-        $bankUserId = $request->input('bank_user_id');
-        $categoryId = $request->input('category_id');
-
-        if ($request->filled('bank_user_id')) {
-            CardUser::forUser($user->id)->findOrFail($bankUserId);
-        }
-
-        $faturas = $this->exportService->exportForUser($user->id, $bankUserId, $categoryId);
-
-        return $this->success($faturas);
     }
 
     public function import(FaturaImportRequest $request): JsonResponse

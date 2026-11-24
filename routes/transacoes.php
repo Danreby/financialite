@@ -16,9 +16,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/top-spending-by-period', [TransacaoController::class, 'topSpendingByPeriod'])
             ->middleware(['action.limit:top_spending_period,30', 'cache.api:15'])
             ->name('top_spending_by_period');
-        Route::get('/export-data', [TransacaoController::class, 'exportData'])
-            ->middleware('action.limit:export,10')
-            ->name('export_data');
         Route::post('/import', [TransacaoController::class, 'import'])
             ->middleware('action.limit:import,5')
             ->name('import');

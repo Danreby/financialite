@@ -14,6 +14,7 @@
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
         "nyholm/psr7": "^1.8",
+        "openspout/openspout": "^4.28",
         "railsware/mailtrap-php": "^3.10",
         "symfony/http-client": "^7.4",
         "tightenco/ziggy": "^2.0"
