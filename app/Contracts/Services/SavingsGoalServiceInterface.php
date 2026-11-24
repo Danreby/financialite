@@ -16,9 +16,9 @@ interface SavingsGoalServiceInterface
 
     public function deleteForUser(SavingsGoal $goal): bool;
 
-    public function deposit(SavingsGoal $goal, float $amount): SavingsGoal;
+    public function deposit(SavingsGoal $goal, string|int|float $amount): SavingsGoal;
 
-    public function withdraw(SavingsGoal $goal, float $amount): SavingsGoal;
+    public function withdraw(SavingsGoal $goal, string|int|float $amount): SavingsGoal;
 
     public function summaryForUser(int $userId): array;
 }

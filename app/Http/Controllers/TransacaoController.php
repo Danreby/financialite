@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Transacao\CreateTransacao;
+use App\Actions\Transacao\DeleteTransacao;
+use App\Actions\Transacao\PayFaturaMonth;
+use App\Actions\Transacao\PayFaturaPartial;
+use App\Actions\Transacao\RestoreTransacao;
+use App\Actions\Transacao\UpdateTransacao;
 use App\Exceptions\InsufficientBalanceException;
 use App\Http\Requests\Dashboard\PeriodSpendingRequest;
 use App\Http\Requests\Fatura\FaturaImportRequest;
@@ -11,17 +17,15 @@ use App\Http\Requests\Fatura\PayMonthRequest;
 use App\Http\Requests\Fatura\PayPartialRequest;
 use App\Models\BankUser;
 use App\Models\CardUser;
-use App\Models\Category;
 use App\Models\Transacao;
+use App\Queries\InstallmentsQuery;
+use App\Queries\TransactionListQuery;
 use App\Services\DashboardInsightsService;
 use App\Services\FaturaDashboardService;
-use App\Services\FaturaExportService;
 use App\Services\FaturaImportService;
-use App\Services\FaturaPaymentService;
-use App\Services\FaturaService;
 use App\Services\NotificationService;
-use Carbon\Carbon;
 use DomainException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,32 +34,12 @@ use Inertia\Response;
 class TransacaoController extends Controller
 {
     public function __construct(
-        private FaturaService $faturaService,
-        private FaturaExportService $exportService,
         private FaturaImportService $importService,
         private FaturaDashboardService $dashboardService,
-        private FaturaPaymentService $paymentService,
         private NotificationService $notifications,
         private DashboardInsightsService $insights
     ) {
         $this->middleware('auth');
-    }
-
-    public function exportData(Request $request): JsonResponse
-    {
-        $this->authorize('viewAny', Transacao::class);
-
-        $user = $request->user();
-        $bankUserId = $request->input('bank_user_id');
-        $categoryId = $request->input('category_id');
-
-        if ($request->filled('bank_user_id')) {
-            CardUser::forUser($user->id)->findOrFail($bankUserId);
-        }
-
-        $faturas = $this->exportService->exportForUser($user->id, $bankUserId, $categoryId);
-
-        return $this->success($faturas);
     }
 
     public function import(FaturaImportRequest $request): JsonResponse
@@ -91,10 +75,9 @@ class TransacaoController extends Controller
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
-        $selectedBankUser = null;
-
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $filters = [
@@ -134,33 +117,26 @@ class TransacaoController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $fatura = Transacao::with(['bankUser.card', 'user', 'anexos', 'parcelas'])->findOrFail($id);
-
-        $this->authorize('view', $fatura);
+        $fatura = Transacao::with(['bankUser.card', 'user', 'anexos', 'parcelas'])
+            ->forUser($request->user()->id)
+            ->findOrFail($id);
 
         return $this->success($fatura);
     }
 
-    public function store(FaturaStoreRequest $request): JsonResponse
+    public function store(FaturaStoreRequest $request, CreateTransacao $createTransacao): JsonResponse
     {
         $this->authorize('create', Transacao::class);
 
         $user = $request->user();
-        $data = $request->validated();
-
-        if (! empty($data['bank_user_id'])) {
-            $cardUser = CardUser::with('card')
-                ->forUser($user->id)
-                ->findOrFail($data['bank_user_id']);
-
-            $this->authorize('view', $cardUser);
-        }
 
         try {
-            $fatura = $this->faturaService->createForUser($user, $data);
+            $fatura = $createTransacao->handle($user, $request->validated());
             $fatura->load(['bankUser.card', 'user', 'parcelas']);
 
             return $this->success($fatura, 201);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
             $this->notifications->error($user, 'Erro ao criar fatura', 'Ocorreu um erro inesperado ao criar uma fatura.');
@@ -169,25 +145,17 @@ class TransacaoController extends Controller
         }
     }
 
-    public function update(FaturaUpdateRequest $request, int $id): JsonResponse
+    public function update(FaturaUpdateRequest $request, int $id, UpdateTransacao $updateTransacao): JsonResponse
     {
         $user = $request->user();
-        $fatura = Transacao::findOrFail($id);
-
-        $this->authorize('update', $fatura);
-
-        $data = $request->validated();
-
-        if (array_key_exists('bank_user_id', $data) && ! empty($data['bank_user_id'])) {
-            $cardUser = CardUser::forUser($user->id)->findOrFail($data['bank_user_id']);
-            $this->authorize('view', $cardUser);
-        }
 
         try {
-            $fatura = $this->faturaService->updateForUser($fatura, $data);
+            $fatura = $updateTransacao->handle($user, $id, $request->validated());
             $fatura->load(['bankUser.card', 'user', 'parcelas']);
 
             return $this->success($fatura);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
             $this->notifications->error($user, 'Erro ao atualizar fatura', 'Ocorreu um erro inesperado ao atualizar uma fatura.');
@@ -196,53 +164,32 @@ class TransacaoController extends Controller
         }
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, int $id, DeleteTransacao $deleteTransacao): JsonResponse
     {
-        $fatura = Transacao::findOrFail($id);
-
-        $this->authorize('delete', $fatura);
-
-        $fatura->delete();
+        $deleteTransacao->handle($request->user(), $id);
 
         return $this->success(['message' => 'Fatura removida.']);
     }
 
-    public function restore(Request $request, int $id): JsonResponse
+    public function restore(Request $request, int $id, RestoreTransacao $restoreTransacao): JsonResponse
     {
-        $fatura = Transacao::withTrashed()->findOrFail($id);
-
-        $this->authorize('restore', $fatura);
-
-        if ($fatura->trashed()) {
-            $fatura->restore();
-
-            return $this->success(['message' => 'Fatura restaurada.', 'fatura' => $fatura]);
+        try {
+            $fatura = $restoreTransacao->handle($request->user(), $id);
+        } catch (DomainException) {
+            return $this->error('Fatura não está removida.', 400);
         }
 
-        return $this->error('Fatura não está removida.', 400);
+        return $this->success(['message' => 'Fatura restaurada.', 'fatura' => $fatura]);
     }
 
-    public function payMonth(PayMonthRequest $request): JsonResponse
+    public function payMonth(PayMonthRequest $request, PayFaturaMonth $payFaturaMonth): JsonResponse
     {
         $this->authorize('update', Transacao::class);
 
         $user = $request->user();
-        $data = $request->validated();
-        $bankUserId = $data['bank_user_id'] ?? null;
-        $bankUser = null;
-
-        if ($bankUserId) {
-            $bankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $bankUser);
-        }
-
-        $bankAccount = null;
-        if (! empty($data['bank_account_id'])) {
-            $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
-        }
 
         try {
-            $totalPaidThisRun = $this->paymentService->payMonthForUser($user, $data['month'], $bankUser, $bankAccount);
+            $totalPaidThisRun = $payFaturaMonth->handle($user, $request->validated());
 
             if ($totalPaidThisRun <= 0) {
                 return $this->success(['message' => 'Nenhuma fatura pendente para este mês.']);
@@ -253,6 +200,8 @@ class TransacaoController extends Controller
             return $this->success([
                 'message' => 'Pagamentos registrados com sucesso.',
             ]);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (InsufficientBalanceException $e) {
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
@@ -263,33 +212,15 @@ class TransacaoController extends Controller
         }
     }
 
-    public function payPartial(PayPartialRequest $request): JsonResponse
+    public function payPartial(PayPartialRequest $request, PayFaturaPartial $payFaturaPartial): JsonResponse
     {
         $this->authorize('update', Transacao::class);
 
         $user = $request->user();
         $data = $request->validated();
-        $bankUserId = $data['bank_user_id'] ?? null;
-        $bankUser = null;
-
-        if ($bankUserId) {
-            $bankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $bankUser);
-        }
-
-        $bankAccount = null;
-        if (! empty($data['bank_account_id'])) {
-            $bankAccount = BankUser::forUser($user->id)->findOrFail($data['bank_account_id']);
-        }
 
         try {
-            $result = $this->paymentService->payPartialForUser(
-                $user,
-                $data['month'],
-                (float) $data['amount'],
-                $bankUser,
-                $bankAccount
-            );
+            $result = $payFaturaPartial->handle($user, $data);
 
             $formattedAmount = number_format($result['amount_paid_now'], 2, ',', '.');
             $this->notifications->info(
@@ -305,7 +236,9 @@ class TransacaoController extends Controller
                 'amount_paid_now' => $result['amount_paid_now'],
                 'is_fully_paid' => $result['is_fully_paid'],
             ]);
-        } catch (\DomainException $e) {
+        } catch (ModelNotFoundException $e) {
+            throw $e;
+        } catch (DomainException $e) {
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
@@ -324,8 +257,8 @@ class TransacaoController extends Controller
         $categoryId = $request->input('category_id');
 
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $stats = $this->dashboardService->buildStats(
@@ -346,8 +279,8 @@ class TransacaoController extends Controller
         $bankUserId = $request->input('bank_user_id');
 
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $insights = $this->insights->getInsights($user, $bankUserId);
@@ -366,8 +299,8 @@ class TransacaoController extends Controller
         $categoryId = $validated['category_id'] ?? null;
 
         if ($bankUserId) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $data = $this->dashboardService->getTopSpendingByPeriod(
@@ -381,249 +314,15 @@ class TransacaoController extends Controller
         return $this->success($data);
     }
 
-    public function transactionsList(Request $request): Response
+    public function transactionsList(Request $request, TransactionListQuery $query): Response
     {
         $this->authorize('viewAny', Transacao::class);
 
-        $user = $request->user();
-
-        $perPage = 15;
-
-        $filters = [
-            'type' => $request->get('type'),
-            'bank_user_id' => $request->get('bank_user_id'),
-            'category_id' => $request->get('category_id'),
-            'status' => $request->get('status'),
-        ];
-
-        $order = $request->get('order', 'created_desc');
-
-        $monthKey = $request->get('month_key');
-        $monthRange = null;
-        if ($monthKey) {
-            try {
-                $monthDate = Carbon::parse($monthKey.'-01');
-                $monthRange = [
-                    $monthDate->copy()->startOfMonth(),
-                    $monthDate->copy()->endOfMonth(),
-                ];
-            } catch (\Throwable $e) {
-                $monthRange = null;
-            }
-        }
-
-        $recurringParam = $request->get('recurring');
-        if ($recurringParam === 'recurring') {
-            $filters['is_recurring'] = true;
-        } elseif ($recurringParam === 'non_recurring') {
-            $filters['is_recurring'] = false;
-        }
-
-        $search = trim((string) $request->get('search', ''));
-
-        $filterTotalsRow = Transacao::query()
-            ->forUser($user->id)
-            ->filter($filters)
-            ->when($monthRange, function ($q) use ($monthRange) {
-                [$start, $end] = $monthRange;
-                $q->whereBetween('created_at', [$start, $end]);
-            })
-            ->when($search !== '', function ($q) use ($search) {
-                $q->titleContains($search);
-            })
-            ->selectRaw("
-                COUNT(*) as total_count,
-                SUM(CASE WHEN type = 'debit'  THEN amount ELSE 0 END) as debit_total,
-                SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as credit_total,
-                SUM(CASE WHEN type = 'debit'  THEN 1 ELSE 0 END) as debit_count,
-                SUM(CASE WHEN type = 'credit' THEN 1 ELSE 0 END) as credit_count
-            ")
-            ->first();
-
-        $filterTotals = [
-            'total_count' => (int) ($filterTotalsRow->total_count ?? 0),
-            'debit_total' => (float) ($filterTotalsRow->debit_total ?? 0),
-            'credit_total' => (float) ($filterTotalsRow->credit_total ?? 0),
-            'debit_count' => (int) ($filterTotalsRow->debit_count ?? 0),
-            'credit_count' => (int) ($filterTotalsRow->credit_count ?? 0),
-        ];
-
-        $transactions = Transacao::with(['bankUser.card', 'category'])
-            ->withCount('anexos')
-            ->forUser($user->id)
-            ->filter($filters)
-            ->when($monthRange, function ($q) use ($monthRange) {
-                [$start, $end] = $monthRange;
-                $q->whereBetween('created_at', [$start, $end]);
-            })
-            ->when($search !== '', function ($q) use ($search) {
-                $q->titleContains($search);
-            })
-            ->when(true, function ($q) use ($order) {
-                $validOrders = [
-                    'created_asc' => ['created_at', 'asc'],
-                    'created_desc' => ['created_at', 'desc'],
-                    'title_asc' => ['title', 'asc'],
-                    'title_desc' => ['title', 'desc'],
-                    'amount_asc' => ['amount', 'asc'],
-                    'amount_desc' => ['amount', 'desc'],
-                ];
-                $orderConfig = $validOrders[$order] ?? $validOrders['created_desc'];
-                $q->orderBy($orderConfig[0], $orderConfig[1]);
-            })
-            ->paginate($perPage, ['*'], 'transactions_page')
-            ->withQueryString()
-            ->through(function (Transacao $transacao) {
-                return [
-                    'id' => $transacao->id,
-                    'title' => $transacao->title,
-                    'description' => $transacao->description,
-                    'amount' => (float) $transacao->amount,
-                    'type' => $transacao->type,
-                    'status' => $transacao->status,
-                    'paid_date' => $transacao->paid_date,
-                    'created_at' => $transacao->created_at,
-                    'total_installments' => $transacao->total_installments,
-                    'current_installment' => $transacao->current_installment,
-                    'is_recurring' => (bool) $transacao->is_recurring,
-                    'bank_user_id' => $transacao->bank_user_id,
-                    'bank_name' => optional($transacao->bankUser->card ?? null)->name ?? null,
-                    'category_id' => $transacao->category_id,
-                    'category_name' => $transacao->category->name ?? null,
-                    'category_icon' => $transacao->category->icon ?? null,
-                    'category_color' => $transacao->category->color ?? null,
-                    'anexos_count' => $transacao->anexos_count ?? 0,
-                ];
-            });
-
-        $bankAccounts = CardUser::with('card')
-            ->forUser($user->id)
-            ->get()
-            ->map(fn ($cardUser) => [
-                'id' => $cardUser->id,
-                'name' => $cardUser->card?->name ?? ('Cartão #'.$cardUser->id),
-            ])
-            ->sortBy('name')
-            ->values()
-            ->all();
-
-        $categories = Category::forUser($user->id)
-            ->ordered()
-            ->get(['id', 'name', 'icon', 'color']);
-
-        $months = Transacao::where('user_id', $user->id)
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key")
-            ->groupByRaw("DATE_FORMAT(created_at, '%Y-%m')")
-            ->orderByRaw("DATE_FORMAT(created_at, '%Y-%m') DESC")
-            ->pluck('month_key')
-            ->filter()
-            ->unique()
-            ->values()
-            ->map(function (string $key) {
-                try {
-                    $label = Carbon::parse($key.'-01')->translatedFormat('F Y');
-                } catch (\Throwable $e) {
-                    $label = $key;
-                }
-
-                return [
-                    'month_key' => $key,
-                    'month_label' => ucfirst($label),
-                    'is_paid' => false,
-                ];
-            });
-
-        return Inertia::render('Transacao', [
-            'transactions' => $transactions,
-            'bankAccounts' => $bankAccounts,
-            'categories' => $categories,
-            'months' => $months,
-            'filterTotals' => $filterTotals,
-            'filters' => [
-                'type' => $filters['type'] ?? null,
-                'bank_user_id' => $filters['bank_user_id'] ?? null,
-                'category_id' => $filters['category_id'] ?? null,
-                'status' => $filters['status'] ?? null,
-                'recurring' => $recurringParam,
-                'search' => $search,
-                'month_key' => $monthKey,
-                'order' => $order,
-            ],
-        ]);
+        return Inertia::render('Transacao', $query->get($request->user(), $request->query()));
     }
 
-    public function installments(Request $request): Response
+    public function installments(Request $request, InstallmentsQuery $query): Response
     {
-        $user = $request->user();
-
-        $bankAccounts = CardUser::with('card')
-            ->forUser($user->id)
-            ->get()
-            ->map(fn ($cu) => [
-                'id' => $cu->id,
-                'name' => $cu->card?->name ?? ('Cartão #'.$cu->id),
-            ]);
-
-        $categories = Category::forUser($user->id)
-            ->orderBy('name')
-            ->get(['id', 'name', 'icon', 'color']);
-
-        $txs = Transacao::with(['bankUser.card', 'category', 'parcelas'])
-            ->where('user_id', $user->id)
-            ->where('total_installments', '>', 1)
-            ->orderByDesc('created_at')
-            ->get();
-
-        $installments = $txs->map(function ($tx) {
-            $totalInstallments = (int) ($tx->total_installments ?? 1);
-            $currentInstallment = (int) ($tx->current_installment ?? 0);
-            $remaining = max($totalInstallments - $currentInstallment, 0);
-            $amount = (float) $tx->amount;
-            $installmentAmount = (float) $tx->getInstallmentAmount();
-
-            $createdAt = \Carbon\Carbon::parse($tx->created_at);
-            $dueDay = $tx->bankUser?->due_day ?? 1;
-
-            $firstBillingMonth = $createdAt->day <= $dueDay
-                ? $createdAt->copy()->startOfMonth()
-                : $createdAt->copy()->addMonthNoOverflow()->startOfMonth();
-
-            $completionDate = $firstBillingMonth->copy()->addMonthsNoOverflow($totalInstallments - 1);
-
-            return [
-                'id' => $tx->id,
-                'title' => $tx->title,
-                'description' => $tx->description,
-                'amount' => $amount,
-                'installment_amount' => $installmentAmount,
-                'total_installments' => $totalInstallments,
-                'current_installment' => $currentInstallment,
-                'remaining_installments' => $remaining,
-                'status' => $tx->status ?? 'unpaid',
-                'created_at' => $tx->created_at,
-                'first_billing_month' => $firstBillingMonth->format('Y-m'),
-                'completion_month' => $completionDate->format('Y-m'),
-                'bank_user_id' => $tx->bankUser?->id,
-                'bank_name' => $tx->bankUser?->card?->name,
-                'category_id' => $tx->category?->id,
-                'category_name' => $tx->category?->name,
-                'category_icon' => $tx->category?->icon,
-                'category_color' => $tx->category?->color,
-                'type' => $tx->type ?? 'credit',
-                'parcelas' => $tx->parcelas->map(fn ($p) => [
-                    'installment_number' => $p->installment_number,
-                    'amount' => (float) $p->amount,
-                    'due_date' => $p->due_date?->format('Y-m-d'),
-                    'status' => $p->status,
-                    'paid_date' => $p->paid_date?->format('Y-m-d'),
-                ])->values()->toArray(),
-            ];
-        });
-
-        return Inertia::render('Parcelamentos', [
-            'installments' => $installments,
-            'bankAccounts' => $bankAccounts,
-            'categories' => $categories,
-        ]);
+        return Inertia::render('Parcelamentos', $query->get($request->user()));
     }
 }

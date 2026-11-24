@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\SavingsGoal\CreateSavingsGoal;
+use App\Actions\SavingsGoal\DeleteSavingsGoal;
+use App\Actions\SavingsGoal\DepositToSavingsGoal;
+use App\Actions\SavingsGoal\UpdateSavingsGoal;
+use App\Actions\SavingsGoal\WithdrawFromSavingsGoal;
 use App\Contracts\Services\SavingsGoalServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SavingsGoal\SavingsGoalStoreRequest;
 use App\Http\Requests\SavingsGoal\SavingsGoalTransactionRequest;
 use App\Http\Requests\SavingsGoal\SavingsGoalUpdateRequest;
-use App\Models\SavingsGoal;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,21 +24,13 @@ class SavingsGoalApiController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $goals = $this->savingsService->listForUser($user->id);
-
-        return $this->success($goals);
+        return $this->success($this->savingsService->listForUser($request->user()->id));
     }
 
-    public function store(SavingsGoalStoreRequest $request): JsonResponse
+    public function store(SavingsGoalStoreRequest $request, CreateSavingsGoal $createGoal): JsonResponse
     {
-        $user = $request->user();
-        $data = $request->validated();
-
         try {
-            $goal = $this->savingsService->createForUser($user, $data);
-
-            return $this->success($goal, 201);
+            return $this->success($createGoal->handle($request->user(), $request->validated()), 201);
         } catch (\Throwable $e) {
             report($e);
 
@@ -41,15 +38,12 @@ class SavingsGoalApiController extends Controller
         }
     }
 
-    public function update(SavingsGoalUpdateRequest $request, SavingsGoal $savingsGoal): JsonResponse
+    public function update(SavingsGoalUpdateRequest $request, int $savingsGoal, UpdateSavingsGoal $updateGoal): JsonResponse
     {
-        $this->authorize('update', $savingsGoal);
-        $data = $request->validated();
-
         try {
-            $goal = $this->savingsService->updateForUser($savingsGoal, $data);
-
-            return $this->success($goal);
+            return $this->success($updateGoal->handle($request->user(), $savingsGoal, $request->validated()));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -57,14 +51,14 @@ class SavingsGoalApiController extends Controller
         }
     }
 
-    public function destroy(Request $request, SavingsGoal $savingsGoal): JsonResponse
+    public function destroy(Request $request, int $savingsGoal, DeleteSavingsGoal $deleteGoal): JsonResponse
     {
-        $this->authorize('delete', $savingsGoal);
-
         try {
-            $this->savingsService->deleteForUser($savingsGoal);
+            $deleteGoal->handle($request->user(), $savingsGoal);
 
             return $this->success(['message' => 'Meta removida.']);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -72,14 +66,12 @@ class SavingsGoalApiController extends Controller
         }
     }
 
-    public function deposit(SavingsGoalTransactionRequest $request, SavingsGoal $savingsGoal): JsonResponse
+    public function deposit(SavingsGoalTransactionRequest $request, int $savingsGoal, DepositToSavingsGoal $deposit): JsonResponse
     {
-        $this->authorize('update', $savingsGoal);
-
         try {
-            $goal = $this->savingsService->deposit($savingsGoal, $request->validated('amount'));
-
-            return $this->success($goal);
+            return $this->success($deposit->handle($request->user(), $savingsGoal, $request->validated('amount')));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -87,14 +79,14 @@ class SavingsGoalApiController extends Controller
         }
     }
 
-    public function withdraw(SavingsGoalTransactionRequest $request, SavingsGoal $savingsGoal): JsonResponse
+    public function withdraw(SavingsGoalTransactionRequest $request, int $savingsGoal, WithdrawFromSavingsGoal $withdraw): JsonResponse
     {
-        $this->authorize('update', $savingsGoal);
-
         try {
-            $goal = $this->savingsService->withdraw($savingsGoal, $request->validated('amount'));
-
-            return $this->success($goal);
+            return $this->success($withdraw->handle($request->user(), $savingsGoal, $request->validated('amount')));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 
@@ -104,9 +96,6 @@ class SavingsGoalApiController extends Controller
 
     public function summary(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $summary = $this->savingsService->summaryForUser($user->id);
-
-        return $this->success($summary);
+        return $this->success($this->savingsService->summaryForUser($request->user()->id));
     }
 }

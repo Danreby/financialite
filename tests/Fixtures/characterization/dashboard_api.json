@@ -1,0 +1,845 @@
+{
+    "transactions": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 8,
+                "title": "Acougue",
+                "description": null,
+                "amount": "40.00",
+                "type": "debit",
+                "status": "paid",
+                "paid_date": "2026-11-10T03:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 1,
+                "is_recurring": false,
+                "user_id": 1,
+                "bank_user_id": null,
+                "created_at": "2026-11-10T15:00:00.000000Z",
+                "updated_at": "2026-11-10T15:00:00.000000Z",
+                "category_id": 1,
+                "anexos_count": 0,
+                "bank_user": null,
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": {
+                    "id": 1,
+                    "name": "Mercado",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "user_id": 1,
+                    "color": "#00aa00",
+                    "icon": "cart",
+                    "type": "expense"
+                },
+                "parcelas": [
+                    {
+                        "id": 10,
+                        "transacao_id": 8,
+                        "installment_number": 1,
+                        "amount": "40.00",
+                        "due_date": "2026-11-10T03:00:00.000000Z",
+                        "status": "paid",
+                        "paid_date": "2026-11-10T03:00:00.000000Z",
+                        "created_at": "2026-11-10T15:00:00.000000Z",
+                        "updated_at": "2026-11-10T15:00:00.000000Z",
+                        "month_key": "2026-11"
+                    }
+                ]
+            },
+            {
+                "id": 7,
+                "title": "Bar",
+                "description": null,
+                "amount": "80.00",
+                "type": "debit",
+                "status": "paid",
+                "paid_date": "2026-11-08T03:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 1,
+                "is_recurring": false,
+                "user_id": 1,
+                "bank_user_id": null,
+                "created_at": "2026-11-08T15:00:00.000000Z",
+                "updated_at": "2026-11-08T15:00:00.000000Z",
+                "category_id": 2,
+                "anexos_count": 0,
+                "bank_user": null,
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": {
+                    "id": 2,
+                    "name": "Lazer",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "user_id": 1,
+                    "color": "#aa00aa",
+                    "icon": "film",
+                    "type": "expense"
+                },
+                "parcelas": [
+                    {
+                        "id": 9,
+                        "transacao_id": 7,
+                        "installment_number": 1,
+                        "amount": "80.00",
+                        "due_date": "2026-11-08T03:00:00.000000Z",
+                        "status": "paid",
+                        "paid_date": "2026-11-08T03:00:00.000000Z",
+                        "created_at": "2026-11-08T15:00:00.000000Z",
+                        "updated_at": "2026-11-08T15:00:00.000000Z",
+                        "month_key": "2026-11"
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "title": "FeiraX2",
+                "description": null,
+                "amount": "60.00",
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "total_installments": 2,
+                "current_installment": 0,
+                "is_recurring": false,
+                "user_id": 1,
+                "bank_user_id": null,
+                "created_at": "2026-11-07T15:00:00.000000Z",
+                "updated_at": "2026-11-07T15:00:00.000000Z",
+                "category_id": 1,
+                "anexos_count": 0,
+                "bank_user": null,
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": {
+                    "id": 1,
+                    "name": "Mercado",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "user_id": 1,
+                    "color": "#00aa00",
+                    "icon": "cart",
+                    "type": "expense"
+                },
+                "parcelas": [
+                    {
+                        "id": 7,
+                        "transacao_id": 6,
+                        "installment_number": 1,
+                        "amount": "30.00",
+                        "due_date": "2026-11-07T03:00:00.000000Z",
+                        "status": "pending",
+                        "paid_date": null,
+                        "created_at": "2026-11-07T15:00:00.000000Z",
+                        "updated_at": "2026-11-07T15:00:00.000000Z",
+                        "month_key": "2026-11"
+                    },
+                    {
+                        "id": 8,
+                        "transacao_id": 6,
+                        "installment_number": 2,
+                        "amount": "30.00",
+                        "due_date": "2026-12-07T03:00:00.000000Z",
+                        "status": "pending",
+                        "paid_date": null,
+                        "created_at": "2026-11-07T15:00:00.000000Z",
+                        "updated_at": "2026-11-07T15:00:00.000000Z",
+                        "month_key": "2026-12"
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "title": "Farmacia",
+                "description": null,
+                "amount": "90.00",
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "total_installments": 1,
+                "current_installment": 0,
+                "is_recurring": false,
+                "user_id": 1,
+                "bank_user_id": 1,
+                "created_at": "2026-11-03T15:00:00.000000Z",
+                "updated_at": "2026-11-03T15:00:00.000000Z",
+                "category_id": null,
+                "anexos_count": 0,
+                "bank_user": {
+                    "id": 1,
+                    "card_id": 1,
+                    "user_id": 1,
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "due_day": 12,
+                    "closing_day": 5,
+                    "credit_limit": null,
+                    "card": {
+                        "id": 1,
+                        "name": "Cartão Azul",
+                        "created_at": "2026-09-01T12:00:00.000000Z",
+                        "updated_at": "2026-09-01T12:00:00.000000Z",
+                        "brand": null,
+                        "description": null,
+                        "user_id": null
+                    }
+                },
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": null,
+                "parcelas": [
+                    {
+                        "id": 6,
+                        "transacao_id": 5,
+                        "installment_number": 1,
+                        "amount": "90.00",
+                        "due_date": "2026-11-03T03:00:00.000000Z",
+                        "status": "pending",
+                        "paid_date": null,
+                        "created_at": "2026-11-03T15:00:00.000000Z",
+                        "updated_at": "2026-11-03T15:00:00.000000Z",
+                        "month_key": "2026-11"
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "title": "Padaria",
+                "description": null,
+                "amount": "200.00",
+                "type": "debit",
+                "status": "paid",
+                "paid_date": "2026-10-15T03:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 1,
+                "is_recurring": false,
+                "user_id": 1,
+                "bank_user_id": 1,
+                "created_at": "2026-10-15T15:00:00.000000Z",
+                "updated_at": "2026-10-15T15:00:00.000000Z",
+                "category_id": 1,
+                "anexos_count": 0,
+                "bank_user": {
+                    "id": 1,
+                    "card_id": 1,
+                    "user_id": 1,
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "due_day": 12,
+                    "closing_day": 5,
+                    "credit_limit": null,
+                    "card": {
+                        "id": 1,
+                        "name": "Cartão Azul",
+                        "created_at": "2026-09-01T12:00:00.000000Z",
+                        "updated_at": "2026-09-01T12:00:00.000000Z",
+                        "brand": null,
+                        "description": null,
+                        "user_id": null
+                    }
+                },
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": {
+                    "id": 1,
+                    "name": "Mercado",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "user_id": 1,
+                    "color": "#00aa00",
+                    "icon": "cart",
+                    "type": "expense"
+                },
+                "parcelas": [
+                    {
+                        "id": 5,
+                        "transacao_id": 4,
+                        "installment_number": 1,
+                        "amount": "200.00",
+                        "due_date": "2026-10-15T03:00:00.000000Z",
+                        "status": "paid",
+                        "paid_date": "2026-10-15T03:00:00.000000Z",
+                        "created_at": "2026-10-15T15:00:00.000000Z",
+                        "updated_at": "2026-10-15T15:00:00.000000Z",
+                        "month_key": "2026-11"
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "title": "Streaming",
+                "description": null,
+                "amount": "50.00",
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "total_installments": 1,
+                "current_installment": 0,
+                "is_recurring": true,
+                "user_id": 1,
+                "bank_user_id": 1,
+                "created_at": "2026-10-10T15:00:00.000000Z",
+                "updated_at": "2026-10-10T15:00:00.000000Z",
+                "category_id": 2,
+                "anexos_count": 0,
+                "bank_user": {
+                    "id": 1,
+                    "card_id": 1,
+                    "user_id": 1,
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "due_day": 12,
+                    "closing_day": 5,
+                    "credit_limit": null,
+                    "card": {
+                        "id": 1,
+                        "name": "Cartão Azul",
+                        "created_at": "2026-09-01T12:00:00.000000Z",
+                        "updated_at": "2026-09-01T12:00:00.000000Z",
+                        "brand": null,
+                        "description": null,
+                        "user_id": null
+                    }
+                },
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": {
+                    "id": 2,
+                    "name": "Lazer",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "user_id": 1,
+                    "color": "#aa00aa",
+                    "icon": "film",
+                    "type": "expense"
+                },
+                "parcelas": []
+            },
+            {
+                "id": 2,
+                "title": "Cinema",
+                "description": null,
+                "amount": "120.00",
+                "type": "credit",
+                "status": "paid",
+                "paid_date": "2026-11-01T03:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 0,
+                "is_recurring": false,
+                "user_id": 1,
+                "bank_user_id": 1,
+                "created_at": "2026-10-02T15:00:00.000000Z",
+                "updated_at": "2026-11-01T11:00:00.000000Z",
+                "category_id": 2,
+                "anexos_count": 0,
+                "bank_user": {
+                    "id": 1,
+                    "card_id": 1,
+                    "user_id": 1,
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "due_day": 12,
+                    "closing_day": 5,
+                    "credit_limit": null,
+                    "card": {
+                        "id": 1,
+                        "name": "Cartão Azul",
+                        "created_at": "2026-09-01T12:00:00.000000Z",
+                        "updated_at": "2026-09-01T12:00:00.000000Z",
+                        "brand": null,
+                        "description": null,
+                        "user_id": null
+                    }
+                },
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": {
+                    "id": 2,
+                    "name": "Lazer",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "user_id": 1,
+                    "color": "#aa00aa",
+                    "icon": "film",
+                    "type": "expense"
+                },
+                "parcelas": [
+                    {
+                        "id": 4,
+                        "transacao_id": 2,
+                        "installment_number": 1,
+                        "amount": "120.00",
+                        "due_date": "2026-10-02T03:00:00.000000Z",
+                        "status": "paid",
+                        "paid_date": "2026-11-01T03:00:00.000000Z",
+                        "created_at": "2026-10-02T15:00:00.000000Z",
+                        "updated_at": "2026-11-01T11:00:00.000000Z",
+                        "month_key": "2026-10"
+                    }
+                ]
+            },
+            {
+                "id": 1,
+                "title": "MercadoX3",
+                "description": null,
+                "amount": "300.00",
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "total_installments": 3,
+                "current_installment": 1,
+                "is_recurring": false,
+                "user_id": 1,
+                "bank_user_id": 1,
+                "created_at": "2026-09-20T15:00:00.000000Z",
+                "updated_at": "2026-11-01T11:00:00.000000Z",
+                "category_id": 1,
+                "anexos_count": 0,
+                "bank_user": {
+                    "id": 1,
+                    "card_id": 1,
+                    "user_id": 1,
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "due_day": 12,
+                    "closing_day": 5,
+                    "credit_limit": null,
+                    "card": {
+                        "id": 1,
+                        "name": "Cartão Azul",
+                        "created_at": "2026-09-01T12:00:00.000000Z",
+                        "updated_at": "2026-09-01T12:00:00.000000Z",
+                        "brand": null,
+                        "description": null,
+                        "user_id": null
+                    }
+                },
+                "user": {
+                    "id": 1,
+                    "name": "Cenário",
+                    "email": "cenario@example.com",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "theme": "brasa",
+                    "phone": null,
+                    "avatar": null,
+                    "color_mode": null
+                },
+                "category": {
+                    "id": 1,
+                    "name": "Mercado",
+                    "created_at": "2026-09-01T12:00:00.000000Z",
+                    "updated_at": "2026-09-01T12:00:00.000000Z",
+                    "user_id": 1,
+                    "color": "#00aa00",
+                    "icon": "cart",
+                    "type": "expense"
+                },
+                "parcelas": [
+                    {
+                        "id": 1,
+                        "transacao_id": 1,
+                        "installment_number": 1,
+                        "amount": "100.00",
+                        "due_date": "2026-10-12T03:00:00.000000Z",
+                        "status": "paid",
+                        "paid_date": "2026-11-01T03:00:00.000000Z",
+                        "created_at": "2026-09-20T15:00:00.000000Z",
+                        "updated_at": "2026-11-01T11:00:00.000000Z",
+                        "month_key": "2026-10"
+                    },
+                    {
+                        "id": 2,
+                        "transacao_id": 1,
+                        "installment_number": 2,
+                        "amount": "100.00",
+                        "due_date": "2026-11-12T03:00:00.000000Z",
+                        "status": "pending",
+                        "paid_date": null,
+                        "created_at": "2026-09-20T15:00:00.000000Z",
+                        "updated_at": "2026-09-20T15:00:00.000000Z",
+                        "month_key": "2026-11"
+                    },
+                    {
+                        "id": 3,
+                        "transacao_id": 1,
+                        "installment_number": 3,
+                        "amount": "100.00",
+                        "due_date": "2026-12-12T03:00:00.000000Z",
+                        "status": "pending",
+                        "paid_date": null,
+                        "created_at": "2026-09-20T15:00:00.000000Z",
+                        "updated_at": "2026-09-20T15:00:00.000000Z",
+                        "month_key": "2026-12"
+                    }
+                ]
+            }
+        ],
+        "first_page_url": "http://localhost/api/v1/dashboard?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://localhost/api/v1/dashboard?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "pagination.previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http://localhost/api/v1/dashboard?page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "pagination.next",
+                "page": null,
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://localhost/api/v1/dashboard",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 8,
+        "total": 8
+    },
+    "stats": {
+        "total_income": 120,
+        "total_expenses": 320,
+        "pending_income": 500,
+        "pending_expenses": 0,
+        "overdue_count": 0,
+        "current_month_key": "2026-11",
+        "current_month_label": "Novembro 2026",
+        "top_spending_label": "Novembro 2026",
+        "current_month_pending_bill": 270,
+        "current_month_debit_total": 120,
+        "monthly_summary": [
+            {
+                "month_key": "2026-06",
+                "month_label": "Jun 2026",
+                "invoice_total": 0,
+                "credit_total": 0,
+                "debit_total": 0
+            },
+            {
+                "month_key": "2026-07",
+                "month_label": "Jul 2026",
+                "invoice_total": 0,
+                "credit_total": 0,
+                "debit_total": 0
+            },
+            {
+                "month_key": "2026-08",
+                "month_label": "Ago 2026",
+                "invoice_total": 0,
+                "credit_total": 0,
+                "debit_total": 0
+            },
+            {
+                "month_key": "2026-09",
+                "month_label": "Set 2026",
+                "invoice_total": 0,
+                "credit_total": 0,
+                "debit_total": 0
+            },
+            {
+                "month_key": "2026-10",
+                "month_label": "Out 2026",
+                "invoice_total": 220,
+                "credit_total": 220,
+                "debit_total": 200
+            },
+            {
+                "month_key": "2026-11",
+                "month_label": "Nov 2026",
+                "invoice_total": 0,
+                "credit_total": 270,
+                "debit_total": 120
+            }
+        ],
+        "top_spending_categories": [
+            {
+                "category_id": 1,
+                "category_name": "Mercado",
+                "category_icon": "cart",
+                "category_color": "#00aa00",
+                "total": 170
+            },
+            {
+                "category_id": 2,
+                "category_name": "Lazer",
+                "category_icon": "film",
+                "category_color": "#aa00aa",
+                "total": 130
+            },
+            {
+                "category_id": null,
+                "category_name": "Sem categoria",
+                "category_icon": null,
+                "category_color": null,
+                "total": 90
+            }
+        ],
+        "debit_spending_categories": [
+            {
+                "category_id": 2,
+                "category_name": "Lazer",
+                "category_icon": "film",
+                "category_color": "#aa00aa",
+                "total": 80
+            },
+            {
+                "category_id": 1,
+                "category_name": "Mercado",
+                "category_icon": "cart",
+                "category_color": "#00aa00",
+                "total": 40
+            }
+        ],
+        "credit_spending_categories": [
+            {
+                "category_id": 1,
+                "category_name": "Mercado",
+                "category_icon": "cart",
+                "category_color": "#00aa00",
+                "total": 130
+            },
+            {
+                "category_id": null,
+                "category_name": "Sem categoria",
+                "category_icon": null,
+                "category_color": null,
+                "total": 90
+            },
+            {
+                "category_id": 2,
+                "category_name": "Lazer",
+                "category_icon": "film",
+                "category_color": "#aa00aa",
+                "total": 50
+            }
+        ],
+        "recurring_spending": {
+            "total": 50,
+            "percentage": 12.8
+        },
+        "non_recurring_spending": {
+            "total": 340,
+            "percentage": 87.2
+        },
+        "total_monthly_income": 5300,
+        "remaining_money": 4910,
+        "next_card_due_date": {
+            "cards": [
+                {
+                    "card_id": 1,
+                    "card_name": "Cartão Azul",
+                    "closing_day": 5,
+                    "days_until_due": 20,
+                    "next_due_date": "2026-12-05"
+                }
+            ],
+            "nearest": {
+                "card_id": 1,
+                "card_name": "Cartão Azul",
+                "closing_day": 5,
+                "days_until_due": 20,
+                "next_due_date": "2026-12-05"
+            }
+        }
+    },
+    "insights": {
+        "financial_health": {
+            "score": 64.8,
+            "has_data": true,
+            "missing_data": {
+                "incomes": false,
+                "transactions": false,
+                "bills": false,
+                "budget": true
+            },
+            "factors": {
+                "savingsRate": 92.6,
+                "budgetAdherence": 0,
+                "budgetUsage": 0,
+                "debtRatio": 0,
+                "emergencyFund": 0,
+                "recurringControl": 71.7,
+                "paymentDiscipline": 100
+            }
+        },
+        "budget_progress": {
+            "total_budget": 4240,
+            "total_spent": 390,
+            "budgets": [
+                {
+                    "categoryName": "Mercado",
+                    "limit": 636,
+                    "spent": 170
+                },
+                {
+                    "categoryName": "Lazer",
+                    "limit": 636,
+                    "spent": 130
+                }
+            ]
+        },
+        "upcoming_bills": [
+            {
+                "id": 1,
+                "title": "Aluguel",
+                "description": null,
+                "amount": 1500,
+                "due_day": 10,
+                "due_date": "2026-11-10",
+                "date": "2026-11-10",
+                "recurrence_type": "monthly",
+                "color": "#3b82f6",
+                "icon": "FileText",
+                "status": "overdue",
+                "bill_status": "active",
+                "category_id": null,
+                "category_name": null,
+                "category": null,
+                "can_pay": true,
+                "is_overdue": true,
+                "recurring": true,
+                "start_date": "2026-01-01"
+            },
+            {
+                "id": 2,
+                "title": "Luz",
+                "description": null,
+                "amount": 0,
+                "due_day": 20,
+                "due_date": "2026-11-20",
+                "date": "2026-11-20",
+                "recurrence_type": "monthly",
+                "color": "#3b82f6",
+                "icon": "FileText",
+                "status": "pending",
+                "bill_status": "active",
+                "category_id": null,
+                "category_name": null,
+                "category": null,
+                "can_pay": true,
+                "is_overdue": false,
+                "recurring": true,
+                "start_date": "2026-01-01"
+            }
+        ],
+        "spending_trends": {
+            "has_data": true,
+            "current_month": 390,
+            "previous_month": 300,
+            "three_month_avg": 100,
+            "category_trends": [
+                {
+                    "categoryName": "Mercado",
+                    "current": 170,
+                    "previous": 300
+                },
+                {
+                    "categoryName": "Lazer",
+                    "current": 130,
+                    "previous": 0
+                }
+            ]
+        }
+    },
+    "bankAccounts": [
+        {
+            "id": 1,
+            "name": "Cartão Azul",
+            "due_day": 12,
+            "closing_day": 5,
+            "credit_limit": null,
+            "brand": null
+        }
+    ],
+    "categories": [
+        {
+            "id": 2,
+            "name": "Lazer",
+            "icon": "film",
+            "color": "#aa00aa",
+            "type": "expense"
+        },
+        {
+            "id": 1,
+            "name": "Mercado",
+            "icon": "cart",
+            "color": "#00aa00",
+            "type": "expense"
+        }
+    ],
+    "bankAccountsList": []
+}

@@ -5,6 +5,7 @@ use App\Http\Controllers\BillController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjecaoController;
@@ -36,6 +37,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reports/data', [ReportController::class, 'data'])
         ->middleware('cache.api:15')
         ->name('reports.data');
+
+    // Planilhas geradas no servidor (OpenSpout, em blocos).
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::get('/reports/exportar/detalhado', [ExportController::class, 'detailed'])
+            ->name('reports.export.detailed');
+        Route::get('/transacoes/exportar/planilha', [ExportController::class, 'transactions'])
+            ->name('transacoes.export.xlsx');
+        Route::get('/faturas/exportar/pendentes', [ExportController::class, 'pendingInvoices'])
+            ->name('faturas.export.pending');
+    });
 
     Route::get('/accounts', [CardController::class, 'accounts'])->name('accounts.index');
     Route::get('/categorias', [CategoryController::class, 'page'])->name('categorias.index');
@@ -81,7 +92,7 @@ Route::get('/_ui', function () {
     return Inertia::render('Dev/UiKit');
 })->name('dev.ui');
 
-require __DIR__.'/Fatura.php';
+require __DIR__.'/transacoes.php';
 require __DIR__.'/Income.php';
 require __DIR__.'/Anexo.php';
 require __DIR__.'/SavingsGoal.php';

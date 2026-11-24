@@ -1,0 +1,55 @@
+{
+    "unreadNotificationCount": 0,
+    "bankAccounts": [
+        {
+            "id": 1,
+            "name": "Cartão Azul"
+        }
+    ],
+    "bankAccountsList": [],
+    "categories": [
+        {
+            "id": 2,
+            "name": "Lazer",
+            "icon": "film",
+            "color": "#aa00aa",
+            "type": "expense"
+        },
+        {
+            "id": 1,
+            "name": "Mercado",
+            "icon": "cart",
+            "color": "#00aa00",
+            "type": "expense"
+        }
+    ],
+    "incomes": [
+        {
+            "id": 1,
+            "title": "Salário",
+            "description": null,
+            "amount": 5000,
+            "type": "salary",
+            "type_label": "Salário",
+            "payment_day_type": "fixed",
+            "payment_day_value": 5,
+            "payment_day_label": "Dia 5",
+            "is_active": true,
+            "is_recurring": true,
+            "received_at": null,
+            "bank_user_id": null,
+            "bank_account_id": null,
+            "bank_name": null,
+            "bank_account_name": null
+        }
+    ],
+    "totalMonthly": 5000,
+    "incomesByType": [
+        {
+            "type": "salary",
+            "label": "Salário",
+            "total": 5000,
+            "count": 1
+        }
+    ]
+}

@@ -6,6 +6,7 @@ use App\Models\BankUser;
 use App\Models\Fatura;
 use App\Services\BankLedgerService;
 use App\Services\FaturaLedgerService;
+use App\Support\Money;
 use Illuminate\Console\Command;
 
 class LedgerRebuildCommand extends Command
@@ -39,16 +40,16 @@ class LedgerRebuildCommand extends Command
 
         BankUser::chunkById(100, function ($bankUsers) use (&$count, $ledger, $dryRun) {
             foreach ($bankUsers as $bankUser) {
-                $cached = round((float) $bankUser->balance, 2);
-                $computed = round((float) $bankUser->ledgerEntries()->sum('amount'), 2);
+                $cached = Money::fromDecimal((string) ($bankUser->balance ?? '0'));
+                $computed = $ledger->ledgerSumCents($bankUser->id);
 
-                if (abs($cached - $computed) < 0.005) {
+                if ($cached === $computed) {
                     continue;
                 }
 
                 $count++;
-                $this->line("  🏦  BankUser #{$bankUser->id}: cache R$ ".number_format($cached, 2, ',', '.').
-                    ' ≠ eventos R$ '.number_format($computed, 2, ',', '.'));
+                $this->line("  🏦  BankUser #{$bankUser->id}: cache R$ ".number_format($cached / 100, 2, ',', '.').
+                    ' ≠ eventos R$ '.number_format($computed / 100, 2, ',', '.'));
 
                 if (! $dryRun) {
                     $ledger->rebuildBalance($bankUser);
@@ -65,19 +66,19 @@ class LedgerRebuildCommand extends Command
 
         Fatura::chunkById(100, function ($faturas) use (&$count, $faturaLedger, $dryRun) {
             foreach ($faturas as $fatura) {
-                $cached = round((float) $fatura->total_paid, 2);
-                $computed = $faturaLedger->totalPaid($fatura->id);
+                $cached = Money::fromDecimal((string) ($fatura->total_paid ?? '0'));
+                $computed = $faturaLedger->totalPaidCents($fatura->id);
 
-                if (abs($cached - $computed) < 0.005) {
+                if ($cached === $computed) {
                     continue;
                 }
 
                 $count++;
-                $this->line("  🧾  Fatura #{$fatura->id} ({$fatura->month_key}): cache R$ ".number_format($cached, 2, ',', '.').
-                    ' ≠ eventos R$ '.number_format($computed, 2, ',', '.'));
+                $this->line("  🧾  Fatura #{$fatura->id} ({$fatura->month_key}): cache R$ ".number_format($cached / 100, 2, ',', '.').
+                    ' ≠ eventos R$ '.number_format($computed / 100, 2, ',', '.'));
 
                 if (! $dryRun) {
-                    $fatura->total_paid = $computed;
+                    $fatura->total_paid = Money::toDecimal($computed);
                     $fatura->save();
                 }
             }

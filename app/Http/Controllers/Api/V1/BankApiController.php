@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Bank\CreateBankAccount;
+use App\Actions\Bank\DeleteBankAccount;
+use App\Actions\Bank\TransferBetweenAccounts;
+use App\Actions\Bank\UpdateBankBalance;
 use App\Contracts\Services\BankAccountServiceInterface;
 use App\Contracts\Services\BankTransferServiceInterface;
 use App\Exceptions\BankAccountHasMovementsException;
@@ -13,6 +17,7 @@ use App\Models\Bank;
 use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
 use App\Services\BankLedgerService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -103,15 +108,12 @@ class BankApiController extends Controller
         ]);
     }
 
-    public function store(BankStoreRequest $request): JsonResponse
+    public function store(BankStoreRequest $request, CreateBankAccount $createAccount): JsonResponse
     {
-        $user = $request->user();
-        $data = $request->validated();
-
         try {
-            $bankUser = $this->bankAccountService->createForUser($user, $data);
-
-            return $this->success($bankUser, 201);
+            return $this->success($createAccount->handle($request->user(), $request->validated()), 201);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 
@@ -119,15 +121,12 @@ class BankApiController extends Controller
         }
     }
 
-    public function update(BankUpdateRequest $request, int $id): JsonResponse
+    public function update(BankUpdateRequest $request, int $id, UpdateBankBalance $updateBalance): JsonResponse
     {
-        $user = $request->user();
-        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
-
         try {
-            $bankUser = $this->bankAccountService->updateBalance($bankUser, $request->validated('balance'));
-
-            return $this->success($bankUser);
+            return $this->success($updateBalance->handle($request->user(), $id, $request->validated('balance')));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -135,15 +134,14 @@ class BankApiController extends Controller
         }
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, int $id, DeleteBankAccount $deleteAccount): JsonResponse
     {
-        $user = $request->user();
-        $bankUser = BankUser::forUser($user->id)->findOrFail($id);
-
         try {
-            $this->bankAccountService->deleteForUser($bankUser);
+            $deleteAccount->handle($request->user(), $id);
 
             return $this->success(['message' => 'Conta bancária removida.']);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (BankAccountHasMovementsException $e) {
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
@@ -153,14 +151,14 @@ class BankApiController extends Controller
         }
     }
 
-    public function transfer(BankTransferRequest $request): JsonResponse
+    public function transfer(BankTransferRequest $request, TransferBetweenAccounts $transferBetween): JsonResponse
     {
-        $user = $request->user();
-
         try {
-            $transfer = $this->bankTransferService->transfer($user, $request->validated());
-
-            return $this->success($transfer, 201);
+            return $this->success($transferBetween->handle($request->user(), $request->validated()), 201);
+        } catch (ModelNotFoundException $e) {
+            throw $e; // conta de outro usuário: 404
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 

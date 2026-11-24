@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,6 +42,8 @@ class Transacao extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'type' => TransacaoType::class,
+        'status' => TransacaoStatus::class,
         'paid_date' => 'datetime',
         'is_recurring' => 'boolean',
         'total_installments' => 'integer',
@@ -51,20 +56,18 @@ class Transacao extends Model
         'deleted_at' => 'datetime',
     ];
 
-    public const VALID_TYPES = ['credit', 'debit'];
-
-    public const VALID_STATUSES = ['paid', 'unpaid', 'overdue'];
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<CardUser, $this> */
     public function bankUser(): BelongsTo
     {
         return $this->belongsTo(CardUser::class, 'bank_user_id');
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
@@ -81,30 +84,50 @@ class Transacao extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<TransacaoParcela, $this> */
     public function parcelas(): HasMany
     {
         return $this->hasMany(TransacaoParcela::class, 'transacao_id')
             ->orderBy('installment_number');
     }
 
+    /**
+     * Valor da parcela em reais, para exibição e para os cálculos antigos que ainda
+     * usam float. Contas de dinheiro devem usar getInstallmentAmountCents().
+     */
     public function getInstallmentAmount(?int $installmentNumber = null): float
     {
-        if ($this->total_installments <= 1) {
-            return (float) $this->amount;
+        return $this->getInstallmentAmountCents($installmentNumber) / 100;
+    }
+
+    /**
+     * Valor da parcela em centavos. Usa a parcela gravada quando ela está carregada;
+     * sem parcelas, divide o total com Money::split (resto nas primeiras parcelas).
+     */
+    public function getInstallmentAmountCents(?int $installmentNumber = null): int
+    {
+        $totalCents = Money::fromDecimal((string) ($this->amount ?? '0'));
+        $totalInstallments = (int) $this->total_installments;
+
+        if ($totalInstallments <= 1) {
+            return $totalCents;
         }
 
         if ($installmentNumber !== null && $this->relationLoaded('parcelas')) {
             $parcela = $this->parcelas->firstWhere('installment_number', $installmentNumber);
             if ($parcela) {
-                return (float) $parcela->amount;
+                return Money::fromDecimal((string) $parcela->amount);
             }
         }
 
         if ($this->relationLoaded('parcelas') && $this->parcelas->isNotEmpty()) {
-            return (float) $this->parcelas->first()->amount;
+            return Money::fromDecimal((string) $this->parcelas->first()->amount);
         }
 
-        return (float) $this->amount / max((int) $this->total_installments, 1);
+        $split = Money::split($totalCents, $totalInstallments);
+        $index = $installmentNumber === null ? 0 : min(max($installmentNumber, 1), $totalInstallments) - 1;
+
+        return $split[$index];
     }
 
     public function getBankAttribute()
@@ -132,12 +155,12 @@ class Transacao extends Model
     {
         return $query
             ->when($filters['type'] ?? null, function (Builder $q, $type) {
-                if (in_array($type, self::VALID_TYPES, true)) {
+                if ($type = TransacaoType::tryFrom((string) $type)) {
                     $q->where('type', $type);
                 }
             })
             ->when($filters['status'] ?? null, function (Builder $q, $status) {
-                if (in_array($status, self::VALID_STATUSES, true)) {
+                if ($status = TransacaoStatus::tryFrom((string) $status)) {
                     $q->where('status', $status);
                 }
             })
@@ -175,13 +198,9 @@ class Transacao extends Model
         return $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 
-    public function scopeNotStatus(Builder $query, string $status): Builder
+    public function scopeNotStatus(Builder $query, TransacaoStatus $status): Builder
     {
-        if (in_array($status, self::VALID_STATUSES, true)) {
-            return $query->where('status', '!=', $status);
-        }
-
-        return $query;
+        return $query->where('status', '!=', $status);
     }
 
     public function scopeForBankUser(Builder $query, ?int $bankUserId): Builder
@@ -196,15 +215,5 @@ class Transacao extends Model
     public function belongsToUser(int $userId): bool
     {
         return $this->user_id === $userId;
-    }
-
-    public static function isValidType(string $type): bool
-    {
-        return in_array($type, self::VALID_TYPES, true);
-    }
-
-    public static function isValidStatus(string $status): bool
-    {
-        return in_array($status, self::VALID_STATUSES, true);
     }
 }

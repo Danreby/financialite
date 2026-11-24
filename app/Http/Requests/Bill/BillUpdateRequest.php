@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Bill;
 
+use App\Enums\BillStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,7 +27,7 @@ class BillUpdateRequest extends FormRequest
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'icon' => ['nullable', 'string', 'max:50'],
-            'status' => ['nullable', 'in:active,inactive,completed'],
+            'status' => ['nullable', Rule::enum(BillStatus::class)],
             'category_id' => [
                 'nullable',
                 'integer',

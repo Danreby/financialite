@@ -1,0 +1,1 @@
+import{j as m}from"./vendor-DzRVLou9.js";import{B as s}from"./Button-CwiYCeB2.js";import{l as o}from"./legacyClassName-IUNYcae0.js";function p({type:r="submit",className:t="",...a}){return m.jsx(s,{variant:"primary",type:r,className:o(t),...a})}export{p as P};

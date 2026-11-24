@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Income\CreateIncome;
+use App\Actions\Income\DeleteIncome;
+use App\Actions\Income\ToggleIncomeActive;
+use App\Actions\Income\ToggleIncomeAutoDeposit;
+use App\Actions\Income\UpdateIncome;
 use App\Contracts\Services\IncomeServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Income\IncomeStoreRequest;
 use App\Http\Requests\Income\IncomeUpdateRequest;
-use App\Models\Income;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,21 +23,13 @@ class IncomeApiController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $incomes = $this->incomeService->listForUser($user->id);
-
-        return $this->success($incomes);
+        return $this->success($this->incomeService->listForUser($request->user()->id));
     }
 
-    public function store(IncomeStoreRequest $request): JsonResponse
+    public function store(IncomeStoreRequest $request, CreateIncome $createIncome): JsonResponse
     {
-        $user = $request->user();
-        $data = $request->validated();
-
         try {
-            $income = $this->incomeService->createForUser($user, $data);
-
-            return $this->success($income, 201);
+            return $this->success($createIncome->handle($request->user(), $request->validated()), 201);
         } catch (\Throwable $e) {
             report($e);
 
@@ -40,15 +37,12 @@ class IncomeApiController extends Controller
         }
     }
 
-    public function update(IncomeUpdateRequest $request, Income $income): JsonResponse
+    public function update(IncomeUpdateRequest $request, int $income, UpdateIncome $updateIncome): JsonResponse
     {
-        $this->authorize('update', $income);
-        $data = $request->validated();
-
         try {
-            $income = $this->incomeService->updateForUser($income, $data);
-
-            return $this->success($income);
+            return $this->success($updateIncome->handle($request->user(), $income, $request->validated()));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -56,14 +50,14 @@ class IncomeApiController extends Controller
         }
     }
 
-    public function destroy(Request $request, Income $income): JsonResponse
+    public function destroy(Request $request, int $income, DeleteIncome $deleteIncome): JsonResponse
     {
-        $this->authorize('delete', $income);
-
         try {
-            $this->incomeService->deleteForUser($income);
+            $deleteIncome->handle($request->user(), $income);
 
             return $this->success(['message' => 'Receita removida.']);
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -71,14 +65,12 @@ class IncomeApiController extends Controller
         }
     }
 
-    public function toggleActive(Request $request, Income $income): JsonResponse
+    public function toggleActive(Request $request, int $income, ToggleIncomeActive $toggleActive): JsonResponse
     {
-        $this->authorize('update', $income);
-
         try {
-            $income = $this->incomeService->toggleActive($income);
-
-            return $this->success($income);
+            return $this->success($toggleActive->handle($request->user(), $income));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -86,14 +78,12 @@ class IncomeApiController extends Controller
         }
     }
 
-    public function toggleAutoDeposit(Request $request, Income $income): JsonResponse
+    public function toggleAutoDeposit(Request $request, int $income, ToggleIncomeAutoDeposit $toggleAutoDeposit): JsonResponse
     {
-        $this->authorize('update', $income);
-
         try {
-            $income = $this->incomeService->toggleAutoDeposit($income);
-
-            return $this->success($income);
+            return $this->success($toggleAutoDeposit->handle($request->user(), $income));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -103,8 +93,7 @@ class IncomeApiController extends Controller
 
     public function summary(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $total = $this->incomeService->totalMonthlyIncome($user->id);
+        $total = $this->incomeService->totalMonthlyIncome($request->user()->id);
 
         return $this->success(['total_monthly_income' => $total]);
     }

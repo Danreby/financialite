@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\BillPaymentStatus;
+use App\Enums\TransacaoType;
 use App\Models\BankUser;
 use App\Models\Bill;
 use App\Models\BillPayment;
@@ -43,12 +45,12 @@ class DashboardInsightsService
 
         $hasDebitTransactions = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->exists();
 
         $hasCreditTransactions = Transacao::forUser($user->id)
             ->forBankUser($bankUserId)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->exists();
 
         $hasBills = Bill::forUser($user->id)->active()->exists();
@@ -151,7 +153,7 @@ class DashboardInsightsService
             $upcomingBillsCount = Bill::forUser($user->id)->active()->count();
             $overdueBillsCount = BillPayment::whereHas('bill', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
-            })->where('status', 'overdue')->count();
+            })->where('status', BillPaymentStatus::Overdue)->count();
 
             $paymentDiscipline = $upcomingBillsCount > 0
                 ? max(0, 100 - (($overdueBillsCount / ($upcomingBillsCount + $overdueBillsCount)) * 100))
@@ -358,14 +360,14 @@ class DashboardInsightsService
                     ->whereDate('due_date', $currentMonthDue->format('Y-m-d'))
                     ->first();
 
-                $isPaid = $payment && $payment->status === 'paid';
+                $isPaid = $payment && $payment->status === BillPaymentStatus::Paid;
                 $isOverdue = ! $isPaid && $currentMonthDue->lt($today);
 
                 if (! $isPaid) {
                     $upcomingBills[] = $this->formatBillEntry(
                         $bill,
                         $currentMonthDue,
-                        $isOverdue ? 'overdue' : 'pending',
+                        $isOverdue ? BillPaymentStatus::Overdue->value : BillPaymentStatus::Pending->value,
                         $isOverdue,
                         true,
                         null
@@ -382,13 +384,13 @@ class DashboardInsightsService
                     $nextPayment = BillPayment::where('bill_id', $bill->id)
                         ->whereDate('due_date', $nextMonthDue->format('Y-m-d'))
                         ->first();
-                    $nextIsPaid = $nextPayment && $nextPayment->status === 'paid';
+                    $nextIsPaid = $nextPayment && $nextPayment->status === BillPaymentStatus::Paid;
 
                     if (! $nextIsPaid) {
                         $upcomingBills[] = $this->formatBillEntry(
                             $bill,
                             $nextMonthDue,
-                            'pending',
+                            BillPaymentStatus::Pending->value,
                             false,
                             true
                         );
@@ -403,13 +405,13 @@ class DashboardInsightsService
                     $monthAfterNextPayment = BillPayment::where('bill_id', $bill->id)
                         ->whereDate('due_date', $monthAfterNextDue->format('Y-m-d'))
                         ->first();
-                    $monthAfterNextIsPaid = $monthAfterNextPayment && $monthAfterNextPayment->status === 'paid';
+                    $monthAfterNextIsPaid = $monthAfterNextPayment && $monthAfterNextPayment->status === BillPaymentStatus::Paid;
 
                     if (! $monthAfterNextIsPaid) {
                         $upcomingBills[] = $this->formatBillEntry(
                             $bill,
                             $monthAfterNextDue,
-                            'pending',
+                            BillPaymentStatus::Pending->value,
                             false,
                             true
                         );
@@ -453,7 +455,7 @@ class DashboardInsightsService
             'color' => $bill->color,
             'icon' => $bill->icon,
             'status' => $status,
-            'bill_status' => $bill->status,
+            'bill_status' => $bill->status->value,
             'category_id' => $bill->category_id,
             'category_name' => $bill->category?->name,
             'category' => $bill->category?->name,
@@ -464,6 +466,15 @@ class DashboardInsightsService
         ];
     }
 
+    /**
+     * Tendências de gasto: débitos do mês mais as parcelas de crédito ainda não
+     * pagas (calculateInstallmentAwareSpending filtra notStatus(Paid)).
+     *
+     * O KPI "Total mensal" (monthly_summary, App\Queries\Dashboard\SpendingSeriesQuery)
+     * soma o crédito do mês pago ou não, então os dois números diferem quando a
+     * fatura do mês já foi paga. A diferença é decisão de produto e fica assim
+     * até ser combinada; não alinhar um ao outro por conta própria.
+     */
     private function getSpendingTrends(Authenticatable $user, ?int $bankUserId): array
     {
         $today = Carbon::today();
@@ -471,7 +482,7 @@ class DashboardInsightsService
         $threeMonthsAgoStart = $today->copy()->startOfMonth()->subMonthsNoOverflow(3);
 
         $hasTransactions = Transacao::where('user_id', $user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->where('created_at', '>=', $threeMonthsAgoStart)
             ->when($bankUserId, fn ($q) => $q->where('bank_user_id', $bankUserId))
             ->exists();

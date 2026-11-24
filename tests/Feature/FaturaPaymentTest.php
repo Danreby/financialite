@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TransacaoStatus;
 use App\Exceptions\InsufficientBalanceException;
 use App\Models\Bank;
 use App\Models\BankLedgerEntry;
@@ -100,7 +101,7 @@ class FaturaPaymentTest extends TestCase
         }
 
         $this->assertEquals(50.0, (float) $this->account->fresh()->balance);
-        $this->assertNotSame('paid', $transacao->fresh()->status);
+        $this->assertNotSame(TransacaoStatus::Paid, $transacao->fresh()->status);
         $this->assertSame(0, FaturaPaymentEvent::count());
         $this->assertSame(0, Fatura::count());
         $this->assertSame(1, BankLedgerEntry::count());
@@ -150,7 +151,7 @@ class FaturaPaymentTest extends TestCase
 
         $this->assertEquals(50.0, $paidNow);
         $this->assertEquals(50.0, (float) $this->account->fresh()->balance);
-        $this->assertSame('paid', $transacao->fresh()->status);
+        $this->assertSame(TransacaoStatus::Paid, $transacao->fresh()->status);
         $fatura = Fatura::first();
         $this->assertEquals(150.0, (float) $fatura->total_paid);
         $this->assertNotNull($fatura->paid_at);
@@ -167,7 +168,7 @@ class FaturaPaymentTest extends TestCase
 
         $this->assertEquals(0.0, $paidNow);
         $this->assertEquals(50.0, (float) $this->account->fresh()->balance);
-        $this->assertSame('paid', $transacao->fresh()->status);
+        $this->assertSame(TransacaoStatus::Paid, $transacao->fresh()->status);
         $this->assertEquals(150.0, (float) Fatura::first()->total_paid);
         $this->assertSame(1, FaturaPaymentEvent::count());
         $this->assertSame(1, BankLedgerEntry::where('type', BankLedgerEntry::TYPE_INVOICE_PAYMENT)->count());
@@ -187,7 +188,7 @@ class FaturaPaymentTest extends TestCase
         $this->assertEquals(30.0, $paidNow);
         $this->assertEquals(70.0, (float) $this->account->fresh()->balance);
         $this->assertEquals(130.0, (float) Fatura::first()->total_paid);
-        $this->assertSame('paid', $itemB->fresh()->status);
+        $this->assertSame(TransacaoStatus::Paid, $itemB->fresh()->status);
     }
 
     public function test_pay_month_ignores_items_marked_paid_outside_the_fatura(): void

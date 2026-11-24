@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Transacao;
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -20,8 +21,8 @@ class TransactionIndexRequest extends FormRequest
 
         return [
             'search' => ['nullable', 'string', 'max:255', new SafeString],
-            'type' => ['nullable', 'string', Rule::in(Transacao::VALID_TYPES)],
-            'status' => ['nullable', 'string', Rule::in(Transacao::VALID_STATUSES)],
+            'type' => ['nullable', 'string', Rule::enum(TransacaoType::class)],
+            'status' => ['nullable', 'string', Rule::enum(TransacaoStatus::class)],
             'bank_user_id' => [
                 'nullable',
                 'integer',

@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\TransacaoParcelaStatus;
 use App\Models\Transacao;
 use App\Models\TransacaoParcela;
 use App\Services\FaturaService;
+use App\Support\Money;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -54,9 +56,10 @@ class SyncTransacaoParcelasCommand extends Command
             }
 
             if (! $needsRecreation) {
-                $parcelasSum = (float) $parcelas->sum('amount');
-                $transacaoAmount = (float) $transacao->amount;
-                if (abs($parcelasSum - $transacaoAmount) > 0.02) {
+                $parcelasCents = $parcelas->sum(fn ($p) => Money::fromDecimal((string) $p->getAttribute('amount')));
+                $transacaoCents = Money::fromDecimal((string) $transacao->amount);
+                // Tolerância de 2 centavos para parcelas gravadas pelo cálculo antigo em float.
+                if (abs($parcelasCents - $transacaoCents) > 2) {
                     $needsRecreation = true;
                 }
             }
@@ -71,7 +74,7 @@ class SyncTransacaoParcelasCommand extends Command
 
             if ($needsRecreation) {
                 $paidStatuses = $parcelas
-                    ->where('status', 'paid')
+                    ->where('status', TransacaoParcelaStatus::Paid)
                     ->pluck('paid_date', 'installment_number')
                     ->all();
 
@@ -83,7 +86,7 @@ class SyncTransacaoParcelasCommand extends Command
                         TransacaoParcela::where('transacao_id', $transacao->id)
                             ->where('installment_number', $installmentNumber)
                             ->update([
-                                'status' => 'paid',
+                                'status' => TransacaoParcelaStatus::Paid,
                                 'paid_date' => $paidDate,
                             ]);
                     }

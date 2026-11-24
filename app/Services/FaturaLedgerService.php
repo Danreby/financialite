@@ -6,6 +6,7 @@ use App\Models\BankLedgerEntry;
 use App\Models\Fatura;
 use App\Models\FaturaPaymentEvent;
 use App\Models\Transacao;
+use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 
 class FaturaLedgerService
@@ -17,24 +18,39 @@ class FaturaLedgerService
      */
     public function recordPaymentEvent(
         Fatura $fatura,
-        float $amount,
+        string|int|float $amount,
         string $type,
         ?Transacao $transacao = null,
         ?BankLedgerEntry $bankLedgerEntry = null,
         ?string $description = null
     ): FaturaPaymentEvent {
-        return DB::transaction(function () use ($fatura, $amount, $type, $transacao, $bankLedgerEntry, $description) {
+        return $this->recordPaymentEventCents($fatura, Money::fromDecimal($amount), $type, $transacao, $bankLedgerEntry, $description);
+    }
+
+    /**
+     * Mesmo que recordPaymentEvent(), com o valor já em centavos (sempre positivo;
+     * o tipo diz se é pagamento ou estorno).
+     */
+    public function recordPaymentEventCents(
+        Fatura $fatura,
+        int $amountCents,
+        string $type,
+        ?Transacao $transacao = null,
+        ?BankLedgerEntry $bankLedgerEntry = null,
+        ?string $description = null
+    ): FaturaPaymentEvent {
+        return DB::transaction(function () use ($fatura, $amountCents, $type, $transacao, $bankLedgerEntry, $description) {
             $event = FaturaPaymentEvent::create([
                 'fatura_id' => $fatura->id,
                 'transacao_id' => $transacao?->id,
                 'bank_ledger_entry_id' => $bankLedgerEntry?->id,
                 'type' => $type,
-                'amount' => round($amount, 2),
+                'amount' => Money::toDecimal($amountCents),
                 'description' => $description,
                 'created_at' => now(),
             ]);
 
-            $fatura->total_paid = $this->totalPaid($fatura->id);
+            $fatura->total_paid = Money::toDecimal($this->totalPaidCents($fatura->id));
             $fatura->save();
 
             return $event;
@@ -43,14 +59,22 @@ class FaturaLedgerService
 
     public function totalPaid(int $faturaId): float
     {
-        $payments = (float) FaturaPaymentEvent::forFatura($faturaId)
-            ->where('type', FaturaPaymentEvent::TYPE_PAYMENT)
-            ->sum('amount');
+        return $this->totalPaidCents($faturaId) / 100;
+    }
 
-        $reversals = (float) FaturaPaymentEvent::forFatura($faturaId)
-            ->where('type', FaturaPaymentEvent::TYPE_REVERSAL)
-            ->sum('amount');
+    /** Pagamentos menos estornos da fatura, em centavos, nunca negativo. */
+    public function totalPaidCents(int $faturaId): int
+    {
+        $payments = $this->sumCents($faturaId, FaturaPaymentEvent::TYPE_PAYMENT);
+        $reversals = $this->sumCents($faturaId, FaturaPaymentEvent::TYPE_REVERSAL);
 
-        return round(max(0.0, $payments - $reversals), 2);
+        return max(0, $payments - $reversals);
+    }
+
+    private function sumCents(int $faturaId, string $type): int
+    {
+        $sum = FaturaPaymentEvent::forFatura($faturaId)->where('type', $type)->sum('amount');
+
+        return Money::fromDecimal($sum);
     }
 }

@@ -71,8 +71,8 @@ class ReportController extends Controller
         $categoryId = $request->input('category_id');
 
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $stats = $this->dashboardService->buildStats(

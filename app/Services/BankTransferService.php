@@ -6,6 +6,7 @@ use App\Contracts\Services\BankTransferServiceInterface;
 use App\Models\BankLedgerEntry;
 use App\Models\BankTransfer;
 use App\Models\BankUser;
+use App\Support\Money;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -21,13 +22,13 @@ class BankTransferService implements BankTransferServiceInterface
         return DB::transaction(function () use ($user, $data) {
             $fromId = (int) $data['from_bank_user_id'];
             $toId = (int) $data['to_bank_user_id'];
-            $amount = (float) $data['amount'];
+            $amountCents = Money::fromDecimal($data['amount'] ?? 0);
 
             if ($fromId === $toId) {
                 throw new \DomainException('A conta de origem e destino não podem ser a mesma.');
             }
 
-            if ($amount <= 0) {
+            if ($amountCents <= 0) {
                 throw new \DomainException('O valor da transferência deve ser maior que zero.');
             }
 
@@ -48,7 +49,7 @@ class BankTransferService implements BankTransferServiceInterface
             $fromAccount = $accounts->get($fromId);
             $toAccount = $accounts->get($toId);
 
-            if ((float) $fromAccount->balance < $amount) {
+            if (Money::fromDecimal((string) $fromAccount->balance) < $amountCents) {
                 throw new \DomainException('Saldo insuficiente para realizar a transferência.');
             }
 
@@ -58,22 +59,22 @@ class BankTransferService implements BankTransferServiceInterface
                 'user_id' => $user->id,
                 'from_bank_user_id' => $fromAccount->id,
                 'to_bank_user_id' => $toAccount->id,
-                'amount' => $amount,
+                'amount' => Money::toDecimal($amountCents),
                 'description' => $description,
             ]);
 
-            $this->ledger->record(
+            $this->ledger->recordCents(
                 $fromAccount,
                 BankLedgerEntry::TYPE_TRANSFER_OUT,
-                -$amount,
+                -$amountCents,
                 $transfer,
                 $description ?: "Transferência para {$toAccount->bank?->name}"
             );
 
-            $this->ledger->record(
+            $this->ledger->recordCents(
                 $toAccount,
                 BankLedgerEntry::TYPE_TRANSFER_IN,
-                $amount,
+                $amountCents,
                 $transfer,
                 $description ?: "Transferência de {$fromAccount->bank?->name}"
             );

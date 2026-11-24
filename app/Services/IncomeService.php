@@ -53,7 +53,7 @@ class IncomeService implements IncomeServiceInterface
                     $this->ledger->record(
                         $bankUser,
                         BankLedgerEntry::TYPE_INCOME_CREDIT,
-                        (float) $data['amount'],
+                        $data['amount'],
                         $income,
                         "Receita: {$income->title}"
                     );

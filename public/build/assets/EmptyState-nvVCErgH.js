@@ -1,0 +1,1 @@
+import{j as m}from"./vendor-DzRVLou9.js";import{E as p}from"./EmptyState-DNq6omXP.js";function a({icon:t,title:o,description:r,action:e}){return m.jsx(p,{icon:typeof t=="string"?void 0:t,title:o,text:r,action:e})}export{a as E};

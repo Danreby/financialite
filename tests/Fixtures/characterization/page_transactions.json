@@ -1,0 +1,252 @@
+{
+    "unreadNotificationCount": 0,
+    "transactions": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 8,
+                "title": "Acougue",
+                "description": null,
+                "amount": 40,
+                "type": "debit",
+                "status": "paid",
+                "paid_date": "2026-11-10T03:00:00.000000Z",
+                "created_at": "2026-11-10T15:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 1,
+                "is_recurring": false,
+                "bank_user_id": null,
+                "bank_name": null,
+                "category_id": 1,
+                "category_name": "Mercado",
+                "category_icon": "cart",
+                "category_color": "#00aa00",
+                "anexos_count": 0
+            },
+            {
+                "id": 7,
+                "title": "Bar",
+                "description": null,
+                "amount": 80,
+                "type": "debit",
+                "status": "paid",
+                "paid_date": "2026-11-08T03:00:00.000000Z",
+                "created_at": "2026-11-08T15:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 1,
+                "is_recurring": false,
+                "bank_user_id": null,
+                "bank_name": null,
+                "category_id": 2,
+                "category_name": "Lazer",
+                "category_icon": "film",
+                "category_color": "#aa00aa",
+                "anexos_count": 0
+            },
+            {
+                "id": 6,
+                "title": "FeiraX2",
+                "description": null,
+                "amount": 60,
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "created_at": "2026-11-07T15:00:00.000000Z",
+                "total_installments": 2,
+                "current_installment": 0,
+                "is_recurring": false,
+                "bank_user_id": null,
+                "bank_name": null,
+                "category_id": 1,
+                "category_name": "Mercado",
+                "category_icon": "cart",
+                "category_color": "#00aa00",
+                "anexos_count": 0
+            },
+            {
+                "id": 5,
+                "title": "Farmacia",
+                "description": null,
+                "amount": 90,
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "created_at": "2026-11-03T15:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 0,
+                "is_recurring": false,
+                "bank_user_id": 1,
+                "bank_name": "Cartão Azul",
+                "category_id": null,
+                "category_name": null,
+                "category_icon": null,
+                "category_color": null,
+                "anexos_count": 0
+            },
+            {
+                "id": 4,
+                "title": "Padaria",
+                "description": null,
+                "amount": 200,
+                "type": "debit",
+                "status": "paid",
+                "paid_date": "2026-10-15T03:00:00.000000Z",
+                "created_at": "2026-10-15T15:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 1,
+                "is_recurring": false,
+                "bank_user_id": 1,
+                "bank_name": "Cartão Azul",
+                "category_id": 1,
+                "category_name": "Mercado",
+                "category_icon": "cart",
+                "category_color": "#00aa00",
+                "anexos_count": 0
+            },
+            {
+                "id": 3,
+                "title": "Streaming",
+                "description": null,
+                "amount": 50,
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "created_at": "2026-10-10T15:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 0,
+                "is_recurring": true,
+                "bank_user_id": 1,
+                "bank_name": "Cartão Azul",
+                "category_id": 2,
+                "category_name": "Lazer",
+                "category_icon": "film",
+                "category_color": "#aa00aa",
+                "anexos_count": 0
+            },
+            {
+                "id": 2,
+                "title": "Cinema",
+                "description": null,
+                "amount": 120,
+                "type": "credit",
+                "status": "paid",
+                "paid_date": "2026-11-01T03:00:00.000000Z",
+                "created_at": "2026-10-02T15:00:00.000000Z",
+                "total_installments": 1,
+                "current_installment": 0,
+                "is_recurring": false,
+                "bank_user_id": 1,
+                "bank_name": "Cartão Azul",
+                "category_id": 2,
+                "category_name": "Lazer",
+                "category_icon": "film",
+                "category_color": "#aa00aa",
+                "anexos_count": 0
+            },
+            {
+                "id": 1,
+                "title": "MercadoX3",
+                "description": null,
+                "amount": 300,
+                "type": "credit",
+                "status": "unpaid",
+                "paid_date": null,
+                "created_at": "2026-09-20T15:00:00.000000Z",
+                "total_installments": 3,
+                "current_installment": 1,
+                "is_recurring": false,
+                "bank_user_id": 1,
+                "bank_name": "Cartão Azul",
+                "category_id": 1,
+                "category_name": "Mercado",
+                "category_icon": "cart",
+                "category_color": "#00aa00",
+                "anexos_count": 0
+            }
+        ],
+        "first_page_url": "http://localhost/transactions?transactions_page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://localhost/transactions?transactions_page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "pagination.previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http://localhost/transactions?transactions_page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "pagination.next",
+                "page": null,
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://localhost/transactions",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 8,
+        "total": 8
+    },
+    "bankAccounts": [
+        {
+            "id": 1,
+            "name": "Cartão Azul"
+        }
+    ],
+    "categories": [
+        {
+            "id": 2,
+            "name": "Lazer",
+            "icon": "film",
+            "color": "#aa00aa"
+        },
+        {
+            "id": 1,
+            "name": "Mercado",
+            "icon": "cart",
+            "color": "#00aa00"
+        }
+    ],
+    "months": [
+        {
+            "month_key": "2026-11",
+            "month_label": "Novembro 2026",
+            "is_paid": false
+        },
+        {
+            "month_key": "2026-10",
+            "month_label": "Outubro 2026",
+            "is_paid": false
+        },
+        {
+            "month_key": "2026-09",
+            "month_label": "Setembro 2026",
+            "is_paid": false
+        }
+    ],
+    "filterTotals": {
+        "total_count": 8,
+        "debit_total": 320,
+        "credit_total": 620,
+        "debit_count": 3,
+        "credit_count": 5
+    },
+    "filters": {
+        "type": null,
+        "bank_user_id": null,
+        "category_id": null,
+        "status": null,
+        "recurring": null,
+        "search": "",
+        "month_key": null,
+        "order": "created_desc"
+    }
+}

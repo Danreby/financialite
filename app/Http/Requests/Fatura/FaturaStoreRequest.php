@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Fatura;
 
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Security\Rules\SafeNumeric;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,11 +40,11 @@ class FaturaStoreRequest extends FormRequest
             ],
             'type' => [
                 'required',
-                Rule::in(['credit', 'debit']),
+                Rule::enum(TransacaoType::class),
             ],
             'status' => [
                 'nullable',
-                Rule::in(['paid', 'unpaid', 'overdue']),
+                Rule::enum(TransacaoStatus::class),
             ],
             'paid_date' => [
                 'nullable',

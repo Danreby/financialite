@@ -58,8 +58,8 @@ class DashboardController extends Controller
         $page = $request->input('page', 1);
 
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $filters = [

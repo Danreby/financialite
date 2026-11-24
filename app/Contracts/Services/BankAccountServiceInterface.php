@@ -16,7 +16,7 @@ interface BankAccountServiceInterface
 
     public function createForUser(Authenticatable $user, array $data): BankUser;
 
-    public function updateBalance(BankUser $bankUser, float $newBalance): BankUser;
+    public function updateBalance(BankUser $bankUser, string|int|float $newBalance): BankUser;
 
     public function deleteForUser(BankUser $bankUser): bool;
 

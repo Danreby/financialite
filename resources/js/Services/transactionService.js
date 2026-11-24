@@ -40,14 +40,6 @@ export const transactionService = {
         return response.data;
     },
 
-    export: async (filters = {}) => {
-        const response = await apiService.get(
-            route('transacoes.export_data'),
-            filters
-        );
-        return response.data;
-    },
-
     import: async (rows) => {
         const response = await apiService.post(route('transacoes.import'), { rows });
         return response.data;

@@ -2,37 +2,33 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Notification\ClearNotifications;
+use App\Actions\Notification\CountUnreadNotifications;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
+use App\Queries\VisibleNotificationsQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class NotificationApiController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, VisibleNotificationsQuery $visible): JsonResponse
     {
-        $user = $request->user();
-        $notifications = Notification::where('user_id', $user->id)
-            ->orderByDesc('created_at')
+        $notifications = $visible->handle($request->user())
             ->paginate($request->input('per_page', 20));
 
         return $this->success($notifications);
     }
 
-    public function unreadCount(Request $request): JsonResponse
+    public function unreadCount(Request $request, CountUnreadNotifications $count): JsonResponse
     {
-        $count = Notification::where('user_id', $request->user()->id)
-            ->where('is_read', false)
-            ->count();
-
-        return $this->success(['count' => $count]);
+        return $this->success(['count' => $count->handle($request->user())]);
     }
 
-    public function markAsRead(Request $request, Notification $notification): JsonResponse
+    public function markAsRead(Request $request, int $notification): JsonResponse
     {
-        if ($notification->user_id !== $request->user()->id) {
-            return $this->unauthorized();
-        }
+        // Notificação de outro usuário responde 404, como os demais recursos.
+        $notification = Notification::forUser($request->user()->id)->findOrFail($notification);
 
         $notification->update(['is_read' => true, 'read_at' => now()]);
 
@@ -48,9 +44,9 @@ class NotificationApiController extends Controller
         return $this->success(['message' => 'Todas notificações marcadas como lidas.']);
     }
 
-    public function clearAll(Request $request): JsonResponse
+    public function clearAll(Request $request, ClearNotifications $clear): JsonResponse
     {
-        Notification::where('user_id', $request->user()->id)->delete();
+        $clear->handle($request->user());
 
         return $this->success(['message' => 'Notificações removidas.']);
     }

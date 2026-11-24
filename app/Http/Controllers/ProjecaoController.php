@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TransacaoType;
 use App\Models\Bill;
 use App\Models\CardUser;
 use App\Models\Category;
@@ -41,13 +42,13 @@ class ProjecaoController extends Controller
         $today = $now->copy()->startOfMonth();
 
         $currentMonthDebit = Transacao::where('user_id', $user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->sum('amount');
 
         $allCreditTxs = Transacao::with(['bankUser.card', 'category', 'parcelas'])
             ->where('user_id', $user->id)
-            ->where('type', 'credit')
+            ->where('type', TransacaoType::Credit)
             ->orderByDesc('created_at')
             ->get();
 

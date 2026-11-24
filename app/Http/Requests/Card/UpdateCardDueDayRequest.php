@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Card;
 
+use App\Models\Card;
 use App\Security\Rules\SafeString;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -22,7 +23,7 @@ class UpdateCardDueDayRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:50',
-                Rule::in(\App\Models\Card::VALID_BRANDS),
+                Rule::in(Card::VALID_BRANDS),
             ],
             'description' => ['nullable', 'string', 'max:500', new SafeString(500)],
             'credit_limit' => 'nullable|numeric|min:0|max:999999999.99',

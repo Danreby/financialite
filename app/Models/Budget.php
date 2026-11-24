@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TransacaoType;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +31,19 @@ class Budget extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<BudgetCategory, $this> */
     public function categoryLimits(): HasMany
+    {
+        return $this->hasMany(BudgetCategory::class);
+    }
+
+    /**
+     * Mesma relação de categoryLimits, com o nome que a API v1 sempre usou
+     * (chave budget_categories no JSON do app Android).
+     *
+     * @return HasMany<BudgetCategory, $this>
+     */
+    public function budgetCategories(): HasMany
     {
         return $this->hasMany(BudgetCategory::class);
     }
@@ -56,41 +70,25 @@ class Budget extends Model
         return $query->where('month_year', $currentMonth);
     }
 
-    public static function getOrCreateForCurrentMonth(int $userId, float $defaultLimit = 5000): self
-    {
-        $currentMonth = now()->format('Y-m');
-
-        return static::firstOrCreate(
-            [
-                'user_id' => $userId,
-                'month_year' => $currentMonth,
-            ],
-            [
-                'monthly_limit' => $defaultLimit,
-                'is_active' => true,
-            ]
-        );
-    }
-
     public function getCurrentSpending(): float
     {
-        $startDate = \Carbon\Carbon::parse($this->month_year.'-01')->startOfMonth();
+        $startDate = Carbon::parse($this->month_year.'-01')->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
         return Transacao::forUser($this->user_id)
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->sum('amount');
     }
 
     public function getCategorySpending(): array
     {
-        $startDate = \Carbon\Carbon::parse($this->month_year.'-01')->startOfMonth();
+        $startDate = Carbon::parse($this->month_year.'-01')->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
         $spending = Transacao::forUser($this->user_id)
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereNotNull('category_id')
             ->selectRaw('category_id, SUM(amount) as total')
             ->groupBy('category_id')

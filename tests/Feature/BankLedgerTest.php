@@ -6,6 +6,7 @@ use App\Models\Bank;
 use App\Models\BankLedgerEntry;
 use App\Models\BankTransfer;
 use App\Models\BankUser;
+use App\Models\Card;
 use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\FaturaPaymentEvent;
@@ -106,7 +107,7 @@ class BankLedgerTest extends TestCase
         app(BankLedgerService::class)->record($this->bankUser1, BankLedgerEntry::TYPE_ACCOUNT_OPENING, 200);
 
         $cardUser = CardUser::create([
-            'card_id' => \App\Models\Card::create(['name' => 'Cartão Teste'])->id,
+            'card_id' => Card::create(['name' => 'Cartão Teste'])->id,
             'user_id' => $this->user->id,
         ]);
 
@@ -184,7 +185,7 @@ class BankLedgerTest extends TestCase
     public function test_reopening_paid_transacao_reverses_total_paid_without_touching_bank_balance(): void
     {
         $cardUser = CardUser::create([
-            'card_id' => \App\Models\Card::create(['name' => 'Cartão Teste'])->id,
+            'card_id' => Card::create(['name' => 'Cartão Teste'])->id,
             'user_id' => $this->user->id,
         ]);
 

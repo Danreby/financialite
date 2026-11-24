@@ -1,8 +1,20 @@
 <?php
 
+use App\Http\Middleware\ActionRateLimiter;
+use App\Http\Middleware\CacheApiResponse;
+use App\Http\Middleware\DetectSuspiciousActivity;
+use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\LogSecurityEvents;
+use App\Http\Middleware\SecurityHeaders;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,44 +28,44 @@ return Application::configure(basePath: dirname(__DIR__))
         // Input is never rewritten: SQL injection is handled by query bindings
         // and XSS by output escaping.
         $middleware->web(append: [
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-            \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\DetectSuspiciousActivity::class,
-            \App\Http\Middleware\LogSecurityEvents::class,
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
+            SecurityHeaders::class,
+            DetectSuspiciousActivity::class,
+            LogSecurityEvents::class,
         ]);
 
         $middleware->api(append: [
-            \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\DetectSuspiciousActivity::class,
-            \App\Http\Middleware\LogSecurityEvents::class,
+            SecurityHeaders::class,
+            DetectSuspiciousActivity::class,
+            LogSecurityEvents::class,
         ]);
 
         $middleware->alias([
-            'action.limit' => \App\Http\Middleware\ActionRateLimiter::class,
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'cache.api' => \App\Http\Middleware\CacheApiResponse::class,
+            'action.limit' => ActionRateLimiter::class,
+            'verified' => EnsureEmailIsVerified::class,
+            'cache.api' => CacheApiResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Return JSON errors for all API requests so the mobile app can display them
-        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+        $exceptions->render(function (Throwable $e, Request $request) {
             if (! $request->expectsJson() && ! $request->is('api/*')) {
                 return null;
             }
 
             // Let Laravel handle ValidationException natively (returns 422 with field errors)
-            if ($e instanceof \Illuminate\Validation\ValidationException) {
+            if ($e instanceof ValidationException) {
                 return null;
             }
 
             // Let Laravel handle AuthenticationException natively (returns 401)
-            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+            if ($e instanceof AuthenticationException) {
                 return null;
             }
 
             // Determine proper HTTP status code
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+            if ($e instanceof HttpExceptionInterface) {
                 $status = $e->getStatusCode();
             } elseif (property_exists($e, 'status')) {
                 $status = $e->status;

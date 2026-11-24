@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\TransacaoStatus;
+use App\Enums\TransacaoType;
 use App\Models\CardUser;
 use App\Models\Category;
-use App\Models\Transacao;
 use App\Security\Contracts\SanitizerInterface;
 use DomainException;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -53,7 +54,7 @@ class FaturaImportService
                     'description' => $sanitizedRow['description'] ?? null,
                     'amount' => $this->sanitizeAmount($sanitizedRow['amount'], $index),
                     'type' => $this->validateType($sanitizedRow['type'], $index),
-                    'status' => $this->validateStatus($sanitizedRow['status'] ?? 'unpaid', $index),
+                    'status' => $this->validateStatus($sanitizedRow['status'] ?? TransacaoStatus::Unpaid->value, $index),
                     'total_installments' => $this->sanitizeInstallment($sanitizedRow['total_installments'] ?? null),
                     'current_installment' => $this->sanitizeInstallment($sanitizedRow['current_installment'] ?? null),
                     'is_recurring' => filter_var($sanitizedRow['is_recurring'] ?? false, FILTER_VALIDATE_BOOLEAN),
@@ -125,10 +126,10 @@ class FaturaImportService
     {
         $type = strtolower(trim($type));
 
-        if (! in_array($type, Transacao::VALID_TYPES, true)) {
+        if (TransacaoType::tryFrom($type) === null) {
             throw new DomainException(
                 'Tipo inválido na linha '.($index + 2).': '.$type.
-                '. Tipos válidos: '.implode(', ', Transacao::VALID_TYPES)
+                '. Tipos válidos: '.implode(', ', TransacaoType::values())
             );
         }
 
@@ -139,10 +140,10 @@ class FaturaImportService
     {
         $status = strtolower(trim($status));
 
-        if (! in_array($status, Transacao::VALID_STATUSES, true)) {
+        if (TransacaoStatus::tryFrom($status) === null) {
             throw new DomainException(
                 'Status inválido na linha '.($index + 2).': '.$status.
-                '. Status válidos: '.implode(', ', Transacao::VALID_STATUSES)
+                '. Status válidos: '.implode(', ', TransacaoStatus::values())
             );
         }
 

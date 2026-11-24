@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TransacaoParcelaStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,11 +27,10 @@ class TransacaoParcela extends Model
         'transacao_id' => 'integer',
         'installment_number' => 'integer',
         'amount' => 'decimal:2',
+        'status' => TransacaoParcelaStatus::class,
         'due_date' => 'date',
         'paid_date' => 'date',
     ];
-
-    public const VALID_STATUSES = ['pending', 'paid', 'overdue'];
 
     public function transacao(): BelongsTo
     {

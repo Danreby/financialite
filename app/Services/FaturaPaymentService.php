@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\TransacaoParcelaStatus;
+use App\Enums\TransacaoStatus;
 use App\Exceptions\InsufficientBalanceException;
 use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
@@ -9,6 +11,7 @@ use App\Models\CardUser;
 use App\Models\Fatura;
 use App\Models\FaturaPaymentEvent;
 use App\Models\Transacao;
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -37,7 +40,7 @@ class FaturaPaymentService
                 ->get();
 
             $faturas = $allTransacoes
-                ->filter(fn (Transacao $transacao) => $transacao->status !== 'paid')
+                ->filter(fn (Transacao $transacao) => $transacao->status !== TransacaoStatus::Paid)
                 ->filter(fn (Transacao $transacao) => $this->billing->faturaAppliesToMonth($transacao, $targetMonth));
 
             if ($faturas->isEmpty()) {
@@ -78,23 +81,21 @@ class FaturaPaymentService
                 $paid->save();
             }
 
-            $paidAmount = $totalCents / 100;
-
             $ledgerEntry = null;
             if ($lockedAccount) {
-                $ledgerEntry = $this->ledger->record(
+                $ledgerEntry = $this->ledger->recordCents(
                     $lockedAccount,
                     BankLedgerEntry::TYPE_INVOICE_PAYMENT,
-                    -$paidAmount,
+                    -$totalCents,
                     $paid,
                     "Pagamento de fatura ({$monthKey})"
                 );
                 $bankAccount->balance = $lockedAccount->balance;
             }
 
-            $this->faturaLedger->recordPaymentEvent(
+            $this->faturaLedger->recordPaymentEventCents(
                 $paid,
-                $paidAmount,
+                $totalCents,
                 FaturaPaymentEvent::TYPE_PAYMENT,
                 null,
                 $ledgerEntry,
@@ -104,14 +105,14 @@ class FaturaPaymentService
             $paid->paid_at = now();
             $paid->save();
 
-            return $paidAmount;
+            return $totalCents / 100;
         });
     }
 
     public function payPartialForUser(
         Authenticatable $user,
         string $monthKey,
-        float $amount,
+        string|int|float $amount,
         ?CardUser $cardUser,
         ?BankUser $bankAccount = null
     ): array {
@@ -147,7 +148,7 @@ class FaturaPaymentService
                 throw new \DomainException('Esta fatura já foi totalmente paga.');
             }
 
-            $payCents = min($this->toCents($amount), $remainingCents);
+            $payCents = min(Money::fromDecimal($amount), $remainingCents);
             if ($payCents <= 0) {
                 throw new \DomainException('Informe um valor maior que zero.');
             }
@@ -162,23 +163,21 @@ class FaturaPaymentService
                 $faturaRecord->save();
             }
 
-            $payAmount = $payCents / 100;
-
             $ledgerEntry = null;
             if ($lockedAccount) {
-                $ledgerEntry = $this->ledger->record(
+                $ledgerEntry = $this->ledger->recordCents(
                     $lockedAccount,
                     BankLedgerEntry::TYPE_INVOICE_PAYMENT,
-                    -$payAmount,
+                    -$payCents,
                     $faturaRecord,
                     "Pagamento parcial de fatura ({$monthKey})"
                 );
                 $bankAccount->balance = $lockedAccount->balance;
             }
 
-            $this->faturaLedger->recordPaymentEvent(
+            $this->faturaLedger->recordPaymentEventCents(
                 $faturaRecord,
-                $payAmount,
+                $payCents,
                 FaturaPaymentEvent::TYPE_PAYMENT,
                 null,
                 $ledgerEntry,
@@ -191,9 +190,9 @@ class FaturaPaymentService
             }
 
             return [
-                'total_paid' => (float) $faturaRecord->total_paid,
+                'total_paid' => $this->toCents($faturaRecord->total_paid) / 100,
                 'total_due' => $totalDueCents / 100,
-                'amount_paid_now' => $payAmount,
+                'amount_paid_now' => $payCents / 100,
                 'is_fully_paid' => $faturaRecord->paid_at !== null,
             ];
         });
@@ -218,7 +217,7 @@ class FaturaPaymentService
             }
 
             $installmentNumber = $this->billing->resolveInstallmentNumberForMonth($transacao, $monthKey);
-            $amountCents = $this->toCents($transacao->getInstallmentAmount($installmentNumber));
+            $amountCents = $transacao->getInstallmentAmountCents($installmentNumber);
             $due += $amountCents;
 
             if ($this->isSettledForMonth($transacao, $monthKey, $installmentNumber)) {
@@ -244,7 +243,7 @@ class FaturaPaymentService
 
     private function isSettledForMonth(Transacao $transacao, string $monthKey, ?int $installmentNumber): bool
     {
-        if ($transacao->status === 'paid') {
+        if ($transacao->status === TransacaoStatus::Paid) {
             return true;
         }
 
@@ -260,15 +259,15 @@ class FaturaPaymentService
             ?? $transacao->parcelas->firstWhere('installment_number', $installmentNumber);
 
         if ($parcela) {
-            return $parcela->status === 'paid';
+            return $parcela->status === TransacaoParcelaStatus::Paid;
         }
 
         return (int) ($transacao->current_installment ?? 0) >= $installmentNumber;
     }
 
-    private function toCents(float|int|string|null $value): int
+    private function toCents(string|int|float|null $value): int
     {
-        return (int) round(((float) $value) * 100);
+        return Money::fromDecimal($value ?? 0);
     }
 
     /** Relê a conta dentro da transação, com lock, para decidir pelo saldo real. */

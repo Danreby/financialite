@@ -1,102 +1,33 @@
-import React, { useMemo } from "react";
-import ExportExcel from "@/Components/system/excel/ExportExcel";
+import { useMemo } from "react";
+import ServerExportButton from "@/Components/system/excel/ServerExportButton";
+import { TableDownloadIcon } from "@/Components/system/excel/ExportIcons";
 
-export default function FaturaPendingExportButton({ monthlyGroups = [] }) {
-  const { rows, header } = useMemo(() => {
-    if (!monthlyGroups || monthlyGroups.length === 0) {
-      return { rows: [], header: {} };
-    }
+// Só aparece quando há alguma parcela em aberto numa fatura não paga.
+const hasPendingItems = (monthlyGroups = []) =>
+  monthlyGroups.some(
+    (group) =>
+      group?.month_key &&
+      !group.is_paid &&
+      (group.items || []).some((item) => item && item.status !== "paid"),
+  );
 
-    const monthKeys = [];
-    const monthLabels = {};
+export default function FaturaPendingExportButton({ monthlyGroups = [], filters = {} }) {
+  const visible = useMemo(() => hasPendingItems(monthlyGroups), [monthlyGroups]);
 
-    monthlyGroups.forEach((group) => {
-      if (!group || !group.month_key || group.is_paid) return;
-      monthKeys.push(group.month_key);
-      if (group.month_label) {
-        monthLabels[group.month_key] = group.month_label;
-      }
-    });
-
-    const uniqueMonthKeys = Array.from(new Set(monthKeys)).sort();
-
-    const rowsMap = new Map();
-
-    monthlyGroups.forEach((group) => {
-      const monthKey = group.month_key;
-      if (!monthKey || group.is_paid || !group.items) return;
-
-      group.items.forEach((item) => {
-        if (!item) return;
-        if (item.status === "paid") return;
-
-        const label = item.category_name || item.title || "Sem categoria";
-        const rowKey = label;
-
-        const totalInstallments = Math.max(Number(item.total_installments || 1), 1);
-        const amountNumber = Number(item.amount || 0) || 0;
-        const monthlyAmount = item.installment_amount ?? amountNumber / totalInstallments;
-
-        if (!rowsMap.has(rowKey)) {
-          const baseRow = { label };
-          uniqueMonthKeys.forEach((mk) => {
-            baseRow[mk] = 0;
-          });
-          baseRow.total = 0;
-          rowsMap.set(rowKey, baseRow);
-        }
-
-        const row = rowsMap.get(rowKey);
-        row[monthKey] = Number(row[monthKey] || 0) + monthlyAmount;
-        row.total = Number(row.total || 0) + monthlyAmount;
-      });
-    });
-
-    const rowsArray = Array.from(rowsMap.values());
-
-    if (rowsArray.length === 0) {
-      return { rows: [], header: {} };
-    }
-
-    const totalRow = { label: "TOTAL GERAL" };
-    const monthlyTotals = {};
-    let grandTotal = 0;
-
-    uniqueMonthKeys.forEach((mk) => {
-      let monthSum = 0;
-      rowsArray.forEach((row) => {
-        monthSum += Number(row[mk] || 0);
-      });
-      monthlyTotals[mk] = monthSum;
-      grandTotal += monthSum;
-      totalRow[mk] = monthSum;
-    });
-
-    totalRow.total = grandTotal;
-    rowsArray.push(totalRow);
-
-    const header = {
-      label: { name: "Categoria / Compra" },
-    };
-
-    uniqueMonthKeys.forEach((mk) => {
-      header[mk] = { name: monthLabels[mk] || mk };
-    });
-
-    header.total = { name: "TOTAL" };
-
-    return { rows: rowsArray, header };
-  }, [monthlyGroups]);
-
-  if (!rows || rows.length === 0) {
+  if (!visible) {
     return null;
   }
 
   return (
-    <ExportExcel
-      data={rows}
-      header={header}
-      name="faturas_pendentes"
+    <ServerExportButton
+      routeName="faturas.export.pending"
+      params={{
+        bank_user_id: filters?.bank_user_id || undefined,
+        category_id: filters?.category_id || undefined,
+      }}
+      label="Exportar faturas pendentes para Excel"
+      icon={TableDownloadIcon}
+      fallbackName="faturas_pendentes.xlsx"
     />
   );
 }

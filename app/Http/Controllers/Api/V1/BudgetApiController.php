@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Budget\CreateBudget;
+use App\Actions\Budget\DeleteBudget;
+use App\Actions\Budget\GetOrCreateCurrentBudget;
+use App\Actions\Budget\UpdateBudget;
+use App\Enums\TransacaoType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Budget\BudgetStoreRequest;
 use App\Http\Requests\Budget\BudgetUpdateRequest;
 use App\Models\Budget;
-use App\Models\BudgetCategory;
 use App\Models\Transacao;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,12 +49,12 @@ class BudgetApiController extends Controller
         $endOfMonth = Carbon::now()->endOfMonth();
 
         $totalSpent = Transacao::where('user_id', $user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('amount');
 
         $categorySpending = Transacao::where('user_id', $user->id)
-            ->where('type', 'debit')
+            ->where('type', TransacaoType::Debit)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->whereNotNull('category_id')
             ->select('category_id', DB::raw('SUM(amount) as total'))
@@ -78,34 +83,14 @@ class BudgetApiController extends Controller
         ]);
     }
 
-    public function store(BudgetStoreRequest $request): JsonResponse
+    public function store(BudgetStoreRequest $request, CreateBudget $createBudget): JsonResponse
     {
-        $user = $request->user();
-        $data = $request->validated();
-
         try {
-            $budget = DB::transaction(function () use ($user, $data) {
-                $budget = Budget::create([
-                    'monthly_limit' => $data['monthly_limit'],
-                    'month_year' => $data['month_year'],
-                    'is_active' => true,
-                    'user_id' => $user->id,
-                ]);
+            $budget = $createBudget->handle($request->user(), $request->validated());
 
-                if (! empty($data['category_limits'])) {
-                    foreach ($data['category_limits'] as $cl) {
-                        BudgetCategory::create([
-                            'budget_id' => $budget->id,
-                            'category_id' => $cl['category_id'],
-                            'limit' => $cl['limit'],
-                        ]);
-                    }
-                }
-
-                return $budget->load('budgetCategories.category');
-            });
-
-            return $this->success($budget, 201);
+            return $this->success($budget->load('budgetCategories.category'), 201);
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             report($e);
 
@@ -113,33 +98,14 @@ class BudgetApiController extends Controller
         }
     }
 
-    public function update(BudgetUpdateRequest $request, Budget $budget): JsonResponse
+    public function update(BudgetUpdateRequest $request, int $budget, UpdateBudget $updateBudget): JsonResponse
     {
-        $this->authorize('update', $budget);
-        $data = $request->validated();
-
         try {
-            DB::transaction(function () use ($budget, $data) {
-                $budget->update([
-                    'monthly_limit' => $data['monthly_limit'] ?? $budget->monthly_limit,
-                    'month_year' => $data['month_year'] ?? $budget->month_year,
-                ]);
+            $updated = $updateBudget->handle($request->user(), $budget, $request->validated());
 
-                if (isset($data['category_limits'])) {
-                    $budget->budgetCategories()->delete();
-                    foreach ($data['category_limits'] as $cl) {
-                        BudgetCategory::create([
-                            'budget_id' => $budget->id,
-                            'category_id' => $cl['category_id'],
-                            'limit' => $cl['limit'],
-                        ]);
-                    }
-                }
-            });
-
-            $budget->load('budgetCategories.category');
-
-            return $this->success($budget);
+            return $this->success($updated->load('budgetCategories.category'));
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
@@ -147,27 +113,24 @@ class BudgetApiController extends Controller
         }
     }
 
-    public function destroy(Request $request, Budget $budget): JsonResponse
+    public function destroy(Request $request, int $budget, DeleteBudget $deleteBudget): JsonResponse
     {
-        $this->authorize('delete', $budget);
-        $budget->budgetCategories()->delete();
-        $budget->delete();
+        $deleteBudget->handle($request->user(), $budget);
 
         return $this->success(['message' => 'Orçamento removido.']);
     }
 
-    public function getOrCreateCurrent(Request $request): JsonResponse
+    public function getOrCreateCurrent(Request $request, GetOrCreateCurrentBudget $getOrCreate): JsonResponse
     {
         $user = $request->user();
-        $monthYear = Carbon::now()->format('Y-m');
+        $budget = $getOrCreate->handle($user)->load('budgetCategories.category');
+        $recommendedCents = GetOrCreateCurrentBudget::recommendedLimitCents($user);
 
-        $budget = Budget::firstOrCreate(
-            ['user_id' => $user->id, 'month_year' => $monthYear],
-            ['monthly_limit' => 0, 'is_active' => true]
-        );
-
-        $budget->load('budgetCategories.category');
-
-        return $this->success($budget);
+        // recommended_limit explica de onde veio o limite de um orçamento recém-criado
+        // (80% da renda ativa; sem renda, o padrão de R$ 5.000,00).
+        return $this->success([
+            ...$budget->toArray(),
+            'recommended_limit' => $recommendedCents === null ? null : $recommendedCents / 100.0,
+        ]);
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
                 $table->index(['user_id', 'bank_user_id'], 'transacoes_user_bankuser_index');
                 $table->index(['user_id', 'category_id'], 'transacoes_user_category_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
@@ -28,7 +28,7 @@ return new class extends Migration
                 $table->index('paid_at', 'faturas_paid_at_index');
                 $table->index(['user_id', 'month_key'], 'faturas_user_month_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
@@ -36,7 +36,7 @@ return new class extends Migration
                 $table->index('type', 'notifications_type_index');
                 $table->index(['user_id', 'is_read', 'created_at'], 'notifications_user_read_created_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
@@ -44,21 +44,21 @@ return new class extends Migration
                 $table->index('name', 'categories_name_index');
                 $table->index(['user_id', 'name'], 'categories_user_name_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
             Schema::table('bank_user', function (Blueprint $table) {
                 $table->index('user_id', 'bank_user_user_id_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
             Schema::table('password_reset_tokens', function (Blueprint $table) {
                 $table->index('created_at', 'password_reset_tokens_created_at_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
     }
 
@@ -75,7 +75,7 @@ return new class extends Migration
                 $table->dropIndex('transacoes_user_bankuser_index');
                 $table->dropIndex('transacoes_user_category_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
@@ -84,7 +84,7 @@ return new class extends Migration
                 $table->dropIndex('faturas_paid_at_index');
                 $table->dropIndex('faturas_user_month_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
@@ -92,7 +92,7 @@ return new class extends Migration
                 $table->dropIndex('notifications_type_index');
                 $table->dropIndex('notifications_user_read_created_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
@@ -100,21 +100,21 @@ return new class extends Migration
                 $table->dropIndex('categories_name_index');
                 $table->dropIndex('categories_user_name_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
             Schema::table('bank_user', function (Blueprint $table) {
                 $table->dropIndex('bank_user_user_id_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         try {
             Schema::table('password_reset_tokens', function (Blueprint $table) {
                 $table->dropIndex('password_reset_tokens_created_at_index');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
     }
 };

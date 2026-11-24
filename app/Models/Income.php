@@ -72,11 +72,13 @@ class Income extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<CardUser, $this> */
     public function bankUser(): BelongsTo
     {
         return $this->belongsTo(CardUser::class, 'bank_user_id');
     }
 
+    /** @return BelongsTo<BankUser, $this> */
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankUser::class, 'bank_account_id');

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\BankLedgerEntry;
 use App\Models\BankUser;
+use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -17,20 +18,33 @@ class BankLedgerService
     public function record(
         BankUser $bankUser,
         string $type,
-        float $amount,
+        string|int|float $amount,
         ?Model $source = null,
         ?string $description = null
     ): BankLedgerEntry {
-        return DB::transaction(function () use ($bankUser, $type, $amount, $source, $description) {
+        return $this->recordCents($bankUser, $type, Money::fromDecimal($amount), $source, $description);
+    }
+
+    /**
+     * Mesmo que record(), com o valor já em centavos (negativo para débito).
+     */
+    public function recordCents(
+        BankUser $bankUser,
+        string $type,
+        int $amountCents,
+        ?Model $source = null,
+        ?string $description = null
+    ): BankLedgerEntry {
+        return DB::transaction(function () use ($bankUser, $type, $amountCents, $source, $description) {
             $locked = BankUser::whereKey($bankUser->id)->lockForUpdate()->firstOrFail();
 
-            $newBalance = round((float) $locked->balance + $amount, 2);
+            $newBalance = Money::toDecimal(Money::fromDecimal((string) ($locked->balance ?? '0')) + $amountCents);
 
             $entry = BankLedgerEntry::create([
                 'user_id' => $locked->user_id,
                 'bank_user_id' => $locked->id,
                 'type' => $type,
-                'amount' => round($amount, 2),
+                'amount' => Money::toDecimal($amountCents),
                 'balance_after' => $newBalance,
                 'source_type' => $source?->getMorphClass(),
                 'source_id' => $source?->getKey(),
@@ -76,12 +90,18 @@ class BankLedgerService
         return DB::transaction(function () use ($bankUser) {
             $locked = BankUser::whereKey($bankUser->id)->lockForUpdate()->firstOrFail();
 
-            $total = round((float) BankLedgerEntry::forBankUser($locked->id)->sum('amount'), 2);
-
-            $locked->balance = $total;
+            $locked->balance = Money::toDecimal($this->ledgerSumCents($locked->id));
             $locked->save();
 
             return $locked;
         });
+    }
+
+    /** Soma dos lançamentos da conta em centavos. */
+    public function ledgerSumCents(int $bankUserId): int
+    {
+        $sum = BankLedgerEntry::forBankUser($bankUserId)->sum('amount');
+
+        return Money::fromDecimal($sum);
     }
 }
