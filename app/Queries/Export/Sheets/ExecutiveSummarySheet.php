@@ -57,8 +57,8 @@ final class ExecutiveSummarySheet
 
         $section('CRÉDITO (Despesas no Cartão)');
         $x->add(['Total em Crédito', $money($t->totalCredit)], $cur);
-        $x->add(['Crédito Pago', $money($t->paidExpenses)], $cur);
-        $x->add(['Crédito Pendente', $money($t->pendingExpenses)], $cur);
+        $x->add(['Crédito Pago', $money($t->paidCredit)], $cur);
+        $x->add(['Crédito Pendente', $money($t->pendingCredit)], $cur);
         $x->add([]);
 
         $section('DÉBITO (Despesas pagas à vista)');

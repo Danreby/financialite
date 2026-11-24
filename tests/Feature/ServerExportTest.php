@@ -2,14 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\ExportController;
 use App\Models\Transacao;
 use App\Models\User;
 use App\Queries\Export\ExportRowsQuery;
+use App\Queries\Export\TransactionsExport;
+use App\Queries\Export\Xlsx;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use OpenSpout\Reader\XLSX\Reader;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Tests\Feature\Concerns\FinanceScenario;
 use Tests\TestCase;
 
@@ -87,6 +91,31 @@ class ServerExportTest extends TestCase
         $this->assertEqualsWithDelta(320.0, $summary['Total em Débito'], 0.001);
         $this->assertEqualsWithDelta(5100.0, $summary['Receita Média Mensal'], 0.001);
 
+        // Pago/pendente seguem a coluna Status da aba Transações (parcela quando há).
+        // Pagos: 1ª parcela do mercadoX3 (100) + cinema (120). Pendentes: mercadoX3
+        // nov e dez (200), streaming (50), farmacia (90), feiraX2 (60) = 400.
+        $this->assertEqualsWithDelta(220.0, $summary['Crédito Pago'], 0.001);
+        $this->assertEqualsWithDelta(400.0, $summary['Crédito Pendente'], 0.001);
+        $this->assertEqualsWithDelta(320.0, $summary['Débito Pago'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $summary['Débito Pendente'], 0.001);
+        // Vencidas (pendente com vencimento antes de 15/11): mercadoX3 de 12/11 (100),
+        // farmacia de 03/11 (90) e 1ª da feiraX2 de 07/11 (30). Streaming não tem vencimento.
+        $this->assertEquals(3, $summary['Quantidade Vencida']);
+        $this->assertEqualsWithDelta(220.0, $summary['Valor Total Vencido'], 0.001);
+        $this->assertSame(
+            ['Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente'],
+            array_column(array_filter(array_slice($tx, 1), fn ($r) => $r[3] === 'Crédito' && $r[4] !== 'Pago'), 4),
+        );
+
+        // Resumo mensal: [mês, total, crédito, débito, pago, pendente, qtd].
+        $monthly = $this->keyed($book['Resumo Executivo'], 0, null);
+        $this->assertEqualsWithDelta(420.0, $monthly['Outubro 2026'][4], 0.001);
+        $this->assertEqualsWithDelta(0.0, $monthly['Outubro 2026'][5], 0.001);
+        $this->assertEqualsWithDelta(120.0, $monthly['Novembro 2026'][4], 0.001); // bar + açougue
+        $this->assertEqualsWithDelta(270.0, $monthly['Novembro 2026'][5], 0.001);
+        $this->assertEqualsWithDelta(0.0, $monthly['Dezembro 2026'][4], 0.001);
+        $this->assertEqualsWithDelta(130.0, $monthly['Dezembro 2026'][5], 0.001);
+
         // Fluxo de caixa: receita do mês - (crédito + débito).
         $cash = $this->keyed($book['Fluxo de Caixa'], 0, null);
         $this->assertSame(['Mês', 'Receitas', 'Despesas', 'Saldo do Mês', 'Saldo Acumulado', 'Taxa de Poupança', 'Qtd Transações'], $book['Fluxo de Caixa'][0]);
@@ -107,6 +136,10 @@ class ServerExportTest extends TestCase
         $this->assertEqualsWithDelta(360.0, $categories[1][2], 0.001);
         $this->assertEqualsWithDelta(240.0, $categories[1][3], 0.001);
         $this->assertEqualsWithDelta(600 / 940, $categories[1][7], 0.0001);
+        // Qtd paga / pendente. Mercado: 1ª do mercadoX3, padaria e açougue pagos.
+        $this->assertSame([3, 4], [(int) $categories[1][5], (int) $categories[1][6]]);
+        $this->assertSame([2, 1], [(int) $categories[2][5], (int) $categories[2][6]]); // Lazer: streaming pendente
+        $this->assertSame([0, 1], [(int) $categories[3][5], (int) $categories[3][6]]); // farmacia
 
         $cards = $this->keyed($book['Análise por Cartão'], 0, null);
         $this->assertEqualsWithDelta(300 + 120 + 50 + 200 + 90, $cards['Cartão Azul'][1], 0.001);
@@ -269,7 +302,7 @@ class ServerExportTest extends TestCase
         memory_reset_peak_usage();
         $before = memory_get_usage();
         $response = $this->actingAs($this->user)->get(route('reports.export.detailed'));
-        $content = $response->streamedContent();
+        $content = $this->downloadedContent($response);
         $peak = memory_get_peak_usage() - $before;
 
         // 2008 lançamentos em blocos de 500: 5 consultas com limit.
@@ -282,6 +315,47 @@ class ServerExportTest extends TestCase
         $book = $this->readXlsx($content);
         $this->assertCount(1 + 11 + 2000, $book['Transações']);
         $this->assertEqualsWithDelta(940.0 + 20000.0, $this->keyed($book['Resumo Executivo'])['Total de Despesas'], 0.001);
+    }
+
+    public function test_failure_during_generation_is_an_error_not_a_download(): void
+    {
+        $this->mock(TransactionsExport::class, function ($mock) {
+            $mock->shouldReceive('write')->andReturnUsing(function (Xlsx $x) {
+                $x->sheet('Transações', [], false, true);
+                $x->add(['linha escrita antes do erro']);
+
+                throw new \RuntimeException('falha no meio da geração');
+            });
+        });
+        $before = $this->tempFiles();
+
+        $response = $this->actingAs($this->user)->getJson(route('transacoes.export.xlsx'));
+
+        $response->assertStatus(500);
+        $this->assertStringNotContainsString('spreadsheetml', (string) $response->headers->get('Content-Type'));
+        $this->assertNull($response->headers->get('Content-Disposition'));
+        $this->assertSame($before, $this->tempFiles(), 'O arquivo temporário (ou a pasta do OpenSpout) ficou para trás.');
+    }
+
+    /** @return list<string> */
+    private function tempFiles(): array
+    {
+        $files = array_values(array_diff(scandir(ExportController::tempDir()) ?: [], ['.', '..']));
+        sort($files);
+
+        return $files;
+    }
+
+    /** Conteúdo do arquivo baixado; apaga o temporário, já que o teste não envia a resposta. */
+    private function downloadedContent(TestResponse $response): string
+    {
+        $file = $response->baseResponse;
+        $this->assertInstanceOf(BinaryFileResponse::class, $file);
+        $path = $file->getFile()->getPathname();
+        $content = (string) file_get_contents($path);
+        @unlink($path);
+
+        return $content;
     }
 
     private function assertXlsxDownload(TestResponse $response, string $filename): void
@@ -299,7 +373,7 @@ class ServerExportTest extends TestCase
      */
     private function readXlsx(TestResponse|string $response): array
     {
-        $content = is_string($response) ? $response : $response->assertOk()->streamedContent();
+        $content = is_string($response) ? $response : $this->downloadedContent($response->assertOk());
         $path = tempnam(sys_get_temp_dir(), 'xlsx');
         file_put_contents($path, $content);
 

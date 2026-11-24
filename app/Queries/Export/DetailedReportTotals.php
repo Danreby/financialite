@@ -15,7 +15,11 @@ use Carbon\CarbonInterface;
  *   vier zerada); débito usa o valor total. Débito é DESPESA.
  * - receita não vem dos lançamentos: é a renda recorrente mensal mais as
  *   entradas avulsas do mês, somadas em cada mês presente no relatório.
- * - pago/pendente e vencido olham o status do lançamento (não o da parcela).
+ * - pago/pendente olham o status da parcela quando a linha vem de uma parcela, e
+ *   o do lançamento nas demais (mesma regra da coluna Status da aba Transações).
+ *   Tudo que não está pago conta como pendente (unpaid, pending e overdue).
+ * - vencida: pendente com status overdue ou com vencimento antes de hoje
+ *   (Carbon::today(), no fuso da aplicação).
  *
  * Valores em centavos.
  */
@@ -33,11 +37,11 @@ final class DetailedReportTotals
 
     public int $pendingDebit = 0;
 
-    public int $pendingExpenses = 0;
+    public int $pendingCredit = 0;
 
     public int $paidDebit = 0;
 
-    public int $paidExpenses = 0;
+    public int $paidCredit = 0;
 
     public int $recurringCount = 0;
 
@@ -112,12 +116,39 @@ final class DetailedReportTotals
         return $installment !== 0 ? $installment : $amount;
     }
 
+    /**
+     * 'paid' ou 'pending'. A parcela manda quando existe; a transação usa
+     * "unpaid" e a parcela "pending" para a mesma situação.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    public static function paymentStatus(array $row): string
+    {
+        $status = $row['parcela_status'] ?? $row['status'] ?? null;
+
+        return $status === 'paid' ? 'paid' : 'pending';
+    }
+
+    /** @param array<string, mixed> $row */
+    private function isOverdue(array $row, string $status): bool
+    {
+        if ($status === 'paid') {
+            return false;
+        }
+
+        if (($row['parcela_status'] ?? $row['status'] ?? null) === 'overdue') {
+            return true;
+        }
+
+        return ! empty($row['due_date']) && $row['due_date'] < $this->today;
+    }
+
     /** @param array<string, mixed> $row */
     public function add(array $row): void
     {
         $value = self::value($row);
         $isCredit = $row['type'] === 'credit';
-        $status = $row['status'] ?? null;
+        $status = self::paymentStatus($row);
 
         $this->count++;
         $this->totalExpenses += $value;
@@ -129,25 +160,21 @@ final class DetailedReportTotals
             } else {
                 $this->nonRecurringAmount += $value;
             }
+            if ($status === 'paid') {
+                $this->paidCredit += $value;
+            } else {
+                $this->pendingCredit += $value;
+            }
         } else {
             $this->totalDebit += $value;
-            if ($status === 'pending') {
-                $this->pendingDebit += $value;
-            }
             if ($status === 'paid') {
                 $this->paidDebit += $value;
+            } else {
+                $this->pendingDebit += $value;
             }
         }
 
-        if ($status === 'pending') {
-            $this->pendingExpenses += $value;
-        }
-        if ($status === 'paid') {
-            $this->paidExpenses += $value;
-        }
-
-        // Vencida: lançamento pendente com parcela que venceu antes de hoje.
-        if ($status === 'pending' && ! empty($row['due_date']) && $row['due_date'] < $this->today) {
+        if ($this->isOverdue($row, $status)) {
             $this->overdueCount++;
             $this->overdueAmount += $value;
         }
@@ -193,22 +220,21 @@ final class DetailedReportTotals
     /**
      * @param  array<string, array{name: string, total: int, credit: int, debit: int, count: int, paid: int, pending: int}>  $groups
      */
-    private function addToGroup(array &$groups, string $name, int $value, bool $isCredit, ?string $status): void
+    private function addToGroup(array &$groups, string $name, int $value, bool $isCredit, string $status): void
     {
         $groups[$name] ??= ['name' => $name, 'total' => 0, 'credit' => 0, 'debit' => 0, 'count' => 0, 'paid' => 0, 'pending' => 0];
         $groups[$name]['total'] += $value;
         $groups[$name][$isCredit ? 'credit' : 'debit'] += $value;
         $groups[$name]['count']++;
-        if ($status === 'pending') {
-            $groups[$name]['pending']++;
-        }
         if ($status === 'paid') {
             $groups[$name]['paid']++;
+        } else {
+            $groups[$name]['pending']++;
         }
     }
 
     /** @param array<string, mixed> $row */
-    private function addToMonth(array $row, int $value, bool $isCredit, ?string $status): void
+    private function addToMonth(array $row, int $value, bool $isCredit, string $status): void
     {
         $key = $row['invoice_month'] ?: ($row['year_month'] ?: 'Sem data');
         $label = $row['invoice_month_label'] ?: ($row['month_label'] ?: 'Sem data');
@@ -217,11 +243,10 @@ final class DetailedReportTotals
         $this->byMonth[$key]['total'] += $value;
         $this->byMonth[$key][$isCredit ? 'credit' : 'debit'] += $value;
         $this->byMonth[$key]['count']++;
-        if ($status === 'pending') {
-            $this->byMonth[$key]['pending'] += $value;
-        }
         if ($status === 'paid') {
             $this->byMonth[$key]['paid'] += $value;
+        } else {
+            $this->byMonth[$key]['pending'] += $value;
         }
     }
 

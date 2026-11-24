@@ -38,9 +38,13 @@ final class Xlsx
 
     public function __construct(public readonly Writer $writer, public readonly Options $options) {}
 
-    public static function open(string $path = 'php://output'): self
+    /** @param  string|null  $tempFolder  pasta de trabalho do OpenSpout (padrão: sys_get_temp_dir()) */
+    public static function open(string $path = 'php://output', ?string $tempFolder = null): self
     {
         $options = new Options;
+        if ($tempFolder !== null) {
+            $options->setTempFolder($tempFolder);
+        }
         $writer = new Writer($options);
         $writer->openToFile($path);
 
