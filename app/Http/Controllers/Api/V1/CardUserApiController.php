@@ -44,8 +44,6 @@ class CardUserApiController extends Controller
             ->forUser($user->id)
             ->findOrFail($id);
 
-        $this->authorize('view', $cardUser);
-
         return $this->success($cardUser);
     }
 

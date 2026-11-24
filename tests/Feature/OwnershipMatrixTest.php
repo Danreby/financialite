@@ -28,9 +28,9 @@ use Tests\TestCase;
  * não alcança nem altera nada do usuário A. O teste de cobertura garante que uma
  * rota nova com id entre na matriz.
  *
- * Os status esperados são os que o código devolve hoje: 404 quando o recurso é
- * buscado dentro do escopo do usuário (ou por route model binding com escopo);
- * 422 onde uma regra de validação do FormRequest (exists com escopo) rejeita antes.
+ * Toda rota da matriz responde 404: o recurso é buscado dentro do escopo do
+ * usuário (findOrFail com forUser ou route model binding com escopo), então o
+ * recurso de outro usuário é tratado como inexistente.
  */
 class OwnershipMatrixTest extends TestCase
 {

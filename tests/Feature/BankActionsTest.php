@@ -142,6 +142,31 @@ class BankActionsTest extends TestCase
     }
 
     #[DataProvider('sides')]
+    public function test_transfer_with_another_users_account_returns_404(string $side): void
+    {
+        $mine = $this->account('100.00');
+        $theirs = $this->account('100.00', User::factory()->create(), 'Banco B');
+
+        foreach ([[$mine, $theirs], [$theirs, $mine]] as [$from, $to]) {
+            $this->as($side)->postJson($this->url($side, '/bank-transfers'), [
+                'from_bank_user_id' => $from->id,
+                'to_bank_user_id' => $to->id,
+                'amount' => '10.00',
+            ])->assertNotFound();
+        }
+
+        $this->as($side)->postJson($this->url($side, '/bank-transfers'), [
+            'from_bank_user_id' => $mine->id,
+            'to_bank_user_id' => 999999,
+            'amount' => '10.00',
+        ])->assertNotFound();
+
+        $this->assertSame(0, BankTransfer::count());
+        $this->assertSame('100.00', $mine->refresh()->balance);
+        $this->assertSame('100.00', $theirs->refresh()->balance);
+    }
+
+    #[DataProvider('sides')]
     public function test_other_users_account_returns_404(string $side): void
     {
         $account = $this->account('50.00', User::factory()->create());

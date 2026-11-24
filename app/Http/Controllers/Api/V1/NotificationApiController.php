@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Notification\ClearNotifications;
 use App\Actions\Notification\CountUnreadNotifications;
-use App\Actions\Notification\VisibleNotificationsQuery;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
+use App\Queries\VisibleNotificationsQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

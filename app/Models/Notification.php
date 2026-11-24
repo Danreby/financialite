@@ -30,6 +30,9 @@ class Notification extends Model
 
     public const VALID_TYPES = ['info', 'warning', 'error', 'success'];
 
+    /** Prefixo das linhas internas de controle (ex.: alertas de orçamento já enviados). */
+    public const META_PREFIX = '__meta:';
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -38,6 +41,15 @@ class Notification extends Model
     public function scopeForUser(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
+    }
+
+    /**
+     * Sem as linhas internas `__meta:`. Compara o prefixo com SUBSTR em vez de
+     * LIKE, porque em LIKE o "_" é curinga e "xxmeta:..." também seria escondido.
+     */
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query->whereRaw('SUBSTR(title, 1, '.strlen(self::META_PREFIX).') <> ?', [self::META_PREFIX]);
     }
 
     public function scopeUnread(Builder $query): Builder

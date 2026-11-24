@@ -37,8 +37,6 @@ class CardResourceApiController extends Controller
     {
         $card = Card::forUser($request->user()->id)->findOrFail($id);
 
-        $this->authorize('view', $card);
-
         return $this->success($card);
     }
 

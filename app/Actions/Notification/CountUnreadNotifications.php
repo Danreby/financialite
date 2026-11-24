@@ -16,7 +16,7 @@ class CountUnreadNotifications
     {
         return Notification::forUser($user->id)
             ->unread()
-            ->where('title', 'not like', '__meta:%')
+            ->visible()
             ->count();
     }
 }

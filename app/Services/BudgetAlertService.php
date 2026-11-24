@@ -168,6 +168,6 @@ class BudgetAlertService
 
     private function metaTitle(string $alertKey, string $month): string
     {
-        return "__meta:{$alertKey}:{$month}";
+        return Notification::META_PREFIX."{$alertKey}:{$month}";
     }
 }

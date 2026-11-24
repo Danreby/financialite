@@ -15,7 +15,7 @@ class ClearNotifications
     public function handle(User $user): void
     {
         Notification::forUser($user->id)
-            ->where('title', 'not like', '__meta:%')
+            ->visible()
             ->delete();
     }
 }

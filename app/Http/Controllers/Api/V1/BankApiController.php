@@ -155,6 +155,8 @@ class BankApiController extends Controller
     {
         try {
             return $this->success($transferBetween->handle($request->user(), $request->validated()), 201);
+        } catch (ModelNotFoundException $e) {
+            throw $e; // conta de outro usuário: 404
         } catch (\DomainException $e) {
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {

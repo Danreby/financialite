@@ -87,6 +87,24 @@ class NotificationActionsTest extends TestCase
         $this->assertDatabaseHas('notifications', ['id' => $theirs->id]);
     }
 
+    public function test_titles_that_only_look_like_meta_stay_visible(): void
+    {
+        // Com LIKE '__meta:%' o "_" é curinga e estes títulos sumiriam.
+        $this->notify('xxmeta: lembrete');
+        $this->notify('a_meta:b');
+        $meta = $this->notify('__meta:budget_alert');
+
+        $this->actingAs($this->user);
+
+        $titles = collect($this->getJson('/notifications')->assertOk()->json())->pluck('title')->sort()->values();
+        $this->assertSame(['a_meta:b', 'xxmeta: lembrete'], $titles->all());
+        $this->getJson('/notifications/unread-count')->assertJsonPath('unread_count', 2);
+
+        $this->deleteJson('/notifications')->assertOk();
+        $this->assertDatabaseMissing('notifications', ['title' => 'xxmeta: lembrete']);
+        $this->assertDatabaseHas('notifications', ['id' => $meta->id]);
+    }
+
     public function test_web_index_lists_only_own_notifications_without_meta_rows(): void
     {
         $this->notify('Minha');
@@ -117,7 +135,7 @@ class NotificationActionsTest extends TestCase
         $this->getJson('/api/v1/notifications/unread-count')->assertJsonPath('count', 0);
 
         $this->deleteJson('/api/v1/notifications/clear-all')->assertOk();
-        $this->assertSame(0, Notification::where('user_id', $this->user->id)->where('title', 'not like', '__meta:%')->count());
+        $this->assertSame(0, Notification::where('user_id', $this->user->id)->visible()->count());
         $this->assertDatabaseHas('notifications', ['id' => $meta->id]);
         $this->assertDatabaseHas('notifications', ['id' => $theirs->id, 'is_read' => false]);
     }

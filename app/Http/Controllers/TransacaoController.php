@@ -75,10 +75,9 @@ class TransacaoController extends Controller
         $user = $request->user();
         $bankUserId = $request->input('bank_user_id');
         $categoryId = $request->input('category_id');
-        $selectedBankUser = null;
-
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $filters = [
@@ -258,8 +257,8 @@ class TransacaoController extends Controller
         $categoryId = $request->input('category_id');
 
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $stats = $this->dashboardService->buildStats(
@@ -280,8 +279,8 @@ class TransacaoController extends Controller
         $bankUserId = $request->input('bank_user_id');
 
         if ($request->filled('bank_user_id')) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $insights = $this->insights->getInsights($user, $bankUserId);
@@ -300,8 +299,8 @@ class TransacaoController extends Controller
         $categoryId = $validated['category_id'] ?? null;
 
         if ($bankUserId) {
-            $selectedBankUser = CardUser::forUser($user->id)->findOrFail($bankUserId);
-            $this->authorize('view', $selectedBankUser);
+            // Cartão de outro usuário responde 404.
+            CardUser::forUser($user->id)->findOrFail($bankUserId);
         }
 
         $data = $this->dashboardService->getTopSpendingByPeriod(

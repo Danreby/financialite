@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Notification;
+namespace App\Queries;
 
 use App\Models\Notification;
 use App\Models\User;
@@ -16,7 +16,7 @@ class VisibleNotificationsQuery
     public function handle(User $user): Builder
     {
         return Notification::forUser($user->id)
-            ->where('title', 'not like', '__meta:%')
+            ->visible()
             ->orderByDesc('created_at');
     }
 }

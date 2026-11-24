@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\Notification\ClearNotifications;
 use App\Actions\Notification\CountUnreadNotifications;
-use App\Actions\Notification\VisibleNotificationsQuery;
 use App\Models\Notification;
+use App\Queries\VisibleNotificationsQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

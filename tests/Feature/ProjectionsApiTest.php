@@ -93,6 +93,27 @@ class ProjectionsApiTest extends TestCase
         $this->assertSame(2, $remaining['FeiraX2']);
     }
 
+    public function test_remaining_installments_across_the_year_turn(): void
+    {
+        // Compra de 20/11/2026 em 4x: fechamento dia 5, então faturas 2026-12,
+        // 2027-01, 2027-02 e 2027-03. Em 15/01/2027 só dezembro foi cobrado.
+        $this->purchase('tv', '2026-11-20 12:00:00', '400.00', 'credit', null, true, 4);
+        Carbon::setTestNow('2027-01-15 10:00:00');
+
+        $response = $this->actingAs($this->user, 'sanctum')->getJson('/api/v1/projections')->assertOk();
+
+        $tv = collect($response->json('transactions'))->firstWhere('title', 'Tv');
+        $this->assertSame('2026-12', $tv['first_billing_month']);
+        $this->assertSame(3, $tv['remaining_installments']);
+
+        // Os parcelados do cenário terminaram em dezembro; sobra o streaming (50).
+        $this->assertEqualsWithDelta(
+            [150.0, 150.0, 150.0, 50.0, 50.0, 50.0],
+            collect($response->json('projected_months'))->pluck('projected_debit')->map(fn ($v) => (float) $v)->all(),
+            0.001
+        );
+    }
+
     public function test_other_users_data_is_not_projected(): void
     {
         $other = User::factory()->create();
